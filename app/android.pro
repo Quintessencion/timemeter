@@ -224,3 +224,6 @@ void startFinalizer(java.lang.Class,java.lang.Object);
 -keepclassmembers,allowobfuscation class * {
     @com.be.android.library.worker.annotations.* *;
 }
+
+# cupboard (keep models' field names)
+-keep class com.simbirsoft.timemeter.db.model.** {*;}
