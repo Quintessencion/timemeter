@@ -26,7 +26,7 @@
 # traces later on.
 
 #-printmapping bin/classes-processed.map
--printmapping build/intermediates/classes-proguard/release/classes-processed.map
+#-printmapping build/intermediates/classes-proguard/release/classes-processed.map
 
 # You can print out the seeds that are matching the keep options below.
 
@@ -186,18 +186,10 @@ void startFinalizer(java.lang.Class,java.lang.Object);
 # Ignore spring framework reference (not used)
 -dontwarn org.springframework.**
 
-# GreenDAO
--keepclassmembers class * extends de.greenrobot.dao.AbstractDao {
-    public static java.lang.String TABLENAME;
-}
--keep class **$Properties
-
 # Joda time
 -dontwarn org.joda.convert.**
 
-# Dagger
-# Obfuscation breaks app
--dontobfuscate
+# Dagger 2
 -keep class com.sweetsoft.ias.** {
     @javax.inject.* *;
 }
