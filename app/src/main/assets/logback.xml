@@ -1,0 +1,10 @@
+<configuration>
+    <includes>
+        <!--
+        Use to load custom device configuration
+
+        <include file="/sdcard/logback.xml"/>
+        -->
+        <include resource="assets/config/logback_config.xml"/>
+    </includes>
+</configuration>
