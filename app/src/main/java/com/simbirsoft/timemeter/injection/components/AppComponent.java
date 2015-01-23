@@ -8,5 +8,5 @@ import dagger.Component;
 
 @Singleton
 @Component(modules = {ApplicationModule.class})
-public interface AppComponent extends JobsComponent, DatabaseComponent {
+public interface AppComponent extends JobsComponent, DatabaseComponent, UiComponent {
 }

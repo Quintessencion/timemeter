@@ -5,17 +5,26 @@
     <string name="title_tasks">Задачи</string>
     <string name="title_tags">Метки</string>
     <string name="title_section3">Section 3</string>
+    <string name="title_begin_new_task">Начать новую задачу</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>
     <string name="action_settings">Settings</string>
 
-    <!-- Hints -->
+    <!-- Actions -->
+    <string name="action_cancel">Отменить</string>
+    <string name="action_accept">ОК</string>
+    <string name="action_accept_yes">Да</string>
 
+    <!-- Hints -->
     <string name="hint_new_task">Начать новую задачу</string>
+    <string name="hint_task_description">Описание задачи</string>
 
     <!-- Errors -->
-
     <string name="error_unable_to_load_task_list">Ошибка при загрузке задач</string>
+
+    <!-- Dialogs -->
+    <string name="dialog_cancel_task_changes_warning_title">Задача не сохранена</string>
+    <string name="dialog_cancel_task_changes_warning_message">Завершить редактирование без сохранения?</string>
 
 </resources>

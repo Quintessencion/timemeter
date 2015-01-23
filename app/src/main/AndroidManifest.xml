@@ -18,6 +18,16 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ui.base.FragmentContainerActivity_"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.base.DialogContainerActivity_"
+            android:windowSoftInputMode="stateHidden"
+            android:theme="@style/AppTheme.Transparent"
+            android:exported="false" />
+
         <service
             android:name=".service.TimeWorkerService"
             android:exported="false" />
