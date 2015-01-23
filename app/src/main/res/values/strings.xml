@@ -10,4 +10,12 @@
     <string name="action_example">Example action</string>
     <string name="action_settings">Settings</string>
 
+    <!-- Hints -->
+
+    <string name="hint_new_task">Начать новую задачу</string>
+
+    <!-- Errors -->
+
+    <string name="error_unable_to_load_task_list">Ошибка при загрузке задач</string>
+
 </resources>

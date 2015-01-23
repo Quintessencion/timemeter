@@ -1,4 +1,4 @@
-package com.simbirsoft.timemeter;
+package com.simbirsoft.timemeter.ui.main;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -13,7 +13,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.simbirsoft.timemeter.NavigationDrawerFragment;
+import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.BaseActivity;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
@@ -21,7 +24,7 @@ import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
 @EActivity(R.layout.activity_main)
-public class MainActivity extends ActionBarActivity
+public class MainActivity extends BaseActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
     private static final Logger LOG = LogFactory.getLogger(MainActivity.class);
@@ -58,7 +61,7 @@ public class MainActivity extends ActionBarActivity
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
+                .replace(R.id.container, TaskListFragment.newInstance())
                 .commit();
     }
 

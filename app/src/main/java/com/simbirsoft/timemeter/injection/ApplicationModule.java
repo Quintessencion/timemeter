@@ -28,10 +28,4 @@ public class ApplicationModule {
     Context provideContext() {
         return mApplication;
     }
-
-    @Provides
-    @Singleton
-    public DatabaseHelper provideDatabaseHelper() {
-        return new DatabaseHelper(mApplication);
-    }
 }
