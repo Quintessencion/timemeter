@@ -86,7 +86,7 @@ public class BaseFragment extends Fragment {
     }
 
     protected void showToast(int stringId, int toastLength) {
-        if (isVisible()) return;
+        if (!isVisible()) return;
 
         Toast.makeText(getActivity(), stringId, toastLength).show();
     }

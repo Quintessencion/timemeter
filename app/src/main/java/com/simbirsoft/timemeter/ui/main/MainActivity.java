@@ -1,6 +1,7 @@
 package com.simbirsoft.timemeter.ui.main;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -16,6 +17,7 @@ import com.simbirsoft.timemeter.NavigationDrawerFragment;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
+import com.simbirsoft.timemeter.ui.base.BaseFragment;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
@@ -27,6 +29,8 @@ public class MainActivity extends BaseActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
     private static final Logger LOG = LogFactory.getLogger(MainActivity.class);
+
+    private static final String TAG_CONTENT_FRAGMENT = "app_content_fragment_tag";
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -49,7 +53,7 @@ public class MainActivity extends BaseActivity
     }
 
     @AfterViews
-    void attachViews() {
+    void bindViews() {
         mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.navigation_drawer);
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer, mDrawerLayout);
@@ -60,8 +64,12 @@ public class MainActivity extends BaseActivity
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.container, TaskListFragment.newInstance())
+                .replace(R.id.container, TaskListFragment.newInstance(), TAG_CONTENT_FRAGMENT)
                 .commit();
+    }
+
+    private BaseFragment getContentFragment() {
+        return (BaseFragment) getSupportFragmentManager().findFragmentByTag(TAG_CONTENT_FRAGMENT);
     }
 
     public void onSectionAttached(int number) {
@@ -108,6 +116,17 @@ public class MainActivity extends BaseActivity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        BaseFragment fragment = getContentFragment();
+
+        if (fragment != null) {
+            fragment.onActivityResult(requestCode, resultCode, data);
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     /**

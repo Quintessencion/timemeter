@@ -5,6 +5,8 @@ import com.simbirsoft.timemeter.jobs.LoadTagListJob;
 import com.simbirsoft.timemeter.jobs.LoadTaskBundleJob;
 import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
 import com.simbirsoft.timemeter.jobs.LoadTaskTagsJob;
+import com.simbirsoft.timemeter.jobs.RemoveTaskJob;
+import com.simbirsoft.timemeter.jobs.SaveTaskBundleJob;
 
 public interface JobsComponent {
     public App app();
@@ -12,4 +14,6 @@ public interface JobsComponent {
     public LoadTagListJob loadTagListJob();
     public LoadTaskTagsJob loadTaskTagsJob();
     public LoadTaskBundleJob loadTaskBundleJob();
+    public SaveTaskBundleJob saveTaskBundleJob();
+    public RemoveTaskJob removeTaskJob();
 }

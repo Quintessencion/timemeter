@@ -26,6 +26,7 @@ public class LoadTaskListJob extends LoadJob {
         List<Task> tasks = cupboard()
                 .withDatabase(mDatabaseHelper.getWritableDatabase())
                 .query(Task.class)
+                .orderBy("createDate")
                 .list();
 
         return new LoadJobResult<>(JobResultStatus.OK, tasks);

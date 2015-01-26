@@ -16,18 +16,28 @@
     <string name="action_cancel">Отмена</string>
     <string name="action_accept">ОК</string>
     <string name="action_accept_yes">Да</string>
+    <string name="action_perform_remove">Удалить</string>
+    <string name="action_undo_remove">Вернуть</string>
 
     <!-- Hints -->
     <string name="hint_new_task">Начать новую задачу</string>
     <string name="hint_task_description">Описание задачи</string>
     <string name="hint_task_tags">Метки</string>
     <string name="hint_edit">Редактировать</string>
+    <string name="hint_task_description_is_empty">Пожалуйста, введите описание задачи</string>
+    <string name="hint_task_removed">Задача удалена</string>
 
     <!-- Errors -->
     <string name="error_unable_to_load_task_list">Ошибка при загрузке задач</string>
+    <string name="error_unable_to_save_task">Не удалось сохранить задачу</string>
+    <string name="error_unable_to_remove_task">Не удалось удалить задачу</string>
 
     <!-- Dialogs -->
     <string name="dialog_cancel_task_changes_warning_title">Задача не сохранена</string>
     <string name="dialog_cancel_task_changes_warning_message">Завершить редактирование без сохранения?</string>
+    <string name="dialog_remove_task_warning_title">Удаление</string>
+    <string name="dialog_remove_task_warning_message">Удалить задачу навсегда?</string>
+
+
 
 </resources>

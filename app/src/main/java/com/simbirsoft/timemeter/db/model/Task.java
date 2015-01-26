@@ -55,6 +55,10 @@ public class Task implements Parcelable {
         this.createDate = createDate;
     }
 
+    public boolean hasId() {
+        return _id != null;
+    }
+
     @Override
     public String toString() {
         return "Task{" +
@@ -95,14 +99,28 @@ public class Task implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeLong(_id);
+        parcel.writeByte((byte) (hasId() ? 1 : 0));
+        if (hasId()) {
+            parcel.writeLong(_id);
+        }
         parcel.writeString(description);
-        parcel.writeLong(createDate.getTime());
+
+        boolean hasCreateDate = createDate != null;
+        parcel.writeByte((byte) (hasCreateDate ? 1 : 0));
+        if (hasCreateDate) {
+            parcel.writeLong(createDate.getTime());
+        }
     }
 
     private void readParcel(Parcel parcel) {
-        _id = parcel.readLong();
+        boolean hasId = parcel.readByte() == 1;
+        if (hasId) {
+            _id = parcel.readLong();
+        }
         description = parcel.readString();
-        createDate = new Date(parcel.readLong());
+        boolean hasCreateDate = parcel.readByte() == 1;
+        if (hasCreateDate) {
+            createDate = new Date(parcel.readLong());
+        }
     }
 }

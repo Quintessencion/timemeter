@@ -40,6 +40,10 @@ public class Tag implements Parcelable, Serializable {
         this._id = id;
     }
 
+    public boolean hasId() {
+        return _id != null;
+    }
+
     public String getName() {
         return name;
     }
@@ -83,12 +87,18 @@ public class Tag implements Parcelable, Serializable {
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeLong(_id);
+        parcel.writeByte((byte) (hasId() ? 1 : 0));
+        if (hasId()) {
+            parcel.writeLong(_id);
+        }
         parcel.writeString(name);
     }
 
     private void readParcel(Parcel parcel) {
-        _id = parcel.readLong();
+        boolean hasId = parcel.readByte() == 1;
+        if (hasId) {
+            _id = parcel.readLong();
+        }
         name = parcel.readString();
     }
 }

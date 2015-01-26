@@ -6,11 +6,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Task;
 
+import java.util.Collections;
 import java.util.List;
+import com.google.common.base.Objects;
+
 
 public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
 
@@ -29,7 +34,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         Task item;
     }
 
-    private final List<Task> mTasks;
+    private final List<Task> mItems;
     private TaskClickListener mTaskClickListener;
 
     private final View.OnClickListener mEditClickListener =
@@ -40,12 +45,36 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
             };
 
     public TaskListAdapter() {
-        mTasks = Lists.newArrayList();
+        mItems = Lists.newArrayList();
     }
 
-    public void setTasks(List<Task> tasks) {
-        mTasks.clear();
-        mTasks.addAll(tasks);
+    public void setItems(List<Task> tasks) {
+        mItems.clear();
+        mItems.addAll(tasks);
+        notifyDataSetChanged();
+    }
+
+    public void addFirstItem(Task item) {
+        mItems.add(0, item);
+        notifyDataSetChanged();
+    }
+
+    public void replaceItem(Task item) {
+        int index = Iterables.indexOf(mItems, (input) ->
+                Objects.equal(input.getId(), item.getId()));
+
+        Preconditions.checkArgument(index > -1, "no item to replace");
+
+        mItems.set(index, item);
+        notifyDataSetChanged();
+    }
+
+    public List<Task> getItems() {
+        return Collections.unmodifiableList(mItems);
+    }
+
+    public void removeItems(long taskId) {
+        Iterables.removeIf(mItems, (task) -> task.getId() == taskId);
         notifyDataSetChanged();
     }
 
@@ -73,7 +102,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
-        Task item = mTasks.get(i);
+        Task item = mItems.get(i);
         viewHolder.titleView.setText(item.getDescription());
         viewHolder.item = item;
         viewHolder.itemEditView.setTag(item);
@@ -81,7 +110,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
     @Override
     public int getItemCount() {
-        return mTasks.size();
+        return mItems.size();
     }
 
 }

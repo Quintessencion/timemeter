@@ -18,7 +18,7 @@ public class DialogContainerActivity extends FragmentContainerActivity {
 
     private static final Logger LOG = LogFactory.getLogger(DialogContainerActivity.class);
 
-    private static final String TAG_CONTENT_FRAGMENT = "content_fragment_tag_";
+    private static final String TAG_CONTENT_FRAGMENT = "DialogContainerActivity_content_fragment_tag_";
 
     public static Intent prepareDialogLaunchIntent(Context packageContext,
                                                    String fragmentName, Bundle fragmentArgs) {

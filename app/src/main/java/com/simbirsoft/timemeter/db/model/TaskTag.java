@@ -6,6 +6,15 @@ public class TaskTag {
     private Long taskId;
     private Long tagId;
 
+    public static TaskTag create(Task task, Tag tag) {
+        TaskTag tt = new TaskTag();
+
+        tt.setTaskId(task.getId());
+        tt.setTagId(tag.getId());
+
+        return tt;
+    }
+
     public Long getId() {
         return _id;
     }

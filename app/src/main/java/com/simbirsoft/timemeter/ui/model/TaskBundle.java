@@ -37,6 +37,13 @@ public class TaskBundle implements Parcelable {
         return bundle;
     }
 
+    public static TaskBundle create() {
+        Task task = new Task();
+        task.setDescription("");
+
+        return create(task, Lists.newArrayList());
+    }
+
     public TaskBundle() {
     }
 
@@ -75,8 +82,12 @@ public class TaskBundle implements Parcelable {
 
     private void readParcel(Parcel parcel) {
         mTask = parcel.readParcelable(getClass().getClassLoader());
-        Tag[] tags = (Tag[]) parcel.readParcelableArray(getClass().getClassLoader());
-        mTags = Lists.newArrayList(tags);
+        Parcelable[] parcelables = parcel.readParcelableArray(getClass().getClassLoader());
+
+        mTags = Lists.newArrayListWithCapacity(parcelables.length);
+        for (Parcelable parcelable : parcelables) {
+            mTags.add((Tag) parcelable);
+        }
     }
 
     @Override

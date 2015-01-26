@@ -104,7 +104,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         for (int i = 0; i < 45; i++) {
             Task task = new Task();
             task.setDescription("Пробная задача |" + String.valueOf(i) + "|");
-            task.setCreateDate(new Date(1419087010000L + i));
+            task.setCreateDate(new Date(1419087010000L));
             cupboard().withDatabase(getWritableDatabase()).put(task);
         }
 

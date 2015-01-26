@@ -1,0 +1,74 @@
+package com.simbirsoft.timemeter.jobs;
+
+import android.database.sqlite.SQLiteDatabase;
+
+import com.be.android.library.worker.base.BaseJob;
+import com.be.android.library.worker.base.JobEvent;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.simbirsoft.timemeter.db.DatabaseHelper;
+import com.simbirsoft.timemeter.db.model.Tag;
+import com.simbirsoft.timemeter.db.model.Task;
+import com.simbirsoft.timemeter.db.model.TaskTag;
+import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.model.TaskBundle;
+
+import org.slf4j.Logger;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import nl.qbusict.cupboard.DatabaseCompartment;
+
+import static nl.qbusict.cupboard.CupboardFactory.cupboard;
+
+public class RemoveTaskJob extends BaseJob {
+
+    private static final Logger LOG = LogFactory.getLogger(RemoveTaskJob.class);
+
+    private final DatabaseHelper mDatabaseHelper;
+    private Long mTaskId;
+
+    @Inject
+    public RemoveTaskJob(DatabaseHelper databaseHelper) {
+        mDatabaseHelper = databaseHelper;
+    }
+
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+
+        Preconditions.checkArgument(mTaskId != null);
+    }
+
+    public void setTaskId(long taskId) {
+        Preconditions.checkArgument(mTaskId == null);
+
+        mTaskId = taskId;
+    }
+
+    @Override
+    protected JobEvent executeImpl() throws Exception {
+        LOG.trace("removing task id:'{}'", mTaskId);
+        SQLiteDatabase db = mDatabaseHelper.getWritableDatabase();
+        try {
+            db.beginTransaction();
+
+            DatabaseCompartment cupboard = cupboard().withDatabase(db);
+
+            int count = cupboard.delete(TaskTag.class, "taskId=?", String.valueOf(mTaskId));
+            LOG.trace("'{}' task id:'{}' tags removed", count, mTaskId);
+
+            cupboard.delete(Task.class, mTaskId);
+            LOG.trace("task id:'{}' removed", mTaskId);
+
+            db.setTransactionSuccessful();
+
+        } finally {
+            db.endTransaction();
+        }
+
+        return JobEvent.ok();
+    }
+}

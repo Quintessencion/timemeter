@@ -24,7 +24,7 @@ public class FragmentContainerActivity extends BaseActivity implements FragmentC
 
     private static final Logger LOG = LogFactory.getLogger(FragmentContainerActivity.class);
 
-    private static final String TAG_CONTENT_FRAGMENT = "content_fragment_tag_";
+    private static final String TAG_CONTENT_FRAGMENT = "FragmentContainerActivity_content_fragment_tag_";
 
     @Extra(EXTRA_FRAGMENT_NAME)
     String fragmentName;
@@ -63,8 +63,13 @@ public class FragmentContainerActivity extends BaseActivity implements FragmentC
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        BaseFragment fragment = getContentFragment();
+
         switch (item.getItemId()) {
             case android.R.id.home:
+                if (fragment != null && fragment.onOptionsItemSelected(item)) {
+                    return true;
+                }
                 finish();
                 return true;
 

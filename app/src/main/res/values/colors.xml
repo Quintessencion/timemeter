@@ -3,6 +3,7 @@
 
     <color name="primary">#6AA4CA</color>
     <color name="primaryDark">#1D7BB6</color>
+    <color name="lightRed">#E74E40</color>
 
     <!-- TODO: check ripple on API 21+ -->
     <color name="ripple">#6AA4CA</color>
