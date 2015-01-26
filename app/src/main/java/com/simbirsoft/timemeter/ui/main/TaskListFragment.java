@@ -26,6 +26,7 @@ import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.LongClick;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
@@ -33,7 +34,8 @@ import org.slf4j.Logger;
 import java.util.List;
 
 @EFragment(R.layout.fragment_task_list)
-public class TaskListFragment extends BaseFragment implements JobLoader.JobLoaderCallbacks {
+public class TaskListFragment extends BaseFragment implements JobLoader.JobLoaderCallbacks,
+        TaskListAdapter.TaskClickListener {
 
     private static final Logger LOG = LogFactory.getLogger(TaskListFragment.class);
 
@@ -58,8 +60,10 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     @Click(R.id.floatingButton)
     void onFloatingButtonClicked(View v) {
         LOG.info("floating button clicked");
+
         Bundle args = new Bundle();
         args.putString(EditTaskFragment.EXTRA_TITLE, getString(R.string.title_begin_new_task));
+
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), EditTaskFragment_.class.getName(), args);
         getActivity().startActivityForResult(launchIntent, REQUEST_CODE_CREATE_TASK);
@@ -81,6 +85,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         mTasksView.setLayoutManager(mTasksViewLayoutManager);
 
         mTasksViewAdapter = new TaskListAdapter();
+        mTasksViewAdapter.setTaskClickListener(this);
         mTasksView.setAdapter(mTasksViewAdapter);
 
         requestLoad(mLoaderAttachTag, this);
@@ -91,6 +96,15 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         super.onCreate(savedInstanceState);
 
         mLoaderAttachTag = getClass().getName() + "_loader_tag";
+    }
+
+    @Override
+    public void onDestroy() {
+        if (mTasksViewAdapter != null) {
+            mTasksViewAdapter.setTaskClickListener(null);
+        }
+
+        super.onDestroy();
     }
 
     @OnJobSuccess(jobType = LoadTaskListJob.class)
@@ -106,5 +120,18 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     @Override
     public Job onCreateJob(String loaderAttachTag) {
         return Injection.sJobsComponent.loadTaskListJob();
+    }
+
+    @Override
+    public void onTaskEditClicked(Task item) {
+        LOG.debug("edit task: {}", item);
+
+        Bundle args = new Bundle();
+        args.putString(EditTaskFragment.EXTRA_TITLE, getString(R.string.title_edit_task));
+        args.putLong(EditTaskFragment.EXTRA_TASK_ID, item.getId());
+
+        Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
+                getActivity(), EditTaskFragment_.class.getName(), args);
+        getActivity().startActivityForResult(launchIntent, REQUEST_CODE_CREATE_TASK);
     }
 }

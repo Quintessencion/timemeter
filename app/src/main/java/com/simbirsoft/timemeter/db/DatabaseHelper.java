@@ -5,13 +5,17 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
+import com.simbirsoft.timemeter.db.model.TaskTag;
 import com.simbirsoft.timemeter.log.LogFactory;
 
 import org.slf4j.Logger;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -26,6 +30,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     static {
         cupboard().register(Task.class);
+        cupboard().register(Tag.class);
+        cupboard().register(TaskTag.class);
     }
 
     @Inject
@@ -47,6 +53,35 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void initTestData(Context context) {
         removeDatabase(context);
 
+        // Tags
+        Tag tag1 = new Tag();
+        tag1.setName("Дом");
+
+        Tag tag2 = new Tag();
+        tag2.setName("Работа");
+
+        Tag tag3 = new Tag();
+        tag3.setName("Личное");
+
+        Tag tag4 = new Tag();
+        tag4.setName("Спорт");
+
+        Tag tag5 = new Tag();
+        tag5.setName("Совещания");
+
+        Tag tag6 = new Tag();
+        tag6.setName("TimeMeter");
+
+        cupboard().withDatabase(getWritableDatabase())
+                .put(tag1, tag2, tag3, tag4, tag5, tag6);
+
+        for (int i = 0; i < 31; i++) {
+            Tag tag = new Tag();
+            tag.setName("Test tag |" + String.valueOf(i) + "|");
+            cupboard().withDatabase(getWritableDatabase()).put(tag);
+        }
+
+        // Tasks
         Task task1 = new Task();
         task1.setDescription("Купить продукты");
         task1.setCreateDate(new Date(1389370800000L));
@@ -72,6 +107,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             task.setCreateDate(new Date(1419087010000L + i));
             cupboard().withDatabase(getWritableDatabase()).put(task);
         }
+
+        // Task Tags
+        TaskTag task1Tag1 = new TaskTag();
+        task1Tag1.setTagId(tag1.getId());
+        task1Tag1.setTaskId(task1.getId());
+
+        TaskTag task1Tag2 = new TaskTag();
+        task1Tag2.setTagId(tag4.getId());
+        task1Tag2.setTaskId(task1.getId());
+
+        TaskTag task2Tag1 = new TaskTag();
+        task2Tag1.setTagId(tag1.getId());
+        task2Tag1.setTaskId(task2.getId());
+
+        TaskTag task3Tag1 = new TaskTag();
+        task3Tag1.setTagId(tag2.getId());
+        task3Tag1.setTaskId(task3.getId());
+
+        cupboard().withDatabase(getWritableDatabase())
+                .put(task1Tag1, task1Tag2, task2Tag1, task3Tag1);
     }
 
     @Override

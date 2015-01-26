@@ -92,6 +92,7 @@
     <orderEntry type="library" exported="" name="guava-18.0" level="project" />
     <orderEntry type="library" exported="" name="floatingactionbutton-1.1.0" level="project" />
     <orderEntry type="library" exported="" name="droidworker-1.0-" level="project" />
+    <orderEntry type="library" exported="" name="tokenautocomplete-1.3.0" level="project" />
     <orderEntry type="library" exported="" name="support-v4-21.0.3" level="project" />
     <orderEntry type="library" exported="" name="library-0.0.2" level="project" />
     <orderEntry type="library" exported="" name="javax.inject-1" level="project" />

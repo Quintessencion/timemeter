@@ -14,16 +14,30 @@ import java.util.List;
 
 public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
 
+    public TaskClickListener getTaskClickListener() {
+        return mTaskClickListener;
+    }
+
     static class ViewHolder extends RecyclerView.ViewHolder {
 
         public ViewHolder(View itemView) {
             super(itemView);
         }
 
+        View itemEditView;
         TextView titleView;
+        Task item;
     }
 
     private final List<Task> mTasks;
+    private TaskClickListener mTaskClickListener;
+
+    private final View.OnClickListener mEditClickListener =
+            view -> {
+                if (mTaskClickListener != null) {
+                    mTaskClickListener.onTaskEditClicked((Task) view.getTag());
+                }
+            };
 
     public TaskListAdapter() {
         mTasks = Lists.newArrayList();
@@ -35,6 +49,14 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         notifyDataSetChanged();
     }
 
+    public void setTaskClickListener(TaskClickListener taskClickListener) {
+        mTaskClickListener = taskClickListener;
+    }
+
+    static interface TaskClickListener {
+        void onTaskEditClicked(Task item);
+    }
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(viewGroup.getContext())
@@ -43,6 +65,8 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         ViewHolder holder = new ViewHolder(view);
 
         holder.titleView = (TextView) view.findViewById(android.R.id.title);
+        holder.itemEditView = view.findViewById(android.R.id.edit);
+        holder.itemEditView.setOnClickListener(mEditClickListener);
 
         return holder;
     }
@@ -51,6 +75,8 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
         Task item = mTasks.get(i);
         viewHolder.titleView.setText(item.getDescription());
+        viewHolder.item = item;
+        viewHolder.itemEditView.setTag(item);
     }
 
     @Override
