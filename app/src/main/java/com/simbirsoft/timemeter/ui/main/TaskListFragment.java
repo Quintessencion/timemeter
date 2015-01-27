@@ -68,11 +68,11 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     void onFloatingButtonClicked(View v) {
         LOG.info("floating button clicked");
 
-        SnackbarManager.dismiss();
         Snackbar current = SnackbarManager.getCurrentSnackbar();
         long delay = 0;
-        if (current != null) {
+        if (current != null && current.isShowing()) {
             delay = DISMISS_DELAY_MILLIS;
+            current.dismiss();
         }
 
         mTasksView.postDelayed(() -> {
@@ -95,8 +95,13 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         mFloatingActionButton.attachToRecyclerView(mTasksView);
         mTasksView.setHasFixedSize(true);
 
+        int columnCount = COLUMN_COUNT_DEFAULT;
+        if (!getResources().getBoolean(R.bool.isTablet)) {
+            columnCount = 1;
+        }
+
         mTasksViewLayoutManager = new StaggeredGridLayoutManager(
-                COLUMN_COUNT_DEFAULT,
+                columnCount,
                 StaggeredGridLayoutManager.VERTICAL);
         mTasksView.setLayoutManager(mTasksViewLayoutManager);
 
