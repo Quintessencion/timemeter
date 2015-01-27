@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/contentRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="12dp">
@@ -8,9 +10,9 @@
         android:id="@android:id/edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        android:hint="@string/hint_task_description" />
+        android:layout_alignParentTop="true"
+        android:hint="@string/hint_task_description"/>
 
     <com.simbirsoft.timemeter.ui.views.TagAutoCompleteTextView
         android:id="@+id/tagSearchView"
@@ -18,6 +20,6 @@
         android:layout_height="wrap_content"
         android:layout_below="@android:id/edit"
         android:layout_marginTop="14dp"
-        android:hint="@string/hint_task_tags" />
+        android:hint="@string/hint_task_tags"/>
 
 </RelativeLayout>

@@ -20,6 +20,9 @@ import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.enums.SnackbarType;
 import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.controller.ITaskActivityManager;
+import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
+import com.simbirsoft.timemeter.controller.TaskActivityTimerUpdateListener;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
@@ -41,7 +44,7 @@ import java.util.List;
 
 @EFragment(R.layout.fragment_task_list)
 public class TaskListFragment extends BaseFragment implements JobLoader.JobLoaderCallbacks,
-        TaskListAdapter.TaskClickListener {
+        TaskListAdapter.TaskClickListener, TaskActivityTimerUpdateListener {
 
     private static final Logger LOG = LogFactory.getLogger(TaskListFragment.class);
 
@@ -63,6 +66,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     private TaskListAdapter mTasksViewAdapter;
     private String mTaskListLoaderTag;
     private RecyclerView.LayoutManager mTasksViewLayoutManager;
+    private ITaskActivityManager mTaskActivityManager;
 
     @Click(R.id.floatingButton)
     void onFloatingButtonClicked(View v) {
@@ -90,6 +94,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         showToast(R.string.hint_new_task);
     }
 
+
     @AfterViews
     void bindViews() {
         mFloatingActionButton.attachToRecyclerView(mTasksView);
@@ -105,7 +110,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
                 StaggeredGridLayoutManager.VERTICAL);
         mTasksView.setLayoutManager(mTasksViewLayoutManager);
 
-        mTasksViewAdapter = new TaskListAdapter();
+        mTasksViewAdapter = new TaskListAdapter(mTaskActivityManager);
         mTasksViewAdapter.setTaskClickListener(this);
         mTasksView.setAdapter(mTasksViewAdapter);
 
@@ -117,6 +122,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         super.onCreate(savedInstanceState);
 
         mTaskListLoaderTag = getClass().getName() + "_loader_tag";
+        mTaskActivityManager = Injection.sTaskManager.taskActivityManager();
     }
 
     @Override
@@ -126,6 +132,21 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         }
 
         super.onDestroy();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        mTaskActivityManager.addTaskActivityUpdateListener(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        mTaskActivityManager.removeTaskActivityUpdateListener(this);
+        mTaskActivityManager.saveTaskActivity();
     }
 
     private void removeTaskFromList(long taskId) {
@@ -195,6 +216,25 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     @Override
     public Job onCreateJob(String loaderAttachTag) {
         return Injection.sJobsComponent.loadTaskListJob();
+    }
+
+    @Override
+    public void onTaskCardClicked(Task item) {
+        LOG.info("task card clicked; task {}", item);
+        if (mTaskActivityManager.hasActiveTask()) {
+            if (!mTaskActivityManager.isTaskActive(item)) {
+                Task currentTask = mTaskActivityManager.getActiveTaskInfo().getTask();
+                mTaskActivityManager.stopTask(currentTask);
+                mTasksViewAdapter.updateItemView(mTasksView, currentTask);
+            }
+        }
+
+        if (mTaskActivityManager.isTaskActive(item)) {
+            mTaskActivityManager.stopTask(item);
+        } else {
+            mTaskActivityManager.startTask(item);
+        }
+        mTasksViewAdapter.updateItemView(mTasksView, item);
     }
 
     @Override
@@ -273,5 +313,12 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
                     }
                 });
         SnackbarManager.show(bar);
+    }
+
+    @Override
+    public void onTaskActivityUpdate(ActiveTaskInfo info) {
+        if (mTasksView != null && mTasksViewAdapter != null) {
+            mTasksViewAdapter.updateItemView(mTasksView, info.getTask());
+        }
     }
 }

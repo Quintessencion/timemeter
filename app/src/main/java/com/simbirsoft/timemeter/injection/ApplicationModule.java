@@ -4,6 +4,8 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.simbirsoft.timemeter.App;
+import com.simbirsoft.timemeter.controller.ITaskActivityManager;
+import com.simbirsoft.timemeter.controller.TaskActivityManager;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 
 import javax.inject.Singleton;
@@ -33,5 +35,14 @@ public class ApplicationModule {
     @Provides
     SQLiteDatabase provideSQLiteDatabase(DatabaseHelper helper) {
         return helper.getWritableDatabase();
+    }
+
+    @Provides
+    @Singleton
+    ITaskActivityManager provideTaskActivityManager(Context context, DatabaseHelper helper) {
+        TaskActivityManager mgr = new TaskActivityManager(context, helper);
+        mgr.initialize();
+
+        return mgr;
     }
 }

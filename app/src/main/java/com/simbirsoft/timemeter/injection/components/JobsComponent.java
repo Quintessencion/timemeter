@@ -7,6 +7,7 @@ import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
 import com.simbirsoft.timemeter.jobs.LoadTaskTagsJob;
 import com.simbirsoft.timemeter.jobs.RemoveTaskJob;
 import com.simbirsoft.timemeter.jobs.SaveTaskBundleJob;
+import com.simbirsoft.timemeter.jobs.UpdateTaskActivityTimerJob;
 
 public interface JobsComponent {
     public App app();

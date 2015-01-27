@@ -11,6 +11,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -18,11 +20,12 @@ import android.widget.TextView;
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
 import com.be.android.library.worker.controllers.JobLoader;
+import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
-import com.google.common.base.Preconditions;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
+import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Tag;
@@ -89,6 +92,9 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
     @ViewById(R.id.tagSearchView)
     TagAutoCompleteTextView mTagAutoCompleteTextView;
 
+    @ViewById(R.id.contentRoot)
+    View mContentRoot;
+
     @InstanceState
     TaskBundle mTaskBundle;
 
@@ -97,6 +103,7 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
 
     private String mTagsLoaderAttachTag;
     private String mTaskBundleLoaderAttachTag;
+    private Animation mProgressFadeIn;
 
     @TextChange(android.R.id.edit)
     void onTaskDescriptionChanged(TextView view) {
@@ -235,6 +242,12 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         mTagAutoCompleteTextView.allowDuplicates(false);
         mTagAutoCompleteTextView.setTokenListener(this);
 
+        mProgressFadeIn = AnimationUtils.loadAnimation(getActivity(), android.R.anim.fade_in);
+        mProgressFadeIn.setDuration(Consts.CONTENT_FADE_IN_DELAY_MILLIS);
+        mProgressFadeIn.setFillBefore(true);
+        mProgressFadeIn.setFillAfter(true);
+        mContentRoot.setAnimation(mProgressFadeIn);
+
         // Load task bundle for existing task or create a new one
         if (mTaskBundle == null) {
             if (mExtraTaskBundle != null) {
@@ -282,6 +295,8 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
     }
 
     private void bindTaskBundleToViews() {
+        mContentRoot.startAnimation(mProgressFadeIn);
+
         if (mTaskBundle == null) {
             return;
         }
@@ -358,7 +373,10 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
             return job;
         }
 
-        return Injection.sJobsComponent.loadTagListJob();
+        Job job = Injection.sJobsComponent.loadTagListJob();
+        job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
+
+        return job;
     }
 
     @Override

@@ -207,6 +207,7 @@ void startFinalizer(java.lang.Class,java.lang.Object);
 -keep class dagger.** { *; }
 
 # Otto
+-keepattributes *Annotation*
 -keepclassmembers class ** {
     @com.squareup.otto.Subscribe public *;
     @com.squareup.otto.Produce public *;

@@ -8,14 +8,13 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTag;
+import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.log.LogFactory;
 
 import org.slf4j.Logger;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -32,6 +31,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cupboard().register(Task.class);
         cupboard().register(Tag.class);
         cupboard().register(TaskTag.class);
+        cupboard().register(TaskTimeSpan.class);
     }
 
     @Inject
