@@ -14,7 +14,6 @@ import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
-import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.UpdateTaskActivityTimerJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 
@@ -144,7 +143,7 @@ public class TaskActivityManager implements ITaskActivityManager {
         updateTaskActivityRecord();
     }
 
-    @OnJobEvent(jobType = UpdateTaskActivityTimerJob.class)
+    @OnJobEvent(UpdateTaskActivityTimerJob.class)
     public void onJobActivityTimerUpdateEvent(UpdateTaskActivityTimerJob.UpdateTimerEvent event) {
         ActiveTaskInfo info = getActiveTaskInfo();
         if (info == null || !hasActiveTask()) {

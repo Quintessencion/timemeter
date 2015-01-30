@@ -28,14 +28,23 @@ public class LoadTaskTagsJob extends LoadJob {
     }
 
     public void setTaskId(long taskId) {
+        Preconditions.checkArgument(mTaskId == null, "task id is already set");
+
         mTaskId = taskId;
     }
 
     @Override
-    protected void onPreExecute() {
+    protected void onPreExecute() throws Exception {
         super.onPreExecute();
 
         Preconditions.checkArgument(mTaskId != null, "one should specify task id");
+    }
+
+    @Override
+    public void onReset() {
+        super.onReset();
+
+        mTaskId = null;
     }
 
     @Override

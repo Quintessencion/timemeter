@@ -54,7 +54,7 @@ public class SaveTaskBundleJob extends BaseJob {
     }
 
     @Override
-    protected void onPreExecute() {
+    protected void onPreExecute() throws Exception {
         super.onPreExecute();
 
         Preconditions.checkArgument(mTaskBundle != null);

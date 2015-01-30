@@ -1,5 +1,7 @@
 package com.simbirsoft.timemeter.jobs;
 
+import com.be.android.library.worker.base.JobEvent;
+import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.jobs.LoadJob;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.base.Preconditions;
@@ -24,6 +26,7 @@ public class LoadTaskBundleJob extends LoadJob {
     public LoadTaskBundleJob(DatabaseHelper databaseHelper, LoadTaskTagsJob loadTaskTagsJob) {
         mDatabaseHelper = databaseHelper;
         mLoadTaskTagsJob = loadTaskTagsJob;
+        setGroupId(JobManager.JOB_GROUP_UNIQUE);
     }
 
     public void setTaskId(long taskId) {
@@ -31,14 +34,14 @@ public class LoadTaskBundleJob extends LoadJob {
     }
 
     @Override
-    protected void onPreExecute() {
+    protected void onPreExecute() throws Exception {
         super.onPreExecute();
 
         Preconditions.checkArgument(mTaskId != null, "one should specify task id");
     }
 
     @Override
-    protected LoadJobResult<?> performLoad() {
+    protected LoadJobResult<?> performLoad() throws Exception {
         Task task = cupboard().withDatabase(mDatabaseHelper.getWritableDatabase())
                 .query(Task.class)
                 .byId(mTaskId)
@@ -50,7 +53,12 @@ public class LoadTaskBundleJob extends LoadJob {
 
         mLoadTaskTagsJob.setTaskId(mTaskId);
 
-        List<Tag> tags = ((LoadJobResult<List<Tag>>) forkJob(mLoadTaskTagsJob).join()).getData();
+        final JobEvent loadResult = buildFork(mLoadTaskTagsJob)
+                .groupOnTheSameGroup()
+                .fork()
+                .join();
+
+        List<Tag> tags = ((LoadJobResult<List<Tag>>) loadResult).getData();
 
         return new LoadJobResult<>(TaskBundle.create(task, tags));
     }

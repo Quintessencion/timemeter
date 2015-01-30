@@ -25,6 +25,7 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
+import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
@@ -150,6 +151,10 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (mTaskBundle == null) {
+            return super.onOptionsItemSelected(item);
+        }
+
         switch (item.getItemId()) {
             case R.id.cancel:
                 if (mTaskBundle.getTask().hasId()) {
@@ -192,7 +197,7 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         return true;
     }
 
-    @OnJobSuccess(jobType = SaveTaskBundleJob.class)
+    @OnJobSuccess(SaveTaskBundleJob.class)
     public void onTaskSaved(SaveTaskBundleJob.SaveTaskResult result) {
         Intent resultData = new Intent();
         resultData.putExtra(EXTRA_TASK_ID, result.getTaskId());
@@ -212,12 +217,12 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         activity.finish();
     }
 
-    @OnJobFailure(jobType = SaveTaskBundleJob.class)
+    @OnJobFailure(SaveTaskBundleJob.class)
     public void onTaskSaveFailure() {
         showToast(R.string.error_unable_to_save_task);
     }
 
-    @OnJobSuccess(jobType = RemoveTaskJob.class)
+    @OnJobSuccess(RemoveTaskJob.class)
     public void onTaskRemoved() {
         Intent resultData = new Intent();
         resultData.putExtra(EXTRA_TASK_ID, mTaskBundle.getTask().getId());
@@ -226,7 +231,7 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         getActivity().finish();
     }
 
-    @OnJobFailure(jobType = RemoveTaskJob.class)
+    @OnJobFailure(RemoveTaskJob.class)
     public void onTaskRemoveFailure() {
         showToast(R.string.error_unable_to_remove_task);
     }
@@ -268,7 +273,7 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         requestLoad(mTagsLoaderAttachTag, this);
     }
 
-    @OnJobSuccess(jobType = LoadTagListJob.class)
+    @OnJobSuccess(LoadTagListJob.class)
     public void onTagListLoaded(LoadJobResult<List<Tag>> tags) {
         ArrayAdapter<Tag> adapter = new FilteredArrayAdapter<Tag>(
                 getActivity(),
@@ -314,12 +319,40 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         }
     }
 
-    @OnJobSuccess(jobType = LoadTaskBundleJob.class)
+    @OnJobSuccess(LoadTaskBundleJob.class)
     public void onTaskBundleLoaded(LoadJobResult<TaskBundle> taskBundle) {
         mTaskBundle = taskBundle.getData();
         mTaskBundle.saveState();
 
         bindTaskBundleToViews();
+    }
+
+    @OnJobFailure(LoadTaskBundleJob.class)
+    public void onTaskBundleLoadFailure() {
+        SnackbarManager.show(Snackbar.with(getActivity())
+                .text(R.string.error_loading_data)
+                .colorResource(R.color.lightRed)
+                .duration(Snackbar.SnackbarDuration.LENGTH_SHORT)
+                .eventListener(new EventListener() {
+                    @Override
+                    public void onShow(Snackbar snackbar) {
+                    }
+
+                    @Override
+                    public void onShown(Snackbar snackbar) {
+                    }
+
+                    @Override
+                    public void onDismiss(Snackbar snackbar) {
+                    }
+
+                    @Override
+                    public void onDismissed(Snackbar snackbar) {
+                        if (isAdded()) {
+                            getActivity().finish();
+                        }
+                    }
+                }));
     }
 
     @Override
@@ -344,7 +377,7 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
 
     @Override
     public boolean handleBackPress() {
-        if (mTaskBundle.isEqualToSavedState()) {
+        if (mTaskBundle == null || mTaskBundle.isEqualToSavedState()) {
             return super.handleBackPress();
         }
 

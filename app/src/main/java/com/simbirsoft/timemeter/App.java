@@ -4,7 +4,6 @@ import android.app.Application;
 
 import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.controllers.WorkerJobManager;
-import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.service.TimeWorkerService;
@@ -22,8 +21,10 @@ public class App extends Application {
         Injection.init(this);
 
         if (BuildConfig.DEBUG) {
-//            DatabaseHelper.removeDatabase(this);
-            Injection.sDatabaseComponent.databaseHelper().initTestData(this);
+            if (!Injection.sDatabaseComponent.preferences().isDatabaseTestDataInitialized()) {
+                Injection.sDatabaseComponent.databaseHelper().initTestData(this);
+                Injection.sDatabaseComponent.preferences().setDatabaseTestDataInitialized(true);
+            }
         }
 
         JobManager.init(new WorkerJobManager(

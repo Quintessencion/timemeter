@@ -13,19 +13,29 @@ import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
+import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
+
 import com.google.common.base.Objects;
+import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
+
+import org.apmem.tools.layouts.FlowLayout;
+
+import pl.charmas.android.tagview.TagView;
 
 
 public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
 
     static interface TaskClickListener {
-        void onTaskEditClicked(Task item);
-        void onTaskCardClicked(Task item);
+        void onTaskEditClicked(TaskBundle item);
+        void onTaskCardClicked(TaskBundle item);
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -36,48 +46,51 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
         View itemEditView;
         TextView titleView;
-        Task item;
+        TaskBundle item;
         TextView timerView;
+        FlowLayout tagContainerView;
     }
 
-    private final List<Task> mItems;
+    private final List<TaskBundle> mItems;
     private final ITaskActivityManager mTaskActivityManager;
+    private final Stack<View> mReuseTagViews;
     private TaskClickListener mTaskClickListener;
 
     private final View.OnClickListener mCardClickListener =
             view -> {
                 if (mTaskClickListener != null) {
-                    mTaskClickListener.onTaskCardClicked((Task) view.getTag());
+                    mTaskClickListener.onTaskCardClicked((TaskBundle) view.getTag());
                 }
             };
 
     private final View.OnClickListener mEditClickListener =
             view -> {
                 if (mTaskClickListener != null) {
-                    mTaskClickListener.onTaskEditClicked((Task) view.getTag());
+                    mTaskClickListener.onTaskEditClicked((TaskBundle) view.getTag());
                 }
             };
 
     public TaskListAdapter(ITaskActivityManager taskActivityManager) {
         mTaskActivityManager = taskActivityManager;
         mItems = Lists.newArrayList();
+        mReuseTagViews = new Stack<>();
         setHasStableIds(true);
     }
 
-    public void setItems(List<Task> tasks) {
+    public void setItems(List<TaskBundle> tasks) {
         mItems.clear();
         mItems.addAll(tasks);
         notifyDataSetChanged();
     }
 
-    public void addFirstItem(Task item) {
+    public void addFirstItem(TaskBundle item) {
         mItems.add(0, item);
         notifyDataSetChanged();
     }
 
-    public void replaceItem(Task item) {
+    public void replaceItem(TaskBundle item) {
         int index = Iterables.indexOf(mItems, (input) ->
-                Objects.equal(input.getId(), item.getId()));
+                Objects.equal(input.getTask().getId(), item.getTask().getId()));
 
         Preconditions.checkArgument(index > -1, "no item to replace");
 
@@ -85,12 +98,12 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         notifyDataSetChanged();
     }
 
-    public List<Task> getItems() {
+    public List<TaskBundle> getItems() {
         return Collections.unmodifiableList(mItems);
     }
 
     public void removeItems(long taskId) {
-        Iterables.removeIf(mItems, (task) -> task.getId() == taskId);
+        Iterables.removeIf(mItems, (task) -> task.getTask().getId() == taskId);
         notifyDataSetChanged();
     }
 
@@ -102,18 +115,18 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         return mTaskClickListener;
     }
 
-    public void updateItemView(RecyclerView recyclerView, Task item) {
-        ViewHolder holder = (ViewHolder) recyclerView.findViewHolderForItemId(item.getId());
+    public void updateItemView(RecyclerView recyclerView, Task task) {
+        ViewHolder holder = (ViewHolder) recyclerView.findViewHolderForItemId(task.getId());
         if (holder == null) {
             return;
         }
 
-        bindViewHolder(holder, item);
+        bindViewHolder(holder, holder.item);
     }
 
     @Override
     public long getItemId(int position) {
-        return mItems.get(position).getId();
+        return mItems.get(position).getTask().getId();
     }
 
     @Override
@@ -127,6 +140,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
         holder.titleView = (TextView) view.findViewById(android.R.id.title);
         holder.timerView = (TextView) view.findViewById(R.id.timerText);
+        holder.tagContainerView = (FlowLayout) view.findViewById(R.id.tagViewContainer);
         holder.itemEditView = view.findViewById(android.R.id.edit);
         holder.itemEditView.setOnClickListener(mEditClickListener);
 
@@ -135,19 +149,57 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
-        Task item = mItems.get(position);
+        TaskBundle item = mItems.get(position);
 
         bindViewHolder(viewHolder, item);
     }
 
-    private void bindViewHolder(ViewHolder holder, Task item) {
-        holder.titleView.setText(item.getDescription());
+    private void bindTagViews(ViewGroup tagLayout, List<Tag> tags) {
+        final int tagColor = tagLayout.getResources().getColor(R.color.primaryDark);
+
+        final int tagCount = tags.size();
+        final View[] reuseViews = new View[tagCount];
+
+        final int reuseViewCount = tagLayout.getChildCount();
+        for (int i = 0; i < reuseViewCount; i++) {
+            mReuseTagViews.add(tagLayout.getChildAt(i));
+        }
+        tagLayout.removeAllViewsInLayout();
+
+        for (int i = 0; i < tagCount; i++) {
+            if (mReuseTagViews.isEmpty()) {
+                reuseViews[i] = LayoutInflater.from(tagLayout.getContext())
+                        .inflate(R.layout.view_tag_small, tagLayout, false);
+            } else {
+                reuseViews[i] = mReuseTagViews.pop();
+            }
+
+            tagLayout.addView(reuseViews[i]);
+        }
+
+        if (tagCount > 0) {
+            for (int i = 0; i < tagCount; i++) {
+                TextView tagView = (TextView) reuseViews[i];
+                tagView.setText(tags.get(i).getName().toUpperCase());
+            }
+            tagLayout.setVisibility(View.VISIBLE);
+        } else {
+            tagLayout.setVisibility(View.GONE);
+        }
+    }
+
+    private void bindViewHolder(ViewHolder holder, TaskBundle item) {
+        final Task task = item.getTask();
+
+        holder.titleView.setText(task.getDescription());
         holder.item = item;
 
         holder.itemView.setTag(item);
         holder.itemEditView.setTag(item);
 
-        if (mTaskActivityManager.isTaskActive(item)) {
+        bindTagViews(holder.tagContainerView, item.getTags());
+
+        if (mTaskActivityManager.isTaskActive(task)) {
             ActiveTaskInfo taskInfo = mTaskActivityManager.getActiveTaskInfo();
             long pastTime = taskInfo.getPastTimeMillis();
 

@@ -95,7 +95,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         task3.setCreateDate(new Date(1389517200000L));
 
         Task task4 = new Task();
-        task4.setDescription("Спать");
+        task4.setDescription("Совещание");
         task4.setCreateDate(new Date(1388575800000L));
 
         cupboard().withDatabase(getWritableDatabase())

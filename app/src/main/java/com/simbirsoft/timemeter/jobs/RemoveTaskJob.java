@@ -36,7 +36,7 @@ public class RemoveTaskJob extends BaseJob {
     }
 
     @Override
-    protected void onPreExecute() {
+    protected void onPreExecute() throws Exception {
         super.onPreExecute();
 
         Preconditions.checkArgument(mTaskId != null);

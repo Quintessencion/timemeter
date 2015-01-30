@@ -31,6 +31,7 @@
     <string name="hint_task_removed">Задача удалена</string>
 
     <!-- Errors -->
+    <string name="error_loading_data">Ошибка при загрузке данных</string>
     <string name="error_unable_to_load_task_list">Ошибка при загрузке задач</string>
     <string name="error_unable_to_save_task">Не удалось сохранить задачу</string>
     <string name="error_unable_to_remove_task">Не удалось удалить задачу</string>

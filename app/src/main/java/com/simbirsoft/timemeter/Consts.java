@@ -2,7 +2,7 @@ package com.simbirsoft.timemeter;
 
 public final class Consts {
 
-    public static final int WORKER_THREAD_POOL_COUNT = 2;
+    public static final int WORKER_THREAD_POOL_COUNT = 4;
 
     public static final int TASK_ACTIVITY_SAVE_PERIOD_MILLIS = 20000;
     public static final int TASK_ACTIVITY_CLOCK_SWITCH_THRESHOLD_MINUTES = 2;

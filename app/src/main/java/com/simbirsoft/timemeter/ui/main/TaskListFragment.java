@@ -153,11 +153,11 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         mTasksViewAdapter.removeItems(taskId);
     }
 
-    private void addTaskToList(Task task) {
+    private void addTaskToList(TaskBundle task) {
         mTasksViewAdapter.addFirstItem(task);
     }
 
-    private void replaceTaskInList(Task task) {
+    private void replaceTaskInList(TaskBundle task) {
         mTasksViewAdapter.replaceItem(task);
     }
 
@@ -176,7 +176,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
                 switch (resultCode) {
                     case EditTaskFragment.RESULT_CODE_TASK_CREATED:
                         LOG.debug("result: task created");
-                        addTaskToList(bundle.getTask());
+                        addTaskToList(bundle);
                         break;
                     case EditTaskFragment.RESULT_CODE_TASK_RECREATED:
                         LOG.debug("result: task recreated");
@@ -191,7 +191,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
 
                     case EditTaskFragment.RESULT_CODE_TASK_UPDATED:
                         LOG.debug("result: task updated");
-                        replaceTaskInList(bundle.getTask());
+                        replaceTaskInList(bundle);
                         break;
                 }
                 return;
@@ -203,12 +203,12 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    @OnJobSuccess(jobType = LoadTaskListJob.class)
-    public void onTaskListLoaded(LoadJobResult<List<Task>> event) {
+    @OnJobSuccess(LoadTaskListJob.class)
+    public void onTaskListLoaded(LoadJobResult<List<TaskBundle>> event) {
         mTasksViewAdapter.setItems(event.getData());
     }
 
-    @OnJobFailure(jobType = LoadTaskListJob.class)
+    @OnJobFailure(LoadTaskListJob.class)
     public void onTaskListLoadFailed() {
         showToast(R.string.error_unable_to_load_task_list);
     }
@@ -219,33 +219,36 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     }
 
     @Override
-    public void onTaskCardClicked(Task item) {
+    public void onTaskCardClicked(TaskBundle item) {
         LOG.info("task card clicked; task {}", item);
+
+        final Task task = item.getTask();
+
         if (mTaskActivityManager.hasActiveTask()) {
-            if (!mTaskActivityManager.isTaskActive(item)) {
+            if (!mTaskActivityManager.isTaskActive(item.getTask())) {
                 Task currentTask = mTaskActivityManager.getActiveTaskInfo().getTask();
                 mTaskActivityManager.stopTask(currentTask);
                 mTasksViewAdapter.updateItemView(mTasksView, currentTask);
             }
         }
 
-        if (mTaskActivityManager.isTaskActive(item)) {
-            mTaskActivityManager.stopTask(item);
+        if (mTaskActivityManager.isTaskActive(task)) {
+            mTaskActivityManager.stopTask(task);
         } else {
-            mTaskActivityManager.startTask(item);
+            mTaskActivityManager.startTask(task);
         }
-        mTasksViewAdapter.updateItemView(mTasksView, item);
+        mTasksViewAdapter.updateItemView(mTasksView, task);
     }
 
     @Override
-    public void onTaskEditClicked(Task item) {
+    public void onTaskEditClicked(TaskBundle item) {
         LOG.debug("edit task: {}", item);
 
         SnackbarManager.dismiss();
 
         Bundle args = new Bundle();
         args.putString(EditTaskFragment.EXTRA_TITLE, getString(R.string.title_edit_task));
-        args.putLong(EditTaskFragment.EXTRA_TASK_ID, item.getId());
+        args.putLong(EditTaskFragment.EXTRA_TASK_ID, item.getTask().getId());
 
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), EditTaskFragment_.class.getName(), args);
