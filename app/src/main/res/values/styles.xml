@@ -6,7 +6,6 @@
 
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primaryDark</item>
-        <item name="tagViewStyle">@style/Widget.TagView</item>
 
     </style>
 
