@@ -2,6 +2,7 @@ package com.simbirsoft.timemeter.ui.tags;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -26,33 +27,48 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTagListJob;
+import com.simbirsoft.timemeter.jobs.SaveTagJob;
+import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
+import com.simbirsoft.timemeter.ui.main.TaskListFragment;
 import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerDialog;
+import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerSwatch;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
+import org.slf4j.Logger;
 
 import java.util.List;
 
 @EFragment(R.layout.fragment_tag_list)
 public class TagListFragment extends BaseFragment implements JobLoader.JobLoaderCallbacks,
-        TagListAdapter.ItemClickListener {
+        TagListAdapter.ItemClickListener,
+        ColorPickerSwatch.OnColorSelectedListener {
 
-    private static final String TAG_EDIT_NAME_DIALOG = "edit_tag_name_dialog";
+
+    private static final Logger LOG = LogFactory.getLogger(TaskListFragment.class);
 
     private static final int REQUEST_CODE_EDIT_TAG_NAME = 10002;
     private static final String SNACKBAR_TAG = "tag_list_snackbar";
+    private static final int DEFAULT_COLOR_COLUMNS_COUNT = 4;
+    private static final String TAG_COLOR_PICKER = "color_picker";
 
     @ViewById(android.R.id.list)
     RecyclerView mRecyclerView;
 
     @InstanceState
     boolean mIsInActionMode;
+
+    @InstanceState
+    long mEditTagId = -1;
+
+    @InstanceState
+    int mTagListPosition;
 
     private TagListAdapter mTagListAdapter;
     private Toolbar mToolbar;
@@ -111,13 +127,21 @@ public class TagListFragment extends BaseFragment implements JobLoader.JobLoader
         }
 
         requestLoad(mLoaderAttachTag, this);
+
+        ColorPickerDialog colorPicker = findColorPickerDialog();
+        if (colorPicker != null) {
+            colorPicker.setOnColorSelectedListener(this);
+        }
+    }
+
+    private ColorPickerDialog findColorPickerDialog() {
+        return (ColorPickerDialog) getChildFragmentManager().findFragmentByTag(TAG_COLOR_PICKER);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setRetainInstance(true);
         setHasOptionsMenu(true);
     }
 
@@ -125,6 +149,10 @@ public class TagListFragment extends BaseFragment implements JobLoader.JobLoader
     public void onDestroy() {
         if (mTagListAdapter != null) {
             mTagListAdapter.setItemClickListener(null);
+        }
+        ColorPickerDialog colorPicker = findColorPickerDialog();
+        if (colorPicker != null) {
+            colorPicker.setOnColorSelectedListener(null);
         }
 
         Snackbar sb = SnackbarManager.getCurrentSnackbar();
@@ -195,16 +223,20 @@ public class TagListFragment extends BaseFragment implements JobLoader.JobLoader
 
     @Override
     public void onItemEditColorClicked(Tag item) {
+        mEditTagId = item.getId();
+        boolean isTablet = getResources().getBoolean(R.bool.isTablet);
         int[] colors = getResources().getIntArray(R.array.default_tag_colors);
+        int size = isTablet ? ColorPickerDialog.SIZE_LARGE : ColorPickerDialog.SIZE_SMALL;
 
         ColorPickerDialog dialog = ColorPickerDialog.newInstance(
                 R.string.dialog_edit_tag_color_title,
                 colors,
-                colors[0],
-                4,
-                ColorPickerDialog.SIZE_SMALL);
+                item.getColor(),
+                DEFAULT_COLOR_COLUMNS_COUNT,
+                size);
 
-        dialog.show(getChildFragmentManager(), "color_picker");
+        dialog.show(getChildFragmentManager(), TAG_COLOR_PICKER);
+        dialog.setOnColorSelectedListener(this);
     }
 
     @Override
@@ -243,5 +275,34 @@ public class TagListFragment extends BaseFragment implements JobLoader.JobLoader
         }
 
         return super.handleBackPress();
+    }
+
+    @Override
+    public void onColorSelected(int color) {
+        if (mEditTagId == -1) return;
+
+        Tag item = mTagListAdapter.findItemById(mEditTagId);
+        mEditTagId = -1;
+
+        if (item == null) {
+            return;
+        }
+
+        item.setColor(color);
+        mTagListAdapter.replaceItem(mRecyclerView, item);
+        saveTag(item);
+    }
+
+    @OnJobFailure(SaveTagJob.class)
+    public void onSaveTagFailed() {
+        LOG.error("failed to save tag");
+        showToast(R.string.error_unable_to_save_tag);
+        requestLoad(mLoaderAttachTag, this);
+    }
+
+    private void saveTag(Tag tag) {
+        SaveTagJob saveTagJob = Injection.sJobsComponent.saveTagJob();
+        saveTagJob.setTag(tag);
+        submitJob(saveTagJob);
     }
 }

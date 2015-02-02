@@ -41,6 +41,7 @@
     <string name="error_unable_to_save_task">Не удалось сохранить задачу</string>
     <string name="error_unable_to_remove_task">Не удалось удалить задачу</string>
     <string name="error_unable_to_load_tag_list">Ошибка при загрузке списка меток</string>
+    <string name="error_unable_to_save_tag">Ошибка при сохранении метки</string>
 
     <!-- Dialogs -->
     <string name="dialog_cancel_task_changes_warning_title">Задача не сохранена</string>

@@ -105,6 +105,17 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
         notifyDataSetChanged();
     }
 
+    public Tag findItemById(long tagId) {
+        int index = Iterables.indexOf(mItems,
+                (input) -> Objects.equal(input.getId(), tagId));
+
+        if (index < 0) {
+            return null;
+        }
+
+        return mItems.get(index);
+    }
+
     public void replaceItem(RecyclerView recyclerView, Tag item) {
         int index = Iterables.indexOf(mItems,
                 (input) -> Objects.equal(input.getId(), item.getId()));
