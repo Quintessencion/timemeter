@@ -1,19 +1,31 @@
 package com.simbirsoft.timemeter.ui.base;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.widget.Toast;
 
 import com.be.android.library.worker.controllers.JobLoader;
 import com.be.android.library.worker.controllers.JobLoaderManager;
 import com.be.android.library.worker.handlers.JobEventDispatcher;
 import com.be.android.library.worker.interfaces.Job;
+import com.google.common.base.Preconditions;
+import com.simbirsoft.timemeter.R;
 
 public class BaseActivity extends ActionBarActivity {
 
     private JobEventDispatcher mJobEventDispatcher;
     private boolean isStarted;
+    private Toolbar mToolbar;
+
+    public @Nullable Toolbar getToolbar() {
+        if (mToolbar == null) {
+            mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        }
+
+        return mToolbar;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

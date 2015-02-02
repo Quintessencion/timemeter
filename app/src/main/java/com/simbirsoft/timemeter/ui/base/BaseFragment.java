@@ -18,6 +18,7 @@ public class BaseFragment extends Fragment {
     private JobEventDispatcher mEventDispatcher;
     private boolean mShouldSubscribeForJobEvents = true;
     private boolean mIsSubscribedForJobEvents;
+    private LinkedList<Bundle> mPendingAlerts;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -63,8 +64,6 @@ public class BaseFragment extends Fragment {
     private void setSubscribedForJobEvents(boolean isSubscribedForJobEvents) {
         mIsSubscribedForJobEvents = isSubscribedForJobEvents;
     }
-
-    private LinkedList<Bundle> mPendingAlerts;
 
     @Override
     public void onSaveInstanceState(Bundle outState) {

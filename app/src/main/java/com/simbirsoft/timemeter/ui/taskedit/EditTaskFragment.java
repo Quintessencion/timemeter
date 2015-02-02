@@ -282,6 +282,12 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
 
             @Override
             protected boolean keepObject(Tag tag, String s) {
+                final String name = s.trim();
+
+                if (TextUtils.isEmpty(name)) {
+                    return false;
+                }
+
                 return tag.getName().toLowerCase().contains(s.toLowerCase());
             }
 

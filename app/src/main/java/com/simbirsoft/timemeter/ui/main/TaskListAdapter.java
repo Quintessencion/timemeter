@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -15,20 +16,14 @@ import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Stack;
-
-import com.google.common.base.Objects;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
 
 import org.apmem.tools.layouts.FlowLayout;
 
-import pl.charmas.android.tagview.TagView;
+import java.util.Collections;
+import java.util.List;
+import java.util.Stack;
 
 
 public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
@@ -155,8 +150,6 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     }
 
     private void bindTagViews(ViewGroup tagLayout, List<Tag> tags) {
-        final int tagColor = tagLayout.getResources().getColor(R.color.primaryDark);
-
         final int tagCount = tags.size();
         final View[] reuseViews = new View[tagCount];
 

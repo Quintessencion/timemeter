@@ -58,7 +58,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     }
 
     @ViewById(android.R.id.list)
-    RecyclerView mTasksView;
+    RecyclerView mRecyclerView;
 
     @ViewById(R.id.floatingButton)
     FloatingActionButton mFloatingActionButton;
@@ -79,7 +79,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
             current.dismiss();
         }
 
-        mTasksView.postDelayed(() -> {
+        mRecyclerView.postDelayed(() -> {
             Bundle args = new Bundle();
             args.putString(EditTaskFragment.EXTRA_TITLE, getString(R.string.title_begin_new_task));
 
@@ -97,8 +97,8 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
 
     @AfterViews
     void bindViews() {
-        mFloatingActionButton.attachToRecyclerView(mTasksView);
-        mTasksView.setHasFixedSize(true);
+        mFloatingActionButton.attachToRecyclerView(mRecyclerView);
+        mRecyclerView.setHasFixedSize(false);
 
         int columnCount = COLUMN_COUNT_DEFAULT;
         if (!getResources().getBoolean(R.bool.isTablet)) {
@@ -108,11 +108,11 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         mTasksViewLayoutManager = new StaggeredGridLayoutManager(
                 columnCount,
                 StaggeredGridLayoutManager.VERTICAL);
-        mTasksView.setLayoutManager(mTasksViewLayoutManager);
+        mRecyclerView.setLayoutManager(mTasksViewLayoutManager);
 
         mTasksViewAdapter = new TaskListAdapter(mTaskActivityManager);
         mTasksViewAdapter.setTaskClickListener(this);
-        mTasksView.setAdapter(mTasksViewAdapter);
+        mRecyclerView.setAdapter(mTasksViewAdapter);
 
         requestLoad(mTaskListLoaderTag, this);
     }
@@ -228,7 +228,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
             if (!mTaskActivityManager.isTaskActive(item.getTask())) {
                 Task currentTask = mTaskActivityManager.getActiveTaskInfo().getTask();
                 mTaskActivityManager.stopTask(currentTask);
-                mTasksViewAdapter.updateItemView(mTasksView, currentTask);
+                mTasksViewAdapter.updateItemView(mRecyclerView, currentTask);
             }
         }
 
@@ -237,7 +237,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         } else {
             mTaskActivityManager.startTask(task);
         }
-        mTasksViewAdapter.updateItemView(mTasksView, task);
+        mTasksViewAdapter.updateItemView(mRecyclerView, task);
     }
 
     @Override
@@ -262,7 +262,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
             snackbar.dismiss();
         }
 
-        mTasksView.postDelayed(() -> {
+        mRecyclerView.postDelayed(() -> {
             Bundle args = new Bundle();
             args.putString(EditTaskFragment.EXTRA_TITLE, getString(R.string.title_edit_task));
             args.putParcelable(EditTaskFragment.EXTRA_TASK_BUNDLE, taskBundle);
@@ -292,8 +292,8 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
                 .text(sb)
                 .actionLabel(R.string.action_undo_remove)
                 .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE)
-                .attachToRecyclerView(mTasksView)
-                .color(getResources().getColor(R.color.primary))
+                .attachToRecyclerView(mRecyclerView)
+                .color(getResources().getColor(R.color.primaryDark))
                 .actionListener((snackbar) -> backupRemovedTask(bundle, snackbar))
                 .eventListener(new EventListener() {
                     @Override
@@ -311,7 +311,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
                     @Override
                     public void onDismissed(Snackbar snackbar) {
                         // Reattach floating action button
-                        mFloatingActionButton.attachToRecyclerView(mTasksView);
+                        mFloatingActionButton.attachToRecyclerView(mRecyclerView);
                         mFloatingActionButton.show(true);
                     }
                 });
@@ -320,8 +320,8 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
 
     @Override
     public void onTaskActivityUpdate(ActiveTaskInfo info) {
-        if (mTasksView != null && mTasksViewAdapter != null) {
-            mTasksViewAdapter.updateItemView(mTasksView, info.getTask());
+        if (mRecyclerView != null && mTasksViewAdapter != null) {
+            mTasksViewAdapter.updateItemView(mRecyclerView, info.getTask());
         }
     }
 }

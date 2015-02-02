@@ -92,7 +92,7 @@ public class FragmentContainerActivity extends BaseActivity implements FragmentC
     }
 
     protected void initContentView(String fragmentName, Bundle fragmentArgs) {
-        BaseFragment fragment = (BaseFragment) Fragment.instantiate(this, fragmentName, fragmentArgs);
+        Fragment fragment = Fragment.instantiate(this, fragmentName, fragmentArgs);
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.fragmentContainer, fragment, TAG_CONTENT_FRAGMENT)
                 .commit();

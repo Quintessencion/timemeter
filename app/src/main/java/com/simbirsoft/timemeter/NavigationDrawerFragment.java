@@ -88,15 +88,11 @@ public class NavigationDrawerFragment extends Fragment {
     }
 
     @AfterViews
-    void attachViews() {
-        mDrawerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectItem(position);
-            }
-        });
-        mDrawerListView.setAdapter(new ArrayAdapter<String>(
-                getActionBar().getThemedContext(),
+    void bindViews() {
+        mDrawerListView.setOnItemClickListener(
+                (parent, view, position, id) -> selectItem(position));
+        mDrawerListView.setAdapter(new ArrayAdapter<>(
+                getActivity(),
                 android.R.layout.simple_list_item_activated_1,
                 android.R.id.text1,
                 new String[]{

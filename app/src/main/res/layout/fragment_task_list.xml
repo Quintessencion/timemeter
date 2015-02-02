@@ -22,8 +22,8 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:src="@drawable/ic_action_new"
-        app:fab_colorNormal="@color/primary"
-        app:fab_colorPressed="@color/primaryDark"
-        app:fab_colorRipple="@color/ripple" />
+        app:fab_colorNormal="@color/accentPrimary"
+        app:fab_colorPressed="@color/accentBright"
+        app:fab_colorRipple="@color/accentLight" />
 
 </RelativeLayout>
