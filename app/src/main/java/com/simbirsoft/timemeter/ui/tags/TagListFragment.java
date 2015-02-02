@@ -68,11 +68,10 @@ public class TagListFragment extends BaseFragment implements JobLoader.JobLoader
     long mEditTagId = -1;
 
     @InstanceState
-    int mTagListPosition;
+    Integer mTagListPosition;
 
     private TagListAdapter mTagListAdapter;
     private Toolbar mToolbar;
-    private RecyclerView.LayoutManager mTagListLayoutManager;
     private final String mLoaderAttachTag = getClass().getName() + "_loader";
     private ActionMode mActionMode;
     private final ActionMode.Callback mActionModeCallbacks =
@@ -110,7 +109,7 @@ public class TagListFragment extends BaseFragment implements JobLoader.JobLoader
     @AfterViews
     void bindViews() {
         mToolbar = ((BaseActivity) getActivity()).getToolbar();
-        mTagListLayoutManager = new LinearLayoutManager(
+        RecyclerView.LayoutManager mTagListLayoutManager = new LinearLayoutManager(
                 getActivity(),
                 LinearLayoutManager.VERTICAL,
                 false);
@@ -164,6 +163,14 @@ public class TagListFragment extends BaseFragment implements JobLoader.JobLoader
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+
+        mTagListPosition = ((LinearLayoutManager)
+                mRecyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.fragment_tag_list, menu);
     }
@@ -194,6 +201,11 @@ public class TagListFragment extends BaseFragment implements JobLoader.JobLoader
     @OnJobSuccess(LoadTagListJob.class)
     public void onTagListLoaded(LoadJobResult<List<Tag>> result) {
         mTagListAdapter.setItems(result.getData());
+
+        if (mTagListPosition != null) {
+            mRecyclerView.getLayoutManager().scrollToPosition(mTagListPosition);
+            mTagListPosition = null;
+        }
     }
 
     @OnJobFailure(LoadTagListJob.class)

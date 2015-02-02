@@ -2,6 +2,7 @@ package com.simbirsoft.timemeter.ui.main;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.Spannable;
@@ -36,6 +37,7 @@ import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.LongClick;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
@@ -52,6 +54,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
 
     private static final int COLUMN_COUNT_DEFAULT = 2;
     private static final int DISMISS_DELAY_MILLIS = 500;
+    private int mColumnCount;
 
     public static TaskListFragment newInstance() {
         return new TaskListFragment_();
@@ -63,9 +66,11 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     @ViewById(R.id.floatingButton)
     FloatingActionButton mFloatingActionButton;
 
+    @InstanceState
+    int[] mTagListPosition;
+
     private TaskListAdapter mTasksViewAdapter;
     private String mTaskListLoaderTag;
-    private RecyclerView.LayoutManager mTasksViewLayoutManager;
     private ITaskActivityManager mTaskActivityManager;
 
     @Click(R.id.floatingButton)
@@ -100,15 +105,15 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         mFloatingActionButton.attachToRecyclerView(mRecyclerView);
         mRecyclerView.setHasFixedSize(false);
 
-        int columnCount = COLUMN_COUNT_DEFAULT;
+        mColumnCount = COLUMN_COUNT_DEFAULT;
         if (!getResources().getBoolean(R.bool.isTablet)) {
-            columnCount = 1;
+            mColumnCount = 1;
         }
 
-        mTasksViewLayoutManager = new StaggeredGridLayoutManager(
-                columnCount,
+        RecyclerView.LayoutManager tasksViewLayoutManager = new StaggeredGridLayoutManager(
+                mColumnCount,
                 StaggeredGridLayoutManager.VERTICAL);
-        mRecyclerView.setLayoutManager(mTasksViewLayoutManager);
+        mRecyclerView.setLayoutManager(tasksViewLayoutManager);
 
         mTasksViewAdapter = new TaskListAdapter(mTaskActivityManager);
         mTasksViewAdapter.setTaskClickListener(this);
@@ -144,6 +149,10 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     @Override
     public void onPause() {
         super.onPause();
+
+        mTagListPosition = new int[mColumnCount];
+        mTagListPosition = ((StaggeredGridLayoutManager)
+                mRecyclerView.getLayoutManager()).findFirstVisibleItemPositions(mTagListPosition);
 
         mTaskActivityManager.removeTaskActivityUpdateListener(this);
         mTaskActivityManager.saveTaskActivity();
@@ -206,6 +215,11 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     @OnJobSuccess(LoadTaskListJob.class)
     public void onTaskListLoaded(LoadJobResult<List<TaskBundle>> event) {
         mTasksViewAdapter.setItems(event.getData());
+
+        if (mTagListPosition != null) {
+            mRecyclerView.getLayoutManager().scrollToPosition(mTagListPosition[0]);
+            mTagListPosition = null;
+        }
     }
 
     @OnJobFailure(LoadTaskListJob.class)
