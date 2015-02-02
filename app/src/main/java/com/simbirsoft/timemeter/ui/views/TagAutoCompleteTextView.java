@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
+import com.simbirsoft.timemeter.ui.util.TagViewUtils;
 import com.tokenautocomplete.TokenCompleteTextView;
 
 public class TagAutoCompleteTextView extends TokenCompleteTextView {
@@ -30,12 +31,11 @@ public class TagAutoCompleteTextView extends TokenCompleteTextView {
     protected View getViewForObject(Object o) {
         Tag tag = (Tag) o;
 
-        View view = LayoutInflater.from(getContext())
-                                  .inflate(R.layout.view_tag_autocomplete,
-                                          (ViewGroup) getParent(),
-                                          false);
-        TextView title = (TextView) view.findViewById(android.R.id.title);
-        title.setText(tag.getName());
+        TextView view = TagViewUtils.inflateTagView(
+                LayoutInflater.from(getContext()),
+                (ViewGroup) getParent(),
+                tag.getColor());
+        view.setText(tag.getName());
 
         return view;
     }

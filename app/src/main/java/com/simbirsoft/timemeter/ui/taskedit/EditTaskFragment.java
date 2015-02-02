@@ -41,6 +41,7 @@ import com.simbirsoft.timemeter.ui.base.AppAlertDialogFragment;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
+import com.simbirsoft.timemeter.ui.util.TagViewUtils;
 import com.simbirsoft.timemeter.ui.views.TagAutoCompleteTextView;
 import com.tokenautocomplete.FilteredArrayAdapter;
 
