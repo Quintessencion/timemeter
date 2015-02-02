@@ -31,6 +31,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
     static interface TaskClickListener {
         void onTaskEditClicked(TaskBundle item);
+        void onTaskEditLongClicked(TaskBundle item, View itemView);
         void onTaskCardClicked(TaskBundle item);
     }
 
@@ -64,6 +65,16 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                 if (mTaskClickListener != null) {
                     mTaskClickListener.onTaskEditClicked((TaskBundle) view.getTag());
                 }
+            };
+
+    private final View.OnLongClickListener mEditLongClickListener =
+            view -> {
+                if (mTaskClickListener != null) {
+                    mTaskClickListener.onTaskEditLongClicked((TaskBundle) view.getTag(), view);
+                    return true;
+                }
+
+                return false;
             };
 
     public TaskListAdapter(ITaskActivityManager taskActivityManager) {
@@ -139,6 +150,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         holder.tagContainerView = (FlowLayout) view.findViewById(R.id.tagViewContainer);
         holder.itemEditView = view.findViewById(android.R.id.edit);
         holder.itemEditView.setOnClickListener(mEditClickListener);
+        holder.itemEditView.setOnLongClickListener(mEditLongClickListener);
 
         return holder;
     }

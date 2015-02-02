@@ -29,6 +29,7 @@
     <string name="hint_task_description">Описание задачи</string>
     <string name="hint_task_tags">Метки</string>
     <string name="hint_edit">Редактировать</string>
+    <string name="hint_edit_task">Редактировать задачу</string>
     <string name="hint_task_description_is_empty">Пожалуйста, введите описание задачи</string>
     <string name="hint_task_removed">Задача удалена</string>
     <string name="hint_tag_name">Название метки</string>

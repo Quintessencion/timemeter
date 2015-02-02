@@ -166,8 +166,10 @@ public class TagListFragment extends BaseFragment implements JobLoader.JobLoader
     public void onPause() {
         super.onPause();
 
-        mTagListPosition = ((LinearLayoutManager)
-                mRecyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+        if (mTagListAdapter.getItemCount() > 0) {
+            mTagListPosition = ((LinearLayoutManager)
+                    mRecyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+        }
     }
 
     @Override

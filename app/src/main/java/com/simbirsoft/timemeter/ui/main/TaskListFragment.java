@@ -151,8 +151,11 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         super.onPause();
 
         mTagListPosition = new int[mColumnCount];
-        mTagListPosition = ((StaggeredGridLayoutManager)
-                mRecyclerView.getLayoutManager()).findFirstVisibleItemPositions(mTagListPosition);
+
+        if (mTasksViewAdapter.getItemCount() > 0) {
+            mTagListPosition = ((StaggeredGridLayoutManager)
+                    mRecyclerView.getLayoutManager()).findFirstVisibleItemPositions(mTagListPosition);
+        }
 
         mTaskActivityManager.removeTaskActivityUpdateListener(this);
         mTaskActivityManager.saveTaskActivity();
@@ -267,6 +270,11 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), EditTaskFragment_.class.getName(), args);
         getActivity().startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TASK);
+    }
+
+    @Override
+    public void onTaskEditLongClicked(TaskBundle item, View itemView) {
+        showToastWithAnchor(R.string.hint_edit_task, itemView);
     }
 
     private void backupRemovedTask(TaskBundle taskBundle, Snackbar snackbar) {
