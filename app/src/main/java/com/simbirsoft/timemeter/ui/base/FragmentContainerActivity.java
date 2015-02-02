@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.simbirsoft.timemeter.R;
@@ -13,6 +14,7 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.Extra;
+import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
 
@@ -32,6 +34,9 @@ public class FragmentContainerActivity extends BaseActivity implements FragmentC
     @Extra(EXTRA_FRAGMENT_ARGS)
     Bundle fragmentArgs;
 
+    @ViewById(R.id.toolbar)
+    Toolbar mToolbar;
+
     public static Intent prepareLaunchIntent(Context packageContext, String fragmentName, Bundle fragmentArgs) {
         Intent intent = new Intent(packageContext, FragmentContainerActivity_.class);
         intent.putExtra(FragmentContainerActivity.EXTRA_FRAGMENT_NAME, fragmentName);
@@ -44,7 +49,8 @@ public class FragmentContainerActivity extends BaseActivity implements FragmentC
     }
 
     @AfterViews
-    void setupContent() {
+    void bindViews() {
+        setSupportActionBar(mToolbar);
         Fragment fragment = getContentFragment();
         if (fragment == null) {
             initContentView(fragmentName, fragmentArgs);

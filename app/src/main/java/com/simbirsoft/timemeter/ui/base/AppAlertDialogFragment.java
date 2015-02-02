@@ -96,6 +96,13 @@ public class AppAlertDialogFragment extends BaseDialogFragment {
         return getArguments().getString(EXTRA_DIALOG_DECLINE_BUTTON_CAPTION);
     }
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        setShouldSubscribeForJobEvents(false);
+
+        super.onCreate(savedInstanceState);
+    }
+
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {

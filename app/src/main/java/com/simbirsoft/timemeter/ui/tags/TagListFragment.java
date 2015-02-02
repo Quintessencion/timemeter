@@ -188,7 +188,17 @@ public class TagListFragment extends BaseFragment implements JobLoader.JobLoader
     }
 
     @Override
+    public void onItemEditLongClicked(Tag item, View itemView) {
+        showToastWithAnchor(getString(R.string.hint_edit_tag_name), itemView);
+    }
+
+    @Override
     public void onItemEditColorClicked(Tag item) {
+    }
+
+    @Override
+    public void onItemEditColorLongClicked(Tag item, View itemView) {
+        showToastWithAnchor(getString(R.string.hint_edit_tag_color), itemView);
     }
 
     @Override

@@ -15,7 +15,6 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
-import com.simbirsoft.timemeter.ui.tags.TagListFragment;
 import com.simbirsoft.timemeter.ui.tags.TagListFragment_;
 
 import org.androidannotations.annotations.AfterViews;

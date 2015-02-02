@@ -32,6 +32,8 @@
     <string name="hint_task_description_is_empty">Пожалуйста, введите описание задачи</string>
     <string name="hint_task_removed">Задача удалена</string>
     <string name="hint_tag_name">Название метки</string>
+    <string name="hint_edit_tag_name">Изменить название</string>
+    <string name="hint_edit_tag_color">Выбрать цвет</string>
 
     <!-- Errors -->
     <string name="error_loading_data">Ошибка при загрузке данных</string>

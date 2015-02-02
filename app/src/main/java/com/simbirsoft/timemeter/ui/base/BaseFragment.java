@@ -1,8 +1,12 @@
 package com.simbirsoft.timemeter.ui.base;
 
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.View;
 import android.widget.Toast;
 
 import com.be.android.library.worker.controllers.JobLoader;
@@ -10,10 +14,13 @@ import com.be.android.library.worker.controllers.JobLoaderManager;
 import com.be.android.library.worker.handlers.JobEventDispatcher;
 import com.be.android.library.worker.interfaces.Job;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.ui.util.ToastUtils;
 
 import java.util.LinkedList;
 
 public class BaseFragment extends Fragment {
+
+    private static final int DEFAULT_Y_TOAST_OFFSET_DIP = 36;
 
     private JobEventDispatcher mEventDispatcher;
     private boolean mShouldSubscribeForJobEvents = true;
@@ -94,6 +101,20 @@ public class BaseFragment extends Fragment {
         if (!isVisible()) return;
 
         Toast.makeText(getActivity(), text, toastLength).show();
+    }
+
+    protected void showToastWithAnchor(int toastText, View anchor) {
+        if (!isVisible()) return;
+
+        ToastUtils.showToastWithAnchor(getActivity(),
+                getString(toastText), anchor, Toast.LENGTH_SHORT);
+    }
+
+    protected void showToastWithAnchor(String toastText, View anchor) {
+        if (!isVisible()) return;
+
+        ToastUtils.showToastWithAnchor(getActivity(),
+                toastText, anchor, Toast.LENGTH_SHORT);
     }
 
     protected int submitJob(Job job) {

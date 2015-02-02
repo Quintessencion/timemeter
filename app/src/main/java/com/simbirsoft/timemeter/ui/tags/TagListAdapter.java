@@ -1,6 +1,7 @@
 package com.simbirsoft.timemeter.ui.tags;
 
 import android.support.v7.widget.RecyclerView;
+import android.transitions.everywhere.utils.Objects;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,8 @@ import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
@@ -24,7 +27,9 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
 
     interface ItemClickListener {
         void onItemEditClicked(Tag item);
+        void onItemEditLongClicked(Tag item, View itemView);
         void onItemEditColorClicked(Tag item);
+        void onItemEditColorLongClicked(Tag item, View itemView);
         void onItemClicked(Tag item);
     }
 
@@ -45,23 +50,48 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     private boolean mIsActionButtonsShown;
     private final List<Tag> mItems;
     private ItemClickListener mItemClickListener;
+
     private final View.OnClickListener mItemViewClickListener =
             (view) -> {
                 if (mItemClickListener != null) {
                     mItemClickListener.onItemClicked((Tag) view.getTag());
                 }
-            } ;
+            };
+
     private final View.OnClickListener mItemEditClickListener =
             (view) -> {
                 if (mItemClickListener != null) {
                     mItemClickListener.onItemEditClicked((Tag) view.getTag());
                 }
             };
+
+    private final View.OnLongClickListener mItemEditLongClickListener =
+            (view) -> {
+                if (mItemClickListener != null) {
+                    mItemClickListener.onItemEditLongClicked((Tag) view.getTag(), view);
+
+                    return true;
+                }
+
+                return false;
+            };
+
     private final View.OnClickListener mItemEditColorCl1ickListener =
             (view) -> {
                 if (mItemClickListener != null) {
                     mItemClickListener.onItemEditColorClicked((Tag) view.getTag());
                 }
+            };
+
+    private final View.OnLongClickListener mItemEditColorLongCl1ickListener =
+            (view) -> {
+                if (mItemClickListener != null) {
+                    mItemClickListener.onItemEditColorLongClicked((Tag) view.getTag(), view);
+
+                    return true;
+                }
+
+                return false;
             };
 
     public TagListAdapter() {
@@ -76,6 +106,12 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     }
 
     public void replaceItem(RecyclerView recyclerView, Tag item) {
+        int index = Iterables.indexOf(mItems,
+                (input) -> Objects.equal(input.getId(), item.getId()));
+
+        Preconditions.checkElementIndex(index, mItems.size());
+        mItems.set(index, item);
+
         ViewHolder vh = (ViewHolder) recyclerView.findViewHolderForItemId(item.getId());
         if (vh == null) {
             return;
@@ -148,9 +184,11 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
 
         vh.editButtonView = vh.actionPanel.findViewById(android.R.id.edit);
         vh.editButtonView.setOnClickListener(mItemEditClickListener);
+        vh.editButtonView.setOnLongClickListener(mItemEditLongClickListener);
 
         vh.editColorView = vh.actionPanel.findViewById(R.id.pickColor);
         vh.editColorView.setOnClickListener(mItemEditColorCl1ickListener);
+        vh.editColorView.setOnLongClickListener(mItemEditColorLongCl1ickListener);
 
         vh.itemView.setOnClickListener(mItemViewClickListener);
 
