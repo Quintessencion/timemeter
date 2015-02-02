@@ -28,6 +28,30 @@
     <color name="darkGrey">#424242</color>
     <color name="black">#000000</color>
 
+
+    <array name="default_tag_colors">
+        <item>@color/red</item>
+        <item>@color/deepOrange</item>
+        <item>@color/orange</item>
+        <item>@color/pink</item>
+
+        <item>@color/green</item>
+        <item>@color/lightGreen</item>
+        <item>@color/limeDark</item>
+        <item>@color/teal</item>
+
+        <item>@color/purple</item>
+        <item>@color/indigo</item>
+        <item>@color/cyan</item>
+        <item>@color/blue</item>
+
+        <item>@color/blueGrey</item>
+        <item>@color/brown</item>
+        <item>@color/darkGrey</item>
+        <item>@color/black</item>
+    </array>
+
     <!-- TODO: check ripple on API 21+ -->
     <color name="ripple">#6AA4CA</color>
+
 </resources>

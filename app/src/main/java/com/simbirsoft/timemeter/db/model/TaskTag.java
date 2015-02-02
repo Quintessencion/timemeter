@@ -1,9 +1,20 @@
 package com.simbirsoft.timemeter.db.model;
 
+import nl.qbusict.cupboard.annotation.Column;
+
 public class TaskTag {
 
+    public static final String COLUMN_ID = "_id";
+    public static final String COLUMN_TASK_ID = "task_id";
+    public static final String COLUMN_TAG_ID = "tag_id";
+
+    @Column(COLUMN_ID)
     private Long _id;
+
+    @Column(COLUMN_TASK_ID)
     private Long taskId;
+
+    @Column(COLUMN_TAG_ID)
     private Long tagId;
 
     public static TaskTag create(Task task, Tag tag) {

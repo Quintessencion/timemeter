@@ -16,6 +16,7 @@ import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.jobs.UpdateTaskActivityTimerJob;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.squareup.phrase.Phrase;
 
 import org.slf4j.Logger;
 
@@ -235,7 +236,10 @@ public class TaskActivityManager implements ITaskActivityManager {
     private static ActiveTaskInfo fetchRunningTask(SQLiteDatabase db) {
         TaskTimeSpan span = cupboard().withDatabase(db)
                 .query(TaskTimeSpan.class)
-                .withSelection("isActive=?", "1")
+                .withSelection(Phrase.from("{is_active}=?")
+                        .put("is_active", TaskTimeSpan.COLUMN_IS_ACTIVE)
+                        .format()
+                        .toString(), "1")
                 .get();
 
         if (span == null) {

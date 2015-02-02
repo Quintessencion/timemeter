@@ -13,6 +13,7 @@ import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTag;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
+import com.squareup.phrase.Phrase;
 
 import org.slf4j.Logger;
 
@@ -78,7 +79,12 @@ public class SaveTaskBundleJob extends BaseJob {
             DatabaseCompartment cupboard = cupboard().withDatabase(db);
 
             if (taskId != null) {
-                int count = cupboard.delete(TaskTag.class, "taskId=?", String.valueOf(taskId));
+                int count = cupboard.delete(TaskTag.class,
+                        Phrase.from("{task_id}=?")
+                                .put("task_id", TaskTag.COLUMN_TASK_ID)
+                                .format()
+                                .toString(),
+                        String.valueOf(taskId));
                 LOG.trace("{} task {} tags removed", count, task);
             }
 

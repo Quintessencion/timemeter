@@ -1,13 +1,20 @@
 package com.simbirsoft.timemeter.db.model;
 
+import android.graphics.Color;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.io.Serializable;
 
+import nl.qbusict.cupboard.annotation.Column;
+
 public class Tag implements Parcelable, Serializable {
 
     private static final long serialVersionUID = 2204828417696124694L;
+
+    public static final String COLUMN_ID = "_id";
+    public static final String COLUMN_NAME = "name";
+    public static final String COLUMN_COLOR = "color";
 
     public static final Parcelable.Creator<Tag> CREATOR =
             new Parcelable.Creator<Tag>() {
@@ -22,8 +29,14 @@ public class Tag implements Parcelable, Serializable {
                 }
             };
 
+    @Column(COLUMN_ID)
     private Long _id;
+
+    @Column(COLUMN_NAME)
     private String name;
+
+    @Column(COLUMN_COLOR)
+    private int color = Color.BLACK;
 
     public Tag() {
     }
@@ -92,6 +105,7 @@ public class Tag implements Parcelable, Serializable {
             parcel.writeLong(_id);
         }
         parcel.writeString(name);
+        parcel.writeInt(color);
     }
 
     private void readParcel(Parcel parcel) {
@@ -100,5 +114,14 @@ public class Tag implements Parcelable, Serializable {
             _id = parcel.readLong();
         }
         name = parcel.readString();
+        color = parcel.readInt();
+    }
+
+    public int getColor() {
+        return color;
+    }
+
+    public void setColor(int color) {
+        this.color = color;
     }
 }

@@ -10,6 +10,8 @@ import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
+import com.simbirsoft.timemeter.db.model.TaskTag;
+import com.squareup.phrase.Phrase;
 
 import java.util.List;
 
@@ -49,13 +51,18 @@ public class LoadTaskTagsJob extends LoadJob {
 
     @Override
     protected LoadJobResult<?> performLoad() {
-        final String query =
+        final String query = Phrase.from(
                 "select * " +
                 "from tag " +
-                "where tag._id in " +
-                        "(select tasktag.tagId " +
+                "where tag.{tag_id} in " +
+                        "(select tasktag.{tasktag_tag_id} " +
                         "from tasktag " +
-                        "where tasktag.taskId=?)";
+                        "where tasktag.{tasktag_task_id}=?)")
+                .put("tag_id", Tag.COLUMN_ID)
+                .put("tasktag_tag_id", TaskTag.COLUMN_TAG_ID)
+                .put("tasktag_task_id", TaskTag.COLUMN_TASK_ID)
+                .format()
+                .toString();
 
         String[] args = new String[]{mTaskId.toString()};
         Cursor c = mDatabaseHelper.getWritableDatabase().rawQuery(query, args);

@@ -17,6 +17,7 @@ import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
+import com.simbirsoft.timemeter.ui.util.TagViewUtils;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
 
 import org.apmem.tools.layouts.FlowLayout;
@@ -161,8 +162,10 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
         for (int i = 0; i < tagCount; i++) {
             if (mReuseTagViews.isEmpty()) {
-                reuseViews[i] = LayoutInflater.from(tagLayout.getContext())
-                        .inflate(R.layout.view_tag_small, tagLayout, false);
+                reuseViews[i] = TagViewUtils.inflateTagView(
+                        LayoutInflater.from(tagLayout.getContext()),
+                        tagLayout,
+                        0);
             } else {
                 reuseViews[i] = mReuseTagViews.pop();
             }
@@ -172,8 +175,10 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
         if (tagCount > 0) {
             for (int i = 0; i < tagCount; i++) {
+                Tag tag = tags.get(i);
                 TextView tagView = (TextView) reuseViews[i];
-                tagView.setText(tags.get(i).getName().toUpperCase());
+                tagView.setText(tag.getName());
+                TagViewUtils.updateTagViewColor(tagView, tag.getColor());
             }
             tagLayout.setVisibility(View.VISIBLE);
         } else {

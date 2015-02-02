@@ -48,6 +48,7 @@
     <string name="dialog_remove_task_warning_title">Удаление</string>
     <string name="dialog_remove_task_warning_message">Удалить задачу навсегда?</string>
     <string name="dialog_edit_tag_name_title">Введите название метки</string>
+    <string name="dialog_edit_tag_color_title">Выберите цвет</string>
 
 
 

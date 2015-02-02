@@ -37,7 +37,7 @@ public class LoadTaskListJob extends LoadJob {
                 .withDatabase(mDatabaseHelper.getWritableDatabase());
 
         final List<Task> tasks = cupboard.query(Task.class)
-                .orderBy("createDate")
+                .orderBy(Task.COLUMN_CREATE_DATE)
                 .list();
 
         final List<TaskBundle> result = Lists.newArrayListWithCapacity(tasks.size());

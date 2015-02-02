@@ -29,6 +29,7 @@ import com.simbirsoft.timemeter.jobs.LoadTagListJob;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
+import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerDialog;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import org.androidannotations.annotations.AfterViews;
@@ -194,6 +195,16 @@ public class TagListFragment extends BaseFragment implements JobLoader.JobLoader
 
     @Override
     public void onItemEditColorClicked(Tag item) {
+        int[] colors = getResources().getIntArray(R.array.default_tag_colors);
+
+        ColorPickerDialog dialog = ColorPickerDialog.newInstance(
+                R.string.dialog_edit_tag_color_title,
+                colors,
+                colors[0],
+                4,
+                ColorPickerDialog.SIZE_SMALL);
+
+        dialog.show(getChildFragmentManager(), "color_picker");
     }
 
     @Override

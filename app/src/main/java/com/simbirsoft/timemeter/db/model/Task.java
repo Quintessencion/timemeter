@@ -5,7 +5,13 @@ import android.os.Parcelable;
 
 import java.util.Date;
 
+import nl.qbusict.cupboard.annotation.Column;
+
 public class Task implements Parcelable {
+
+    public static final String COLUMN_ID = "_id";
+    public static final String COLUMN_DESCRIPTION = "description";
+    public static final String COLUMN_CREATE_DATE = "create_date";
 
     public static final Parcelable.Creator<Task> CREATOR =
             new Parcelable.Creator<Task>() {
@@ -20,8 +26,13 @@ public class Task implements Parcelable {
                 }
             };
 
+    @Column(COLUMN_ID)
     private Long _id;
+
+    @Column(COLUMN_DESCRIPTION)
     private String description;
+
+    @Column(COLUMN_CREATE_DATE)
     private Date createDate;
 
     public Task() {

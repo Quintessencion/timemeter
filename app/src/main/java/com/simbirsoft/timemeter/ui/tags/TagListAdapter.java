@@ -210,6 +210,8 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
         vh.editColorView.setTag(item);
         vh.itemView.setTag(item);
 
+        TagViewUtils.updateTagViewColor(vh.tagView, item.getColor());
+
         if (mIsActionButtonsShown) {
             if (vh.actionPanel.getVisibility() != View.VISIBLE) {
                 if (toggleDelta < FADE_DURATION_MILLIS) {

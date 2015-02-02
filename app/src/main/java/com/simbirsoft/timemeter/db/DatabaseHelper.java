@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTag;
@@ -19,6 +20,10 @@ import java.util.Date;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import nl.qbusict.cupboard.Cupboard;
+import nl.qbusict.cupboard.CupboardBuilder;
+import nl.qbusict.cupboard.CupboardFactory;
+
 @Singleton
 public class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -28,10 +33,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
 
     static {
-        cupboard().register(Task.class);
-        cupboard().register(Tag.class);
-        cupboard().register(TaskTag.class);
-        cupboard().register(TaskTimeSpan.class);
+        Cupboard cupboard = new CupboardBuilder().useAnnotations().build();
+        CupboardFactory.setCupboard(cupboard);
+
+        cupboard.register(Task.class);
+        cupboard.register(Tag.class);
+        cupboard.register(TaskTag.class);
+        cupboard.register(TaskTimeSpan.class);
     }
 
     @Inject
@@ -53,24 +61,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void initTestData(Context context) {
         removeDatabase(context);
 
+        int[] colors = context.getResources().getIntArray(R.array.default_tag_colors);
+
         // Tags
         Tag tag1 = new Tag();
         tag1.setName("Дом");
+        tag1.setColor(colors[0]);
 
         Tag tag2 = new Tag();
         tag2.setName("Работа");
+        tag2.setColor(colors[3]);
 
         Tag tag3 = new Tag();
         tag3.setName("Личное");
+        tag3.setColor(colors[5]);
 
         Tag tag4 = new Tag();
         tag4.setName("Спорт");
+        tag4.setColor(colors[7]);
 
         Tag tag5 = new Tag();
         tag5.setName("Совещания");
+        tag5.setColor(colors[9]);
 
         Tag tag6 = new Tag();
         tag6.setName("TimeMeter");
+        tag6.setColor(colors[11]);
 
         cupboard().withDatabase(getWritableDatabase())
                 .put(tag1, tag2, tag3, tag4, tag5, tag6);
@@ -78,6 +94,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         for (int i = 0; i < 31; i++) {
             Tag tag = new Tag();
             tag.setName("Test tag |" + String.valueOf(i) + "|");
+            tag.setColor(colors[13]);
             cupboard().withDatabase(getWritableDatabase()).put(tag);
         }
 
@@ -125,8 +142,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         task3Tag1.setTagId(tag2.getId());
         task3Tag1.setTaskId(task3.getId());
 
+        TaskTag task4Tag1 = new TaskTag();
+        task4Tag1.setTagId(tag2.getId());
+        task4Tag1.setTaskId(task4.getId());
+        TaskTag task4Tag2 = new TaskTag();
+        task4Tag2.setTagId(tag5.getId());
+        task4Tag2.setTaskId(task4.getId());
+
         cupboard().withDatabase(getWritableDatabase())
-                .put(task1Tag1, task1Tag2, task2Tag1, task3Tag1);
+                .put(task1Tag1, task1Tag2, task2Tag1, task3Tag1, task4Tag1, task4Tag2);
     }
 
     @Override
