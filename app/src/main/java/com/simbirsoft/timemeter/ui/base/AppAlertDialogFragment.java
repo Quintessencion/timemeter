@@ -1,12 +1,15 @@
 package com.simbirsoft.timemeter.ui.base;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.view.View;
+
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 
 public class AppAlertDialogFragment extends BaseDialogFragment {
 
@@ -67,16 +70,16 @@ public class AppAlertDialogFragment extends BaseDialogFragment {
         return args;
     }
 
-    private final DialogInterface.OnClickListener mDialogClickListener =
-            (dialogInterface, buttonId) -> {
-                switch (buttonId) {
-                    case DialogInterface.BUTTON_POSITIVE:
-                        sendResultAndFinish(RESULT_CODE_ACCEPTED);
-                        break;
+    private final MaterialDialog.ButtonCallback mDialogClickCallback =
+            new MaterialDialog.ButtonCallback() {
+                @Override
+                public void onPositive(MaterialDialog dialog) {
+                    sendResultAndFinish(RESULT_CODE_ACCEPTED);
+                }
 
-                    default:
-                        sendResultAndFinish(RESULT_CODE_CANCELLED);
-                        break;
+                @Override
+                public void onNegative(MaterialDialog dialog) {
+                    sendResultAndFinish(RESULT_CODE_CANCELLED);
                 }
             };
 
@@ -106,28 +109,29 @@ public class AppAlertDialogFragment extends BaseDialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
 
-        builder.setTitle(getTitle());
-        builder.setMessage(getMessage());
+        builder.title(getTitle());
+        builder.content(getMessage());
 
         String acceptCaption = getAcceptButtonCaption();
         String cancelCaption = getCancelButtonCaption();
 
         if (!TextUtils.isEmpty(acceptCaption)) {
-            builder.setPositiveButton(acceptCaption, mDialogClickListener);
+            builder.positiveText(acceptCaption);
         }
 
         if (!TextUtils.isEmpty(cancelCaption)) {
-            builder.setNegativeButton(cancelCaption, mDialogClickListener);
+            builder.negativeText(cancelCaption);
 
         } else if (TextUtils.isEmpty(acceptCaption)) {
-            builder.setNegativeButton(android.R.string.cancel, mDialogClickListener);
+            builder.negativeText(android.R.string.cancel);
         }
 
-        builder.setCancelable(true);
+        builder.cancelable(true);
+        builder.callback(mDialogClickCallback);
 
-        return builder.create();
+        return builder.build();
     }
 
     @Override
