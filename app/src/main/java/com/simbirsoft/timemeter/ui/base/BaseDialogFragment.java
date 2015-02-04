@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.support.v7.widget.Toolbar;
 import android.widget.Toast;
 
 import com.be.android.library.worker.controllers.JobLoader;
@@ -112,6 +113,19 @@ public class BaseDialogFragment extends DialogFragment implements FragmentContai
     @Override
     public void setResult(int resultCode, Intent data) {
         mCallbacks.setResult(resultCode, data);
+    }
+
+    @Override
+    public void hideToolbar() {
+    }
+
+    @Override
+    public void showToolbar() {
+    }
+
+    @Override
+    public Toolbar getToolbar() {
+        return null;
     }
 
     public boolean shouldSubscribeForJobEvents() {

@@ -36,7 +36,7 @@ public class Tag implements Parcelable, Serializable {
     private String name;
 
     @Column(COLUMN_COLOR)
-    private int color = Color.BLACK;
+    private int color = -10453621; /* blue grey #607D8B */
 
     public Tag() {
     }
@@ -67,10 +67,7 @@ public class Tag implements Parcelable, Serializable {
 
     @Override
     public String toString() {
-        return "Tag{" +
-                "_id=" + _id +
-                ", name='" + name + '\'' +
-                '}';
+        return name;
     }
 
     @Override

@@ -8,7 +8,10 @@ import android.os.PersistableBundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
+import android.transitions.everywhere.Fade;
+import android.transitions.everywhere.TransitionManager;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.Window;
 
 import com.simbirsoft.timemeter.R;
@@ -93,5 +96,13 @@ public class DialogContainerActivity extends BaseActivity implements FragmentCon
 
     protected BaseDialogFragment getContentFragment() {
         return (BaseDialogFragment) getSupportFragmentManager().findFragmentByTag(TAG_CONTENT_FRAGMENT);
+    }
+
+    @Override
+    public void hideToolbar() {
+    }
+
+    @Override
+    public void showToolbar() {
     }
 }

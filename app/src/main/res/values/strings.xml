@@ -23,6 +23,7 @@
     <string name="action_undo_remove">Вернуть</string>
     <string name="ime_action_done">Готово</string>
     <string name="action_edit">Редактировать</string>
+    <string name="action_create_tag">Создать метку</string>
 
     <!-- Hints -->
     <string name="hint_new_task">Начать новую задачу</string>

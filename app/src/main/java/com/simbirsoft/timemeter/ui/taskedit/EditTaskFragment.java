@@ -5,16 +5,24 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.transitions.everywhere.ChangeBounds;
+import android.transitions.everywhere.Fade;
+import android.transitions.everywhere.Scene;
+import android.transitions.everywhere.TransitionManager;
+import android.transitions.everywhere.TransitionSet;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
+import android.view.animation.DecelerateInterpolator;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
@@ -23,12 +31,12 @@ import com.be.android.library.worker.controllers.JobLoader;
 import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
+import com.google.common.base.Objects;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
-import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.injection.Injection;
@@ -41,21 +49,20 @@ import com.simbirsoft.timemeter.ui.base.AppAlertDialogFragment;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
-import com.simbirsoft.timemeter.ui.util.TagViewUtils;
+import com.simbirsoft.timemeter.ui.tags.TagListAdapter;
+import com.simbirsoft.timemeter.ui.util.KeyboardUtils;
 import com.simbirsoft.timemeter.ui.views.TagAutoCompleteTextView;
 import com.tokenautocomplete.FilteredArrayAdapter;
+import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.InstanceState;
-import org.androidannotations.annotations.TextChange;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
 import java.util.List;
-
-import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_edit_task)
 public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoaderCallbacks,
@@ -76,9 +83,6 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
     public static final int RESULT_CODE_TASK_REMOVED = 1003;
     public static final int RESULT_CODE_TASK_RECREATED = 1004;
 
-    @Inject
-    DatabaseHelper mDatabaseHelper;
-
     @FragmentArg(EXTRA_TITLE)
     String mExtraTitle;
 
@@ -88,14 +92,8 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
     @FragmentArg(EXTRA_TASK_BUNDLE)
     TaskBundle mExtraTaskBundle;
 
-    @ViewById(android.R.id.edit)
-    EditText mDescriptionEditView;
-
-    @ViewById(R.id.tagSearchView)
-    TagAutoCompleteTextView mTagAutoCompleteTextView;
-
-    @ViewById(R.id.contentRoot)
-    View mContentRoot;
+    @ViewById(R.id.rootScene)
+    ViewGroup mContentRoot;
 
     @InstanceState
     TaskBundle mTaskBundle;
@@ -103,31 +101,28 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
     @InstanceState
     boolean mIsNewTask;
 
+    // TODO: bind filter back after orientation change
+    @InstanceState
+    String mTagFilter;
+
+    private TaskEditScene mTaskEditScene;
+    // TODO: ignore IME_ACTION_DONE from tag completion view
+    private TaskTagsEditScene mTaskTagsEditScene;
     private String mTagsLoaderAttachTag;
     private String mTaskBundleLoaderAttachTag;
-    private Animation mProgressFadeIn;
-
-    @TextChange(android.R.id.edit)
-    void onTaskDescriptionChanged(TextView view) {
-        mTaskBundle.getTask().setDescription(view.getText().toString());
-    }
+    // TODO: add 'create tag' button view above tag list
+    private TagListAdapter mTagListAdapter;
+    private Scene mCurrentScene;
+    private ActionBar mActionBar;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Injection.sUiComponent.injectEditTaskFragment(this);
-
         setHasOptionsMenu(true);
 
         mTagsLoaderAttachTag = getClass().getName() + "__tags_loader";
         mTaskBundleLoaderAttachTag = getClass().getName() + "__task_tags_loader";
-    }
-
-    @Override
-    public void onDestroy() {
-        mTagAutoCompleteTextView.setTokenListener(null);
-        super.onDestroy();
     }
 
     @Override
@@ -150,6 +145,85 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         getActivity().startActivityForResult(launchIntent, REQUEST_CODE_PERFORM_REMOVE_TASK);
     }
 
+    private void goToEditTagsScene() {
+        if (mTaskTagsEditScene != null && mCurrentScene == mTaskTagsEditScene.scene) {
+            return;
+        }
+
+        mTaskTagsEditScene = createEditTagsScene();
+        mCurrentScene = mTaskTagsEditScene.scene;
+        bindTaskBundleToViews();
+
+        // Load tags to the tag list
+        requestLoad(mTagsLoaderAttachTag, this);
+
+        TransitionSet transitionSet = new TransitionSet();
+        transitionSet.addTransition(new Fade(Fade.IN));
+        transitionSet.addTransition(new ChangeBounds());
+        transitionSet.setOrdering(TransitionSet.ORDERING_TOGETHER);
+        transitionSet.setDuration(Consts.CONTENT_FADE_IN_DELAY_MILLIS);
+        transitionSet.setInterpolator(new DecelerateInterpolator());
+        TransitionManager.go(mTaskTagsEditScene.scene, transitionSet);
+        mContentRoot.post(() -> {
+            mTaskTagsEditScene.tagsView.requestFocus();
+            KeyboardUtils.showSoftInput(getActivity());
+        });
+        mActionBar.setDisplayHomeAsUpEnabled(true);
+    }
+
+    private void goToMainScene() {
+        if (mTaskEditScene != null && mCurrentScene == mTaskEditScene.scene) {
+            return;
+        }
+
+        if (mTaskEditScene != null) {
+            mContentRoot.removeView(mTaskEditScene.layout);
+        }
+
+        mTaskEditScene = createRootScene();
+        mCurrentScene = mTaskEditScene.scene;
+
+        if (mTaskBundle == null) {
+            if (mExtraTaskBundle != null) {
+                mTaskBundle = mExtraTaskBundle;
+
+            } else if (mExtraTaskId != null) {
+                requestLoad(mTaskBundleLoaderAttachTag, this);
+
+            } else {
+                mTaskBundle = TaskBundle.create();
+                mTaskBundle.saveState();
+                mIsNewTask = true;
+            }
+        }
+        bindTaskBundleToViews();
+
+        TransitionSet transitionSet = new TransitionSet();
+        transitionSet.addTransition(new Fade(Fade.IN));
+        transitionSet.addTransition(new ChangeBounds());
+        transitionSet.setOrdering(TransitionSet.ORDERING_TOGETHER);
+        transitionSet.setDuration(Consts.CONTENT_FADE_IN_DELAY_MILLIS);
+        transitionSet.setInterpolator(new DecelerateInterpolator());
+        TransitionManager.go(mTaskEditScene.scene, transitionSet);
+        mContentRoot.post(() -> {
+            View focusView = getActivity().getCurrentFocus();
+            if (focusView != null) {
+                KeyboardUtils.hideSoftInput(getActivity(), focusView.getWindowToken());
+            }
+        });
+        mActionBar.setDisplayHomeAsUpEnabled(false);
+        mActionBar.setHomeAsUpIndicator(R.drawable.ic_action_accept);
+    }
+
+    @AfterViews
+    void bindViews() {
+        mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
+        if (mExtraTitle != null) {
+            mActionBar.setTitle(mExtraTitle);
+        }
+        mActionBar.setHomeAsUpIndicator(R.drawable.ic_action_accept);
+        goToMainScene();
+    }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (mTaskBundle == null) {
@@ -167,6 +241,11 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
                 return true;
 
             case android.R.id.home:
+                if (mTaskTagsEditScene != null && mCurrentScene == mTaskTagsEditScene.scene) {
+                    goToMainScene();
+                    return true;
+                }
+
                 LOG.debug("save task clicked");
                 if (mTaskBundle.isEqualToSavedState() && mTaskBundle.getTask().hasId()) {
                     LOG.debug("task remain unchanged");
@@ -237,91 +316,33 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         showToast(R.string.error_unable_to_remove_task);
     }
 
-    @AfterViews
-    void bindViews() {
-        ActionBar actionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
-        if (mExtraTitle != null) {
-            actionBar.setTitle(mExtraTitle);
-        }
-        actionBar.setHomeAsUpIndicator(R.drawable.ic_action_accept);
-
-        mTagAutoCompleteTextView.allowDuplicates(false);
-        mTagAutoCompleteTextView.setTokenListener(this);
-
-        mProgressFadeIn = AnimationUtils.loadAnimation(getActivity(), android.R.anim.fade_in);
-        mProgressFadeIn.setDuration(Consts.CONTENT_FADE_IN_DELAY_MILLIS);
-        mProgressFadeIn.setFillBefore(true);
-        mProgressFadeIn.setFillAfter(true);
-        mContentRoot.setAnimation(mProgressFadeIn);
-
-        // Load task bundle for existing task or create a new one
-        if (mTaskBundle == null) {
-            if (mExtraTaskBundle != null) {
-                mTaskBundle = mExtraTaskBundle;
-
-            } else if (mExtraTaskId != null) {
-                requestLoad(mTaskBundleLoaderAttachTag, this);
-
-            } else {
-                mTaskBundle = TaskBundle.create();
-                mTaskBundle.saveState();
-                mIsNewTask = true;
-            }
-        }
-        bindTaskBundleToViews();
-
-        // Load all tags for auto-complete view
-        requestLoad(mTagsLoaderAttachTag, this);
-    }
-
     @OnJobSuccess(LoadTagListJob.class)
     public void onTagListLoaded(LoadJobResult<List<Tag>> tags) {
-        ArrayAdapter<Tag> adapter = new FilteredArrayAdapter<Tag>(
-                getActivity(),
-                android.R.layout.simple_list_item_1,
-                tags.getData()) {
-
-            @Override
-            protected boolean keepObject(Tag tag, String s) {
-                final String name = s.trim();
-
-                if (TextUtils.isEmpty(name)) {
-                    return false;
-                }
-
-                return tag.getName().toLowerCase().contains(s.toLowerCase());
-            }
-
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                Tag item = getItem(position);
-                TextView view = (TextView) super.getView(position, convertView, parent);
-
-                view.setText(item.getName());
-
-                return view;
-            }
-        };
-
-        mTagAutoCompleteTextView.setAdapter(adapter);
+        if (mTagListAdapter != null) {
+            mTagListAdapter.setOriginItems(tags.getData());
+            mTagListAdapter.getFilter().excludeTags(mTaskBundle.getTags()).filter(mTagFilter);
+        }
     }
 
     private void bindTaskBundleToViews() {
-        mContentRoot.startAnimation(mProgressFadeIn);
-
         if (mTaskBundle == null) {
             return;
         }
 
         final Task task = mTaskBundle.getTask();
-        if (!TextUtils.isEmpty(task.getDescription())) {
-            mDescriptionEditView.setText(task.getDescription());
+        if (mTaskEditScene != null && !TextUtils.isEmpty(task.getDescription())) {
+            mTaskEditScene.descriptionView.setText(task.getDescription());
         }
 
         final List<Tag> tags = mTaskBundle.getTags();
         if (tags != null) {
             for (Tag tag : tags) {
-                mTagAutoCompleteTextView.addObject(tag);
+                if (mTaskTagsEditScene != null) {
+                    mTaskTagsEditScene.tagsView.addObject(tag);
+                }
+                if (mTaskEditScene != null) {
+                    mTaskEditScene.tagsView.addObject(tag);
+                }
             }
         }
     }
@@ -384,6 +405,11 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
 
     @Override
     public boolean handleBackPress() {
+        if (mTaskTagsEditScene != null && mCurrentScene == mTaskTagsEditScene.scene) {
+            goToMainScene();
+            return true;
+        }
+
         if (mTaskBundle == null || mTaskBundle.isEqualToSavedState()) {
             return super.handleBackPress();
         }
@@ -422,14 +448,181 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
     @Override
     public void onTokenAdded(Object o) {
         Tag tag = (Tag) o;
-        List<Tag> tags = mTaskBundle.getTags();
-        if (!tags.contains(tag)) {
-            tags.add(tag);
+        List<Tag> bundledTags = mTaskBundle.getTags();
+        if (!bundledTags.contains(tag)) {
+            if (tag.getId() == null) {
+                Tag item = mTagListAdapter.findItemWithName(tag.getName());
+                if (item != null) {
+                    tag = item;
+                }
+            }
+
+            bundledTags.add(tag);
         }
     }
 
     @Override
     public void onTokenRemoved(Object o) {
-        mTaskBundle.getTags().remove(o);
+        mTaskBundle.getTags().remove((Tag) o);
+    }
+
+    private void refilterTagList() {
+        if (mTagListAdapter != null) {
+            mTagListAdapter.getFilter()
+                    .clearExclusions()
+                    .excludeTags(mTaskBundle.getTags())
+                    .filter(mTagFilter);
+        }
+    }
+
+    private TaskEditScene createRootScene() {
+        TaskEditScene scene = TaskEditScene.create(getActivity(), mContentRoot);
+        scene.tagsView.allowDuplicates(false);
+        scene.tagsView.setTokenListener(this);
+        scene.tagsView.allowCollapse(false);
+        scene.tagsView.setImeActionLabel(
+                getString(R.string.ime_action_done),
+                EditorInfo.IME_ACTION_DONE);
+        scene.tagsView.setOnFocusChangeListener((view, isFocused) -> {
+            if (isFocused) {
+                goToEditTagsScene();
+            }
+        });
+        scene.tagsView.setAdapter(createTokenAdapterStub());
+        scene.descriptionView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+                mTaskBundle.getTask().setDescription(scene.descriptionView.getText().toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+            }
+        });
+
+        return scene;
+    }
+
+    private TaskTagsEditScene createEditTagsScene() {
+        TaskTagsEditScene scene = TaskTagsEditScene.create(getActivity(), mContentRoot);
+        scene.tagsView.setTokenListener(this);
+        scene.tagsView.setOnEditorActionListener((textView, actionId, keyEvent) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                scene.isFinishing = true;
+                goToMainScene();
+                return true;
+            }
+            return false;
+        });
+        scene.tagsView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+                String text = charSequence.toString();
+                int pos = text.lastIndexOf(", ") + 2;
+                if (pos >= text.length()) {
+                    if (!TextUtils.isEmpty(mTagFilter)) {
+                        mTaskTagsEditScene.hideCreateTagView();
+                    }
+                    mTagFilter = null;
+                } else {
+                    String input = text.substring(pos).trim();
+                    if (!Objects.equal(input, mTagFilter)) {
+                        if (mTagListAdapter.containsItemWithName(input)) {
+                            mTaskTagsEditScene.hideCreateTagView();
+                        } else {
+                            mTaskTagsEditScene.showCreateTagView(input);
+                        }
+                    }
+                    mTagFilter = input;
+                }
+                refilterTagList();
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+            }
+        });
+        scene.tagsView.allowDuplicates(false);
+        scene.tagsView.setImeActionLabel(
+                getString(R.string.ime_action_done),
+                EditorInfo.IME_ACTION_DONE);
+        scene.tagsView.setAdapter(createTokenAdapterStub());
+        RecyclerView.LayoutManager mTagListLayoutManager = new LinearLayoutManager(
+                getActivity(),
+                LinearLayoutManager.VERTICAL,
+                false);
+        scene.tagsRecyclerView.setLayoutManager(mTagListLayoutManager);
+        scene.tagsRecyclerView.addItemDecoration(
+                new HorizontalDividerItemDecoration.Builder(getActivity()).build());
+        scene.createTagView.setOnClickListener((v) -> onCreateTagClicked());
+
+        mTagListAdapter = new TagListAdapter();
+        mTagListAdapter.setItemClickListener(new TagListAdapter.AbsItemClickListener() {
+            @Override
+            public void onItemClicked(Tag item) {
+                if (!TextUtils.isEmpty(mTagFilter)) {
+                    scene.tagsView.performCompletion();
+                    mContentRoot.post(() -> {
+                        List<Object> tags = scene.tagsView.getObjects();
+                        if (!tags.isEmpty()) {
+                            scene.tagsView.removeObject(tags.get(tags.size() - 1));
+                        }
+                    });
+                }
+                mContentRoot.post(() -> {
+                    mTaskBundle.getTags().add(item);
+                    scene.tagsView.addObject(item);
+                    refilterTagList();
+                });
+            }
+        });
+        scene.tagsRecyclerView.setAdapter(mTagListAdapter);
+
+        return scene;
+    }
+
+    private void onCreateTagClicked() {
+        if (TextUtils.isEmpty(mTagFilter)) {
+            return;
+        }
+
+        mTaskTagsEditScene.tagsView.performCompletion();
+    }
+
+    private ArrayAdapter<Tag> createTokenAdapterStub() {
+        return new FilteredArrayAdapter<Tag>(
+                getActivity(),
+                android.R.layout.simple_list_item_1,
+                new Tag[0]) {
+
+            @Override
+            protected boolean keepObject(Tag tag, String s) {
+                final String name = s.trim();
+
+                if (TextUtils.isEmpty(name)) {
+                    return false;
+                }
+
+                return tag.getName().toLowerCase().contains(s.toLowerCase());
+            }
+
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                Tag item = getItem(position);
+                TextView view = (TextView) super.getView(position, convertView, parent);
+
+                view.setText(item.getName());
+
+                return view;
+            }
+        };
     }
 }

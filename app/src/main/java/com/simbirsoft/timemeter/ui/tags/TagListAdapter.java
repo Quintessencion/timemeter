@@ -1,6 +1,7 @@
 package com.simbirsoft.timemeter.ui.tags;
 
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.transitions.everywhere.utils.Objects;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -8,29 +9,56 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.ui.util.TagViewUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
-public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHolder> {
+public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHolder>
+        implements Filterable {
 
     private static final int FADE_DURATION_MILLIS = 180;
 
-    interface ItemClickListener {
+    public interface ItemClickListener {
         void onItemEditClicked(Tag item);
         void onItemEditLongClicked(Tag item, View itemView);
         void onItemEditColorClicked(Tag item);
         void onItemEditColorLongClicked(Tag item, View itemView);
         void onItemClicked(Tag item);
+    }
+
+    public static abstract class AbsItemClickListener implements ItemClickListener {
+        @Override
+        public void onItemEditClicked(Tag item) {
+        }
+
+        @Override
+        public void onItemEditLongClicked(Tag item, View itemView) {
+        }
+
+        @Override
+        public void onItemEditColorClicked(Tag item) {
+        }
+
+        @Override
+        public void onItemEditColorLongClicked(Tag item, View itemView) {
+        }
+
+        @Override
+        public void onItemClicked(Tag item) {
+        }
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -46,10 +74,63 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
         View editColorView;
     }
 
+    public class TagFilter extends Filter {
+
+        private final Set<Tag> mExcludeTags = Sets.newHashSet();
+
+        @Override
+        protected FilterResults performFiltering(CharSequence charSequence) {
+            FilterResults results = new FilterResults();
+
+            final String filterString = charSequence == null
+                    ? null
+                    : charSequence.toString().toLowerCase().trim();
+            final boolean isEmptyFilter = TextUtils.isEmpty(filterString);
+
+            synchronized (mItemsOriginal) {
+                results.values = Lists.newArrayList(Iterables.filter(mItemsOriginal,
+                        (input) -> !mExcludeTags.contains(input)
+                                && (isEmptyFilter
+                                        || input.getName().toLowerCase().contains(filterString))));
+            }
+
+            return results;
+        }
+
+        public TagFilter excludeTags(Collection<Tag> tags) {
+            mExcludeTags.addAll(tags);
+
+            return this;
+        }
+        public TagFilter clearExclusions() {
+            mExcludeTags.clear();
+
+            return this;
+        }
+
+        @Override
+        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+            mItems.clear();
+            mItems.addAll((Collection<Tag>)filterResults.values);
+            notifyDataSetChanged();
+        }
+    }
+
     private long mToggleActionPanelTimeMillis;
     private boolean mIsActionButtonsShown;
+    private final List<Tag> mItemsOriginal;
     private final List<Tag> mItems;
     private ItemClickListener mItemClickListener;
+    private TagFilter mFilter;
+
+    @Override
+    public TagFilter getFilter() {
+        if (mFilter == null) {
+            mFilter = new TagFilter();
+        }
+
+        return mFilter;
+    }
 
     private final View.OnClickListener mItemViewClickListener =
             (view) -> {
@@ -96,10 +177,36 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
 
     public TagListAdapter() {
         mItems = Lists.newArrayList();
+        mItemsOriginal = Lists.newArrayList();
         setHasStableIds(true);
     }
 
+    public boolean containsItemWithName(String tagName) {
+        if (TextUtils.isEmpty(tagName)) {
+            return false;
+        }
+
+        return findItemWithName(tagName) != null;
+    }
+
+    public Tag findItemWithName(String tagName) {
+        final String pattern = tagName.trim().toLowerCase();
+
+        int index = Iterables.indexOf(mItemsOriginal, (input) ->
+                Objects.equal(input.getName().toLowerCase(), pattern));
+
+        if (index < 0) return null;
+
+        return mItemsOriginal.get(index);
+    }
+
+    public void setOriginItems(Collection<Tag> items) {
+        mItemsOriginal.clear();
+        mItemsOriginal.addAll(items);
+    }
+
     public void setItems(Collection<Tag> items) {
+        setOriginItems(items);
         mItems.clear();
         mItems.addAll(items);
         notifyDataSetChanged();
@@ -117,11 +224,18 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     }
 
     public void replaceItem(RecyclerView recyclerView, Tag item) {
-        int index = Iterables.indexOf(mItems,
+        synchronized (mItemsOriginal) {
+            replaceItemImpl(mItemsOriginal, recyclerView, item);
+            replaceItemImpl(mItems, recyclerView, item);
+        }
+    }
+
+    private void replaceItemImpl(List<Tag> items, RecyclerView recyclerView, Tag item) {
+        int index = Iterables.indexOf(items,
                 (input) -> Objects.equal(input.getId(), item.getId()));
 
-        Preconditions.checkElementIndex(index, mItems.size());
-        mItems.set(index, item);
+        Preconditions.checkElementIndex(index, items.size());
+        items.set(index, item);
 
         ViewHolder vh = (ViewHolder) recyclerView.findViewHolderForItemId(item.getId());
         if (vh == null) {

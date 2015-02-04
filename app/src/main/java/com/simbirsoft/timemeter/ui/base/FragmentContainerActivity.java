@@ -6,7 +6,11 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
+import android.transitions.everywhere.Fade;
+import android.transitions.everywhere.TransitionManager;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
@@ -33,6 +37,9 @@ public class FragmentContainerActivity extends BaseActivity implements FragmentC
 
     @Extra(EXTRA_FRAGMENT_ARGS)
     Bundle fragmentArgs;
+
+    @ViewById(R.id.fragmentContainer)
+    ViewGroup mFragmentContainer;
 
     @ViewById(R.id.toolbar)
     Toolbar mToolbar;
@@ -117,5 +124,17 @@ public class FragmentContainerActivity extends BaseActivity implements FragmentC
         }
 
         super.onBackPressed();
+    }
+
+    @Override
+    public void hideToolbar() {
+        TransitionManager.beginDelayedTransition(mFragmentContainer, new Fade(Fade.OUT));
+        mToolbar.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void showToolbar() {
+        TransitionManager.beginDelayedTransition(mFragmentContainer, new Fade(Fade.OUT));
+        mToolbar.setVisibility(View.VISIBLE);
     }
 }

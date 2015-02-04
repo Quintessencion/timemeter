@@ -8,9 +8,20 @@
         android:id="@+id/tagSearchView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="14dp"
         android:hint="@string/hint_task_tags"/>
+
+    <TextView
+        android:id="@+id/createTagView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="14dp"
+        android:paddingBottom="14dp"
+        android:paddingLeft="14dp"
+        android:paddingRight="4dp"
+        android:textStyle="italic|bold"
+        android:text="@string/action_create_tag"
+        android:background="?android:attr/selectableItemBackground" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@android:id/list"
