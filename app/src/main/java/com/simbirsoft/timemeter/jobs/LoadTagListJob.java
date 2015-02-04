@@ -26,6 +26,7 @@ public class LoadTagListJob extends LoadJob {
         List<Tag> tags = cupboard()
                 .withDatabase(mDatabaseHelper.getWritableDatabase())
                 .query(Tag.class)
+                .orderBy(Tag.COLUMN_NAME)
                 .list();
 
         return new LoadJobResult<>(JobResultStatus.OK, tags);
