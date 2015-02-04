@@ -131,12 +131,16 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
     }
 
     private void displayRemoveTaskAlert() {
+        String title = mTaskBundle.getTask().getDescription().trim();
+        if (TextUtils.isEmpty(title)) {
+            title = getString(R.string.dialog_remove_task_warning_title);
+        }
+
         Bundle args = AppAlertDialogFragment.prepareArgs(
-                getActivity(),
-                R.string.dialog_remove_task_warning_title,
-                R.string.dialog_remove_task_warning_message,
-                R.string.action_perform_remove,
-                R.string.action_cancel);
+                title,
+                getString(R.string.dialog_remove_task_warning_message),
+                getString(R.string.action_perform_remove),
+                getString(R.string.action_cancel));
 
         Intent launchIntent = DialogContainerActivity.prepareDialogLaunchIntent(
                 getActivity(), AppAlertDialogFragment.class.getName(), args);

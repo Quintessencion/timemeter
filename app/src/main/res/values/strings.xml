@@ -17,6 +17,7 @@
 
     <!-- Actions -->
     <string name="action_cancel">Отмена</string>
+    <string name="action_remove_task">Удалить задачу</string>
     <string name="action_accept">ОК</string>
     <string name="action_accept_yes">Да</string>
     <string name="action_perform_remove">Удалить</string>
@@ -54,7 +55,7 @@
     <string name="dialog_cancel_task_changes_warning_title">Задача не сохранена</string>
     <string name="dialog_cancel_task_changes_warning_message">Завершить редактирование без сохранения?</string>
     <string name="dialog_remove_task_warning_title">Удаление</string>
-    <string name="dialog_remove_task_warning_message">Удалить задачу навсегда?</string>
+    <string name="dialog_remove_task_warning_message">Удалить задачу?</string>
     <string name="dialog_edit_tag_name_title">Введите название метки</string>
     <string name="dialog_edit_tag_color_title">Выберите цвет</string>
 
