@@ -399,9 +399,14 @@ public class TagListFragment extends BaseFragment implements JobLoader.JobLoader
 
     @OnJobFailure(SaveTagJob.class)
     public void onSaveTagFailed() {
-        LOG.error("failed to save tag");
-        showToast(R.string.error_unable_to_save_tag);
         requestLoad(mLoaderAttachTag, this);
+        Snackbar bar = Snackbar.with(getActivity())
+                .text(R.string.error_unable_to_save_tag)
+                .colorResource(R.color.lightRed)
+                .attachToRecyclerView(mRecyclerView)
+                .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE);
+        bar.setTag(SNACKBAR_TAG);
+        SnackbarManager.show(bar);
     }
 
     private void saveTag(Tag tag) {
