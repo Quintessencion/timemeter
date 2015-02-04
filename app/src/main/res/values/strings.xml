@@ -31,9 +31,11 @@
     <string name="hint_task_description">Описание задачи</string>
     <string name="hint_task_tags">Метки</string>
     <string name="hint_edit">Редактировать</string>
+    <string name="hint_remove">Удалить</string>
     <string name="hint_edit_task">Редактировать задачу</string>
     <string name="hint_task_description_is_empty">Пожалуйста, введите описание задачи</string>
     <string name="hint_task_removed">Задача удалена</string>
+    <string name="hint_tag_removed">Метка удалена</string>
     <string name="hint_tag_name">Название метки</string>
     <string name="hint_edit_tag_name">Изменить название</string>
     <string name="hint_edit_tag_color">Выбрать цвет</string>
@@ -45,6 +47,8 @@
     <string name="error_unable_to_remove_task">Не удалось удалить задачу</string>
     <string name="error_unable_to_load_tag_list">Ошибка при загрузке списка меток</string>
     <string name="error_unable_to_save_tag">Ошибка при сохранении метки</string>
+    <string name="error_unable_to_remove_tag">Ошибка при удалении метки</string>
+    <string name="error_unable_to_backup_tag">Ошибка при восстановлении метки</string>
 
     <!-- Dialogs -->
     <string name="dialog_cancel_task_changes_warning_title">Задача не сохранена</string>

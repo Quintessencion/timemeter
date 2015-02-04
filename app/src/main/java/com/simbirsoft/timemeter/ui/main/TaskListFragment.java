@@ -20,6 +20,7 @@ import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.enums.SnackbarType;
 import com.nispok.snackbar.listeners.EventListener;
+import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
@@ -53,7 +54,6 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     private static final int REQUEST_CODE_EDIT_TASK = 100;
 
     private static final int COLUMN_COUNT_DEFAULT = 2;
-    private static final int DISMISS_DELAY_MILLIS = 500;
     private int mColumnCount;
 
     public static TaskListFragment newInstance() {
@@ -80,7 +80,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         Snackbar current = SnackbarManager.getCurrentSnackbar();
         long delay = 0;
         if (current != null && current.isShowing()) {
-            delay = DISMISS_DELAY_MILLIS;
+            delay = Consts.DISMISS_DELAY_MILLIS;
             current.dismiss();
         }
 
@@ -280,7 +280,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     private void backupRemovedTask(TaskBundle taskBundle, Snackbar snackbar) {
         long delay = 0;
         if (snackbar != null) {
-            delay = DISMISS_DELAY_MILLIS;
+            delay = Consts.DISMISS_DELAY_MILLIS;
             snackbar.dismiss();
         }
 

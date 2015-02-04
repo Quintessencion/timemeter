@@ -1,12 +1,28 @@
 package com.simbirsoft.timemeter.db.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import nl.qbusict.cupboard.annotation.Column;
 
-public class TaskTag {
+public class TaskTag implements Parcelable {
 
     public static final String COLUMN_ID = "_id";
     public static final String COLUMN_TASK_ID = "task_id";
     public static final String COLUMN_TAG_ID = "tag_id";
+
+    public static final Parcelable.Creator<TaskTag> CREATOR =
+            new Parcelable.Creator<TaskTag>() {
+                @Override
+                public TaskTag createFromParcel(Parcel parcel) {
+                    return new TaskTag(parcel);
+                }
+
+                @Override
+                public TaskTag[] newArray(int sz) {
+                    return new TaskTag[sz];
+                }
+            };
 
     @Column(COLUMN_ID)
     private Long _id;
@@ -26,12 +42,22 @@ public class TaskTag {
         return tt;
     }
 
+    public TaskTag() {
+    }
+
+    protected TaskTag(Parcel parcel) {
+        readParcel(parcel);
+    }
+
     public Long getId() {
         return _id;
     }
 
     public void setId(Long id) {
         this._id = id;
+    }
+    public boolean hasId() {
+        return _id != null;
     }
 
     public Long getTaskId() {
@@ -79,5 +105,45 @@ public class TaskTag {
         result = 31 * result + (taskId != null ? taskId.hashCode() : 0);
         result = 31 * result + (tagId != null ? tagId.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeByte((byte) (hasId() ? 1 : 0));
+        if (hasId()) {
+            parcel.writeLong(_id);
+        }
+
+        parcel.writeByte((byte) (taskId != null ? 1 : 0));
+        if (taskId != null) {
+            parcel.writeLong(taskId);
+        }
+
+        parcel.writeByte((byte) (tagId != null ? 1 : 0));
+        if (tagId != null) {
+            parcel.writeLong(tagId);
+        }
+    }
+
+    private void readParcel(Parcel parcel) {
+        boolean hasValue = parcel.readByte() == 1;
+        if (hasValue) {
+            _id = parcel.readLong();
+        }
+
+        hasValue = parcel.readByte() == 1;
+        if (hasValue) {
+            taskId = parcel.readLong();
+        }
+
+        hasValue = parcel.readByte() == 1;
+        if (hasValue) {
+            tagId = parcel.readLong();
+        }
     }
 }
