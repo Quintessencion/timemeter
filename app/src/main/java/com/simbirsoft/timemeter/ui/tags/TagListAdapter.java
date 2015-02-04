@@ -190,10 +190,10 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     }
 
     public Tag findItemWithName(String tagName) {
-        final String pattern = tagName.trim().toLowerCase();
+        final String pattern = tagName.trim();
 
         int index = Iterables.indexOf(mItemsOriginal, (input) ->
-                Objects.equal(input.getName().toLowerCase(), pattern));
+                input.getName().equalsIgnoreCase(pattern));
 
         if (index < 0) return null;
 

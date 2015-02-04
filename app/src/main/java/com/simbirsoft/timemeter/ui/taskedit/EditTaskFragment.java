@@ -32,6 +32,9 @@ import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.base.Objects;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.EventListener;
@@ -101,16 +104,13 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
     @InstanceState
     boolean mIsNewTask;
 
-    // TODO: bind filter back after orientation change
     @InstanceState
     String mTagFilter;
 
     private TaskEditScene mTaskEditScene;
-    // TODO: ignore IME_ACTION_DONE from tag completion view
     private TaskTagsEditScene mTaskTagsEditScene;
     private String mTagsLoaderAttachTag;
     private String mTaskBundleLoaderAttachTag;
-    // TODO: add 'create tag' button view above tag list
     private TagListAdapter mTagListAdapter;
     private Scene mCurrentScene;
     private ActionBar mActionBar;
@@ -209,6 +209,8 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
             View focusView = getActivity().getCurrentFocus();
             if (focusView != null) {
                 KeyboardUtils.hideSoftInput(getActivity(), focusView.getWindowToken());
+            } else {
+                KeyboardUtils.hideSoftInput(getActivity(), mContentRoot.getWindowToken());
             }
         });
         mActionBar.setDisplayHomeAsUpEnabled(false);
@@ -449,15 +451,29 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
     public void onTokenAdded(Object o) {
         Tag tag = (Tag) o;
         List<Tag> bundledTags = mTaskBundle.getTags();
-        if (!bundledTags.contains(tag)) {
-            if (tag.getId() == null) {
-                Tag item = mTagListAdapter.findItemWithName(tag.getName());
-                if (item != null) {
-                    tag = item;
-                }
-            }
 
+        if (tag.getId() == null) {
+            tag.setName(tag.getName().trim());
+            Tag item = mTagListAdapter.findItemWithName(tag.getName());
+            if (item != null) {
+                tag = item;
+            }
+        }
+
+        if (bundledTags.contains(tag)) {
+            final Tag addedToken = tag;
+            List<Object> tokens = mTaskTagsEditScene.tagsView.getObjects();
+            int count = Collections2.filter(tokens, (token) ->
+                    ((Tag) token).getName().equalsIgnoreCase(addedToken.getName())).size();
+
+            if (count > 1) {
+                mTaskTagsEditScene.tagsView.removeObject(o);
+            }
+        } else {
             bundledTags.add(tag);
+            if (!getActivity().isFinishing()) {
+                refilterTagList();
+            }
         }
     }
 
@@ -478,11 +494,11 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
     private TaskEditScene createRootScene() {
         TaskEditScene scene = TaskEditScene.create(getActivity(), mContentRoot);
         scene.tagsView.allowDuplicates(false);
-        scene.tagsView.setTokenListener(this);
         scene.tagsView.allowCollapse(false);
         scene.tagsView.setImeActionLabel(
-                getString(R.string.ime_action_done),
-                EditorInfo.IME_ACTION_DONE);
+                getString(R.string.ime_action_create),
+                EditorInfo.IME_ACTION_NEXT);
+        scene.tagsView.setImeOptions(EditorInfo.IME_ACTION_NEXT);
         scene.tagsView.setOnFocusChangeListener((view, isFocused) -> {
             if (isFocused) {
                 goToEditTagsScene();
@@ -510,14 +526,6 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
     private TaskTagsEditScene createEditTagsScene() {
         TaskTagsEditScene scene = TaskTagsEditScene.create(getActivity(), mContentRoot);
         scene.tagsView.setTokenListener(this);
-        scene.tagsView.setOnEditorActionListener((textView, actionId, keyEvent) -> {
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
-                scene.isFinishing = true;
-                goToMainScene();
-                return true;
-            }
-            return false;
-        });
         scene.tagsView.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
@@ -526,7 +534,13 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
                 String text = charSequence.toString();
-                int pos = text.lastIndexOf(", ") + 2;
+                int pos = text.lastIndexOf(", ");
+                if (pos > -1) {
+                    pos += 2; // Skip dot-space
+                } else {
+                    pos = 0; // Consider full text
+                }
+
                 if (pos >= text.length()) {
                     if (!TextUtils.isEmpty(mTagFilter)) {
                         mTaskTagsEditScene.hideCreateTagView();
@@ -535,7 +549,7 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
                 } else {
                     String input = text.substring(pos).trim();
                     if (!Objects.equal(input, mTagFilter)) {
-                        if (mTagListAdapter.containsItemWithName(input)) {
+                        if (TextUtils.isEmpty(input) || mTagListAdapter.containsItemWithName(input)) {
                             mTaskTagsEditScene.hideCreateTagView();
                         } else {
                             mTaskTagsEditScene.showCreateTagView(input);
