@@ -16,6 +16,7 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
+import com.simbirsoft.timemeter.ui.stats.StatsFragment_;
 import com.simbirsoft.timemeter.ui.tags.TagListFragment_;
 
 import org.androidannotations.annotations.AfterViews;
@@ -32,6 +33,7 @@ public class MainActivity extends BaseActivity
     private static final String TAG_CONTENT_FRAGMENT = "app_content_fragment_tag";
     private static final int SECTION_ID_TASKS = 0;
     private static final int SECTION_ID_TAGS = 1;
+    private static final int SECTION_ID_STATS = 2;
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -77,6 +79,10 @@ public class MainActivity extends BaseActivity
                 fragmentType = TagListFragment_.class;
                 break;
 
+            case SECTION_ID_STATS:
+                fragmentType = StatsFragment_.class;
+                break;
+
             default:
                 LOG.error("unknown section selected");
                 fragmentType = TaskListFragment_.class;
@@ -110,7 +116,7 @@ public class MainActivity extends BaseActivity
                 mTitle = getString(R.string.title_tags);
                 break;
             case 3:
-                mTitle = getString(R.string.title_section3);
+                mTitle = getString(R.string.title_stats);
                 break;
         }
     }
