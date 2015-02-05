@@ -5,6 +5,6 @@
     <item
         android:id="@+id/cancel"
         app:showAsAction="ifRoom"
-        android:icon="@drawable/ic_action_cancel"
-        android:title="@string/action_cancel"/>
+        android:icon="@drawable/ic_delete_white_36dp"
+        android:title="@string/action_remove_task"/>
 </menu>

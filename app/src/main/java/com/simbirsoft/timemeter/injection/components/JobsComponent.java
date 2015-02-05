@@ -1,10 +1,12 @@
 package com.simbirsoft.timemeter.injection.components;
 
 import com.simbirsoft.timemeter.App;
+import com.simbirsoft.timemeter.jobs.BackupTagJob;
 import com.simbirsoft.timemeter.jobs.LoadTagListJob;
 import com.simbirsoft.timemeter.jobs.LoadTaskBundleJob;
 import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
 import com.simbirsoft.timemeter.jobs.LoadTaskTagsJob;
+import com.simbirsoft.timemeter.jobs.RemoveTagJob;
 import com.simbirsoft.timemeter.jobs.RemoveTaskJob;
 import com.simbirsoft.timemeter.jobs.SaveTagJob;
 import com.simbirsoft.timemeter.jobs.SaveTaskBundleJob;
@@ -19,4 +21,6 @@ public interface JobsComponent {
     public SaveTaskBundleJob saveTaskBundleJob();
     public RemoveTaskJob removeTaskJob();
     public SaveTagJob saveTagJob();
+    public RemoveTagJob removeTagJob();
+    public BackupTagJob backupTagJob();
 }

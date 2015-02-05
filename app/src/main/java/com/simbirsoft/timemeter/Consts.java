@@ -8,5 +8,6 @@ public final class Consts {
     public static final int TASK_ACTIVITY_CLOCK_SWITCH_THRESHOLD_MINUTES = 2;
 
     public static final int CONTENT_FADE_IN_DELAY_MILLIS = 120;
+    public static final int DISMISS_DELAY_MILLIS = 500;
 
 }

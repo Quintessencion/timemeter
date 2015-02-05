@@ -37,6 +37,8 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
         void onItemEditColorClicked(Tag item);
         void onItemEditColorLongClicked(Tag item, View itemView);
         void onItemClicked(Tag item);
+        void onItemRemoveLongClicked(Tag item, View itemView);
+        void onItemRemoveClicked(Tag item);
     }
 
     public static abstract class AbsItemClickListener implements ItemClickListener {
@@ -59,6 +61,14 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
         @Override
         public void onItemClicked(Tag item) {
         }
+
+        @Override
+        public void onItemRemoveLongClicked(Tag item, View itemView) {
+        }
+
+        @Override
+        public void onItemRemoveClicked(Tag item) {
+        }
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -71,7 +81,8 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
         ViewGroup actionPanel;
         TextView tagView;
         View editButtonView;
-        View editColorView;
+        View editColorButtonView;
+        View removeButtonView;
     }
 
     public class TagFilter extends Filter {
@@ -175,6 +186,24 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
                 return false;
             };
 
+    private final View.OnClickListener mItemRemoveClickListener =
+            (view) -> {
+                if (mItemClickListener != null) {
+                    mItemClickListener.onItemRemoveClicked((Tag) view.getTag());
+                }
+            };
+
+    private final View.OnLongClickListener mItemRemoveLongClickListener =
+            (view) -> {
+                if (mItemClickListener != null) {
+                    mItemClickListener.onItemRemoveLongClicked((Tag) view.getTag(), view);
+
+                    return true;
+                }
+
+                return false;
+            };
+
     public TagListAdapter() {
         mItems = Lists.newArrayList();
         mItemsOriginal = Lists.newArrayList();
@@ -190,10 +219,10 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     }
 
     public Tag findItemWithName(String tagName) {
-        final String pattern = tagName.trim().toLowerCase();
+        final String pattern = tagName.trim();
 
         int index = Iterables.indexOf(mItemsOriginal, (input) ->
-                Objects.equal(input.getName().toLowerCase(), pattern));
+                input.getName().equalsIgnoreCase(pattern));
 
         if (index < 0) return null;
 
@@ -221,6 +250,19 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
         }
 
         return mItems.get(index);
+    }
+
+    public void removeItem(Tag item) {
+        synchronized (mItemsOriginal) {
+            removeItemImpl(item);
+            removeItemImpl(item);
+        }
+    }
+
+    private void removeItemImpl(Tag item) {
+        mItems.remove(item);
+        mItemsOriginal.remove(item);
+        notifyDataSetChanged();
     }
 
     public void replaceItem(RecyclerView recyclerView, Tag item) {
@@ -311,9 +353,13 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
         vh.editButtonView.setOnClickListener(mItemEditClickListener);
         vh.editButtonView.setOnLongClickListener(mItemEditLongClickListener);
 
-        vh.editColorView = vh.actionPanel.findViewById(R.id.pickColor);
-        vh.editColorView.setOnClickListener(mItemEditColorCl1ickListener);
-        vh.editColorView.setOnLongClickListener(mItemEditColorLongCl1ickListener);
+        vh.editColorButtonView = vh.actionPanel.findViewById(R.id.pickColor);
+        vh.editColorButtonView.setOnClickListener(mItemEditColorCl1ickListener);
+        vh.editColorButtonView.setOnLongClickListener(mItemEditColorLongCl1ickListener);
+
+        vh.removeButtonView = vh.actionPanel.findViewById(R.id.remove);
+        vh.removeButtonView.setOnClickListener(mItemRemoveClickListener);
+        vh.removeButtonView.setOnLongClickListener(mItemRemoveLongClickListener);
 
         vh.itemView.setOnClickListener(mItemViewClickListener);
 
@@ -332,7 +378,8 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
 
         vh.tagView.setText(item.getName());
         vh.editButtonView.setTag(item);
-        vh.editColorView.setTag(item);
+        vh.editColorButtonView.setTag(item);
+        vh.removeButtonView.setTag(item);
         vh.itemView.setTag(item);
 
         TagViewUtils.updateTagViewColor(vh.tagView, item.getColor());

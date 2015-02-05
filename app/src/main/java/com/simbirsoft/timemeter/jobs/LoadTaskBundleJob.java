@@ -60,6 +60,9 @@ public class LoadTaskBundleJob extends LoadJob {
 
         List<Tag> tags = ((LoadJobResult<List<Tag>>) loadResult).getData();
 
-        return new LoadJobResult<>(TaskBundle.create(task, tags));
+        TaskBundle bundle = TaskBundle.create(task, tags);
+        bundle.persistState();
+
+        return new LoadJobResult<>(bundle);
     }
 }

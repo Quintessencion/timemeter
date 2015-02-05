@@ -1,8 +1,8 @@
 package com.simbirsoft.timemeter.ui.main;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.Spannable;
@@ -20,13 +20,15 @@ import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.enums.SnackbarType;
 import com.nispok.snackbar.listeners.EventListener;
+import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
-import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
+import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.controller.TaskActivityTimerUpdateListener;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
+import com.simbirsoft.timemeter.jobs.SaveTaskBundleJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
@@ -43,6 +45,7 @@ import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @EFragment(R.layout.fragment_task_list)
 public class TaskListFragment extends BaseFragment implements JobLoader.JobLoaderCallbacks,
@@ -50,10 +53,10 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
 
     private static final Logger LOG = LogFactory.getLogger(TaskListFragment.class);
 
+    private static final String SNACKBAR_TAG = "task_list_snackbar";
     private static final int REQUEST_CODE_EDIT_TASK = 100;
 
     private static final int COLUMN_COUNT_DEFAULT = 2;
-    private static final int DISMISS_DELAY_MILLIS = 500;
     private int mColumnCount;
 
     public static TaskListFragment newInstance() {
@@ -80,7 +83,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         Snackbar current = SnackbarManager.getCurrentSnackbar();
         long delay = 0;
         if (current != null && current.isShowing()) {
-            delay = DISMISS_DELAY_MILLIS;
+            delay = Consts.DISMISS_DELAY_MILLIS;
             current.dismiss();
         }
 
@@ -134,6 +137,11 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     public void onDestroy() {
         if (mTasksViewAdapter != null) {
             mTasksViewAdapter.setTaskClickListener(null);
+        }
+
+        Snackbar snackbar = SnackbarManager.getCurrentSnackbar();
+        if (snackbar != null && snackbar.isShowing()) {
+            snackbar.dismiss();
         }
 
         super.onDestroy();
@@ -280,43 +288,56 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     private void backupRemovedTask(TaskBundle taskBundle, Snackbar snackbar) {
         long delay = 0;
         if (snackbar != null) {
-            delay = DISMISS_DELAY_MILLIS;
+            delay = Consts.DISMISS_DELAY_MILLIS;
             snackbar.dismiss();
         }
 
-        mRecyclerView.postDelayed(() -> {
-            Bundle args = new Bundle();
-            args.putString(EditTaskFragment.EXTRA_TITLE, getString(R.string.title_edit_task));
-            args.putParcelable(EditTaskFragment.EXTRA_TASK_BUNDLE, taskBundle);
+        final AsyncTask unmarshallTask = new AsyncTask<Void, Void, TaskBundle>() {
+            @Override
+            protected TaskBundle doInBackground(Void... voids) {
+                return taskBundle.createOriginalBundle();
+            }
+        }.execute();
 
-            Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
-                    getActivity(), EditTaskFragment_.class.getName(), args);
-            getActivity().startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TASK);
+        mRecyclerView.postDelayed(() -> {
+            try {
+                SaveTaskBundleJob job = Injection.sJobsComponent.saveTaskBundleJob();
+                job.setTaskBundle((TaskBundle) unmarshallTask.get());
+                submitJob(job);
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
         }, delay);
+    }
+
+    @OnJobSuccess(SaveTaskBundleJob.class)
+    public void onTaskSaved() {
+        requestLoad(mTaskListLoaderTag, this);
+    }
+
+    @OnJobFailure(SaveTaskBundleJob.class)
+    public void onTaskSaveFailed() {
+        Snackbar bar = Snackbar.with(getActivity())
+                .text(R.string.error_unable_to_backup_task)
+                .colorResource(R.color.lightRed)
+                .attachToRecyclerView(mRecyclerView)
+                .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE);
+        bar.setTag(SNACKBAR_TAG);
+        SnackbarManager.show(bar);
     }
 
     private void showTaskRemoveUndoBar(TaskBundle bundle) {
         // Hide floating action button
         mFloatingActionButton.hide(false);
 
-        final String description = bundle.getTask().getDescription();
-        final String undoMessage = getString(R.string.hint_task_removed)
-                + "\n"
-                + description;
-
-        final SpannableStringBuilder sb = new SpannableStringBuilder(undoMessage);
-        final StyleSpan iss = new StyleSpan(android.graphics.Typeface.ITALIC);
-        sb.setSpan(iss, undoMessage.length() - description.length(),
-                undoMessage.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-
-        Snackbar bar = Snackbar.with(getActivity())
+        final Snackbar bar = Snackbar.with(getActivity())
                 .type(SnackbarType.MULTI_LINE)
-                .text(sb)
                 .actionLabel(R.string.action_undo_remove)
                 .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE)
                 .attachToRecyclerView(mRecyclerView)
                 .color(getResources().getColor(R.color.primaryDark))
                 .actionListener((snackbar) -> backupRemovedTask(bundle, snackbar))
+                .animation(true)
                 .eventListener(new EventListener() {
                     @Override
                     public void onShow(Snackbar snackbar) {
@@ -337,7 +358,38 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
                         mFloatingActionButton.show(true);
                     }
                 });
-        SnackbarManager.show(bar);
+
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void... voids) {
+                final String description;
+
+                if (bundle.hasPersistedState()) {
+                    description = bundle.createOriginalBundle().getTask().getDescription();
+                } else {
+                    description = bundle.getTask().getDescription();
+                }
+
+                final String undoMessage = getString(R.string.hint_task_removed)
+                        + "\n"
+                        + description;
+
+                final SpannableStringBuilder sb = new SpannableStringBuilder(undoMessage);
+                final StyleSpan iss = new StyleSpan(android.graphics.Typeface.ITALIC);
+                sb.setSpan(iss, undoMessage.length() - description.length(),
+                        undoMessage.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+
+                return sb.toString();
+            }
+
+            @Override
+            protected void onPostExecute(String text) {
+                if (isAdded() && !getActivity().isFinishing()) {
+                    bar.text(text);
+                    SnackbarManager.show(bar);
+                }
+            }
+        }.execute();
     }
 
     @Override

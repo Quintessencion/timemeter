@@ -28,6 +28,7 @@ public class TaskBundle implements Parcelable {
     private Task mTask;
     private List<Tag> mTags;
     private int mSavedState;
+    private byte[] mOriginalState;
 
     public static TaskBundle create(Task task, List<Tag> tags) {
         TaskBundle bundle = new TaskBundle();
@@ -47,8 +48,37 @@ public class TaskBundle implements Parcelable {
     public TaskBundle() {
     }
 
+    public TaskBundle createOriginalBundle() {
+        if (mOriginalState == null) {
+            throw new IllegalStateException("state is not persisted");
+        }
+
+        Parcel parcel = Parcel.obtain();
+        parcel.unmarshall(mOriginalState, 0, mOriginalState.length);
+        parcel.setDataPosition(0);
+        TaskBundle bundle = parcel.readParcelable(getClass().getClassLoader());
+        parcel.recycle();
+
+        return bundle;
+    }
+
     protected TaskBundle(Parcel parcel) {
         readParcel(parcel);
+    }
+
+    public boolean hasPersistedState() {
+        return mOriginalState != null;
+    }
+
+    public void persistState() {
+        persistStateFrom(this);
+    }
+
+    private void persistStateFrom(TaskBundle bundle) {
+        Parcel parcel = Parcel.obtain();
+        parcel.writeParcelable(bundle, 0);
+        mOriginalState = parcel.marshall();
+        parcel.recycle();
     }
 
     public void saveState() {
@@ -81,12 +111,20 @@ public class TaskBundle implements Parcelable {
     }
 
     private void readParcel(Parcel parcel) {
-        mTask = parcel.readParcelable(getClass().getClassLoader());
+        final ClassLoader classLoader = getClass().getClassLoader();
+        mTask = parcel.readParcelable(classLoader);
         Parcelable[] parcelables = parcel.readParcelableArray(getClass().getClassLoader());
 
         mTags = Lists.newArrayListWithCapacity(parcelables.length);
         for (Parcelable parcelable : parcelables) {
             mTags.add((Tag) parcelable);
+        }
+
+        boolean hasPersistedState = parcel.readByte() == 1;
+        if (hasPersistedState) {
+            int length = parcel.readInt();
+            mOriginalState = new byte[length];
+            parcel.readByteArray(mOriginalState);
         }
     }
 
@@ -95,6 +133,14 @@ public class TaskBundle implements Parcelable {
         parcel.writeParcelable(mTask, 0);
         Tag[] tags = mTags.toArray(new Tag[mTags.size()]);
         parcel.writeParcelableArray(tags, 0);
+
+        if (hasPersistedState()) {
+            parcel.writeByte((byte)1);
+            parcel.writeInt(mOriginalState.length);
+            parcel.writeByteArray(mOriginalState);
+        } else {
+            parcel.writeByte((byte)0);
+        }
     }
 
     @Override
