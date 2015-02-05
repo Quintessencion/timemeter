@@ -7,6 +7,9 @@
     <string name="title_stats">Статистика</string>
     <string name="title_begin_new_task">Начать новую задачу</string>
     <string name="title_edit_task">Редактировать задачу</string>
+    <string name="label_service_screen_lock_watcher">Activity Watcher</string>
+    <string name="label_service_worker">Core</string>
+    <string name="label_receiver_notification_update">Notification Updater</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>

@@ -9,33 +9,64 @@ import java.util.concurrent.TimeUnit;
 
 public final class TimerTextFormatter {
 
+    private static class SplitTime {
+        long hours;
+        long minutes;
+        long seconds;
+    }
+
     public static String formatTaskTimerText(Resources res, long pastTimeMillis) {
-        long hours = TimeUnit.MILLISECONDS.toHours(pastTimeMillis);
-        long millis = TimeUnit.HOURS.toMillis(hours);
-        long minutes = TimeUnit.MILLISECONDS.toMinutes(pastTimeMillis - millis);
-        millis += TimeUnit.MINUTES.toMillis(minutes);
-        long seconds = TimeUnit.MILLISECONDS.toSeconds(pastTimeMillis - millis);
+        SplitTime t = fetchSplitTime(pastTimeMillis);
 
         StringBuilder sb = new StringBuilder();
-        if (hours > 0 || minutes >= Consts.TASK_ACTIVITY_CLOCK_SWITCH_THRESHOLD_MINUTES) {
-            sb.append(hours)
+        if (t.hours > 0 || t.minutes >= Consts.TASK_ACTIVITY_CLOCK_SWITCH_THRESHOLD_MINUTES) {
+            sb.append(t.hours)
                     .append("<small>")
                     .append(res.getString(R.string.hours_mark))
                     .append("&nbsp;</small>");
         }
 
-        sb.append(String.format("%02d", minutes))
+        sb.append(String.format("%02d", t.minutes))
                 .append("<small>")
                 .append(res.getString(R.string.minutes_mark))
                 .append("&nbsp;</small>");
 
-        if (minutes < Consts.TASK_ACTIVITY_CLOCK_SWITCH_THRESHOLD_MINUTES) {
-            sb.append(String.format("%02d", seconds))
+        if (t.minutes < Consts.TASK_ACTIVITY_CLOCK_SWITCH_THRESHOLD_MINUTES) {
+            sb.append(String.format("%02d", t.seconds))
                     .append("<small>")
                     .append(res.getString(R.string.seconds_mark))
                     .append("&nbsp;</small>");
         }
 
         return sb.toString();
+    }
+
+    public static String formatTaskNotificatoinTimer(Resources res, long pastTimeMillis) {
+        SplitTime t = fetchSplitTime(pastTimeMillis);
+
+        StringBuilder sb = new StringBuilder();
+        if (t.hours > 0) {
+            sb.append(t.hours)
+                .append(res.getString(R.string.hours_mark))
+                .append(':');
+        }
+
+        sb.append(String.format("%02d", t.minutes))
+                .append(':')
+                .append(String.format("%02d", t.seconds));
+
+        return sb.toString();
+    }
+
+    private static SplitTime fetchSplitTime(long timeMillis) {
+        SplitTime t = new SplitTime();
+
+        t.hours = TimeUnit.MILLISECONDS.toHours(timeMillis);
+        long millis = TimeUnit.HOURS.toMillis(t.hours);
+        t.minutes = TimeUnit.MILLISECONDS.toMinutes(timeMillis - millis);
+        millis += TimeUnit.MINUTES.toMillis(t.minutes);
+        t.seconds = TimeUnit.MILLISECONDS.toSeconds(timeMillis - millis);
+
+        return t;
     }
 }

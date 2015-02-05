@@ -14,8 +14,11 @@ import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
+import com.simbirsoft.timemeter.events.TaskActivityStartedEvent;
+import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
 import com.simbirsoft.timemeter.jobs.UpdateTaskActivityTimerJob;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.squareup.otto.Bus;
 import com.squareup.phrase.Phrase;
 
 import org.slf4j.Logger;
@@ -32,7 +35,10 @@ public class TaskActivityManager implements ITaskActivityManager {
 
     private static final Logger LOG = LogFactory.getLogger(TaskActivityManager.class);
 
+    private final Context mContext;
     private final DatabaseHelper mDatabaseHelper;
+    private final TaskNotificationManager mTaskNotificationManager;
+    private final Bus mBus;
 
     private final LinkedList<TaskActivityTimerUpdateListener> mActivityUpdateListeners;
     private ActiveTaskInfo mActiveTaskInfo;
@@ -42,19 +48,23 @@ public class TaskActivityManager implements ITaskActivityManager {
     private long mLastSaveActivityTimeMillis;
 
     @Inject
-    public TaskActivityManager(Context context, DatabaseHelper databaseHelper) {
+    public TaskActivityManager(Context context, Bus bus, DatabaseHelper databaseHelper) {
+        mContext = context;
+        mBus = bus;
         mDatabaseHelper = databaseHelper;
+        mTaskNotificationManager = new TaskNotificationManager(mContext, mBus, this);
         LOG.info("{} created", getClass().getName());
         mActivityUpdateListeners = Lists.newLinkedList();
-        mJobEventDispatcher = new JobEventDispatcher(context, "TaskActivityManager_Dispatcher");
+        mJobEventDispatcher = new JobEventDispatcher(mContext, "TaskActivityManager_Dispatcher");
+        mBus.register(this);
     }
 
     public static ActiveTaskInfo fetchLastTaskActivity(Task task, SQLiteDatabase db) {
         TaskTimeSpan span = cupboard().withDatabase(db)
                 .query(TaskTimeSpan.class)
-                .withSelection("taskId=?", String.valueOf(task.getId()))
-                .groupBy("startTimeMillis")
-                .having("max(startTimeMillis)")
+                .withSelection(TaskTimeSpan.COLUMN_TASK_ID + "=?", String.valueOf(task.getId()))
+                .groupBy(TaskTimeSpan.COLUMN_START_TIME)
+                .having("MAX(" + TaskTimeSpan.COLUMN_START_TIME + ")")
                 .get();
 
         if (span == null) {
@@ -72,8 +82,7 @@ public class TaskActivityManager implements ITaskActivityManager {
         mActiveTaskInfo = fetchRunningTask(db);
 
         if (mActiveTaskInfo != null) {
-            requestTimerUpdates();
-            updateTaskActivityRecord();
+            resumeTaskActivity();
         }
 
         mJobEventDispatcher.register(this);
@@ -170,6 +179,18 @@ public class TaskActivityManager implements ITaskActivityManager {
         mActivityUpdateListeners.remove(listener);
     }
 
+    private void resumeTaskActivity() {
+        if (mActiveTaskInfo == null) {
+            LOG.error("unable to resume task activity: no active task");
+            return;
+        }
+        requestTimerUpdates();
+        updateTaskActivityRecord();
+        mTaskNotificationManager.updateTaskNotification(mActiveTaskInfo);
+        LOG.debug("task activity resumed: '{}'", mActiveTaskInfo.getTask().getDescription());
+        mBus.post(new TaskActivityStartedEvent(mActiveTaskInfo));
+    }
+
     private void beginTaskActivity(Task task) {
         if (hasActiveTask()) {
             stopTaskActivity();
@@ -183,11 +204,8 @@ public class TaskActivityManager implements ITaskActivityManager {
         span.setStartTimeMillis(System.currentTimeMillis());
         span.setTaskId(task.getId());
         mActiveTaskInfo = new ActiveTaskInfo(task, span);
-        LOG.info("new task activity created; task {}", task);
-
-        requestTimerUpdates();
-
-        updateTaskActivityRecord();
+        LOG.info("new task activity created: '{}'", task.getDescription());
+        resumeTaskActivity();
         LOG.debug("task activity started");
     }
 
@@ -214,6 +232,7 @@ public class TaskActivityManager implements ITaskActivityManager {
         mActiveTaskInfo.getTaskTimeSpan().setActive(false);
         updateTaskActivityRecord();
         mActiveTaskInfo = null;
+        mBus.post(new TaskActivityStoppedEvent());
         LOG.debug("task activity stopped");
     }
 

@@ -1,36 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.simbirsoft.timemeter" >
+<manifest
+    package="com.simbirsoft.timemeter"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
+        android:name=".App"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme"
-        android:name=".App">
+        android:theme="@style/AppTheme">
         <activity
             android:name=".ui.main.MainActivity_"
-            android:label="@string/app_name" >
+            android:label="@string/app_name">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
         <activity
             android:name=".ui.base.FragmentContainerActivity_"
-            android:exported="false" />
+            android:exported="false"/>
 
         <activity
             android:name=".ui.base.DialogContainerActivity_"
-            android:windowSoftInputMode="stateHidden"
+            android:exported="false"
             android:theme="@style/AppTheme.Transparent"
-            android:exported="false" />
+            android:windowSoftInputMode="stateHidden"/>
 
         <service
             android:name=".service.TimeWorkerService"
-            android:exported="false" />
+            android:label="@string/label_service_worker"
+            android:exported="false"/>
+
+        <service
+            android:name=".service.ScreenLockWatcherService"
+            android:label="@string/label_service_screen_lock_watcher"
+            android:exported="false"/>
+
+        <receiver
+            android:name=".receiver.NotificationUpdateReceiver"
+            android:label="@string/label_receiver_notification_update"
+            android:exported="false"/>
     </application>
 
 </manifest>

@@ -30,6 +30,8 @@ public class MainActivity extends BaseActivity
 
     private static final Logger LOG = LogFactory.getLogger(MainActivity.class);
 
+    public static final String ACTION_SHOW_ACTIVE_TASK = "com.simbirsoft.android.intent.action.SHOW_ACTIVE_TASK";
+
     private static final String TAG_CONTENT_FRAGMENT = "app_content_fragment_tag";
     private static final int SECTION_ID_TASKS = 0;
     private static final int SECTION_ID_TAGS = 1;
