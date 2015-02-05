@@ -69,6 +69,13 @@ public class MainActivity extends BaseActivity
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        // TODO: handle intent from notification bar
+    }
+
+    @Override
     public void onNavigationDrawerItemSelected(int position) {
         Class<?> fragmentType;
 

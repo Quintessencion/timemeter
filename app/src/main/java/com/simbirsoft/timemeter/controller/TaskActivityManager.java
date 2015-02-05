@@ -14,11 +14,13 @@ import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
+import com.simbirsoft.timemeter.events.StopTaskActivityRequestedEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStartedEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
 import com.simbirsoft.timemeter.jobs.UpdateTaskActivityTimerJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
 import com.squareup.phrase.Phrase;
 
 import org.slf4j.Logger;
@@ -90,6 +92,11 @@ public class TaskActivityManager implements ITaskActivityManager {
         mIsInitialized = true;
 
         LOG.debug("initialization finished");
+    }
+
+    @Subscribe
+    public void onTaskActivityStopRequestedEvent(StopTaskActivityRequestedEvent event) {
+        stopTaskActivity();
     }
 
     private boolean isSaveActivityTimeoutReached() {
@@ -229,10 +236,11 @@ public class TaskActivityManager implements ITaskActivityManager {
             job.cancel();
         }
 
+        final TaskActivityStoppedEvent event = new TaskActivityStoppedEvent(mActiveTaskInfo.getTask());
         mActiveTaskInfo.getTaskTimeSpan().setActive(false);
         updateTaskActivityRecord();
         mActiveTaskInfo = null;
-        mBus.post(new TaskActivityStoppedEvent());
+        mBus.post(event);
         LOG.debug("task activity stopped");
     }
 

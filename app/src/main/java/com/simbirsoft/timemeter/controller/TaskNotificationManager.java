@@ -1,8 +1,6 @@
 package com.simbirsoft.timemeter.controller;
 
 import android.app.AlarmManager;
-import android.app.KeyguardManager;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -10,8 +8,6 @@ import android.content.Intent;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
-import android.text.Html;
-import android.text.Spanned;
 
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.events.ScheduledTaskActivityNotificationUpdateEvent;
@@ -20,6 +16,7 @@ import com.simbirsoft.timemeter.events.TaskActivityStartedEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.receiver.NotificationUpdateReceiver;
+import com.simbirsoft.timemeter.receiver.StopTaskActivityReceiver;
 import com.simbirsoft.timemeter.service.ScreenLockWatcherService;
 import com.simbirsoft.timemeter.ui.main.MainActivity;
 import com.simbirsoft.timemeter.ui.main.MainActivity_;
@@ -40,6 +37,7 @@ public class TaskNotificationManager {
     private final Context mContext;
     private final Bus mBus;
     private final ITaskActivityInfoProvider mTaskActivityInfoProvider;
+    private NotificationCompat.Builder mNotificationBuilder;
 
     public TaskNotificationManager(Context context, Bus bus,
                                    ITaskActivityInfoProvider taskActivityInfoProvider) {
@@ -97,23 +95,15 @@ public class TaskNotificationManager {
         long pastTime = taskInfo.getPastTimeMillis();
         CharSequence timeText = TimerTextFormatter.formatTaskNotificatoinTimer(
                 mContext.getResources(), pastTime);
-        Intent actionIntent = new Intent(mContext, MainActivity_.class);
-        actionIntent.setAction(MainActivity.ACTION_SHOW_ACTIVE_TASK);
-        actionIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-                mContext, 0, actionIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+        if (mNotificationBuilder == null) {
+            String notificationText = taskInfo.getTask().getDescription();
+            mNotificationBuilder = createTaskActivityNotification(
+                    timeText, notificationText);
+        } else {
+            mNotificationBuilder.setContentTitle(timeText);
+        }
 
-        String notificationText = taskInfo.getTask().getDescription();
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext);
-        Notification notification = builder.setOngoing(true)
-                .setOnlyAlertOnce(true)
-                .setContentTitle(timeText)
-                .setContentText(notificationText)
-                .setSmallIcon(R.drawable.ic_edit_grey600_24dp)
-                .setTicker(notificationText)
-                .setContentIntent(pendingIntent)
-                .build();
-        nm.notify(NOTIFICATION_ID, notification);
+        nm.notify(NOTIFICATION_ID, mNotificationBuilder.build());
 
         if (mIsForeground) {
             scheduleNotificationUpdate();
@@ -148,6 +138,35 @@ public class TaskNotificationManager {
         }
 
         updateTaskNotification(mTaskActivityInfoProvider.getActiveTaskInfo());
+    }
+
+    private NotificationCompat.Builder createTaskActivityNotification(CharSequence notificationTitle, CharSequence notificationText) {
+        Intent actionIntent = new Intent(mContext, MainActivity_.class);
+        actionIntent.setAction(MainActivity.ACTION_SHOW_ACTIVE_TASK);
+        actionIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                mContext, 0, actionIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+        Intent stopActionIntent = new Intent(mContext, StopTaskActivityReceiver.class);
+        stopActionIntent.setAction(StopTaskActivityReceiver.ACTION_STOP_TASK_ACTIVITY);
+        PendingIntent stopPendingIntent = PendingIntent.getBroadcast(
+                mContext, 0, stopActionIntent, 0);
+
+        NotificationCompat.Action stopAction = new NotificationCompat.Action(
+                R.drawable.ic_cancel_white_18dp,
+                mContext.getString(R.string.action_stop_task),
+                stopPendingIntent);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext);
+
+        return builder.setOngoing(true)
+                .setOnlyAlertOnce(true)
+                .setContentTitle(notificationTitle)
+                .setContentText(notificationText)
+                .setSmallIcon(R.drawable.ic_timer_white_24dp)
+                .setTicker(notificationText)
+                .setContentIntent(pendingIntent)
+                .addAction(stopAction);
     }
 
     private PendingIntent createNotificationUpdateIntent() {

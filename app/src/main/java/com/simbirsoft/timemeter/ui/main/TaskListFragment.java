@@ -26,6 +26,7 @@ import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.controller.TaskActivityTimerUpdateListener;
 import com.simbirsoft.timemeter.db.model.Task;
+import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
 import com.simbirsoft.timemeter.jobs.SaveTaskBundleJob;
@@ -35,6 +36,8 @@ import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
+import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
@@ -46,6 +49,8 @@ import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+
+import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_task_list)
 public class TaskListFragment extends BaseFragment implements JobLoader.JobLoaderCallbacks,
@@ -68,6 +73,9 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
 
     @ViewById(R.id.floatingButton)
     FloatingActionButton mFloatingActionButton;
+
+    @Inject
+    Bus mBus;
 
     @InstanceState
     int[] mTagListPosition;
@@ -129,12 +137,17 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Injection.sUiComponent.injectTaskListFragment(this);
+
         mTaskListLoaderTag = getClass().getName() + "_loader_tag";
         mTaskActivityManager = Injection.sTaskManager.taskActivityManager();
+        mBus.register(this);
     }
 
     @Override
     public void onDestroy() {
+        mBus.unregister(this);
+
         if (mTasksViewAdapter != null) {
             mTasksViewAdapter.setTaskClickListener(null);
         }
@@ -396,6 +409,13 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     public void onTaskActivityUpdate(ActiveTaskInfo info) {
         if (mRecyclerView != null && mTasksViewAdapter != null) {
             mTasksViewAdapter.updateItemView(mRecyclerView, info.getTask());
+        }
+    }
+
+    @Subscribe
+    public void onTaskActivityStopped(TaskActivityStoppedEvent event) {
+        if (mTasksViewAdapter != null) {
+            mTasksViewAdapter.updateItemView(mRecyclerView, event.task);
         }
     }
 }

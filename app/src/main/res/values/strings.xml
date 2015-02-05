@@ -25,6 +25,7 @@
     <string name="action_accept_yes">Да</string>
     <string name="action_perform_remove">Удалить</string>
     <string name="action_undo_remove">Вернуть</string>
+    <string name="action_stop_task">Остновить</string>
     <string name="ime_action_done">Готово</string>
     <string name="ime_action_create">Создать</string>
     <string name="action_edit">Редактировать</string>

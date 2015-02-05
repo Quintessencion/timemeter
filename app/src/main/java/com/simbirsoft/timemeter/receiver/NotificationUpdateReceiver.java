@@ -24,7 +24,7 @@ public class NotificationUpdateReceiver extends BroadcastReceiver {
     Bus mBus;
 
     public NotificationUpdateReceiver() {
-        Injection.sTaskManager.injectNotificationUpdateReceiver(this);
+        Injection.sUiComponent.injectNotificationUpdateReceiver(this);
     }
 
     @Override

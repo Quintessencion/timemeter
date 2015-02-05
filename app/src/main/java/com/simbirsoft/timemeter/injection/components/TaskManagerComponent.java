@@ -8,6 +8,4 @@ import com.squareup.otto.Bus;
 public interface TaskManagerComponent {
     public Bus bus();
     public ITaskActivityManager taskActivityManager();
-    public void injectNotificationUpdateReceiver(NotificationUpdateReceiver receiver);
-    public void injectScreenLockReceiver(ScreenLockReceiver receiver);
 }

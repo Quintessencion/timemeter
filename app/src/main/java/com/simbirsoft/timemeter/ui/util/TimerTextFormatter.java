@@ -47,8 +47,7 @@ public final class TimerTextFormatter {
         StringBuilder sb = new StringBuilder();
         if (t.hours > 0) {
             sb.append(t.hours)
-                .append(res.getString(R.string.hours_mark))
-                .append(':');
+                    .append(':');
         }
 
         sb.append(String.format("%02d", t.minutes))

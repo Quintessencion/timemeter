@@ -43,6 +43,9 @@
             android:name=".receiver.NotificationUpdateReceiver"
             android:label="@string/label_receiver_notification_update"
             android:exported="false"/>
+
+        <receiver android:name=".receiver.StopTaskActivityReceiver"
+            android:exported="false"/>
     </application>
 
 </manifest>

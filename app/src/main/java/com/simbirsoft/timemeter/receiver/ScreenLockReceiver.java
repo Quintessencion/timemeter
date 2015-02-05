@@ -21,7 +21,7 @@ public class ScreenLockReceiver extends BroadcastReceiver {
     Bus mBus;
 
     public ScreenLockReceiver() {
-        Injection.sTaskManager.injectScreenLockReceiver(this);
+        Injection.sUiComponent.injectScreenLockReceiver(this);
     }
 
     @Override
