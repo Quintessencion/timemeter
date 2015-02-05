@@ -72,7 +72,7 @@ public class MainActivity extends BaseActivity
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
 
-        // TODO: handle intent from notification bar
+        // TODO: handle task activity intent from notification bar
     }
 
     @Override

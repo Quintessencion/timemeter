@@ -92,15 +92,17 @@ public class TaskNotificationManager {
             return;
         }
 
+        String notificationText = taskInfo.getTask().getDescription();
         long pastTime = taskInfo.getPastTimeMillis();
         CharSequence timeText = TimerTextFormatter.formatTaskNotificatoinTimer(
                 mContext.getResources(), pastTime);
         if (mNotificationBuilder == null) {
-            String notificationText = taskInfo.getTask().getDescription();
             mNotificationBuilder = createTaskActivityNotification(
                     timeText, notificationText);
         } else {
             mNotificationBuilder.setContentTitle(timeText);
+            mNotificationBuilder.setContentText(notificationText);
+            mNotificationBuilder.setTicker(notificationText);
         }
 
         nm.notify(NOTIFICATION_ID, mNotificationBuilder.build());
@@ -153,7 +155,7 @@ public class TaskNotificationManager {
                 mContext, 0, stopActionIntent, 0);
 
         NotificationCompat.Action stopAction = new NotificationCompat.Action(
-                R.drawable.ic_cancel_white_18dp,
+                R.drawable.ic_cancel_white_24dp,
                 mContext.getString(R.string.action_stop_task),
                 stopPendingIntent);
 
