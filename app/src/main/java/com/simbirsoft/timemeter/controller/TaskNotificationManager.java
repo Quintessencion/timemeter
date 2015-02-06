@@ -87,6 +87,7 @@ public class TaskNotificationManager {
 
         if (taskInfo == null) {
             nm.cancel(NOTIFICATION_ID);
+            mNotificationBuilder = null;
             LOG.debug("cancelled task notification");
 
             return;
@@ -101,8 +102,6 @@ public class TaskNotificationManager {
                     timeText, notificationText);
         } else {
             mNotificationBuilder.setContentTitle(timeText);
-            mNotificationBuilder.setContentText(notificationText);
-            mNotificationBuilder.setTicker(notificationText);
         }
 
         nm.notify(NOTIFICATION_ID, mNotificationBuilder.build());
@@ -118,7 +117,7 @@ public class TaskNotificationManager {
         long time = SystemClock.elapsedRealtime() + updateIntervalMillis;
         PendingIntent intent = createNotificationUpdateIntent();
         AlarmManager am = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
-        am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, time, intent);
+        am.set(AlarmManager.ELAPSED_REALTIME, time, intent);
         LOG.trace("scheduled next notification update through {}ms", updateIntervalMillis);
     }
 

@@ -1,5 +1,6 @@
 package com.simbirsoft.timemeter.ui.main;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -8,7 +9,10 @@ import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
@@ -32,6 +36,7 @@ import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
 import com.simbirsoft.timemeter.jobs.SaveTaskBundleJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
+import com.simbirsoft.timemeter.ui.base.ContentFragmentCallbacks;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
@@ -71,21 +76,20 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     @ViewById(android.R.id.list)
     RecyclerView mRecyclerView;
 
-    @ViewById(R.id.floatingButton)
-    FloatingActionButton mFloatingActionButton;
-
     @Inject
     Bus mBus;
 
     @InstanceState
     int[] mTagListPosition;
 
+
+    private FloatingActionButton mFloatingActionButton;
     private TaskListAdapter mTasksViewAdapter;
     private String mTaskListLoaderTag;
     private ITaskActivityManager mTaskActivityManager;
+    private ContentFragmentCallbacks mCallbacks;
 
-    @Click(R.id.floatingButton)
-    void onFloatingButtonClicked(View v) {
+    private void onFloatingButtonClicked(View v) {
         LOG.info("floating button clicked");
 
         Snackbar current = SnackbarManager.getCurrentSnackbar();
@@ -105,15 +109,26 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         }, delay);
     }
 
-    @LongClick(R.id.floatingButton)
-    void onFloatingActionButtonLongClicked(View v) {
+    private boolean onFloatingActionButtonLongClicked(View v) {
         showToast(R.string.hint_new_task);
+        return true;
     }
-
 
     @AfterViews
     void bindViews() {
+        final RelativeLayout containerRoot = mCallbacks.getFragmentContainerRoot();
+        final ViewGroup floatingButtonContainer = (ViewGroup) LayoutInflater.from(getActivity())
+                .inflate(R.layout.view_floating_action_button, containerRoot, false);
+        mFloatingActionButton = (FloatingActionButton) floatingButtonContainer.findViewById(R.id.floatingButton);
+        final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        containerRoot.addView(floatingButtonContainer, params);
         mFloatingActionButton.attachToRecyclerView(mRecyclerView);
+        mFloatingActionButton.setOnClickListener(this::onFloatingButtonClicked);
+        mFloatingActionButton.setOnLongClickListener(this::onFloatingActionButtonLongClicked);
         mRecyclerView.setHasFixedSize(false);
 
         mColumnCount = COLUMN_COUNT_DEFAULT;
@@ -131,6 +146,19 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         mRecyclerView.setAdapter(mTasksViewAdapter);
 
         requestLoad(mTaskListLoaderTag, this);
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        mCallbacks = (ContentFragmentCallbacks) activity;
+    }
+
+    @Override
+    public void onDetach() {
+        mCallbacks = null;
+        super.onDetach();
     }
 
     @Override

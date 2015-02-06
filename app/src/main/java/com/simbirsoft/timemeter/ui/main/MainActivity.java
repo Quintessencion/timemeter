@@ -1,32 +1,42 @@
 package com.simbirsoft.timemeter.ui.main;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
+import android.transitions.everywhere.ChangeBounds;
+import android.transitions.everywhere.Fade;
+import android.transitions.everywhere.TransitionManager;
+import android.transitions.everywhere.TransitionSet;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.animation.DecelerateInterpolator;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import com.simbirsoft.timemeter.NavigationDrawerFragment;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
+import com.simbirsoft.timemeter.ui.base.ContentFragmentCallbacks;
 import com.simbirsoft.timemeter.ui.stats.StatsFragment_;
 import com.simbirsoft.timemeter.ui.tags.TagListFragment_;
+import com.simbirsoft.timemeter.ui.views.FilterView;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
 @EActivity(R.layout.activity_main)
 public class MainActivity extends BaseActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks, ContentFragmentCallbacks {
 
     private static final Logger LOG = LogFactory.getLogger(MainActivity.class);
 
@@ -45,13 +55,29 @@ public class MainActivity extends BaseActivity
     @ViewById(R.id.drawer_layout)
     DrawerLayout mDrawerLayout;
 
+    @ViewById(R.id.contentRoot)
+    RelativeLayout mContentRoot;
+
+    @ViewById(R.id.containerRoot)
+    RelativeLayout mFragmentContainerRoot;
+
+    @ViewById(R.id.container)
+    FrameLayout mFragmentContainer;
+
     @ViewById(R.id.toolbar)
     Toolbar mToolbar;
+
+    @ViewById(R.id.filterView)
+    FilterView mFilterView;
+
+    @InstanceState
+    boolean mIsFilterPanelShown;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
     private CharSequence mTitle;
+    private Menu mOptionsMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +92,12 @@ public class MainActivity extends BaseActivity
         mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.navigation_drawer);
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer, mDrawerLayout);
+
+        if (mIsFilterPanelShown) {
+            showFilterView(false);
+        } else {
+            hideFilterView(false);
+        }
     }
 
     @Override
@@ -141,22 +173,103 @@ public class MainActivity extends BaseActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         if (!mNavigationDrawerFragment.isDrawerOpen()) {
             getMenuInflater().inflate(R.menu.main, menu);
+            mOptionsMenu = menu;
+            updateOptionsMenu();
             restoreActionBar();
             return true;
         }
+
         return super.onCreateOptionsMenu(menu);
+    }
+
+    private void showFilterView(boolean animate) {
+        if (animate) {
+            TransitionSet set = new TransitionSet();
+            set.addTransition(new Fade(Fade.IN));
+            set.addTransition(new ChangeBounds());
+            set.setInterpolator(new DecelerateInterpolator(0.8f));
+            set.setOrdering(TransitionSet.ORDERING_TOGETHER);
+            set.excludeTarget(R.id.floatingButton, true);
+            TransitionManager.beginDelayedTransition(mContentRoot, set);
+        }
+
+        RelativeLayout.LayoutParams containerLayoutParams =
+                (RelativeLayout.LayoutParams) mFragmentContainerRoot.getLayoutParams();
+        int measuredHeight = mFilterView.getMeasuredHeight();
+        if (measuredHeight < 1) {
+            int maxHeight = getResources().getDisplayMetrics().heightPixels;
+            int spec = View.MeasureSpec.makeMeasureSpec(maxHeight, View.MeasureSpec.AT_MOST);
+            mFilterView.measure(spec, spec);
+            measuredHeight = mFilterView.getMeasuredHeight();
+        }
+        containerLayoutParams.topMargin = measuredHeight;
+        mFragmentContainerRoot.setLayoutParams(containerLayoutParams);
+        mFilterView.setVisibility(View.VISIBLE);
+        mIsFilterPanelShown = true;
+    }
+
+    private void hideFilterView(boolean animate) {
+        if (animate) {
+            TransitionSet set = new TransitionSet();
+            set.addTransition(new Fade(Fade.OUT));
+            set.addTransition(new ChangeBounds());
+            set.setInterpolator(new DecelerateInterpolator(0.8f));
+            set.setOrdering(TransitionSet.ORDERING_TOGETHER);
+            set.excludeTarget(R.id.floatingButton, true);
+            TransitionManager.beginDelayedTransition(mContentRoot, set);
+        }
+
+        RelativeLayout.LayoutParams containerLayoutParams =
+                (RelativeLayout.LayoutParams) mFragmentContainerRoot.getLayoutParams();
+        containerLayoutParams.topMargin = 0;
+        mFragmentContainerRoot.setLayoutParams(containerLayoutParams);
+        mFilterView.setVisibility(View.INVISIBLE);
+        mIsFilterPanelShown = false;
+    }
+
+    private boolean isFilterPanelVisible() {
+        return mFilterView.getVisibility() == View.VISIBLE;
+    }
+
+    private void toggleFilterView() {
+        if (isFilterPanelVisible()) {
+            hideFilterView(true);
+        } else {
+            showFilterView(true);
+        }
+    }
+
+    private void updateOptionsMenu() {
+        if (mOptionsMenu == null) {
+            return;
+        }
+
+        MenuItem item = mOptionsMenu.findItem(R.id.actionToggleFilter);
+        if (item == null) {
+            return;
+        }
+
+        if (isFilterPanelVisible()) {
+            item.setIcon(R.drawable.ic_visibility_off_white_24dp);
+            item.setTitle(R.string.action_toggle_filter_off);
+        } else {
+            item.setIcon(R.drawable.ic_visibility_white_24dp);
+            item.setTitle(R.string.action_toggle_filter_on);
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.actionToggleFilter:
+                toggleFilterView();
+                updateOptionsMenu();
+                return true;
+
+            default:
+                break;
         }
 
         return super.onOptionsItemSelected(item);
@@ -173,4 +286,8 @@ public class MainActivity extends BaseActivity
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+    @Override
+    public RelativeLayout getFragmentContainerRoot() {
+        return mFragmentContainerRoot;
+    }
 }
