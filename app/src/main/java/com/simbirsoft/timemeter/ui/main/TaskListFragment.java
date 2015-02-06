@@ -149,6 +149,14 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     }
 
     @Override
+    public void onDestroyView() {
+        RelativeLayout containerRoot = mCallbacks.getFragmentContainerRoot();
+        containerRoot.removeView((View)mFloatingActionButton.getParent());
+
+        super.onDestroyView();
+    }
+
+    @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
 
