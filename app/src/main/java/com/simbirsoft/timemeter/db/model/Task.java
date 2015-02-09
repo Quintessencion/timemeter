@@ -9,6 +9,7 @@ import nl.qbusict.cupboard.annotation.Column;
 
 public class Task implements Parcelable {
 
+    public static final String TABLE_NAME = "Task";
     public static final String COLUMN_ID = "_id";
     public static final String COLUMN_DESCRIPTION = "description";
     public static final String COLUMN_CREATE_DATE = "create_date";

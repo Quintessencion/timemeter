@@ -13,10 +13,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
 import com.be.android.library.worker.controllers.JobLoader;
+import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.melnykov.fab.FloatingActionButton;
@@ -30,6 +32,7 @@ import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.controller.TaskActivityTimerUpdateListener;
 import com.simbirsoft.timemeter.db.model.Task;
+import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
@@ -41,14 +44,13 @@ import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
+import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
 import org.androidannotations.annotations.AfterViews;
-import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
-import org.androidannotations.annotations.LongClick;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
@@ -69,19 +71,23 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     private static final int COLUMN_COUNT_DEFAULT = 2;
     private int mColumnCount;
 
-    public static TaskListFragment newInstance() {
-        return new TaskListFragment_();
-    }
-
     @ViewById(android.R.id.list)
     RecyclerView mRecyclerView;
+
+    @ViewById(R.id.contentRoot)
+    ViewGroup mContentRoot;
+
+    @ViewById(android.R.id.empty)
+    TextView mEmptyListIndicator;
 
     @Inject
     Bus mBus;
 
     @InstanceState
-    int[] mTagListPosition;
+    int[] mTaskListPosition;
 
+    @InstanceState
+    FilterView.FilterState mFilterViewState;
 
     private FloatingActionButton mFloatingActionButton;
     private TaskListAdapter mTasksViewAdapter;
@@ -130,6 +136,8 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         mFloatingActionButton.setOnClickListener(this::onFloatingButtonClicked);
         mFloatingActionButton.setOnLongClickListener(this::onFloatingActionButtonLongClicked);
         mRecyclerView.setHasFixedSize(false);
+
+        mEmptyListIndicator.setVisibility(View.GONE);
 
         mColumnCount = COLUMN_COUNT_DEFAULT;
         if (!getResources().getBoolean(R.bool.isTablet)) {
@@ -207,16 +215,18 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     public void onPause() {
         super.onPause();
 
-        mTagListPosition = new int[mColumnCount];
+        mTaskListPosition = new int[mColumnCount];
 
         if (mTasksViewAdapter.getItemCount() > 0) {
-            mTagListPosition = ((StaggeredGridLayoutManager)
-                    mRecyclerView.getLayoutManager()).findFirstVisibleItemPositions(mTagListPosition);
+            mTaskListPosition = ((StaggeredGridLayoutManager)
+                    mRecyclerView.getLayoutManager()).findFirstVisibleItemPositions(mTaskListPosition);
         }
 
         mTaskActivityManager.removeTaskActivityUpdateListener(this);
         mTaskActivityManager.saveTaskActivity();
     }
+
+
 
     private void removeTaskFromList(long taskId) {
         mTasksViewAdapter.removeItems(taskId);
@@ -272,13 +282,15 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+
+
     @OnJobSuccess(LoadTaskListJob.class)
     public void onTaskListLoaded(LoadJobResult<List<TaskBundle>> event) {
         mTasksViewAdapter.setItems(event.getData());
 
-        if (mTagListPosition != null) {
-            mRecyclerView.getLayoutManager().scrollToPosition(mTagListPosition[0]);
-            mTagListPosition = null;
+        if (mTaskListPosition != null) {
+            mRecyclerView.getLayoutManager().scrollToPosition(mTaskListPosition[0]);
+            mTaskListPosition = null;
         }
     }
 
@@ -289,7 +301,14 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
 
     @Override
     public Job onCreateJob(String loaderAttachTag) {
-        return Injection.sJobsComponent.loadTaskListJob();
+        LoadTaskListJob job = Injection.sJobsComponent.loadTaskListJob();
+        job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
+
+        if (mFilterViewState != null) {
+            job.getLoadFilter().tags(mFilterViewState.tags);
+        }
+
+        return job;
     }
 
     @Override
@@ -357,6 +376,13 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
                 e.printStackTrace();
             }
         }, delay);
+    }
+
+    @Subscribe
+    public void onFilterViewStateChanged(FilterViewStateChangeEvent ev) {
+        mFilterViewState = ev.getFilterState();
+
+        requestLoad(mTaskListLoaderTag, this);
     }
 
     @OnJobSuccess(SaveTaskBundleJob.class)
@@ -455,3 +481,4 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         }
     }
 }
+

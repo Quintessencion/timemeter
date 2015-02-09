@@ -2,6 +2,7 @@ package com.simbirsoft.timemeter.ui.util;
 
 import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -17,7 +18,7 @@ public final class TagViewUtils {
         return view;
     }
 
-    public static void updateTagViewColor(TextView taggedView, int tagColor) {
+    public static void updateTagViewColor(View taggedView, int tagColor) {
         GradientDrawable bg = (GradientDrawable) taggedView.getBackground();
         bg.setColor(tagColor);
     }

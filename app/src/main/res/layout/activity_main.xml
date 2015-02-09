@@ -16,6 +16,12 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <com.simbirsoft.timemeter.ui.views.FilterView_
+            android:id="@+id/filterView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/toolbar"/>
+
         <android.support.v7.widget.Toolbar
             app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
@@ -23,20 +29,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/colorPrimary"
-            android:minHeight="?attr/actionBarSize" />
-
-
-        <com.simbirsoft.timemeter.ui.views.FilterView_
-            android:id="@+id/filterView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/toolbar"/>
+            android:minHeight="?attr/actionBarSize"
+            android:elevation="6dp"/>
 
         <RelativeLayout
             android:id="@+id/containerRoot"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/toolbar">
+            android:layout_below="@+id/toolbar"
+            android:elevation="6dp">
 
             <FrameLayout
                 android:id="@+id/container"

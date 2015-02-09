@@ -30,7 +30,6 @@ public class TaskTagsEditScene {
     final TagAutoCompleteTextView tagsView;
     final RecyclerView tagsRecyclerView;
     final TextView createTagView;
-    boolean isFinishing;
 
     static TaskTagsEditScene create(Context context, ViewGroup parentView) {
         return new TaskTagsEditScene(context, parentView);

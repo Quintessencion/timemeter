@@ -6,6 +6,7 @@ import com.simbirsoft.timemeter.receiver.NotificationUpdateReceiver;
 import com.simbirsoft.timemeter.receiver.ScreenLockReceiver;
 import com.simbirsoft.timemeter.receiver.StopTaskActivityReceiver;
 import com.simbirsoft.timemeter.ui.main.TaskListFragment;
+import com.simbirsoft.timemeter.ui.views.FilterView;
 
 public interface UiComponent {
     public Context context();
@@ -13,4 +14,5 @@ public interface UiComponent {
     public void injectScreenLockReceiver(ScreenLockReceiver receiver);
     public void injectStopTaskActivityReceiver(StopTaskActivityReceiver receiver);
     public void injectTaskListFragment(TaskListFragment fragment);
+    public void injectFilterView(FilterView filterView);
 }

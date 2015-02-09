@@ -32,6 +32,8 @@
     <string name="action_stop_task">Остановить</string>
     <string name="ime_action_done">Готово</string>
     <string name="ime_action_create">Создать</string>
+    <string name="ime_action_filter">Показать</string>
+    <string name="ime_action_next">Далее</string>
     <string name="action_edit">Редактировать</string>
     <string name="action_create_tag">Создать метку</string>
 
@@ -48,6 +50,7 @@
     <string name="hint_tag_name">Название метки</string>
     <string name="hint_edit_tag_name">Изменить название</string>
     <string name="hint_edit_tag_color">Выбрать цвет</string>
+    <string name="hint_no_filtered_tasks">Нет задач по заданному фильтру</string>
 
     <!-- Errors -->
     <string name="error_loading_data">Ошибка при загрузке данных</string>

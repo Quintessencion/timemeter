@@ -8,6 +8,7 @@
     <color name="accentLight">#FF8180</color>
     <color name="accentBright">#FF1744</color>
     <color name="menuBackground">#deDEDEDE</color>
+    <color name="divider_color">#22000000</color>
 
     <color name="lightRed">#F44336</color>
     <color name="lightGrey">#DEDEDE</color>

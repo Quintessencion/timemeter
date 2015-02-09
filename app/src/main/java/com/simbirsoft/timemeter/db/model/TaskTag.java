@@ -7,6 +7,7 @@ import nl.qbusict.cupboard.annotation.Column;
 
 public class TaskTag implements Parcelable {
 
+    public static final String TABLE_NAME = "TaskTag";
     public static final String COLUMN_ID = "_id";
     public static final String COLUMN_TASK_ID = "task_id";
     public static final String COLUMN_TAG_ID = "tag_id";

@@ -9,6 +9,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.transitions.everywhere.ChangeBounds;
 import android.transitions.everywhere.Fade;
+import android.transitions.everywhere.Transition;
 import android.transitions.everywhere.TransitionManager;
 import android.transitions.everywhere.TransitionSet;
 import android.view.Menu;
@@ -27,6 +28,7 @@ import com.simbirsoft.timemeter.ui.base.ContentFragmentCallbacks;
 import com.simbirsoft.timemeter.ui.stats.StatsFragment_;
 import com.simbirsoft.timemeter.ui.tags.TagListFragment_;
 import com.simbirsoft.timemeter.ui.views.FilterView;
+import com.tokenautocomplete.TokenCompleteTextView;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
@@ -36,7 +38,7 @@ import org.slf4j.Logger;
 
 @EActivity(R.layout.activity_main)
 public class MainActivity extends BaseActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks, ContentFragmentCallbacks {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks, ContentFragmentCallbacks, TokenCompleteTextView.TokenListener {
 
     private static final Logger LOG = LogFactory.getLogger(MainActivity.class);
 
@@ -98,6 +100,7 @@ public class MainActivity extends BaseActivity
         } else {
             hideFilterView(false);
         }
+        mFilterView.setTokenListener(this);
     }
 
     @Override
@@ -183,6 +186,7 @@ public class MainActivity extends BaseActivity
     }
 
     private void showFilterView(boolean animate) {
+        mIsFilterPanelShown = true;
         if (animate) {
             TransitionSet set = new TransitionSet();
             set.addTransition(new Fade(Fade.IN));
@@ -193,22 +197,12 @@ public class MainActivity extends BaseActivity
             TransitionManager.beginDelayedTransition(mContentRoot, set);
         }
 
-        RelativeLayout.LayoutParams containerLayoutParams =
-                (RelativeLayout.LayoutParams) mFragmentContainerRoot.getLayoutParams();
-        int measuredHeight = mFilterView.getMeasuredHeight();
-        if (measuredHeight < 1) {
-            int maxHeight = getResources().getDisplayMetrics().heightPixels;
-            int spec = View.MeasureSpec.makeMeasureSpec(maxHeight, View.MeasureSpec.AT_MOST);
-            mFilterView.measure(spec, spec);
-            measuredHeight = mFilterView.getMeasuredHeight();
-        }
-        containerLayoutParams.topMargin = measuredHeight;
-        mFragmentContainerRoot.setLayoutParams(containerLayoutParams);
+        updateFilterViewSize();
         mFilterView.setVisibility(View.VISIBLE);
-        mIsFilterPanelShown = true;
     }
 
     private void hideFilterView(boolean animate) {
+        mIsFilterPanelShown = false;
         if (animate) {
             TransitionSet set = new TransitionSet();
             set.addTransition(new Fade(Fade.OUT));
@@ -224,7 +218,26 @@ public class MainActivity extends BaseActivity
         containerLayoutParams.topMargin = 0;
         mFragmentContainerRoot.setLayoutParams(containerLayoutParams);
         mFilterView.setVisibility(View.INVISIBLE);
-        mIsFilterPanelShown = false;
+    }
+
+    private void updateFilterViewSize() {
+        RelativeLayout.LayoutParams containerLayoutParams =
+                (RelativeLayout.LayoutParams) mFragmentContainerRoot.getLayoutParams();
+
+        int measuredHeight;
+        if (mIsFilterPanelShown) {
+            measuredHeight = mFilterView.getMeasuredHeight();
+            if (measuredHeight < 1) {
+                int maxHeight = getResources().getDisplayMetrics().heightPixels;
+                int spec = View.MeasureSpec.makeMeasureSpec(maxHeight, View.MeasureSpec.AT_MOST);
+                mFilterView.measure(spec, spec);
+                measuredHeight = mFilterView.getMeasuredHeight();
+            }
+        } else {
+            measuredHeight = 0;
+        }
+        containerLayoutParams.topMargin = measuredHeight;
+        mFragmentContainerRoot.setLayoutParams(containerLayoutParams);
     }
 
     private boolean isFilterPanelVisible() {
@@ -289,5 +302,27 @@ public class MainActivity extends BaseActivity
     @Override
     public RelativeLayout getFragmentContainerRoot() {
         return mFragmentContainerRoot;
+    }
+
+    @Override
+    public FilterView getFilterView() {
+        return mFilterView;
+    }
+
+    @Override
+    public void hideFilterView() {
+        if (isFilterPanelVisible()) {
+            hideFilterView();
+        }
+    }
+
+    @Override
+    public void onTokenAdded(Object o) {
+        mContentRoot.post(this::updateFilterViewSize);
+    }
+
+    @Override
+    public void onTokenRemoved(Object o) {
+        mContentRoot.post(this::updateFilterViewSize);
     }
 }
