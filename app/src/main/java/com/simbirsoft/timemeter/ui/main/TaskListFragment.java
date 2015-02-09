@@ -292,6 +292,14 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
             mRecyclerView.getLayoutManager().scrollToPosition(mTaskListPosition[0]);
             mTaskListPosition = null;
         }
+
+        if ((mFilterViewState == null || mFilterViewState.isEmpty())
+                && mTasksViewAdapter.getItemCount() == 0) {
+
+            mEmptyListIndicator.setVisibility(View.VISIBLE);
+        } else {
+            mEmptyListIndicator.setVisibility(View.GONE);
+        }
     }
 
     @OnJobFailure(LoadTaskListJob.class)

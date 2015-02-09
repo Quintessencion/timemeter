@@ -10,7 +10,8 @@
         android:text="@string/hint_no_filtered_tasks"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:layout_marginTop="24dp"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:layout_alignTop="@android:id/list"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@android:id/list"

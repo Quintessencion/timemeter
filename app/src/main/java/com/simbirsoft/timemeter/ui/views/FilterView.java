@@ -65,6 +65,10 @@ public class FilterView extends FrameLayout implements TokenCompleteTextView.Tok
         private FilterState() {
         }
 
+        public boolean isEmpty() {
+            return tags == null || tags.isEmpty();
+        }
+
         private FilterState(Parcel source) {
             int sz = source.readInt();
             if (sz > 0) {
