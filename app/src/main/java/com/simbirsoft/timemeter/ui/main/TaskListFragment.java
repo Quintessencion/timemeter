@@ -44,6 +44,7 @@ import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
+import com.simbirsoft.timemeter.ui.util.TaskFilterPredicate;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
@@ -231,6 +232,14 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     }
 
     private void addTaskToList(TaskBundle task) {
+        if (mFilterViewState != null) {
+            TaskFilterPredicate predicate = new TaskFilterPredicate(mFilterViewState);
+            if (!predicate.apply(task)) {
+                LOG.debug("created task isn't match current filter");
+                return;
+            }
+        }
+
         mTasksViewAdapter.addFirstItem(task);
     }
 
