@@ -4,6 +4,6 @@
         android:radius="16dp" />
 
     <solid
-        android:color="@color/primary" />
+        android:color="@color/taggedColor" />
 
 </shape>

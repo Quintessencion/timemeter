@@ -226,8 +226,6 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         mTaskActivityManager.saveTaskActivity();
     }
 
-
-
     private void removeTaskFromList(long taskId) {
         mTasksViewAdapter.removeItems(taskId);
     }
@@ -282,8 +280,6 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-
-
     @OnJobSuccess(LoadTaskListJob.class)
     public void onTaskListLoaded(LoadJobResult<List<TaskBundle>> event) {
         mTasksViewAdapter.setItems(event.getData());
@@ -313,7 +309,10 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
 
         if (mFilterViewState != null) {
-            job.getLoadFilter().tags(mFilterViewState.tags);
+            job.getLoadFilter()
+                    .tags(mFilterViewState.tags)
+                    .dateMillis(mFilterViewState.dateMillis)
+                    .period(mFilterViewState.period);
         }
 
         return job;

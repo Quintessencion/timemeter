@@ -9,7 +9,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.transitions.everywhere.ChangeBounds;
 import android.transitions.everywhere.Fade;
-import android.transitions.everywhere.Transition;
 import android.transitions.everywhere.TransitionManager;
 import android.transitions.everywhere.TransitionSet;
 import android.view.Menu;
@@ -19,6 +18,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
+import com.fourmob.datetimepicker.date.DatePickerDialog;
 import com.simbirsoft.timemeter.NavigationDrawerFragment;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
@@ -36,15 +36,20 @@ import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
+import java.util.Calendar;
+
 @EActivity(R.layout.activity_main)
-public class MainActivity extends BaseActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks, ContentFragmentCallbacks, TokenCompleteTextView.TokenListener {
+public class MainActivity extends BaseActivity implements NavigationDrawerFragment.NavigationDrawerCallbacks,
+        ContentFragmentCallbacks,
+        TokenCompleteTextView.TokenListener,
+        FilterView.OnSelectDateClickListener, DatePickerDialog.OnDateSetListener {
 
     private static final Logger LOG = LogFactory.getLogger(MainActivity.class);
 
     public static final String ACTION_SHOW_ACTIVE_TASK = "com.simbirsoft.android.intent.action.SHOW_ACTIVE_TASK";
 
     private static final String TAG_CONTENT_FRAGMENT = "app_content_fragment_tag";
+    private static final String TAG_DATE_PICKER_FRAGMENT = "main_date_picker_fragment_tag";
     private static final int SECTION_ID_TASKS = 0;
     private static final int SECTION_ID_TAGS = 1;
     private static final int SECTION_ID_STATS = 2;
@@ -86,6 +91,12 @@ public class MainActivity extends BaseActivity
         super.onCreate(savedInstanceState);
 
         mTitle = getTitle();
+
+        DatePickerDialog dialog = (DatePickerDialog)
+                getSupportFragmentManager().findFragmentByTag(TAG_DATE_PICKER_FRAGMENT);
+        if (dialog != null) {
+            dialog.setOnDateSetListener(this);
+        }
     }
 
     @AfterViews
@@ -101,6 +112,15 @@ public class MainActivity extends BaseActivity
             hideFilterView(false);
         }
         mFilterView.setTokenListener(this);
+        mFilterView.setOnSelectDateClickListener(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        mFilterView.setTokenListener(null);
+        mFilterView.setOnSelectDateClickListener(null);
+
+        super.onDestroy();
     }
 
     @Override
@@ -324,5 +344,25 @@ public class MainActivity extends BaseActivity
     @Override
     public void onTokenRemoved(Object o) {
         mContentRoot.post(this::updateFilterViewSize);
+    }
+
+    @Override
+    public void onSelectDateClicked() {
+        Calendar calendar = Calendar.getInstance();
+        DatePickerDialog dialog = DatePickerDialog.newInstance(
+                this,
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH),
+                false);
+        dialog.show(getSupportFragmentManager(), TAG_DATE_PICKER_FRAGMENT);
+    }
+
+    @Override
+    public void onDateSet(DatePickerDialog datePickerDialog, int year, int month, int day) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, day, 0, 0, 0);
+        long date = calendar.getTimeInMillis();
+        mFilterView.setDate(date);
     }
 }

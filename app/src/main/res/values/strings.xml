@@ -18,10 +18,11 @@
     <string name="hours_mark">ч</string>
     <string name="minutes_mark">м</string>
     <string name="seconds_mark">с</string>
+    <string name="caption_today">Сегодня</string>
 
     <!-- Actions -->
-    <string name="action_toggle_filter_on">Показать параметры</string>
-    <string name="action_toggle_filter_off">Скрыть параметры</string>
+    <string name="action_toggle_filter_on">Показать фильтр</string>
+    <string name="action_toggle_filter_off">Скрыть фильтр</string>
     <string name="action_settings">Настройки</string>
     <string name="action_cancel">Отмена</string>
     <string name="action_remove_task">Удалить задачу</string>
@@ -51,6 +52,7 @@
     <string name="hint_edit_tag_name">Изменить название</string>
     <string name="hint_edit_tag_color">Выбрать цвет</string>
     <string name="hint_no_filtered_tasks">Нет задач по заданному фильтру</string>
+    <string name="hint_choose_date">не выбрана</string>
 
     <!-- Errors -->
     <string name="error_loading_data">Ошибка при загрузке данных</string>
@@ -70,6 +72,14 @@
     <string name="dialog_remove_task_warning_message">Удалить задачу?</string>
     <string name="dialog_edit_tag_name_title">Введите название метки</string>
     <string name="dialog_edit_tag_color_title">Выберите цвет</string>
+
+    <string-array name="period_array">
+        <item>День</item>
+        <item>Неделя</item>
+        <item>Месяц</item>
+        <item>Год</item>
+        <item>Все время</item>
+    </string-array>
 
 
 

@@ -4,6 +4,7 @@ import nl.qbusict.cupboard.annotation.Column;
 
 public class TaskTimeSpan {
 
+    public static final String TABLE_NAME = "TaskTimeSpan";
     public static final String COLUMN_ID = "_id";
     public static final String COLUMN_DESCRIPTION = "description";
     public static final String COLUMN_TASK_ID = "task_id";
