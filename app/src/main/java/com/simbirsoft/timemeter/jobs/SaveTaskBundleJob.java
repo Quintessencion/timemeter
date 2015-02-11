@@ -11,6 +11,7 @@ import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTag;
+import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.squareup.phrase.Phrase;
@@ -85,11 +86,19 @@ public class SaveTaskBundleJob extends BaseJob {
                                 .format()
                                 .toString(),
                         String.valueOf(taskId));
-                LOG.trace("{} task {} tags removed", count, task);
+                LOG.trace("{} task '{}' tag mappings removed", count, task.getDescription());
+
+                count = cupboard.delete(TaskTimeSpan.class,
+                        Phrase.from("{task_id}=?")
+                                .put("task_id", TaskTimeSpan.COLUMN_TASK_ID)
+                                .format()
+                                .toString(),
+                        String.valueOf(taskId));
+                LOG.trace("{} task '{}' spans removed", count, task.getDescription());
             }
 
             cupboard.put(task);
-            LOG.trace("task {} added", task);
+            LOG.trace("task '{}' added", task);
 
             List<Tag> tags = mTaskBundle.getTags();
             if (tags == null) {
@@ -101,7 +110,13 @@ public class SaveTaskBundleJob extends BaseJob {
             List<TaskTag> taskTags = Lists.transform(
                     tags, (tag) -> TaskTag.create(task, tag));
             cupboard.put(taskTags);
-            LOG.trace("{} task tags added for task {}", taskTags.size(), task);
+            LOG.trace("{} task tags added for task '{}'", taskTags.size(), task.getDescription());
+
+            List<TaskTimeSpan> spans = mTaskBundle.getTaskTimeSpans();
+            if (!spans.isEmpty()) {
+                cupboard.put(spans);
+                LOG.trace("{} task spans added for task '{}'", spans.size(), task.getDescription());
+            }
 
             db.setTransactionSuccessful();
 

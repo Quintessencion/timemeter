@@ -1,6 +1,5 @@
 package com.simbirsoft.timemeter.db.model;
 
-import android.graphics.Color;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -12,6 +11,7 @@ public class Tag implements Parcelable, Serializable {
 
     private static final long serialVersionUID = 2204828417696124694L;
 
+    public static final String TABLE_NAME = "Tag";
     public static final String COLUMN_ID = "_id";
     public static final String COLUMN_NAME = "name";
     public static final String COLUMN_COLOR = "color";

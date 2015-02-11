@@ -6,7 +6,10 @@ import android.os.Parcelable;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
+import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -27,6 +30,7 @@ public class TaskBundle implements Parcelable {
 
     private Task mTask;
     private List<Tag> mTags;
+    private List<TaskTimeSpan> mTaskTimeSpans;
     private int mSavedState;
     private byte[] mOriginalState;
 
@@ -101,6 +105,18 @@ public class TaskBundle implements Parcelable {
         return mTags;
     }
 
+    public List<TaskTimeSpan> getTaskTimeSpans() {
+        if (mTaskTimeSpans == null) {
+            return Collections.emptyList();
+        }
+
+        return mTaskTimeSpans;
+    }
+
+    public void setTaskTimeSpans(List<TaskTimeSpan> taskTimeSpans) {
+        mTaskTimeSpans = taskTimeSpans;
+    }
+
     public void setTags(List<Tag> tags) {
         mTags = tags;
     }
@@ -113,11 +129,19 @@ public class TaskBundle implements Parcelable {
     private void readParcel(Parcel parcel) {
         final ClassLoader classLoader = getClass().getClassLoader();
         mTask = parcel.readParcelable(classLoader);
-        Parcelable[] parcelables = parcel.readParcelableArray(getClass().getClassLoader());
+        Parcelable[] parcelables = parcel.readParcelableArray(TaskBundle.class.getClassLoader());
 
         mTags = Lists.newArrayListWithCapacity(parcelables.length);
         for (Parcelable parcelable : parcelables) {
             mTags.add((Tag) parcelable);
+        }
+
+        if (parcel.readByte() == 1) {
+            parcelables = parcel.readParcelableArray(TaskBundle.class.getClassLoader());
+            mTaskTimeSpans = Lists.newArrayListWithCapacity(parcelables.length);
+            for (Parcelable parcelable : parcelables) {
+                mTaskTimeSpans.add((TaskTimeSpan) parcelable);
+            }
         }
 
         boolean hasPersistedState = parcel.readByte() == 1;
@@ -133,6 +157,12 @@ public class TaskBundle implements Parcelable {
         parcel.writeParcelable(mTask, 0);
         Tag[] tags = mTags.toArray(new Tag[mTags.size()]);
         parcel.writeParcelableArray(tags, 0);
+
+        parcel.writeByte((byte) (mTaskTimeSpans != null ? 1 : 0));
+        if (mTaskTimeSpans != null) {
+            TaskTimeSpan[] spans = mTaskTimeSpans.toArray(new TaskTimeSpan[mTaskTimeSpans.size()]);
+            parcel.writeParcelableArray(spans, 0);
+        }
 
         if (hasPersistedState()) {
             parcel.writeByte((byte)1);
@@ -150,8 +180,12 @@ public class TaskBundle implements Parcelable {
 
         TaskBundle that = (TaskBundle) o;
 
+        if (mSavedState != that.mSavedState) return false;
+        if (!Arrays.equals(mOriginalState, that.mOriginalState)) return false;
         if (mTags != null ? !mTags.equals(that.mTags) : that.mTags != null) return false;
         if (mTask != null ? !mTask.equals(that.mTask) : that.mTask != null) return false;
+        if (mTaskTimeSpans != null ? !mTaskTimeSpans.equals(that.mTaskTimeSpans) : that.mTaskTimeSpans != null)
+            return false;
 
         return true;
     }
@@ -160,6 +194,8 @@ public class TaskBundle implements Parcelable {
     public int hashCode() {
         int result = mTask != null ? mTask.hashCode() : 0;
         result = 31 * result + (mTags != null ? mTags.hashCode() : 0);
+        result = 31 * result + (mTaskTimeSpans != null ? mTaskTimeSpans.hashCode() : 0);
+        result = 31 * result + (mOriginalState != null ? Arrays.hashCode(mOriginalState) : 0);
         return result;
     }
 }

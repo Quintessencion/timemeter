@@ -1,6 +1,7 @@
 package com.simbirsoft.timemeter.jobs;
 
 import android.database.Cursor;
+import android.util.Log;
 
 import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.jobs.LoadJob;
@@ -53,14 +54,16 @@ public class LoadTaskTagsJob extends LoadJob {
     protected LoadJobResult<?> performLoad() {
         final String query = Phrase.from(
                 "select * " +
-                "from tag " +
-                "where tag.{tag_id} in " +
-                        "(select tasktag.{tasktag_tag_id} " +
-                        "from tasktag " +
-                        "where tasktag.{tasktag_task_id}=?)")
-                .put("tag_id", Tag.COLUMN_ID)
-                .put("tasktag_tag_id", TaskTag.COLUMN_TAG_ID)
-                .put("tasktag_task_id", TaskTag.COLUMN_TASK_ID)
+                "from {table_tag} " +
+                "where {table_tag}.{table_tag_column_tag_id} in " +
+                        "(select {table_tasktag}.{table_tasktag_column_tag_id} " +
+                        "from {table_tasktag} " +
+                        "where {table_tasktag}.{table_tasktag_column_task_id}=?)")
+                .put("table_tag", Tag.TABLE_NAME)
+                .put("table_tag_column_tag_id", Tag.COLUMN_ID)
+                .put("table_tasktag", TaskTag.TABLE_NAME)
+                .put("table_tasktag_column_tag_id", TaskTag.COLUMN_TAG_ID)
+                .put("table_tasktag_column_task_id", TaskTag.COLUMN_TASK_ID)
                 .format()
                 .toString();
 

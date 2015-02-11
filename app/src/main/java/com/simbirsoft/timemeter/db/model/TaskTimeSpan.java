@@ -1,8 +1,11 @@
 package com.simbirsoft.timemeter.db.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import nl.qbusict.cupboard.annotation.Column;
 
-public class TaskTimeSpan {
+public class TaskTimeSpan implements Parcelable {
 
     public static final String TABLE_NAME = "TaskTimeSpan";
     public static final String COLUMN_ID = "_id";
@@ -11,6 +14,19 @@ public class TaskTimeSpan {
     public static final String COLUMN_START_TIME = "start_time";
     public static final String COLUMN_END_TIME = "end_time";
     public static final String COLUMN_IS_ACTIVE = "is_active";
+
+    public static final Creator<TaskTimeSpan> CREATOR =
+            new Creator<TaskTimeSpan>() {
+                @Override
+                public TaskTimeSpan createFromParcel(Parcel parcel) {
+                    return new TaskTimeSpan(parcel);
+                }
+
+                @Override
+                public TaskTimeSpan[] newArray(int sz) {
+                    return new TaskTimeSpan[sz];
+                }
+            };
 
     @Column(COLUMN_ID)
     private Long _id;
@@ -29,6 +45,26 @@ public class TaskTimeSpan {
 
     @Column(COLUMN_IS_ACTIVE)
     private boolean isActive;
+
+    public TaskTimeSpan() {
+    }
+
+    private TaskTimeSpan(Parcel source) {
+        if (source.readByte() == 1) {
+            _id = source.readLong();
+        }
+        if (source.readByte() == 1) {
+            taskId = source.readLong();
+        }
+        description = source.readString();
+        startTimeMillis = source.readLong();
+        endTimeMillis = source.readLong();
+        isActive = source.readByte() == 1;
+    }
+
+    public boolean hasId() {
+        return _id != null;
+    }
 
     public Long getId() {
         return _id;
@@ -76,5 +112,28 @@ public class TaskTimeSpan {
 
     public void setActive(boolean isActive) {
         this.isActive = isActive;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeByte((byte) (hasId() ? 1 : 0));
+        if (hasId()) {
+            parcel.writeLong(_id);
+        }
+        boolean hasTaskId = taskId != null;
+        parcel.writeByte((byte) (hasTaskId ? 1 : 0));
+        if (hasTaskId) {
+            parcel.writeLong(taskId);
+        }
+
+        parcel.writeString(description);
+        parcel.writeLong(startTimeMillis);
+        parcel.writeLong(endTimeMillis);
+        parcel.writeByte((byte) (isActive ? 1 : 0));
     }
 }

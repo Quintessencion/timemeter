@@ -10,6 +10,7 @@ import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTag;
+import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.squareup.phrase.Phrase;
@@ -65,8 +66,15 @@ public class RemoveTaskJob extends BaseJob {
                             .format()
                             .toString(),
                     String.valueOf(mTaskId));
-
             LOG.trace("'{}' task id:'{}' tags removed", count, mTaskId);
+
+            count = cupboard.delete(TaskTimeSpan.class,
+                    Phrase.from("{task_id}=?")
+                            .put("task_id", TaskTimeSpan.COLUMN_TASK_ID)
+                            .format()
+                            .toString(),
+                    String.valueOf(mTaskId));
+            LOG.trace("{} task id:'{}' spans removed", count, mTaskId);
 
             cupboard.delete(Task.class, mTaskId);
             LOG.trace("task id:'{}' removed", mTaskId);

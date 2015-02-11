@@ -1,5 +1,7 @@
 package com.simbirsoft.timemeter.jobs;
 
+import android.util.Log;
+
 import com.be.android.library.worker.base.JobEvent;
 import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.jobs.LoadJob;
@@ -8,6 +10,7 @@ import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
+import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 
 import java.util.List;
@@ -20,12 +23,17 @@ public class LoadTaskBundleJob extends LoadJob {
 
     private final DatabaseHelper mDatabaseHelper;
     private final LoadTaskTagsJob mLoadTaskTagsJob;
+    private final LoadTaskTimespansJob mLoadTaskTimespansJob;
     private Long mTaskId;
 
     @Inject
-    public LoadTaskBundleJob(DatabaseHelper databaseHelper, LoadTaskTagsJob loadTaskTagsJob) {
+    public LoadTaskBundleJob(DatabaseHelper databaseHelper,
+                             LoadTaskTagsJob loadTaskTagsJob,
+                             LoadTaskTimespansJob loadTaskTimespansJob) {
+
         mDatabaseHelper = databaseHelper;
         mLoadTaskTagsJob = loadTaskTagsJob;
+        mLoadTaskTimespansJob = loadTaskTimespansJob;
         setGroupId(JobManager.JOB_GROUP_UNIQUE);
     }
 
@@ -52,15 +60,23 @@ public class LoadTaskBundleJob extends LoadJob {
         }
 
         mLoadTaskTagsJob.setTaskId(mTaskId);
+        mLoadTaskTimespansJob.setTaskId(mTaskId);
 
-        final JobEvent loadResult = buildFork(mLoadTaskTagsJob)
-                .groupOnTheSameGroup()
-                .fork()
-                .join();
+        final ForkJoiner loadTimespansJoiner = buildFork(mLoadTaskTimespansJob)
+                .groupOn(JobManager.JOB_GROUP_UNIQUE)
+                .fork();
+        final ForkJoiner loadTagsJoiner = buildFork(mLoadTaskTagsJob)
+                .groupOn(JobManager.JOB_GROUP_UNIQUE)
+                .fork();
 
-        List<Tag> tags = ((LoadJobResult<List<Tag>>) loadResult).getData();
+        final JobEvent loadTimespansResult = loadTimespansJoiner.join();
+        final JobEvent loadTagsResult = loadTagsJoiner.join();
+
+        List<Tag> tags = ((LoadJobResult<List<Tag>>) loadTagsResult).getData();
+        List<TaskTimeSpan> spans = ((LoadJobResult<List<TaskTimeSpan>>) loadTimespansResult).getData();
 
         TaskBundle bundle = TaskBundle.create(task, tags);
+        bundle.setTaskTimeSpans(spans);
         bundle.persistState();
 
         return new LoadJobResult<>(bundle);
