@@ -5,7 +5,6 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.ArrayRes;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -13,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
@@ -37,11 +35,10 @@ import com.tokenautocomplete.TokenCompleteTextView;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EViewGroup;
-import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
-import org.androidannotations.annotations.res.StringArrayRes;
 import org.slf4j.Logger;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -52,7 +49,7 @@ public class FilterView extends FrameLayout implements
         TokenCompleteTextView.TokenListener, DatePeriodView.DatePeriodViewListener {
 
     public interface OnSelectDateClickListener {
-        void onSelectDateClicked();
+        void onSelectDateClicked(Calendar selectedDate);
     }
 
     private static class SavedState extends BaseSavedState {
@@ -193,6 +190,7 @@ public class FilterView extends FrameLayout implements
     private JobEventDispatcher mJobEventDispatcher;
     private TokenCompleteTextView.TokenListener mTokenListener;
     private OnSelectDateClickListener mOnSelectDateClickListener;
+    private boolean mIsSilentUpdate;
 
 
     public FilterView(Context context) {
@@ -218,9 +216,7 @@ public class FilterView extends FrameLayout implements
 
     @Override
     public void onDateTextClicked() {
-        if (mOnSelectDateClickListener != null) {
-            mOnSelectDateClickListener.onSelectDateClicked();
-        }
+        sendSelectDateClickEvent();
     }
 
     @Override
@@ -231,14 +227,14 @@ public class FilterView extends FrameLayout implements
     @Override
     public void onPeriodSelected(Period period) {
         mState.period = period;
-        mBus.post(new FilterViewStateChangeEvent(getViewFilterState()));
+        postFilterUpdate();
     }
 
     public void setDate(long dateMillis) {
         mState.dateMillis = dateMillis;
 
         displayDatePeriod();
-        mBus.post(new FilterViewStateChangeEvent(getViewFilterState()));
+        postFilterUpdate();
     }
 
     private void displayDatePeriod() {
@@ -255,17 +251,28 @@ public class FilterView extends FrameLayout implements
     }
 
     private void hideDatePeriod() {
-        mDatePanel.removeView(mDatePeriodView);
-        mDatePanel.addView(mChooseDateView);
+        if (mDatePeriodView != null) {
+            mDatePanel.removeView(mDatePeriodView);
+            mDatePanel.addView(mChooseDateView);
+        }
         mDatePeriodView = null;
-        mBus.post(new FilterViewStateChangeEvent(getViewFilterState()));
+        postFilterUpdate();
     }
 
     @Click(R.id.chooseDateView)
     void onChooseDateClicked() {
-        if (mOnSelectDateClickListener != null) {
-            mOnSelectDateClickListener.onSelectDateClicked();
+        sendSelectDateClickEvent();
+    }
+
+    @Click(R.id.resetFilterView)
+    void onResetFilterClicked() {
+        mIsSilentUpdate = true;
+        for (Object tag : mTagsView.getObjects()) {
+            mTagsView.removeObject(tag);
         }
+        hideDatePeriod();
+        mIsSilentUpdate = false;
+        postFilterUpdate();
     }
 
     @AfterViews
@@ -398,7 +405,7 @@ public class FilterView extends FrameLayout implements
 
         } else if (mTokenListener != null) {
             mTokenListener.onTokenAdded(o);
-            mBus.post(new FilterViewStateChangeEvent(getViewFilterState()));
+            postFilterUpdate();
         }
     }
 
@@ -410,7 +417,7 @@ public class FilterView extends FrameLayout implements
 
         if (mAdapter != null && mAdapter.getPosition((Tag) o) > -1) {
             mTokenListener.onTokenRemoved(o);
-            mBus.post(new FilterViewStateChangeEvent(getViewFilterState()));
+            postFilterUpdate();
         }
     }
 
@@ -418,6 +425,14 @@ public class FilterView extends FrameLayout implements
         updateFilterState();
 
         return mState.copy();
+    }
+
+    private void postFilterUpdate() {
+        if (mIsSilentUpdate) {
+            return;
+        }
+
+        post(() -> mBus.post(new FilterViewStateChangeEvent(getViewFilterState())));
     }
 
     private void updateFilterState() {
@@ -429,6 +444,14 @@ public class FilterView extends FrameLayout implements
         } else {
             mState.period = null;
             mState.dateMillis = 0;
+        }
+    }
+
+    private void sendSelectDateClickEvent() {
+        if (mOnSelectDateClickListener != null) {
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeInMillis(mState.dateMillis == 0 ? System.currentTimeMillis() : mState.dateMillis);
+            mOnSelectDateClickListener.onSelectDateClicked(cal);
         }
     }
 }

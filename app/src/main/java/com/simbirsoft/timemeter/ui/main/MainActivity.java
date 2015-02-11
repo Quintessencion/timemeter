@@ -347,13 +347,12 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     }
 
     @Override
-    public void onSelectDateClicked() {
-        Calendar calendar = Calendar.getInstance();
+    public void onSelectDateClicked(Calendar selectedDate) {
         DatePickerDialog dialog = DatePickerDialog.newInstance(
                 this,
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH),
+                selectedDate.get(Calendar.YEAR),
+                selectedDate.get(Calendar.MONTH),
+                selectedDate.get(Calendar.DAY_OF_MONTH),
                 false);
         dialog.show(getSupportFragmentManager(), TAG_DATE_PICKER_FRAGMENT);
     }

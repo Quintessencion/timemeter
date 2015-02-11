@@ -25,6 +25,7 @@
     <string name="action_toggle_filter_off">Скрыть фильтр</string>
     <string name="action_settings">Настройки</string>
     <string name="action_cancel">Отмена</string>
+    <string name="action_reset_filter">СБРОС</string>
     <string name="action_remove_task">Удалить задачу</string>
     <string name="action_accept">ОК</string>
     <string name="action_accept_yes">Да</string>
