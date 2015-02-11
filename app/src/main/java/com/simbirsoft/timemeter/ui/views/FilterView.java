@@ -132,7 +132,10 @@ public class FilterView extends FrameLayout implements
             }
             dateMillis = source.readLong();
             periodMillis = source.readLong();
-            period = Period.valueOf(source.readString());
+
+            if (source.readByte() == 1) {
+                period = Period.valueOf(source.readString());
+            }
         }
 
         @Override
@@ -150,7 +153,10 @@ public class FilterView extends FrameLayout implements
             }
             parcel.writeLong(dateMillis);
             parcel.writeLong(periodMillis);
-            parcel.writeString(period.name());
+            parcel.writeByte((byte) (period == null ? 0 : 1));
+            if (period != null) {
+                parcel.writeString(period.name());
+            }
         }
     }
 
