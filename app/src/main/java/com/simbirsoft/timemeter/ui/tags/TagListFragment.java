@@ -38,7 +38,7 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
-import com.simbirsoft.timemeter.ui.main.TaskListFragment;
+import com.simbirsoft.timemeter.ui.tasklist.TaskListFragment;
 import com.simbirsoft.timemeter.ui.model.TagBundle;
 import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerDialog;
 import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerSwatch;

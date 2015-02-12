@@ -1,12 +1,10 @@
-package com.simbirsoft.timemeter.ui.main;
+package com.simbirsoft.timemeter.ui.tasklist;
 
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.TextView;
 
 import com.google.common.base.Objects;

@@ -96,5 +96,6 @@ dependencies {
     compile 'com.afollestad:material-dialogs:0.6.2.1'
     compile 'com.github.andkulikov:transitions-everywhere:1.2.2'
     compile 'com.squareup.phrase:phrase:1.0.3'
+    compile 'com.astuetz:pagerslidingtabstrip:1.0.1'
     compile project(':MPChartLib')
 }

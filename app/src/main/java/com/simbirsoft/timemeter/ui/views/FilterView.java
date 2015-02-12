@@ -283,16 +283,20 @@ public class FilterView extends FrameLayout implements
 
     @AfterViews
     void initializeView() {
-        Injection.sUiComponent.injectFilterView(this);
-
-        if (mState == null) {
-            mState = new FilterState();
-        }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Hide custom elevation on Lollipop
             mShadowDown.setVisibility(View.GONE);
             mShadowUp.setVisibility(View.GONE);
+        }
+
+        if (isInEditMode()) {
+            return;
+        }
+
+        Injection.sUiComponent.injectFilterView(this);
+
+        if (mState == null) {
+            mState = new FilterState();
         }
         final Context context = getContext();
         mJobEventDispatcher = new JobEventDispatcher(context);
@@ -400,7 +404,9 @@ public class FilterView extends FrameLayout implements
 
     @Override
     protected void onDetachedFromWindow() {
-        mJobEventDispatcher.unregister(this);
+        if (mJobEventDispatcher != null) {
+            mJobEventDispatcher.unregister(this);
+        }
         super.onDetachedFromWindow();
     }
 

@@ -1,7 +1,5 @@
 package com.simbirsoft.timemeter.jobs;
 
-import android.util.Log;
-
 import com.be.android.library.worker.jobs.LoadJob;
 import com.be.android.library.worker.models.JobResultStatus;
 import com.be.android.library.worker.models.LoadJobResult;

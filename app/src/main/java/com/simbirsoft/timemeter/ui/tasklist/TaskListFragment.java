@@ -1,7 +1,8 @@
-package com.simbirsoft.timemeter.ui.main;
+package com.simbirsoft.timemeter.ui.tasklist;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
@@ -39,8 +40,9 @@ import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
 import com.simbirsoft.timemeter.jobs.SaveTaskBundleJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
-import com.simbirsoft.timemeter.ui.base.ContentFragmentCallbacks;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
+import com.simbirsoft.timemeter.ui.main.ContentFragmentCallbacks;
+import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
@@ -62,7 +64,9 @@ import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_task_list)
 public class TaskListFragment extends BaseFragment implements JobLoader.JobLoaderCallbacks,
-        TaskListAdapter.TaskClickListener, TaskActivityTimerUpdateListener {
+        TaskListAdapter.TaskClickListener,
+        TaskActivityTimerUpdateListener,
+        MainPagerAdapter.PageTitleProvider {
 
     private static final Logger LOG = LogFactory.getLogger(TaskListFragment.class);
 
@@ -123,16 +127,16 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
 
     @AfterViews
     void bindViews() {
-        final RelativeLayout containerRoot = mCallbacks.getFragmentContainerRoot();
+        final RelativeLayout contentRoot = mCallbacks.getContentRootView();
         final ViewGroup floatingButtonContainer = (ViewGroup) LayoutInflater.from(getActivity())
-                .inflate(R.layout.view_floating_action_button, containerRoot, false);
+                .inflate(R.layout.view_floating_action_button, contentRoot, false);
         mFloatingActionButton = (FloatingActionButton) floatingButtonContainer.findViewById(R.id.floatingButton);
         final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        containerRoot.addView(floatingButtonContainer, params);
+        contentRoot.addView(floatingButtonContainer, params);
         mFloatingActionButton.attachToRecyclerView(mRecyclerView);
         mFloatingActionButton.setOnClickListener(this::onFloatingButtonClicked);
         mFloatingActionButton.setOnLongClickListener(this::onFloatingActionButtonLongClicked);
@@ -159,7 +163,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
 
     @Override
     public void onDestroyView() {
-        RelativeLayout containerRoot = mCallbacks.getFragmentContainerRoot();
+        RelativeLayout containerRoot = mCallbacks.getContainerUnderlayView();
         containerRoot.removeView((View)mFloatingActionButton.getParent());
 
         super.onDestroyView();
@@ -495,6 +499,11 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         if (mTasksViewAdapter != null) {
             mTasksViewAdapter.updateItemView(mRecyclerView, event.task);
         }
+    }
+
+    @Override
+    public String getPageTitle(Resources resources) {
+        return resources.getString(R.string.title_tasks);
     }
 }
 

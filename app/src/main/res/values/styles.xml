@@ -10,6 +10,13 @@
         <item name="android:textColorPrimaryInverse">@color/darkGrey</item>
         <item name="android:textColorSecondaryInverse">@color/darkGrey</item>
         <item name="android:spinnerItemStyle">@style/SpinnerStyle</item>
+        <item name="pstsDividerColor">@color/primary</item>
+        <item name="pstsIndicatorColor">@color/accentPrimary</item>
+        <item name="pstsUnderlineColor">@color/accentPrimary</item>
+        <item name="pstsUnderlineHeight">0dp</item>
+        <item name="pstsTextAllCaps">true</item>
+        <item name="pstsShouldExpand">true</item>
+        <item name="pstsIndicatorHeight">6dp</item>
     </style>
 
     <style name="AppTheme.Transparent" parent="@style/AppTheme">
