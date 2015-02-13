@@ -10,6 +10,8 @@ import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
+import android.transitions.everywhere.Fade;
+import android.transitions.everywhere.TransitionManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -79,8 +81,8 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     @ViewById(android.R.id.list)
     RecyclerView mRecyclerView;
 
-    @ViewById(R.id.contentRoot)
-    ViewGroup mContentRoot;
+    @ViewById(R.id.taskListContentRoot)
+    ViewGroup mTaskListContentRoot;
 
     @ViewById(android.R.id.empty)
     TextView mEmptyListIndicator;
@@ -127,16 +129,15 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
 
     @AfterViews
     void bindViews() {
-        final RelativeLayout contentRoot = mCallbacks.getContentRootView();
         final ViewGroup floatingButtonContainer = (ViewGroup) LayoutInflater.from(getActivity())
-                .inflate(R.layout.view_floating_action_button, contentRoot, false);
+                .inflate(R.layout.view_floating_action_button, mTaskListContentRoot, false);
         mFloatingActionButton = (FloatingActionButton) floatingButtonContainer.findViewById(R.id.floatingButton);
         final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        contentRoot.addView(floatingButtonContainer, params);
+        mTaskListContentRoot.addView(floatingButtonContainer, params);
         mFloatingActionButton.attachToRecyclerView(mRecyclerView);
         mFloatingActionButton.setOnClickListener(this::onFloatingButtonClicked);
         mFloatingActionButton.setOnLongClickListener(this::onFloatingActionButtonLongClicked);

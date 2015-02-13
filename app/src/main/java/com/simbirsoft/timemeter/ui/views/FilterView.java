@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
@@ -28,6 +29,7 @@ import com.simbirsoft.timemeter.jobs.LoadTagListJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.model.Period;
 import com.simbirsoft.timemeter.ui.util.TagViewUtils;
+import com.simbirsoft.timemeter.ui.util.ToastUtils;
 import com.squareup.otto.Bus;
 import com.tokenautocomplete.FilteredArrayAdapter;
 import com.tokenautocomplete.TokenCompleteTextView;
@@ -35,7 +37,9 @@ import com.tokenautocomplete.TokenCompleteTextView;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EViewGroup;
+import org.androidannotations.annotations.LongClick;
 import org.androidannotations.annotations.ViewById;
+import org.androidannotations.annotations.res.StringRes;
 import org.slf4j.Logger;
 
 import java.util.Calendar;
@@ -187,6 +191,9 @@ public class FilterView extends FrameLayout implements
     @ViewById(R.id.datePanel)
     ViewGroup mDatePanel;
 
+    @StringRes(R.string.hint_reset_filter)
+    String mHintResetFilter;
+
     @Inject
     Bus mBus;
 
@@ -279,6 +286,12 @@ public class FilterView extends FrameLayout implements
         hideDatePeriod();
         mIsSilentUpdate = false;
         postFilterUpdate();
+    }
+
+    @LongClick(R.id.resetFilterView)
+    void onResetFilterLongClicked(View v) {
+        ToastUtils.showToastWithAnchor(getContext(),
+                mHintResetFilter, v, Toast.LENGTH_SHORT);
     }
 
     @AfterViews

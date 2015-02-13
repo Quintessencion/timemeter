@@ -54,6 +54,8 @@
     <string name="hint_edit_tag_color">Выбрать цвет</string>
     <string name="hint_no_filtered_tasks">Нет задач по заданному фильтру</string>
     <string name="hint_choose_date">не выбрана</string>
+    <string name="hint_reset_filter">Сбросить фильтр</string>
+    <string name="hint_choose_filter_period">Выбрать период</string>
 
     <!-- Errors -->
     <string name="error_loading_data">Ошибка при загрузке данных</string>

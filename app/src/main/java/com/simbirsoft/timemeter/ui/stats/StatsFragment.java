@@ -1,5 +1,6 @@
 package com.simbirsoft.timemeter.ui.stats;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
@@ -21,6 +22,7 @@ import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTagListJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
+import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
@@ -32,7 +34,8 @@ import java.util.List;
 
 @EFragment(R.layout.fragment_stats)
 public class StatsFragment extends BaseFragment implements JobLoader.JobLoaderCallbacks,
-        OnChartValueSelectedListener{
+        OnChartValueSelectedListener,
+        MainPagerAdapter.PageTitleProvider {
 
 
     private static final Logger LOG = LogFactory.getLogger(StatsFragment.class);
@@ -54,6 +57,7 @@ public class StatsFragment extends BaseFragment implements JobLoader.JobLoaderCa
         chartView.setHoleRadius(45f);
         chartView.setDrawCenterText(true);
         chartView.setCenterText("Center\nText");
+        chartView.setRotationEnabled(false);
 
         chartView.setDrawXValues(false);
         chartView.setDrawYValues(true);
@@ -79,6 +83,10 @@ public class StatsFragment extends BaseFragment implements JobLoader.JobLoaderCa
         chartView.animateX(1500);
     }
 
+    @Override
+    public String getPageTitle(Resources resources) {
+        return resources.getString(R.string.title_stats);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

@@ -50,7 +50,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     @ViewById(R.id.drawer_layout)
     DrawerLayout mDrawerLayout;
 
-    @ViewById(R.id.contentRoot)
+    @ViewById(R.id.taskListContentRoot)
     RelativeLayout mContentRoot;
 
     @ViewById(R.id.containerHeader)
@@ -106,7 +106,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
                 break;
 
             case SECTION_ID_STATS:
-                fragmentType = StatsFragment_.class;
+                fragmentType = MainPagerFragment_.class;
                 break;
 
             default:
@@ -214,7 +214,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         switch (sectionId) {
             case SECTION_ID_TASKS:
                 pages.add(TaskListFragment_.class.getName());
-                pages.add(TaskListFragment_.class.getName());
+                pages.add(StatsFragment_.class.getName());
                 break;
 
             case SECTION_ID_TAGS:

@@ -13,6 +13,7 @@ import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
@@ -20,13 +21,16 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.model.Period;
 import com.simbirsoft.timemeter.ui.util.TagViewUtils;
+import com.simbirsoft.timemeter.ui.util.ToastUtils;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EViewGroup;
 import org.androidannotations.annotations.ItemSelect;
+import org.androidannotations.annotations.LongClick;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringArrayRes;
+import org.androidannotations.annotations.res.StringRes;
 import org.slf4j.Logger;
 
 import java.util.Arrays;
@@ -67,10 +71,19 @@ public class DatePeriodView extends FrameLayout {
     @StringArrayRes(R.array.period_array)
     String[] mPeriods;
 
+    @StringRes(R.string.hint_choose_filter_period)
+    String mHintChooseFilterPeriod;
+
     private ArrayAdapter<CharSequence> mAdapter;
     private long mDateMillis;
     private DatePeriodViewListener mDatePeriodViewListener;
     private List<String> mPeriodList;
+
+    @LongClick(R.id.periodSpinner)
+    void onPeriodSpinnerLongClicked(View v) {
+        ToastUtils.showToastWithAnchor(getContext(),
+                mHintChooseFilterPeriod, v, Toast.LENGTH_SHORT);
+    }
 
     @Click(R.id.dateText)
     void onDateTextClicked(View v) {

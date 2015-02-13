@@ -20,8 +20,6 @@ import java.util.LinkedList;
 
 public class BaseFragment extends Fragment {
 
-    private static final int DEFAULT_Y_TOAST_OFFSET_DIP = 36;
-
     private JobEventDispatcher mEventDispatcher;
     private boolean mShouldSubscribeForJobEvents = true;
     private boolean mIsSubscribedForJobEvents;
