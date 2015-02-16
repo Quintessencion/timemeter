@@ -75,6 +75,7 @@ public class StatsFragment extends BaseFragment implements JobLoader.JobLoaderCa
         l.setPosition(Legend.LegendPosition.RIGHT_OF_CHART);
         l.setXEntrySpace(7f);
         l.setYEntrySpace(5f);
+        l.setForm(Legend.LegendForm.CIRCLE);
 
         chartView.setCenterTextSize(20f);
         chartView.setDescriptionTextSize(20f);

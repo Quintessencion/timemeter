@@ -17,6 +17,7 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.stats.StatsFragment_;
+import com.simbirsoft.timemeter.ui.stats.StatsListFragment_;
 import com.simbirsoft.timemeter.ui.tasklist.TaskListFragment_;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 
@@ -214,7 +215,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         switch (sectionId) {
             case SECTION_ID_TASKS:
                 pages.add(TaskListFragment_.class.getName());
-                pages.add(StatsFragment_.class.getName());
+                pages.add(StatsListFragment_.class.getName());
                 break;
 
             case SECTION_ID_TAGS:

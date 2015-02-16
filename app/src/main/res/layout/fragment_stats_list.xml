@@ -1,0 +1,25 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/taskListContentRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@android:id/empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/hint_no_task_stats"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_marginTop="24dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignTop="@android:id/list"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@android:id/list"
+        android:scrollbars="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"/>
+
+</RelativeLayout>

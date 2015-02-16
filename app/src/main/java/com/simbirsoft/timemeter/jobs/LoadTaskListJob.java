@@ -12,7 +12,6 @@ import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
@@ -20,6 +19,7 @@ import com.simbirsoft.timemeter.db.model.TaskTag;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.model.Period;
+import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.squareup.phrase.Phrase;
 
@@ -29,58 +29,32 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import nl.qbusict.cupboard.DatabaseCompartment;
-
 import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 
 public class LoadTaskListJob extends LoadJob {
 
-    public static class LoadFilter {
-        private final Set<Tag> mFilterTags;
-        private long mDateMillis;
-        private Period mPeriod;
-
-        LoadFilter() {
-            mFilterTags = Sets.newHashSet();
-        }
-
-        public LoadFilter tags(Collection<Tag> tags) {
-            mFilterTags.addAll(tags);
-
-            return this;
-        }
-
-        public LoadFilter dateMillis(long dateMillis) {
-            mDateMillis = dateMillis;
-
-            return this;
-        }
-
-        public LoadFilter period(Period period) {
-            mPeriod = period;
-
-            return this;
-        }
-    }
-
     private final DatabaseHelper mDatabaseHelper;
-    private final LoadFilter mLoadFilter;
+    private final TaskLoadFilter mLoadFilter;
 
     @Inject
     public LoadTaskListJob(DatabaseHelper databaseHelper) {
         mDatabaseHelper = databaseHelper;
-        mLoadFilter = new LoadFilter();
+        mLoadFilter = new TaskLoadFilter();
 
         setGroupId(JobManager.JOB_GROUP_UNIQUE);
     }
 
-    public LoadFilter getLoadFilter() {
+    public TaskLoadFilter getLoadFilter() {
         return mLoadFilter;
     }
 
     @Override
-    protected LoadJobResult<?> performLoad() throws JobExecutionException {
+    protected LoadJobResult<List<TaskBundle>> performLoad() throws JobExecutionException {
         SQLiteDatabase db = mDatabaseHelper.getReadableDatabase();
+
+        final long filterDateMillis = mLoadFilter.getDateMillis();
+        final Period filterPeriod = mLoadFilter.getPeriod();
+        final Collection<Tag> filterTags = mLoadFilter.getFilterTags();
 
         StringBuilder where = new StringBuilder();
         Phrase queryPhrase = Phrase.from(
@@ -99,23 +73,23 @@ public class LoadTaskListJob extends LoadJob {
                 .put("table_tts_column_start_time", TaskTimeSpan.COLUMN_START_TIME)
                 .put("table_task_column_create_date", Task.COLUMN_CREATE_DATE);
 
-        if (mLoadFilter.mDateMillis > 0) {
+        if (filterDateMillis > 0) {
             // Select only tasks within given period
             long periodEnd = 0;
-            if (mLoadFilter.mPeriod != null) {
-                periodEnd = Period.getPeriodEnd(mLoadFilter.mPeriod, mLoadFilter.mDateMillis);
+            if (filterPeriod != null) {
+                periodEnd = Period.getPeriodEnd(filterPeriod, filterDateMillis);
             }
 
-            where.append("begin_time >= ").append(mLoadFilter.mDateMillis);
+            where.append("begin_time >= ").append(filterDateMillis);
 
             if (periodEnd > 0) {
                 where.append(" AND begin_time < ").append(periodEnd);
             }
         }
 
-        if (!mLoadFilter.mFilterTags.isEmpty()) {
+        if (!filterTags.isEmpty()) {
             // Select only tasks with the queried tags
-            String tagIds = Joiner.on(",").join(Iterables.transform(mLoadFilter.mFilterTags, Tag::getId));
+            String tagIds = Joiner.on(",").join(Iterables.transform(filterTags, Tag::getId));
 
             if (!TextUtils.isEmpty(where)) {
                 where.append(" AND ");
@@ -133,7 +107,7 @@ public class LoadTaskListJob extends LoadJob {
                     .put("table_task_tag_column_task_id", TaskTag.COLUMN_TASK_ID)
                     .put("table_task_tag_column_tag_id", TaskTag.COLUMN_TAG_ID)
                     .put("tag_ids", tagIds)
-                    .put("tag_count", mLoadFilter.mFilterTags.size())
+                    .put("tag_count", filterTags.size())
                     .format());
         }
 
@@ -158,7 +132,7 @@ public class LoadTaskListJob extends LoadJob {
                 loadJob.reset();
             }
 
-            return new LoadJobResult<>(JobResultStatus.OK, result);
+            return new LoadJobResult<>(result);
 
         } finally {
             cursor.close();

@@ -10,6 +10,7 @@
     <string name="title_view_params">ФИЛЬТР</string>
     <string name="title_view_date">ДАТА:</string>
     <string name="title_view_tags">МЕТКИ:</string>
+    <string name="title_overall_activity_pie_chart">Суммарное время по задачам</string>
     <string name="label_service_screen_lock_watcher">Activity Watcher</string>
     <string name="label_service_worker">Core</string>
     <string name="label_receiver_notification_update">Notification Updater</string>
@@ -32,6 +33,7 @@
     <string name="action_perform_remove">Удалить</string>
     <string name="action_undo_remove">Вернуть</string>
     <string name="action_stop_task">Остановить</string>
+    <string name="caption_accumulated_tasks_duration">Остальные</string>
     <string name="ime_action_done">Готово</string>
     <string name="ime_action_create">Создать</string>
     <string name="ime_action_filter">Показать</string>
@@ -53,6 +55,8 @@
     <string name="hint_edit_tag_name">Изменить название</string>
     <string name="hint_edit_tag_color">Выбрать цвет</string>
     <string name="hint_no_filtered_tasks">Нет задач по заданному фильтру</string>
+    <string name="hint_no_task_stats">Статистика появится после активации задач</string>
+    <string name="hint_no_filtered_tasks_stats">По заданному фильтру статистика отсутствует</string>
     <string name="hint_choose_date">не выбрана</string>
     <string name="hint_reset_filter">Сбросить фильтр</string>
     <string name="hint_choose_filter_period">Выбрать период</string>
