@@ -31,10 +31,10 @@ import javax.inject.Inject;
 
 import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 
-public class LoadTaskListJob extends LoadJob {
+public class LoadTaskListJob extends LoadJob implements FilterableJob {
 
     private final DatabaseHelper mDatabaseHelper;
-    private final TaskLoadFilter mLoadFilter;
+    private TaskLoadFilter mLoadFilter;
 
     @Inject
     public LoadTaskListJob(DatabaseHelper databaseHelper) {
@@ -44,8 +44,14 @@ public class LoadTaskListJob extends LoadJob {
         setGroupId(JobManager.JOB_GROUP_UNIQUE);
     }
 
-    public TaskLoadFilter getLoadFilter() {
+    @Override
+    public TaskLoadFilter getTaskLoadFilter() {
         return mLoadFilter;
+    }
+
+    @Override
+    public void setTaskLoadFilter(TaskLoadFilter filter) {
+        mLoadFilter = filter;
     }
 
     @Override

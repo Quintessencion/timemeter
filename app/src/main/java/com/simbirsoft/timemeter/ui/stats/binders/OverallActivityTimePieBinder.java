@@ -31,10 +31,6 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder {
 
     private static final Logger LOG = LogFactory.getLogger(OverallActivityTimePieBinder.class);
 
-    final String[] titles = new String[] {
-            "task 1", "task 2", "task3", "task 4", "task 5"
-    };
-
     private ViewGroup mContentRoot;
     private PieChart mPieChart;
     private TextView mTitleView;
@@ -55,38 +51,19 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder {
     public View createView(Context context, ViewGroup parent) {
         mContentRoot = (ViewGroup) LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.view_pie_chart, parent, false);
-        mVerticalChartLegendView = (VerticalChartLegendView) mContentRoot.findViewById(R.id.legendPanel);
 
-        mPieChart = (PieChart) mContentRoot.findViewById(R.id.chart);
-        mTitleView = (TextView) mContentRoot.findViewById(android.R.id.title);
-        mTitleView.setText(context.getString(R.string.title_overall_activity_pie_chart));
-        mPieChart.setDescription("");
-        mPieChart.setDrawHoleEnabled(true);
-        mPieChart.setHoleColorTransparent(true);
-        mPieChart.setHoleRadius(30f);
-        mPieChart.setTransparentCircleRadius(55f);
-        mPieChart.setDrawCenterText(false);
-        mPieChart.setRotationEnabled(false);
-        mPieChart.setDrawXValues(false);
-        mPieChart.setDrawYValues(true);
-        mPieChart.setUsePercentValues(true);
-        mPieChart.setDrawLegend(false);
-        mPieChart.setTouchEnabled(true);
-        mPieChart.setOffsets(0f, 0f, 0f, 0f);
-
-//        mPieChart.setOnChartValueSelectedListener(this);
-
-//        mPieChart.setDrawMarkerViews(true);
-//        mPieChart.setMarkerView(new ChartMarkerView(context, titles));
-
-        mPieChart.animateX(1500);
-        measureChartView(context.getResources());
+        initializePieChart();
 
         return mContentRoot;
     }
 
     @Override
     public void bindView(View view) {
+        if (mContentRoot == null) {
+            mContentRoot = (ViewGroup) view;
+            initializePieChart();
+        }
+
         final int count = mOverallActivity.size();
         final ArrayList<Entry> overallSpentTimeY = Lists.newArrayListWithCapacity(count);
         final ArrayList<String> titlesX = Lists.newArrayListWithCapacity(count);
@@ -108,20 +85,52 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder {
         PieData data = new PieData(titlesX, pieDataSet);
         mPieChart.setData(data);
 
-        mLegend = mPieChart.getLegend();
-        mLegend.setPosition(Legend.LegendPosition.BELOW_CHART_LEFT);
-        mLegend.setXEntrySpace(7f);
-        mLegend.setYEntrySpace(0f);
-        mLegend.setForm(Legend.LegendForm.CIRCLE);
-        mLegend.setTextSize(16f);
-        mLegend.setStackSpace(12f);
+        if (mLegend == null) {
+            mLegend = mPieChart.getLegend();
+            mLegend.setPosition(Legend.LegendPosition.BELOW_CHART_LEFT);
+            mLegend.setXEntrySpace(7f);
+            mLegend.setYEntrySpace(0f);
+            mLegend.setForm(Legend.LegendForm.CIRCLE);
+            mLegend.setTextSize(16f);
+            mLegend.setStackSpace(12f);
+            mVerticalChartLegendView.setLegend(mLegend);
+            mPieChart.highlightValues(null);
+            mPieChart.invalidate();
+        }
 
-        mVerticalChartLegendView.setLegend(mLegend);
+        mVerticalChartLegendView.requestLayout();
+        mVerticalChartLegendView.invalidate();
+    }
 
-        // undo all highlights
-        mPieChart.highlightValues(null);
+    private void initializePieChart() {
+        final Context context = mContentRoot.getContext();
 
-        mPieChart.invalidate();
+        mVerticalChartLegendView = (VerticalChartLegendView) mContentRoot.findViewById(R.id.legendPanel);
+
+        mPieChart = (PieChart) mContentRoot.findViewById(R.id.chart);
+        mTitleView = (TextView) mContentRoot.findViewById(android.R.id.title);
+        mTitleView.setText(context.getString(R.string.title_overall_activity_pie_chart));
+        mPieChart.setDescription("");
+        mPieChart.setDrawHoleEnabled(true);
+        mPieChart.setHoleColorTransparent(true);
+        mPieChart.setHoleRadius(30f);
+        mPieChart.setTransparentCircleRadius(45f);
+        mPieChart.setDrawCenterText(false);
+        mPieChart.setRotationEnabled(false);
+        mPieChart.setDrawXValues(false);
+        mPieChart.setDrawYValues(true);
+        mPieChart.setUsePercentValues(true);
+        mPieChart.setDrawLegend(false);
+        mPieChart.setTouchEnabled(true);
+        mPieChart.setOffsets(0f, 0f, 0f, 0f);
+
+//        mPieChart.setOnChartValueSelectedListener(this);
+
+//        mPieChart.setDrawMarkerViews(true);
+//        mPieChart.setMarkerView(new ChartMarkerView(context, titles));
+
+        measureChartView(context.getResources());
+
     }
 
     private void measureChartView(Resources res) {

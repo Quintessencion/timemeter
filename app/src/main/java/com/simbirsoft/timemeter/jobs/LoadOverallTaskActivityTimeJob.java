@@ -37,7 +37,7 @@ import nl.qbusict.cupboard.convert.EntityConverter;
 
 import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 
-public class LoadOverallTaskActivityTimeJob extends LoadJob {
+public class LoadOverallTaskActivityTimeJob extends LoadJob implements FilterableJob {
 
     private static final Logger LOG = LogFactory.getLogger(LoadOverallTaskActivityTimeJob.class);
 
@@ -46,7 +46,7 @@ public class LoadOverallTaskActivityTimeJob extends LoadJob {
 
     private final Context mContext;
     private final DatabaseHelper mDatabaseHelper;
-    private final TaskLoadFilter mLoadFilter;
+    private TaskLoadFilter mLoadFilter;
 
     @Inject
     public LoadOverallTaskActivityTimeJob(Context context, DatabaseHelper databaseHelper) {
@@ -55,8 +55,14 @@ public class LoadOverallTaskActivityTimeJob extends LoadJob {
         mLoadFilter = new TaskLoadFilter();
     }
 
-    public TaskLoadFilter getLoadFilter() {
+    @Override
+    public TaskLoadFilter getTaskLoadFilter() {
         return mLoadFilter;
+    }
+
+    @Override
+    public void setTaskLoadFilter(TaskLoadFilter filter) {
+        mLoadFilter = filter;
     }
 
     @Override
@@ -170,7 +176,7 @@ public class LoadOverallTaskActivityTimeJob extends LoadJob {
         }
 
         // Do not include single item to accumulated results
-        if (filteredResults.size() == 2) {
+        if (filteredResults.size() <= 2) {
             result.addAll(0, filteredResults);
         } else {
             // Pop last accumulated item

@@ -10,8 +10,6 @@ import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
-import android.transitions.everywhere.Fade;
-import android.transitions.everywhere.TransitionManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -323,7 +321,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
 
         if (mFilterViewState != null) {
-            job.getLoadFilter()
+            job.getTaskLoadFilter()
                     .tags(mFilterViewState.tags)
                     .dateMillis(mFilterViewState.dateMillis)
                     .period(mFilterViewState.period);
