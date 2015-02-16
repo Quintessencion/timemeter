@@ -1,6 +1,7 @@
 package com.simbirsoft.timemeter.ui.main;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -182,6 +183,16 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (mPagerAdapter != null && mPagerAdapter.getCount() > 0) {
+            Fragment currentFragment = mPagerAdapter.getItem(mViewPager.getCurrentItem());
+            currentFragment.onActivityResult(requestCode, resultCode, data);
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     private void showFilterView(boolean animate) {
