@@ -20,6 +20,8 @@
     <string name="minutes_mark">м</string>
     <string name="seconds_mark">с</string>
     <string name="caption_today">Сегодня</string>
+    <string name="caption_accumulated_tasks_duration">Остальные</string>
+    <string name="caption_empty_chart">Нет данных</string>
 
     <!-- Actions -->
     <string name="action_toggle_filter_on">Показать фильтр</string>
@@ -33,7 +35,6 @@
     <string name="action_perform_remove">Удалить</string>
     <string name="action_undo_remove">Вернуть</string>
     <string name="action_stop_task">Остановить</string>
-    <string name="caption_accumulated_tasks_duration">Остальные</string>
     <string name="ime_action_done">Готово</string>
     <string name="ime_action_create">Создать</string>
     <string name="ime_action_filter">Показать</string>

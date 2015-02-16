@@ -1,31 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingTop="4dp"
-    android:paddingLeft="4dp">
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="4dp"
+        android:paddingTop="4dp">
+
+        <TextView
+            android:id="@android:id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="4dp"
+            android:paddingRight="4dp"
+            android:text="@android:string/untitled"
+            android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/chart"
+            android:layout_width="match_parent"
+            android:layout_height="0dip"
+            android:layout_weight="1"/>
+
+        <com.simbirsoft.timemeter.ui.views.VerticalChartLegendView
+            android:id="@+id/legendPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="16dp"/>
+
+    </LinearLayout>
 
     <TextView
-        android:id="@android:id/title"
+        android:id="@android:id/empty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:paddingBottom="4dp"
-        android:paddingRight="4dp"
-        android:text="@android:string/untitled" />
-
-    <com.github.mikephil.charting.charts.PieChart
-        android:id="@+id/chart"
-        android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="1"/>
-
-    <com.simbirsoft.timemeter.ui.views.VerticalChartLegendView
-        android:id="@+id/legendPanel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingLeft="16dp" />
-
-</LinearLayout>
+        android:paddingTop="52dp"
+        android:paddingBottom="24dp"
+        android:text="@string/caption_empty_chart"
+        android:layout_gravity="center"/>
+</FrameLayout>

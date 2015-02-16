@@ -1,22 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:background="@drawable/tooltip" >
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:background="@drawable/toast_frame"
+              android:gravity="center_horizontal"
+              android:orientation="vertical">
 
     <TextView
-        android:id="@+id/content"
+        android:id="@android:id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="7dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-        android:text=""
-        android:textSize="12dp"
-        android:textColor="@android:color/white"
-        android:ellipsize="end"
-        android:singleLine="true"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:ellipsize="marquee"
+        android:maxLines="2"
+        android:text="@android:string/untitled"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="@android:color/white"/>
 
-</RelativeLayout>
+    <TextView
+        android:id="@+id/subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@android:string/untitled"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="@android:color/white"/>
+
+</LinearLayout>

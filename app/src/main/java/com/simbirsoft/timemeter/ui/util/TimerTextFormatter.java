@@ -41,7 +41,7 @@ public final class TimerTextFormatter {
         return sb.toString();
     }
 
-    public static String formatTaskNotificatoinTimer(Resources res, long pastTimeMillis) {
+    public static String formatTaskNotificationTimer(long pastTimeMillis) {
         SplitTime t = fetchSplitTime(pastTimeMillis);
 
         StringBuilder sb = new StringBuilder();

@@ -10,7 +10,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:hint="@string/hint_task_description"/>
+        android:hint="@string/hint_task_description"
+        android:maxLength="250"/>
 
     <com.simbirsoft.timemeter.ui.views.TagAutoCompleteTextView
         android:id="@+id/tagSearchView"

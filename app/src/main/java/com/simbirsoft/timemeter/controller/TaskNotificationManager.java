@@ -95,8 +95,7 @@ public class TaskNotificationManager {
 
         String notificationText = taskInfo.getTask().getDescription();
         long pastTime = taskInfo.getPastTimeMillis();
-        CharSequence timeText = TimerTextFormatter.formatTaskNotificatoinTimer(
-                mContext.getResources(), pastTime);
+        CharSequence timeText = TimerTextFormatter.formatTaskNotificationTimer(pastTime);
         if (mNotificationBuilder == null) {
             mNotificationBuilder = createTaskActivityNotification(
                     timeText, notificationText);

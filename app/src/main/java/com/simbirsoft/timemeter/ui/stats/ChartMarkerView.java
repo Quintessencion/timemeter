@@ -1,15 +1,20 @@
 package com.simbirsoft.timemeter.ui.stats;
 
 import android.content.Context;
+import android.text.Html;
+import android.text.Spannable;
+import android.text.Spanned;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.utils.MarkerView;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
 
 public class ChartMarkerView extends MarkerView {
 
-    private TextView contentView;
+    private TextView mTitleView;
+    private TextView mSubtitleView;
     private String[] labels;
 
     /**
@@ -22,12 +27,16 @@ public class ChartMarkerView extends MarkerView {
         super(context, R.layout.marker_view);
 
         this.labels = labels;
-        contentView = (TextView) findViewById(R.id.content);
+        mTitleView = (TextView) findViewById(android.R.id.title);
+        mSubtitleView = (TextView) findViewById(R.id.subtitle);
     }
 
     @Override
     public void refreshContent(Entry e, int dataSetIndex) {
-        contentView.setText(String.format("%s\n%d", labels[e.getXIndex()], (int)e.getVal()));
+        String timeText = TimerTextFormatter.formatTaskTimerText(
+                mTitleView.getResources(), (int) e.getVal());
+        mTitleView.setText(labels[e.getXIndex()]);
+        mSubtitleView.setText(Html.fromHtml(timeText));
     }
 
     @Override
