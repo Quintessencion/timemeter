@@ -15,7 +15,6 @@ import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.interfaces.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.github.mikephil.charting.utils.Legend;
-import com.github.mikephil.charting.utils.MarkerView;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.injection.Injection;
@@ -66,7 +65,7 @@ public class StatsFragment extends BaseFragment implements JobLoader.JobLoaderCa
         chartView.setTouchEnabled(true);
 
         chartView.setDrawMarkerViews(true);
-        chartView.setMarkerView(new ChartMarkerView(getActivity(), titles));
+        chartView.setMarkerView(new OverallTaskActivityChartMarkerView(getActivity()));
 
         setData();
         //set data before adjusting legend!

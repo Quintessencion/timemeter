@@ -7,7 +7,6 @@ import android.text.TextUtils;
 import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.exceptions.JobExecutionException;
 import com.be.android.library.worker.jobs.LoadJob;
-import com.be.android.library.worker.models.JobResultStatus;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
@@ -25,7 +24,6 @@ import com.squareup.phrase.Phrase;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -40,8 +38,6 @@ public class LoadTaskListJob extends LoadJob implements FilterableJob {
     public LoadTaskListJob(DatabaseHelper databaseHelper) {
         mDatabaseHelper = databaseHelper;
         mLoadFilter = new TaskLoadFilter();
-
-        setGroupId(JobManager.JOB_GROUP_UNIQUE);
     }
 
     @Override

@@ -46,4 +46,10 @@ public class TaskLoadFilter {
     public Period getPeriod() {
         return mPeriod;
     }
+
+    public void clear() {
+        mPeriod = null;
+        mDateMillis = 0;
+        mFilterTags.clear();
+    }
 }

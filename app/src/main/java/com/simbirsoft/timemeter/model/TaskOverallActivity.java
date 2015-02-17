@@ -6,7 +6,7 @@ import nl.qbusict.cupboard.annotation.Column;
 import nl.qbusict.cupboard.annotation.Ignore;
 
 /**
- * Class used in conjuction with {@link com.simbirsoft.timemeter.db.TaskOverallTimeEntityConverter}
+ * Class used in conjunction with {@link com.simbirsoft.timemeter.db.TaskOverallTimeEntityConverter}
  * to join task with overall activity time.
  *
  * Model is NOT stored in database.

@@ -11,6 +11,7 @@
     <string name="title_view_date">ДАТА:</string>
     <string name="title_view_tags">МЕТКИ:</string>
     <string name="title_overall_activity_pie_chart">Суммарное время по задачам</string>
+    <string name="title_activity_timeline">График активности</string>
     <string name="label_service_screen_lock_watcher">Activity Watcher</string>
     <string name="label_service_worker">Core</string>
     <string name="label_receiver_notification_update">Notification Updater</string>

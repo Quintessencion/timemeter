@@ -1,7 +1,5 @@
 package com.simbirsoft.timemeter.jobs;
 
-import android.util.Log;
-
 import com.be.android.library.worker.base.JobEvent;
 import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.jobs.LoadJob;
@@ -34,7 +32,6 @@ public class LoadTaskBundleJob extends LoadJob {
         mDatabaseHelper = databaseHelper;
         mLoadTaskTagsJob = loadTaskTagsJob;
         mLoadTaskTimespansJob = loadTaskTimespansJob;
-        setGroupId(JobManager.JOB_GROUP_UNIQUE);
     }
 
     public void setTaskId(long taskId) {

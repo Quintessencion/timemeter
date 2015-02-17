@@ -61,8 +61,6 @@ public abstract class MarkerView extends RelativeLayout {
         posx += getXOffset();
         posy += getYOffset();
 
-        Log.d("Irina", "! " + posx + " " + posy);
-
         // translate to the correct position and draw
         canvas.translate(posx, posy);
         draw(canvas);

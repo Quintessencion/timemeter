@@ -18,7 +18,7 @@ import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.model.TaskOverallActivity;
-import com.simbirsoft.timemeter.ui.stats.ChartMarkerView;
+import com.simbirsoft.timemeter.ui.stats.OverallTaskActivityChartMarkerView;
 import com.simbirsoft.timemeter.ui.stats.StatisticsViewBinder;
 import com.simbirsoft.timemeter.ui.views.VerticalChartLegendView;
 
@@ -72,7 +72,10 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
 
         for (int i = 0; i < count; i++) {
             TaskOverallActivity item = mOverallActivity.get(i);
-            overallSpentTimeY.add(new Entry((float) item.getDuration(), i));
+            overallSpentTimeY.add(new Entry(
+                    (float) item.getDuration(),
+                    i,
+                    item.getDescription()));
 
             titlesX.add(item.getDescription());
 
@@ -86,9 +89,7 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
         PieData data = new PieData(titlesX, pieDataSet);
         mPieChart.setData(data);
 
-        mPieChart.setMarkerView(new ChartMarkerView(
-                mContentRoot.getContext(),
-                titlesX.toArray(new String[titlesX.size()])));
+        mPieChart.setMarkerView(new OverallTaskActivityChartMarkerView(mContentRoot.getContext()));
 
         if (mLegend == null) {
             mLegend = mPieChart.getLegend();

@@ -9,7 +9,9 @@ import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.model.TaskOverallActivity;
+import com.simbirsoft.timemeter.ui.model.DailyActivityDuration;
 import com.simbirsoft.timemeter.ui.stats.StatisticsViewBinder;
+import com.simbirsoft.timemeter.ui.stats.binders.ActivityTimelineBinder;
 import com.simbirsoft.timemeter.ui.stats.binders.OverallActivityTimePieBinder;
 
 import java.util.List;
@@ -43,17 +45,33 @@ public class LoadStatisticsViewBinders extends LoadJob implements FilterableJob 
     protected LoadJobResult<List<StatisticsViewBinder>> performLoad() throws Exception {
         final List<StatisticsViewBinder> results = Lists.newArrayList();
 
-        LoadOverallTaskActivityTimeJob loadOverallTaskActivityTimeJob =
+        // Load overall activity
+        final LoadOverallTaskActivityTimeJob loadOverallTaskActivityTimeJob =
                 new LoadOverallTaskActivityTimeJob(mContext, mDatabaseHelper);
         loadOverallTaskActivityTimeJob.setTaskLoadFilter(mTaskLoadFilter);
 
-        ForkJoiner joiner = buildFork(loadOverallTaskActivityTimeJob)
-                .groupOn(JobManager.JOB_GROUP_UNIQUE)
+        ForkJoiner overallActivityJoiner = buildFork(loadOverallTaskActivityTimeJob)
+                .groupOnTheSameGroup()
+                .fork();
+
+        // Load activity timeline
+        final LoadPeriodActivityTimelineJob loadPeriodActivityTimelineJob =
+                new LoadPeriodActivityTimelineJob(
+                        new LoadPeriodActivityTimeSumJob(mDatabaseHelper),
+                        mDatabaseHelper);
+        loadPeriodActivityTimelineJob.setTaskLoadFilter(mTaskLoadFilter);
+
+        ForkJoiner timelineActivityJoiner = buildFork(loadPeriodActivityTimelineJob)
+                .groupOnTheSameGroup()
                 .fork();
 
         List<TaskOverallActivity> taskOverallActivityTime =
-                ((LoadJobResult<List<TaskOverallActivity>>) joiner.join()).getData();
+                ((LoadJobResult<List<TaskOverallActivity>>) overallActivityJoiner.join()).getData();
         results.add(new OverallActivityTimePieBinder(taskOverallActivityTime));
+
+        List<DailyActivityDuration> activityTimeline =
+                ((LoadJobResult<List<DailyActivityDuration>>) timelineActivityJoiner.join()).getData();
+        results.add(new ActivityTimelineBinder(activityTimeline));
 
         return new LoadJobResult<>(results);
     }
