@@ -6,21 +6,18 @@ import android.text.TextUtils;
 
 import com.be.android.library.worker.jobs.LoadJob;
 import com.be.android.library.worker.models.LoadJobResult;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
+import com.simbirsoft.timemeter.db.QueryUtils;
 import com.simbirsoft.timemeter.db.TaskOverallTimeEntityConverter;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
-import com.simbirsoft.timemeter.db.model.TaskTag;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.model.Period;
 import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.model.TaskOverallActivity;
-import com.simbirsoft.timemeter.util.SqlUtils;
 import com.squareup.phrase.Phrase;
 
 import org.slf4j.Logger;
@@ -92,34 +89,18 @@ public class LoadOverallTaskActivityTimeJob extends LoadJob implements Filterabl
 
         if (filterDateMillis > 0) {
             // Select only tasks within given period
-            where.append(SqlUtils.periodToStatement(
+            where.append(QueryUtils.createPeriodRestrictionStatement(
                     TaskTimeSpan.TABLE_NAME + "." + TaskTimeSpan.COLUMN_START_TIME,
                     filterDateMillis,
                     filterPeriod));
         }
 
         if (!filterTags.isEmpty()) {
-            // Select only tasks with the queried tags
-            String tagIds = Joiner.on(",").join(Iterables.transform(filterTags, Tag::getId));
-
             if (!TextUtils.isEmpty(where)) {
                 where.append(" AND ");
             }
 
-            where.append(Phrase.from(
-                    "(SELECT COUNT(*) " +
-                            "FROM {table_task_tag} " +
-                            "WHERE {table_task_tag}.{table_task_tag_column_task_id}={table_task}.{table_task_column_task_id} " +
-                            "AND {table_task_tag}.{table_task_tag_column_tag_id} IN ({tag_ids}) " +
-                            "GROUP BY {table_task_tag}.{table_task_tag_column_task_id})={tag_count}")
-                    .put("table_task", Task.TABLE_NAME)
-                    .put("table_task_tag", TaskTag.TABLE_NAME)
-                    .put("table_task_column_task_id", Task.COLUMN_ID)
-                    .put("table_task_tag_column_task_id", TaskTag.COLUMN_TASK_ID)
-                    .put("table_task_tag_column_tag_id", TaskTag.COLUMN_TAG_ID)
-                    .put("tag_ids", tagIds)
-                    .put("tag_count", filterTags.size())
-                    .format());
+            where.append(QueryUtils.createTagsRestrictionStatement(filterTags));
         }
 
         if (!TextUtils.isEmpty(where)) {

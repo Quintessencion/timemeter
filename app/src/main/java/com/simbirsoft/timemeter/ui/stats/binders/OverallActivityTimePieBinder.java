@@ -12,18 +12,20 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.interfaces.OnChartValueSelectedListener;
-import com.github.mikephil.charting.utils.ColorTemplate;
 import com.github.mikephil.charting.utils.Legend;
+import com.github.mikephil.charting.utils.ValueFormatter;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.model.TaskOverallActivity;
 import com.simbirsoft.timemeter.ui.stats.OverallTaskActivityChartMarkerView;
 import com.simbirsoft.timemeter.ui.stats.StatisticsViewBinder;
+import com.simbirsoft.timemeter.ui.util.ColorSets;
 import com.simbirsoft.timemeter.ui.views.VerticalChartLegendView;
 
 import org.slf4j.Logger;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +40,7 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
     private Legend mLegend;
     private VerticalChartLegendView mVerticalChartLegendView;
     private TextView mEmptyIndicatorView;
+    private boolean mIsDataBound;
 
     public OverallActivityTimePieBinder(List<TaskOverallActivity> overallActivity) {
         mOverallActivity = overallActivity;
@@ -65,10 +68,14 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
             initializePieChart();
         }
 
+        if (mIsDataBound) {
+            return;
+        }
+
         final int count = mOverallActivity.size();
         final ArrayList<Entry> overallSpentTimeY = Lists.newArrayListWithCapacity(count);
         final ArrayList<String> titlesX = Lists.newArrayListWithCapacity(count);
-        final int[] colors = new int[count];
+        final int[] colors = ColorSets.makeColorSet(ColorSets.MIXED_COLORS, count);
 
         for (int i = 0; i < count; i++) {
             TaskOverallActivity item = mOverallActivity.get(i);
@@ -78,8 +85,6 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
                     item.getDescription()));
 
             titlesX.add(item.getDescription());
-
-            colors[i] = ColorTemplate.JOYFUL_COLORS[i % ColorTemplate.JOYFUL_COLORS.length];
         }
 
         PieDataSet pieDataSet = new PieDataSet(overallSpentTimeY, "");
@@ -113,10 +118,13 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
         } else {
             mEmptyIndicatorView.setVisibility(View.GONE);
         }
+
+        mIsDataBound = true;
     }
 
     private void initializePieChart() {
         final Context context = mContentRoot.getContext();
+        final DecimalFormat format = new DecimalFormat("#.#");
 
         mVerticalChartLegendView = (VerticalChartLegendView) mContentRoot.findViewById(R.id.legendPanel);
 
@@ -138,6 +146,16 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
         mPieChart.setDrawLegend(false);
         mPieChart.setTouchEnabled(true);
         mPieChart.setOffsets(0f, 0f, 0f, 0f);
+        mPieChart.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                if (value < 3f) {
+                    return "";
+                }
+
+                return format.format(value) + " %";
+            }
+        });
 
         mPieChart.setOnChartValueSelectedListener(this);
 

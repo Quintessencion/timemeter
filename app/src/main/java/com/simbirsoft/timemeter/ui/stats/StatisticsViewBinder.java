@@ -13,13 +13,15 @@ public interface StatisticsViewBinder {
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({
             VIEW_TYPE_ACTIVITY_OVERALL_TIME_PIE,
-            VIEW_TYPE_ACTIVITY_TIMELINE
+            VIEW_TYPE_ACTIVITY_TIMELINE,
+            VIEW_TYPE_ACTIVITY_STACKED_TIMELINE
     })
     public @interface BinderViewType {
     }
 
     public static final int VIEW_TYPE_ACTIVITY_OVERALL_TIME_PIE = 0;
     public static final int VIEW_TYPE_ACTIVITY_TIMELINE = 1;
+    public static final int VIEW_TYPE_ACTIVITY_STACKED_TIMELINE = 2;
 
     @BinderViewType
     public int getViewTypeId();

@@ -35,6 +35,7 @@ public class ActivityTimelineBinder implements StatisticsViewBinder, OnChartValu
     private TextView mTitleView;
     private final List<DailyActivityDuration> mActivityTimeline;
     private int mLineColor;
+    private boolean mIsDataBound;
 
     public ActivityTimelineBinder(List<DailyActivityDuration> activityTimeline) {
         mActivityTimeline = activityTimeline;
@@ -62,14 +63,22 @@ public class ActivityTimelineBinder implements StatisticsViewBinder, OnChartValu
             initializeChart();
         }
 
+        if (mIsDataBound) {
+            return;
+        }
+
         final int count = mActivityTimeline.size();
         final ArrayList<Entry> timelineY = Lists.newArrayListWithCapacity(count);
         final ArrayList<String> timelineX = Lists.newArrayListWithCapacity(count);
 
         for (int i = 0; i < count; i++) {
             DailyActivityDuration item = mActivityTimeline.get(i);
+
+            int minutes = (int) TimeUnit.MILLISECONDS.toMinutes(item.duration);
+            float hours = minutes / 60f;
+
             timelineY.add(new Entry(
-                    (float) (int) TimeUnit.MILLISECONDS.toHours(item.duration),
+                    hours,
                     i,
                     item.duration));
             timelineX.add(DateFormat.format("dd.MM", item.date).toString());
@@ -86,6 +95,8 @@ public class ActivityTimelineBinder implements StatisticsViewBinder, OnChartValu
 
         measureChartView(mContentRoot.getResources());
         mChart.invalidate();
+
+        mIsDataBound = true;
     }
 
     private void initializeChart() {
@@ -102,6 +113,7 @@ public class ActivityTimelineBinder implements StatisticsViewBinder, OnChartValu
         mChart.setDrawYValues(false);
         mChart.setDrawLegend(false);
         mChart.setTouchEnabled(true);
+        mChart.setDoubleTapToZoomEnabled(false);
         mChart.setOffsets(0f, 0f, 0f, 0f);
         mChart.setOnChartValueSelectedListener(this);
         mChart.setDrawMarkerViews(true);

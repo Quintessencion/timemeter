@@ -39,6 +39,12 @@ public class Task implements Parcelable {
     public Task() {
     }
 
+    public Task(Task other) {
+        _id = other._id;
+        description = other.description;
+        createDate = other.createDate;
+    }
+
     protected Task(Parcel source) {
         readParcel(source);
     }

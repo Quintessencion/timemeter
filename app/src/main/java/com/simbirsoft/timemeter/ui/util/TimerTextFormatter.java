@@ -31,7 +31,7 @@ public final class TimerTextFormatter {
                 .append(res.getString(R.string.minutes_mark))
                 .append("&nbsp;</small>");
 
-        if (t.minutes < Consts.TASK_ACTIVITY_CLOCK_SWITCH_THRESHOLD_MINUTES) {
+        if (t.hours < 1 && t.minutes < Consts.TASK_ACTIVITY_CLOCK_SWITCH_THRESHOLD_MINUTES) {
             sb.append(String.format("%02d", t.seconds))
                     .append("<small>")
                     .append(res.getString(R.string.seconds_mark))

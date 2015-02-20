@@ -85,19 +85,26 @@ public class VerticalChartLegendView extends View {
         int x = getPaddingLeft();
         int y = getPaddingTop();
         for (int i = 0; i < count; i++) {
-            float textSize = Utils.calcTextHeight(mLegendLabelPaint, mLegend.getLegendLabels()[i]);
+            String label = mLegend.getLegendLabels()[i];
 
-            mLegend.drawForm(canvas,
-                    x,
-                    y + (textSize / 2) - formDrawOffset,
-                    mLegendFormPaint,
-                    i);
+            float textSize;
+            if (label != null) {
+                textSize = Utils.calcTextHeight(mLegendLabelPaint, label);
 
-            mLegend.drawLabel(canvas,
-                    x + formTextSpaceAndForm,
-                    y + textSize,
-                    mLegendLabelPaint,
-                    i);
+                mLegend.drawForm(canvas,
+                        x,
+                        y + (textSize / 2) - formDrawOffset,
+                        mLegendFormPaint,
+                        i);
+
+                mLegend.drawLabel(canvas,
+                        x + formTextSpaceAndForm,
+                        y + textSize,
+                        mLegendLabelPaint,
+                        i);
+            } else {
+                textSize = mLegend.getTextSize();
+            }
 
             y += textSize + stackSpace + mLegend.getYEntrySpace();
         }

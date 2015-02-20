@@ -7,6 +7,7 @@ import com.be.android.library.worker.jobs.LoadJob;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
+import com.simbirsoft.timemeter.db.QueryHelper;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.log.LogFactory;
@@ -61,26 +62,19 @@ public class LoadPeriodActivityTimelineJob extends LoadJob implements Filterable
         final List<DailyActivityDuration> results = Lists.newArrayList();
 
         if (filterDateMillis == 0) {
-            filterDateMillis = TimeUtils.getDayStartMillis(findActivityBeginDate());
+            filterDateMillis = TimeUtils.getDayStartMillis(
+                    QueryHelper.findFirstActivityBeginDate(mDatabaseHelper.getReadableDatabase()));
 
             if (filterDateMillis == 0) {
+                LOG.debug("unable to load activity timeline: no activity found");
+
                 return new LoadJobResult<>(results);
             }
         }
 
         long timelineEndMillis;
         if (filterPeriod == null || filterPeriod == Period.ALL) {
-            final Calendar tomorrow = Calendar.getInstance();
-            tomorrow.setTimeInMillis(System.currentTimeMillis());
-            tomorrow.add(Calendar.DAY_OF_YEAR, 1);
-            tomorrow.set(
-                    tomorrow.get(Calendar.YEAR),
-                    tomorrow.get(Calendar.MONTH),
-                    tomorrow.get(Calendar.DAY_OF_MONTH),
-                    0,
-                    0,
-                    0);
-            timelineEndMillis = tomorrow.getTimeInMillis();
+            timelineEndMillis = TimeUtils.tomorrowStart();;
         } else {
             timelineEndMillis = Period.getPeriodEnd(filterPeriod, filterDateMillis);
         }
@@ -110,19 +104,5 @@ public class LoadPeriodActivityTimelineJob extends LoadJob implements Filterable
         JobEvent result = forkJob(mLoadActivitySumJob).join();
 
         return ((LoadJobResult<Integer>) result).getData();
-    }
-
-    private long findActivityBeginDate() {
-        TaskTimeSpan min = cupboard().withDatabase(mDatabaseHelper.getReadableDatabase())
-                .query(TaskTimeSpan.class)
-                .having("MIN(" + TaskTimeSpan.COLUMN_START_TIME + ")")
-                .groupBy(TaskTimeSpan.COLUMN_ID)
-                .get();
-
-        if (min == null) {
-            return 0;
-        }
-
-        return min.getStartTimeMillis();
     }
 }

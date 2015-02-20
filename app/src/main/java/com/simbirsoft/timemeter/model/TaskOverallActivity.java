@@ -21,6 +21,13 @@ public final class TaskOverallActivity extends Task {
     @Ignore
     private float durationRatio;
 
+    public TaskOverallActivity() {
+    }
+
+    public TaskOverallActivity(Task task) {
+        super(task);
+    }
+
     public Long getDuration() {
         return duration;
     }

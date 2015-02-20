@@ -3,8 +3,10 @@ package com.simbirsoft.timemeter.injection.components;
 import com.simbirsoft.timemeter.App;
 import com.simbirsoft.timemeter.jobs.BackupTagJob;
 import com.simbirsoft.timemeter.jobs.LoadOverallTaskActivityTimeJob;
+import com.simbirsoft.timemeter.jobs.LoadPeriodActivitySplitTimeSumJob;
 import com.simbirsoft.timemeter.jobs.LoadPeriodActivityTimeSumJob;
 import com.simbirsoft.timemeter.jobs.LoadPeriodActivityTimelineJob;
+import com.simbirsoft.timemeter.jobs.LoadPeriodSplitActivityTimelineJob;
 import com.simbirsoft.timemeter.jobs.LoadStatisticsViewBinders;
 import com.simbirsoft.timemeter.jobs.LoadTagListJob;
 import com.simbirsoft.timemeter.jobs.LoadTaskBundleJob;
@@ -32,4 +34,6 @@ public interface JobsComponent {
     public LoadStatisticsViewBinders loadStatisticsViewBinders();
     public LoadPeriodActivityTimeSumJob loadPeriodActivityTimeJob();
     public LoadPeriodActivityTimelineJob loadPeriodActivityTimelineJob();
+    public LoadPeriodActivitySplitTimeSumJob loadPeriodActivitySplitTimeSumJob();
+    public LoadPeriodSplitActivityTimelineJob loadPeriodSplitActivityTimelineJob();
 }

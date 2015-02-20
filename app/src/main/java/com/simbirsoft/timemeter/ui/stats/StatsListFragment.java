@@ -15,6 +15,7 @@ import com.be.android.library.worker.models.LoadJobResult;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.injection.Injection;
+import com.simbirsoft.timemeter.jobs.LoadPeriodSplitActivityTimelineJob;
 import com.simbirsoft.timemeter.jobs.LoadStatisticsViewBinders;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;

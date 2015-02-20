@@ -16,10 +16,16 @@
         android:text="@android:string/untitled"
         android:textAppearance="?android:attr/textAppearanceMedium"/>
 
-    <com.github.mikephil.charting.charts.LineChart
+    <com.github.mikephil.charting.charts.BarChart
         android:id="@+id/chart"
         android:layout_width="match_parent"
         android:layout_height="0dip"
         android:layout_weight="1"/>
+
+    <com.simbirsoft.timemeter.ui.views.VerticalChartLegendView
+        android:id="@+id/legendPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="16dp"/>
 
 </LinearLayout>

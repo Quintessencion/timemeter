@@ -7,10 +7,13 @@ import com.be.android.library.worker.jobs.LoadJob;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
+import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.model.TaskOverallActivity;
 import com.simbirsoft.timemeter.ui.model.DailyActivityDuration;
+import com.simbirsoft.timemeter.ui.model.DailyTaskActivityDuration;
 import com.simbirsoft.timemeter.ui.stats.StatisticsViewBinder;
+import com.simbirsoft.timemeter.ui.stats.binders.ActivityStackedTimelineBinder;
 import com.simbirsoft.timemeter.ui.stats.binders.ActivityTimelineBinder;
 import com.simbirsoft.timemeter.ui.stats.binders.OverallActivityTimePieBinder;
 
@@ -65,6 +68,16 @@ public class LoadStatisticsViewBinders extends LoadJob implements FilterableJob 
                 .groupOnTheSameGroup()
                 .fork();
 
+        // Load activity stacked timeline
+        LoadPeriodSplitActivityTimelineJob loadPeriodSplitActivityTimelineJob =
+                Injection.sJobsComponent.loadPeriodSplitActivityTimelineJob();
+        loadPeriodSplitActivityTimelineJob.setTaskLoadFilter(mTaskLoadFilter);
+
+        ForkJoiner splitTimelineJoiner = buildFork(loadPeriodSplitActivityTimelineJob)
+                .groupOnTheSameGroup()
+                .fork();
+
+
         List<TaskOverallActivity> taskOverallActivityTime =
                 ((LoadJobResult<List<TaskOverallActivity>>) overallActivityJoiner.join()).getData();
         results.add(new OverallActivityTimePieBinder(taskOverallActivityTime));
@@ -72,6 +85,12 @@ public class LoadStatisticsViewBinders extends LoadJob implements FilterableJob 
         List<DailyActivityDuration> activityTimeline =
                 ((LoadJobResult<List<DailyActivityDuration>>) timelineActivityJoiner.join()).getData();
         results.add(new ActivityTimelineBinder(activityTimeline));
+
+        List<DailyTaskActivityDuration> activitySplitTimeline =
+                ((LoadJobResult<List<DailyTaskActivityDuration>>) splitTimelineJoiner.join()).getData();
+        results.add(new ActivityStackedTimelineBinder(activitySplitTimeline));
+
+
 
         return new LoadJobResult<>(results);
     }
