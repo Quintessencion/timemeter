@@ -14,6 +14,8 @@ public class Highlight {
     /** the index of the dataset the highlighted value is in */
     private int mDataSetIndex;
 
+    private Float mYValue;
+
     /**
      * constructor
      * 
@@ -42,6 +44,14 @@ public class Highlight {
      */
     public int getXIndex() {
         return mXIndex;
+    }
+
+    public Float getYValue() {
+        return mYValue;
+    }
+
+    public void setYValue(Float YValue) {
+        mYValue = YValue;
     }
 
     /**

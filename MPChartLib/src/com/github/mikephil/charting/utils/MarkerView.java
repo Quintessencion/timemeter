@@ -61,6 +61,18 @@ public abstract class MarkerView extends RelativeLayout {
         posx += getXOffset();
         posy += getYOffset();
 
+        if (posx < 0) {
+            posx = 0;
+        } else if (posx > canvas.getWidth() - getWidth()) {
+            posx = canvas.getWidth() - getWidth();
+        }
+
+        if (posy < 0) {
+            posy = 0;
+        } else if (posy > canvas.getHeight() - getHeight()) {
+            posy = canvas.getHeight() - getHeight();
+        }
+
         // translate to the correct position and draw
         canvas.translate(posx, posy);
         draw(canvas);

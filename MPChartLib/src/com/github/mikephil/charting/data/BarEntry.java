@@ -116,6 +116,49 @@ public class BarEntry extends Entry {
     }
 
     /**
+     * Custom. Used to draw highlight for individual bar stacks.
+     * @param val
+     * @return lower and upper value bounds
+     */
+    public float[] getClosestStackValues(float val) {
+
+        if (mVals == null || mVals.length == 0)
+            return new float[] {0, 0};
+
+        float value = 0f;
+        float prev = 0f;
+
+        for (int i = mVals.length - 1; i >= 0; i--) {
+            prev = value;
+            value += mVals[i];
+
+            if (value >= val) {
+                return new float[] {prev, value};
+            }
+        }
+
+        return new float[] {0, value};
+    }
+
+    public int getClosestStackIndex(float val) {
+
+        if (mVals == null || mVals.length == 0)
+            return -1;
+
+        float value = 0f;
+
+        for (int i = mVals.length - 1; i >= 0; i--) {
+            value += mVals[i];
+
+            if (value >= val) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    /**
      * Calculates the sum across all values.
      * 
      * @param vals

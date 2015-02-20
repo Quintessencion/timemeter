@@ -134,7 +134,7 @@ public class BarChart extends BarLineChartBase<BarData> {
             if (index < mData.getYValCount() && index >= 0
                     && index < (mDeltaX * mPhaseX) / mData.getDataSetCount()) {
 
-                Entry e = getEntryByDataSetIndex(index, dataSetIndex);
+                BarEntry e = (BarEntry) getEntryByDataSetIndex(index, dataSetIndex);
 
                 if (e == null)
                     continue;
@@ -142,9 +142,19 @@ public class BarChart extends BarLineChartBase<BarData> {
                 // calculate the correct x-position
                 float x = index * setCount + dataSetIndex + mData.getGroupSpace() / 2f
                         + mData.getGroupSpace() * index;
-                float y = e.getVal();
+                float y;
+                float yBottom = 0f;
 
-                prepareBar(x, y, set.getBarSpace());
+                float[] vals = e.getVals();
+                if (vals != null && vals.length > 0) {
+                    float[] pos = e.getClosestStackValues(h.getYValue());
+                    y = pos[1];
+                    yBottom = pos[0];
+                } else {
+                    y = e.getVal();
+                }
+
+                prepareBar(x, y, yBottom, set.getBarSpace());
 
                 mDrawCanvas.drawRect(mBarRect, mHighlightPaint);
 
@@ -285,6 +295,31 @@ public class BarChart extends BarLineChartBase<BarData> {
         float right = x + 1f - spaceHalf;
         float top = y >= 0 ? y : 0;
         float bottom = y <= 0 ? y : 0;
+
+        mBarRect.set(left, top, right, bottom);
+
+        mTrans.rectValueToPixel(mBarRect, mPhaseY);
+
+        // if a shadow is drawn, prepare it too
+        if (mDrawBarShadow) {
+            mBarShadow.set(mBarRect.left, mOffsetTop, mBarRect.right, getHeight() - mOffsetBottom);
+        }
+    }
+
+    /**
+     * Custom
+     * @param x
+     * @param y1
+     * @param y2
+     * @param barspace
+     */
+    protected void prepareBar(float x, float y1, float y2, float barspace) {
+
+        float spaceHalf = barspace / 2f;
+        float left = x + spaceHalf;
+        float right = x + 1f - spaceHalf;
+        float top = y1 >= 0 ? y1 : 0;
+        float bottom = y2 <= 0 ? 0 : y2;
 
         mBarRect.set(left, top, right, bottom);
 
@@ -495,6 +530,14 @@ public class BarChart extends BarLineChartBase<BarData> {
         }
     }
 
+    public int getHighlightStackIndex(BarEntry entry) {
+        if (!valuesToHighlight()) return -1;
+
+        float value = mIndicesToHightlight[0].getYValue();
+
+        return entry.getClosestStackIndex(value);
+    }
+
     /**
      * Returns the Highlight object (contains x-index and DataSet index) of the
      * selected value at the given touch point inside the BarChart.
@@ -545,7 +588,10 @@ public class BarChart extends BarLineChartBase<BarData> {
         if (dataSetIndex == -1)
             return null;
 
-        return new Highlight(xIndex, dataSetIndex);
+        Highlight highlight = new Highlight(xIndex, dataSetIndex);
+        highlight.setYValue(pts[1]);
+
+        return highlight;
     }
 
     /**
