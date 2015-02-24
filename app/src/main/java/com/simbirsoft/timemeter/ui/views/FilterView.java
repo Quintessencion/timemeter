@@ -204,6 +204,7 @@ public class FilterView extends FrameLayout implements
     private TokenCompleteTextView.TokenListener mTokenListener;
     private OnSelectDateClickListener mOnSelectDateClickListener;
     private boolean mIsSilentUpdate;
+    private boolean mIsReset;
 
 
     public FilterView(Context context) {
@@ -285,7 +286,9 @@ public class FilterView extends FrameLayout implements
         }
         hideDatePeriod();
         mIsSilentUpdate = false;
+        mIsReset = true;
         postFilterUpdate();
+        mIsReset = false;
     }
 
     @LongClick(R.id.resetFilterView)
@@ -457,7 +460,9 @@ public class FilterView extends FrameLayout implements
             return;
         }
 
-        post(() -> mBus.post(new FilterViewStateChangeEvent(getViewFilterState())));
+        FilterViewStateChangeEvent ev = new FilterViewStateChangeEvent(getViewFilterState());
+        ev.setReset(mIsReset);
+        post(() -> mBus.post(ev));
     }
 
     private void updateFilterState() {

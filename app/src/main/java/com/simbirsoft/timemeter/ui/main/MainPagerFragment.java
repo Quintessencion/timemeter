@@ -23,8 +23,12 @@ import com.astuetz.PagerSlidingTabStrip;
 import com.fourmob.datetimepicker.date.DatePickerDialog;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
+import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.views.FilterView;
+import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
 import com.tokenautocomplete.TokenCompleteTextView;
 
 import org.androidannotations.annotations.AfterViews;
@@ -36,6 +40,8 @@ import org.slf4j.Logger;
 
 import java.util.Calendar;
 import java.util.List;
+
+import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_tasks_pager)
 public class MainPagerFragment extends MainFragment implements FilterViewProvider,
@@ -58,6 +64,9 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
     @InstanceState
     boolean mIsFilterPanelShown;
+
+    @Inject
+    Bus mBus;
 
     private PagerSlidingTabStrip mTabs;
     private FilterView mFilterView;
@@ -90,6 +99,8 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         setShouldSubscribeForJobEvents(false);
         super.onCreate(savedInstanceState);
 
+        Injection.sUiComponent.injectMainPagerFragment(this);
+
         setHasOptionsMenu(true);
 
         DatePickerDialog dialog = (DatePickerDialog)
@@ -97,6 +108,14 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         if (dialog != null) {
             dialog.setOnDateSetListener(this);
         }
+
+        mBus.register(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        mBus.unregister(this);
+        super.onDestroy();
     }
 
     @AfterViews
@@ -192,6 +211,14 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
             currentFragment.onActivityResult(requestCode, resultCode, data);
         } else {
             super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    @Subscribe
+    public void onFitlerViewStateChanged(FilterViewStateChangeEvent event) {
+        if (event.isReset()) {
+            hideFilterView();
+            updateOptionsMenu();
         }
     }
 

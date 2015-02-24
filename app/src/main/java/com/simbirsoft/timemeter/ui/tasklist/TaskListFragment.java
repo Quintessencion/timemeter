@@ -231,10 +231,14 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     }
 
     private void removeTaskFromList(long taskId) {
+        if (mTasksViewAdapter == null) return;
+
         mTasksViewAdapter.removeItems(taskId);
     }
 
     private void addTaskToList(TaskBundle task) {
+        if (mTasksViewAdapter == null) return;
+
         if (mFilterViewState != null) {
             TaskFilterPredicate predicate = new TaskFilterPredicate(mFilterViewState);
             if (!predicate.apply(task)) {
@@ -247,6 +251,8 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     }
 
     private void replaceTaskInList(TaskBundle task) {
+        if (mTasksViewAdapter == null) return;
+
         mTasksViewAdapter.replaceItem(task);
     }
 
