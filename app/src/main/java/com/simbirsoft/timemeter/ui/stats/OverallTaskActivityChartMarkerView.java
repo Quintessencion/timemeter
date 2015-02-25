@@ -7,9 +7,14 @@ import android.widget.TextView;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.utils.MarkerView;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.model.TaskOverallActivity;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
 
+import java.text.DecimalFormat;
+
 public class OverallTaskActivityChartMarkerView extends MarkerView {
+
+    private static final DecimalFormat PERCENTAGE_FORMAT = new DecimalFormat("#.#");
 
     private TextView mTitleView;
     private TextView mSubtitleView;
@@ -23,9 +28,13 @@ public class OverallTaskActivityChartMarkerView extends MarkerView {
 
     @Override
     public void refreshContent(Entry e, int dataSetIndex) {
+        TaskOverallActivity item = (TaskOverallActivity) e.getData();
         String timeText = TimerTextFormatter.formatTaskTimerText(
                 mTitleView.getResources(), (int) e.getVal());
-        mTitleView.setText((String) e.getData());
+
+        timeText += " (" + PERCENTAGE_FORMAT.format(item.getDurationRatio() * 100) + "%)";
+
+        mTitleView.setText(item.getDescription());
         mSubtitleView.setText(Html.fromHtml(timeText));
     }
 

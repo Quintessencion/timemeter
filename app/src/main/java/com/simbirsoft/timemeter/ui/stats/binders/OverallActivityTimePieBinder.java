@@ -82,7 +82,7 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
             overallSpentTimeY.add(new Entry(
                     (float) item.getDuration(),
                     i,
-                    item.getDescription()));
+                    item));
 
             titlesX.add(item.getDescription());
         }

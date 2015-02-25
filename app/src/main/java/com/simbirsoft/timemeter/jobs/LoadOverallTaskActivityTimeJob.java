@@ -183,7 +183,7 @@ public class LoadOverallTaskActivityTimeJob extends LoadJob implements Filterabl
             // Resolve the rest of accumulation
             TaskOverallActivity accumulatedItem = new TaskOverallActivity();
             accumulatedItem.setDuration(accumulatedDuration);
-            accumulatedItem.setDurationRatio((long) accumulatedAmount);
+            accumulatedItem.setDurationRatio((float) accumulatedAmount);
             accumulatedItem.setDescription(mContext.getString(
                     R.string.caption_accumulated_tasks_duration));
             result.addFirst(accumulatedItem);
