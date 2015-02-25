@@ -4,6 +4,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
+import com.be.android.library.worker.base.JobEvent;
 import com.be.android.library.worker.exceptions.JobExecutionException;
 import com.be.android.library.worker.jobs.LoadJob;
 import com.be.android.library.worker.models.LoadJobResult;
@@ -14,10 +15,13 @@ import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.injection.Injection;
+import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.model.Period;
 import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.squareup.phrase.Phrase;
+
+import org.slf4j.Logger;
 
 import java.util.Collection;
 import java.util.List;
@@ -28,13 +32,7 @@ import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 
 public class LoadTaskListJob extends LoadJob implements FilterableJob {
 
-    public OrderBy getOrderBy() {
-        return mOrderBy;
-    }
-
-    public void setOrderBy(OrderBy orderBy) {
-        mOrderBy = orderBy;
-    }
+    private static final Logger LOG = LogFactory.getLogger(LoadTaskListJob.class);
 
     public enum OrderBy {
         ALL, CREATION_DATE, RECENT_ACTIVITY
@@ -49,6 +47,14 @@ public class LoadTaskListJob extends LoadJob implements FilterableJob {
     public LoadTaskListJob(DatabaseHelper databaseHelper) {
         mDatabaseHelper = databaseHelper;
         mLoadFilter = new TaskLoadFilter();
+    }
+
+    public OrderBy getOrderBy() {
+        return mOrderBy;
+    }
+
+    public void setOrderBy(OrderBy orderBy) {
+        mOrderBy = orderBy;
     }
 
     @Override
@@ -144,13 +150,30 @@ public class LoadTaskListJob extends LoadJob implements FilterableJob {
         queryPhrase = queryPhrase.put("where", where);
 
         final String query = queryPhrase.format().toString();
+
+        if (isCancelled()) {
+            LOG.trace("cancelled");
+            return LoadJobResult.loadOk();
+        }
+
         Cursor cursor = db.rawQuery(query, new String[0]);
+
+        if (isCancelled()) {
+            LOG.trace("cancelled");
+            return LoadJobResult.loadOk();
+        }
+
         try {
             final List<Task> tasks = cupboard().withCursor(cursor).list(Task.class);
             final List<TaskBundle> result = Lists.newArrayListWithCapacity(tasks.size());
             final LoadTaskTagsJob loadJob = Injection.sJobsComponent.loadTaskTagsJob();
 
             for (Task task : tasks) {
+                if (isCancelled()) {
+                    LOG.trace("cancelled");
+                    return LoadJobResult.loadOk();
+                }
+
                 loadJob.setTaskId(task.getId());
                 List<Tag> taskTags = ((LoadJobResult<List<Tag>>) forkJob(loadJob).join()).getData();
 

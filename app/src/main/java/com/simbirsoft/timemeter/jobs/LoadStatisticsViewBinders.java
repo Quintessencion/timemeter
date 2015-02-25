@@ -8,6 +8,7 @@ import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.injection.Injection;
+import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.model.TaskOverallActivity;
 import com.simbirsoft.timemeter.ui.model.DailyActivityDuration;
@@ -17,11 +18,15 @@ import com.simbirsoft.timemeter.ui.stats.binders.ActivityStackedTimelineBinder;
 import com.simbirsoft.timemeter.ui.stats.binders.ActivityTimelineBinder;
 import com.simbirsoft.timemeter.ui.stats.binders.OverallActivityTimePieBinder;
 
+import org.slf4j.Logger;
+
 import java.util.List;
 
 import javax.inject.Inject;
 
 public class LoadStatisticsViewBinders extends LoadJob implements FilterableJob {
+
+    private static final Logger LOG = LogFactory.getLogger(LoadStatisticsViewBinders.class);
 
     private final DatabaseHelper mDatabaseHelper;
     private final Context mContext;
@@ -77,20 +82,41 @@ public class LoadStatisticsViewBinders extends LoadJob implements FilterableJob 
                 .groupOnTheSameGroup()
                 .fork();
 
+        if (isCancelled()) {
+            LOG.trace("cancelled");
+            loadOverallTaskActivityTimeJob.cancel();
+            loadPeriodActivityTimelineJob.cancel();
+            loadPeriodSplitActivityTimelineJob.cancel();
+
+            return LoadJobResult.loadOk();
+        }
 
         List<TaskOverallActivity> taskOverallActivityTime =
                 ((LoadJobResult<List<TaskOverallActivity>>) overallActivityJoiner.join()).getData();
         results.add(new OverallActivityTimePieBinder(taskOverallActivityTime));
 
+        if (isCancelled()) {
+            LOG.trace("cancelled");
+            loadPeriodActivityTimelineJob.cancel();
+            loadPeriodSplitActivityTimelineJob.cancel();
+
+            return LoadJobResult.loadOk();
+        }
+
         List<DailyActivityDuration> activityTimeline =
                 ((LoadJobResult<List<DailyActivityDuration>>) timelineActivityJoiner.join()).getData();
         results.add(new ActivityTimelineBinder(activityTimeline));
 
+        if (isCancelled()) {
+            LOG.trace("cancelled");
+            loadPeriodSplitActivityTimelineJob.cancel();
+
+            return LoadJobResult.loadOk();
+        }
+
         List<DailyTaskActivityDuration> activitySplitTimeline =
                 ((LoadJobResult<List<DailyTaskActivityDuration>>) splitTimelineJoiner.join()).getData();
         results.add(new ActivityStackedTimelineBinder(activitySplitTimeline));
-
-
 
         return new LoadJobResult<>(results);
     }

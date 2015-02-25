@@ -333,6 +333,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
                     .period(mFilterViewState.period)
                     .searchText(mFilterViewState.searchText);
         }
+        job.addTag(mTaskListLoaderTag);
 
         return job;
     }
@@ -408,7 +409,12 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     public void onFilterViewStateChanged(FilterViewStateChangeEvent ev) {
         mFilterViewState = ev.getFilterState();
 
-        requestLoad(mTaskListLoaderTag, this);
+        Job job = JobManager.getInstance().findJob(mTaskListLoaderTag);
+        if (job != null) {
+            JobManager.getInstance().cancelJob(job.getJobId());
+        }
+
+        requestLoad(String.valueOf(mFilterViewState.hashCode()), this);
     }
 
     @OnJobSuccess(SaveTaskBundleJob.class)

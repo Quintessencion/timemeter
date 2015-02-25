@@ -10,6 +10,7 @@ import android.widget.TextView;
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
 import com.be.android.library.worker.controllers.JobLoader;
+import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.simbirsoft.timemeter.R;
@@ -89,6 +90,13 @@ public class StatsListFragment extends BaseFragment implements
     public void onFilterViewStateChanged(FilterViewStateChangeEvent ev) {
         mFilterViewState = ev.getFilterState();
 
+        Job job = JobManager.getInstance().findJob(sStatisticsBinderLoaderAttachTag);
+        if (job != null) {
+            JobManager.getInstance().cancelJob(job.getJobId());
+        }
+
+        requestLoad(String.valueOf(mFilterViewState.hashCode()), this);
+
         requestLoad(sStatisticsBinderLoaderAttachTag, this);
     }
 
@@ -110,8 +118,11 @@ public class StatsListFragment extends BaseFragment implements
             job.getTaskLoadFilter()
                     .tags(mFilterViewState.tags)
                     .dateMillis(mFilterViewState.dateMillis)
-                    .period(mFilterViewState.period);
+                    .period(mFilterViewState.period)
+                    .searchText(mFilterViewState.searchText);
         }
+
+        job.addTag(sStatisticsBinderLoaderAttachTag);
 
         return job;
     }

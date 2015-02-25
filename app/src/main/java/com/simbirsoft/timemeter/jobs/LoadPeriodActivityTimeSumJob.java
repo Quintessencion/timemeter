@@ -25,6 +25,8 @@ public class LoadPeriodActivityTimeSumJob extends LoadJob implements FilterableJ
 
     private static final Logger LOG = LogFactory.getLogger(LoadPeriodActivityTimeSumJob.class);
 
+    private static String sTaskJoin;
+
     private final DatabaseHelper mDatabaseHelper;
     private TaskLoadFilter mLoadFilter;
 
@@ -52,6 +54,21 @@ public class LoadPeriodActivityTimeSumJob extends LoadJob implements FilterableJ
     }
 
     @Override
+    protected void onPreExecute() throws Exception {
+        if (sTaskJoin == null) {
+            sTaskJoin = Phrase.from(
+                    "JOIN {table_task} " +
+                            "ON {table_task}.{table_task_id}={table_tts}.{table_tts_task_id}")
+                    .put("table_task", Task.TABLE_NAME)
+                    .put("table_task_id", Task.COLUMN_ID)
+                    .put("table_tts", TaskTimeSpan.TABLE_NAME)
+                    .put("table_tts_task_id", TaskTimeSpan.COLUMN_TASK_ID)
+                    .format()
+                    .toString();
+        }
+    }
+
+    @Override
     protected LoadJobResult<Integer> performLoad() throws Exception {
         final long filterDateMillis = mLoadFilter.getDateMillis();
         final Period filterPeriod = mLoadFilter.getPeriod();
@@ -70,8 +87,23 @@ public class LoadPeriodActivityTimeSumJob extends LoadJob implements FilterableJ
                 .put("table_tts_start_time", TaskTimeSpan.COLUMN_START_TIME)
                 .put("table_tts_end_time", TaskTimeSpan.COLUMN_END_TIME);
 
+        if (!TextUtils.isEmpty(mLoadFilter.getSearchText())) {
+            join = sTaskJoin;
+
+            where = new StringBuilder(
+                    Phrase.from("{table_task}.{table_task_description} LIKE '%{search_text}%'")
+                            .put("table_task", Task.TABLE_NAME)
+                            .put("table_task_description", Task.COLUMN_DESCRIPTION)
+                            .put("search_text", mLoadFilter.getSearchText())
+                            .format());
+        }
+
         if (filterDateMillis > 0) {
-            where = new StringBuilder();
+            if (where == null) {
+                where = new StringBuilder();
+            } else {
+                where.append(" AND ");
+            }
             where.append(QueryUtils.createPeriodRestrictionStatement(
                     TaskTimeSpan.TABLE_NAME + "." + TaskTimeSpan.COLUMN_START_TIME,
                     filterDateMillis,
@@ -79,15 +111,7 @@ public class LoadPeriodActivityTimeSumJob extends LoadJob implements FilterableJ
         }
 
         if (!filterTags.isEmpty()) {
-            join = Phrase.from(
-                    "JOIN {table_task} " +
-                            "ON {table_task}.{table_task_id}={table_tts}.{table_tts_task_id}")
-                    .put("table_task", Task.TABLE_NAME)
-                    .put("table_task_id", Task.COLUMN_ID)
-                    .put("table_tts", TaskTimeSpan.TABLE_NAME)
-                    .put("table_tts_task_id", TaskTimeSpan.COLUMN_TASK_ID)
-                    .format()
-                    .toString();
+            join = sTaskJoin;
 
             if (where == null) {
                 where = new StringBuilder();

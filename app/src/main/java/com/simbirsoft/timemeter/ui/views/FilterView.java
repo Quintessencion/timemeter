@@ -174,6 +174,33 @@ public class FilterView extends FrameLayout implements
             }
             parcel.writeString(searchText);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            FilterState that = (FilterState) o;
+
+            if (dateMillis != that.dateMillis) return false;
+            if (periodMillis != that.periodMillis) return false;
+            if (period != that.period) return false;
+            if (searchText != null ? !searchText.equals(that.searchText) : that.searchText != null)
+                return false;
+            if (tags != null ? !tags.equals(that.tags) : that.tags != null) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = (int) (dateMillis ^ (dateMillis >>> 32));
+            result = 31 * result + (int) (periodMillis ^ (periodMillis >>> 32));
+            result = 31 * result + (tags != null ? tags.hashCode() : 0);
+            result = 31 * result + (period != null ? period.hashCode() : 0);
+            result = 31 * result + (searchText != null ? searchText.hashCode() : 0);
+            return result;
+        }
     }
 
     private static class TagViewHolder {

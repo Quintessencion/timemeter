@@ -28,6 +28,9 @@ import javax.inject.Inject;
 
 import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 
+/**
+ * Used in line chart.
+ */
 public class LoadPeriodActivityTimelineJob extends LoadJob implements FilterableJob {
 
     private static final Logger LOG = LogFactory.getLogger(LoadPeriodActivityTimelineJob.class);
@@ -99,7 +102,8 @@ public class LoadPeriodActivityTimelineJob extends LoadJob implements Filterable
         mLoadActivitySumJob.getTaskLoadFilter()
                 .dateMillis(dayStartMillis)
                 .period(Period.DAY)
-                .tags(mLoadFilter.getFilterTags());
+                .tags(mLoadFilter.getFilterTags())
+                .searchText(mLoadFilter.getSearchText());
 
         JobEvent result = forkJob(mLoadActivitySumJob).join();
 

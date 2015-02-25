@@ -34,6 +34,9 @@ import nl.qbusict.cupboard.convert.EntityConverter;
 
 import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 
+/**
+ * Loaded data used in pie chart.
+ */
 public class LoadOverallTaskActivityTimeJob extends LoadJob implements FilterableJob {
 
     private static final Logger LOG = LogFactory.getLogger(LoadOverallTaskActivityTimeJob.class);
@@ -87,8 +90,19 @@ public class LoadOverallTaskActivityTimeJob extends LoadJob implements Filterabl
                 .put("table_task_id", Task.COLUMN_ID)
                 .put("duration", TaskOverallActivity.COLUMN_OVERALL_DURATION);
 
+        if (!TextUtils.isEmpty(mLoadFilter.getSearchText())) {
+            where.append(Phrase.from("{table_task}.{table_task_description} LIKE '%{search_text}%'")
+                    .put("table_task", Task.TABLE_NAME)
+                    .put("table_task_description", Task.COLUMN_DESCRIPTION)
+                    .put("search_text", mLoadFilter.getSearchText())
+                    .format());
+        }
+
         if (filterDateMillis > 0) {
             // Select only tasks within given period
+            if (!TextUtils.isEmpty(where)) {
+                where.append(" AND ");
+            }
             where.append(QueryUtils.createPeriodRestrictionStatement(
                     TaskTimeSpan.TABLE_NAME + "." + TaskTimeSpan.COLUMN_START_TIME,
                     filterDateMillis,

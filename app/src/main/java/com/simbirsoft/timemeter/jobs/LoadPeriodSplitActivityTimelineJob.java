@@ -123,7 +123,8 @@ public class LoadPeriodSplitActivityTimelineJob extends LoadJob implements Filte
         mLoadActivitySplitSumJob.getTaskLoadFilter()
                 .dateMillis(dayStartMillis)
                 .period(Period.DAY)
-                .tags(mLoadFilter.getFilterTags());
+                .tags(mLoadFilter.getFilterTags())
+                .searchText(mLoadFilter.getSearchText());
 
         JobEvent result = forkJob(mLoadActivitySplitSumJob).join();
 
