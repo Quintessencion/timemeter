@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.SearchView;
 import android.transitions.everywhere.ChangeBounds;
 import android.transitions.everywhere.Fade;
 import android.transitions.everywhere.TransitionManager;
@@ -17,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.astuetz.PagerSlidingTabStrip;
@@ -26,6 +29,7 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.util.KeyboardUtils;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
@@ -67,6 +71,9 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
     @Inject
     Bus mBus;
+
+    @InstanceState
+    boolean mIsSearchViewExpanded;
 
     private PagerSlidingTabStrip mTabs;
     private FilterView mFilterView;
@@ -182,8 +189,33 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
 
-        inflater.inflate(R.menu.main, menu);
+        inflater.inflate(R.menu.fragment_main_pager, menu);
         mOptionsMenu = menu;
+
+        final MenuItem searchItem = mOptionsMenu.findItem(R.id.actionSearch);
+        if (mIsSearchViewExpanded) {
+            searchItem.expandActionView();
+        }
+        MenuItemCompat.setOnActionExpandListener(searchItem, new MenuItemCompat.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem menuItem) {
+                mIsSearchViewExpanded = true;
+
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem menuItem) {
+                mIsSearchViewExpanded = false;
+
+                return true;
+            }
+        });
+        SearchView searchView = (SearchView) searchItem.getActionView();
+        ImageView closeButton = (ImageView) searchView.findViewById(R.id.search_close_btn);
+        closeButton.setOnClickListener(view -> searchItem.collapseActionView());
+        mFilterView.setSearchView(searchView);
+
         updateOptionsMenu();
     }
 

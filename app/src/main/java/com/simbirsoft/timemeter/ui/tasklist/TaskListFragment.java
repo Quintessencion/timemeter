@@ -330,7 +330,8 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
             job.getTaskLoadFilter()
                     .tags(mFilterViewState.tags)
                     .dateMillis(mFilterViewState.dateMillis)
-                    .period(mFilterViewState.period);
+                    .period(mFilterViewState.period)
+                    .searchText(mFilterViewState.searchText);
         }
 
         return job;

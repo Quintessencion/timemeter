@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +30,7 @@ import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTagListJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.model.Period;
+import com.simbirsoft.timemeter.ui.util.KeyboardUtils;
 import com.simbirsoft.timemeter.ui.util.TagViewUtils;
 import com.simbirsoft.timemeter.ui.util.ToastUtils;
 import com.squareup.otto.Bus;
@@ -50,7 +53,9 @@ import javax.inject.Inject;
 
 @EViewGroup(R.layout.view_filter)
 public class FilterView extends FrameLayout implements
-        TokenCompleteTextView.TokenListener, DatePeriodView.DatePeriodViewListener {
+        TokenCompleteTextView.TokenListener,
+        DatePeriodView.DatePeriodViewListener,
+        SearchView.OnQueryTextListener, SearchView.OnCloseListener {
 
     public interface OnSelectDateClickListener {
         void onSelectDateClicked(Calendar selectedDate);
@@ -109,6 +114,7 @@ public class FilterView extends FrameLayout implements
         public long periodMillis;
         public List<Tag> tags;
         public Period period;
+        public String searchText;
 
         private FilterState() {
         }
@@ -120,12 +126,16 @@ public class FilterView extends FrameLayout implements
             state.periodMillis = periodMillis;
             state.period = period;
             state.tags = Lists.newArrayList(tags);
+            state.searchText = searchText;
 
             return state;
         }
 
         public boolean isEmpty() {
-            return tags == null || tags.isEmpty();
+            return (tags == null || tags.isEmpty())
+                    && dateMillis == 0
+                    && period == null
+                    && TextUtils.isEmpty(searchText);
         }
 
         private FilterState(Parcel source) {
@@ -140,6 +150,7 @@ public class FilterView extends FrameLayout implements
             if (source.readByte() == 1) {
                 period = Period.valueOf(source.readString());
             }
+            searchText = source.readString();
         }
 
         @Override
@@ -161,6 +172,7 @@ public class FilterView extends FrameLayout implements
             if (period != null) {
                 parcel.writeString(period.name());
             }
+            parcel.writeString(searchText);
         }
     }
 
@@ -205,6 +217,7 @@ public class FilterView extends FrameLayout implements
     private OnSelectDateClickListener mOnSelectDateClickListener;
     private boolean mIsSilentUpdate;
     private boolean mIsReset;
+    private SearchView mSearchView;
 
 
     public FilterView(Context context) {
@@ -244,11 +257,57 @@ public class FilterView extends FrameLayout implements
         postFilterUpdate();
     }
 
+    @Override
+    public boolean onQueryTextSubmit(String s) {
+        mState.searchText = s;
+        postFilterUpdate();
+        KeyboardUtils.hideSoftInput(mSearchView.getContext(), mSearchView.getWindowToken());
+
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String s) {
+        mState.searchText = s;
+        postFilterUpdate();
+
+        return true;
+    }
+
     public void setDate(long dateMillis) {
         mState.dateMillis = dateMillis;
 
         displayDatePeriod();
         postFilterUpdate();
+    }
+
+    public SearchView getSearchView() {
+        return mSearchView;
+    }
+
+    public void setSearchView(SearchView searchView) {
+        if (mSearchView != null) {
+            mSearchView.setOnQueryTextListener(null);
+        }
+        mSearchView = searchView;
+        if (mState != null) {
+            mSearchView.setQuery(mState.searchText, false);
+
+            // Force to not re-open soft keyboard
+            mSearchView.post(() -> KeyboardUtils.hideSoftInput(
+                    mSearchView.getContext(), mSearchView.getWindowToken()));
+        }
+
+        mSearchView.setOnQueryTextListener(this);
+        mSearchView.setOnCloseListener(this);
+    }
+
+    @Override
+    public boolean onClose() {
+        mState.searchText = null;
+        postFilterUpdate();
+
+        return false;
     }
 
     private void displayDatePeriod() {

@@ -2,7 +2,6 @@ package com.simbirsoft.timemeter.model;
 
 import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.db.model.Tag;
-import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -12,6 +11,7 @@ public class TaskLoadFilter {
     private final Set<Tag> mFilterTags;
     private long mDateMillis;
     private Period mPeriod;
+    private String mSearchText;
 
     public TaskLoadFilter() {
         mFilterTags = Sets.newHashSet();
@@ -33,6 +33,16 @@ public class TaskLoadFilter {
         mPeriod = period;
 
         return this;
+    }
+
+    public TaskLoadFilter searchText(String searchText) {
+        mSearchText = searchText;
+
+        return this;
+    }
+
+    public String getSearchText() {
+        return mSearchText;
     }
 
     public Set<Tag> getFilterTags() {

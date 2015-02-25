@@ -26,6 +26,7 @@
     <string name="caption_empty_chart">Нет данных</string>
 
     <!-- Actions -->
+    <string name="action_search">Поиск</string>
     <string name="action_toggle_filter_on">Показать фильтр</string>
     <string name="action_toggle_filter_off">Скрыть фильтр</string>
     <string name="action_settings">Настройки</string>

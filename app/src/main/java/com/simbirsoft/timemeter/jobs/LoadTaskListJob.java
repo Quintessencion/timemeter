@@ -102,18 +102,23 @@ public class LoadTaskListJob extends LoadJob implements FilterableJob {
                 throw new IllegalArgumentException("unexpected order by");
         }
 
+        if (!TextUtils.isEmpty(mLoadFilter.getSearchText())) {
+            where.append(Phrase.from("{table_task}.{table_task_description} LIKE '%{search_text}%'")
+                    .put("table_task", Task.TABLE_NAME)
+                    .put("table_task_description", Task.COLUMN_DESCRIPTION)
+                    .put("search_text", mLoadFilter.getSearchText())
+                    .format());
+        }
+
         if (filterDateMillis > 0) {
             // Select only tasks within given period
-            long periodEnd = 0;
-            if (filterPeriod != null) {
-                periodEnd = Period.getPeriodEnd(filterPeriod, filterDateMillis);
+            if (!TextUtils.isEmpty(where)) {
+                where.append(" AND ");
             }
-
-            where.append("begin_time >= ").append(filterDateMillis);
-
-            if (periodEnd > 0) {
-                where.append(" AND begin_time < ").append(periodEnd);
-            }
+            where.append(QueryUtils.createPeriodRestrictionStatement(
+                    TaskTimeSpan.TABLE_NAME + "." + TaskTimeSpan.COLUMN_START_TIME,
+                    filterDateMillis,
+                    filterPeriod));
         }
 
         if (!filterTags.isEmpty()) {
@@ -128,6 +133,8 @@ public class LoadTaskListJob extends LoadJob implements FilterableJob {
             where.insert(0, "WHERE ");
         }
 
+        // INNER join in contrast to OUTER will filter out each
+        // task not having at least one mapped TaskTimeSpan
         if (mSelectOnlyStartedTasks) {
             queryPhrase.put("join_type", "INNER");
         } else {
