@@ -11,8 +11,10 @@ import android.widget.Toast;
 
 import com.be.android.library.worker.controllers.JobLoader;
 import com.be.android.library.worker.controllers.JobLoaderManager;
+import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.handlers.JobEventDispatcher;
 import com.be.android.library.worker.interfaces.Job;
+import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.ui.util.ToastUtils;
 
@@ -120,6 +122,14 @@ public class BaseFragment extends Fragment {
     }
 
     protected int requestLoad(String loaderAttachTag, JobLoader.JobLoaderCallbacks callbacks) {
+        JobLoaderManager mgr = JobLoaderManager.getInstance();
+        JobLoader loader = mgr.initLoader(mEventDispatcher, loaderAttachTag, callbacks);
+
+        return loader.requestLoad();
+    }
+    protected int requestReload(String loaderAttachTag, JobLoader.JobLoaderCallbacks callbacks) {
+        JobManager.getInstance().cancelAll(JobSelector.forJobTags(loaderAttachTag));
+
         JobLoaderManager mgr = JobLoaderManager.getInstance();
         JobLoader loader = mgr.initLoader(mEventDispatcher, loaderAttachTag, callbacks);
 

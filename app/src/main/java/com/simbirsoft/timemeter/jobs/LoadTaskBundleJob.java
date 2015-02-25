@@ -66,8 +66,8 @@ public class LoadTaskBundleJob extends LoadJob {
                 .groupOn(JobManager.JOB_GROUP_UNIQUE)
                 .fork();
 
-        final JobEvent loadTimespansResult = loadTimespansJoiner.join();
         final JobEvent loadTagsResult = loadTagsJoiner.join();
+        final JobEvent loadTimespansResult = loadTimespansJoiner.join();
 
         List<Tag> tags = ((LoadJobResult<List<Tag>>) loadTagsResult).getData();
         List<TaskTimeSpan> spans = ((LoadJobResult<List<TaskTimeSpan>>) loadTimespansResult).getData();

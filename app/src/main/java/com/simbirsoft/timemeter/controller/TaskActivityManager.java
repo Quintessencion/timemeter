@@ -7,6 +7,7 @@ import com.be.android.library.worker.annotations.OnJobEvent;
 import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.handlers.JobEventDispatcher;
 import com.be.android.library.worker.interfaces.Job;
+import com.be.android.library.worker.util.JobSelector;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -217,12 +218,9 @@ public class TaskActivityManager implements ITaskActivityManager {
     }
 
     private void requestTimerUpdates() {
-        Job job = JobManager.getInstance().findJob(mUpdateJobTag);
-        if (job != null) {
-            job.cancel();
-        }
-        job = new UpdateTaskActivityTimerJob(this);
-        mJobEventDispatcher.submitJob(job);
+        JobManager.getInstance().cancelAll(JobSelector.forJobTags(mUpdateJobTag));
+
+        mJobEventDispatcher.submitJob(new UpdateTaskActivityTimerJob(this));
     }
 
     private void stopTaskActivity() {
@@ -231,10 +229,7 @@ public class TaskActivityManager implements ITaskActivityManager {
             return;
         }
 
-        Job job = JobManager.getInstance().findJob(mUpdateJobTag);
-        if (job != null) {
-            job.cancel();
-        }
+        JobManager.getInstance().cancelAll(JobSelector.forJobTags(mUpdateJobTag));
 
         final TaskActivityStoppedEvent event = new TaskActivityStoppedEvent(mActiveTaskInfo.getTask());
         mActiveTaskInfo.getTaskTimeSpan().setActive(false);

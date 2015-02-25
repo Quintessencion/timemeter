@@ -2,6 +2,7 @@ package com.simbirsoft.timemeter.jobs;
 
 import android.content.Context;
 
+import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.jobs.LoadJob;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.collect.Lists;
@@ -58,7 +59,7 @@ public class LoadStatisticsViewBinders extends LoadJob implements FilterableJob 
         loadOverallTaskActivityTimeJob.setTaskLoadFilter(mTaskLoadFilter);
 
         ForkJoiner overallActivityJoiner = buildFork(loadOverallTaskActivityTimeJob)
-                .groupOnTheSameGroup()
+                .groupOn(JobManager.JOB_GROUP_UNIQUE)
                 .fork();
 
         // Load activity timeline
@@ -69,7 +70,7 @@ public class LoadStatisticsViewBinders extends LoadJob implements FilterableJob 
         loadPeriodActivityTimelineJob.setTaskLoadFilter(mTaskLoadFilter);
 
         ForkJoiner timelineActivityJoiner = buildFork(loadPeriodActivityTimelineJob)
-                .groupOnTheSameGroup()
+                .groupOn(JobManager.JOB_GROUP_UNIQUE)
                 .fork();
 
         // Load activity stacked timeline
@@ -78,7 +79,7 @@ public class LoadStatisticsViewBinders extends LoadJob implements FilterableJob 
         loadPeriodSplitActivityTimelineJob.setTaskLoadFilter(mTaskLoadFilter);
 
         ForkJoiner splitTimelineJoiner = buildFork(loadPeriodSplitActivityTimelineJob)
-                .groupOnTheSameGroup()
+                .groupOn(JobManager.JOB_GROUP_UNIQUE)
                 .fork();
 
         if (isCancelled()) {

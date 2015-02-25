@@ -22,6 +22,7 @@ import com.be.android.library.worker.controllers.JobLoader;
 import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
+import com.be.android.library.worker.util.JobSelector;
 import com.melnykov.fab.FloatingActionButton;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
@@ -71,6 +72,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     private static final Logger LOG = LogFactory.getLogger(TaskListFragment.class);
 
     private static final String SNACKBAR_TAG = "task_list_snackbar";
+    private static final String TASK_LIST_LOADER_TAG = "TaskListFragment_";
     private static final int REQUEST_CODE_EDIT_TASK = 100;
 
     private static final int COLUMN_COUNT_DEFAULT = 2;
@@ -96,7 +98,6 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
 
     private FloatingActionButton mFloatingActionButton;
     private TaskListAdapter mTasksViewAdapter;
-    private String mTaskListLoaderTag;
     private ITaskActivityManager mTaskActivityManager;
     private ContentFragmentCallbacks mCallbacks;
 
@@ -157,7 +158,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         mTasksViewAdapter.setTaskClickListener(this);
         mRecyclerView.setAdapter(mTasksViewAdapter);
 
-        requestLoad(mTaskListLoaderTag, this);
+        requestLoad(TASK_LIST_LOADER_TAG, this);
     }
 
     @Override
@@ -187,7 +188,6 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
 
         Injection.sUiComponent.injectTaskListFragment(this);
 
-        mTaskListLoaderTag = getClass().getName() + "_loader_tag";
         mTaskActivityManager = Injection.sTaskManager.taskActivityManager();
         mBus.register(this);
     }
@@ -275,7 +275,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
                         break;
                     case EditTaskFragment.RESULT_CODE_TASK_RECREATED:
                         LOG.debug("result: task recreated");
-                        requestLoad(mTaskListLoaderTag, this);
+                        requestReload(TASK_LIST_LOADER_TAG, this);
                         break;
 
                     case EditTaskFragment.RESULT_CODE_TASK_REMOVED:
@@ -333,7 +333,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
                     .period(mFilterViewState.period)
                     .searchText(mFilterViewState.searchText);
         }
-        job.addTag(mTaskListLoaderTag);
+        job.addTag(TASK_LIST_LOADER_TAG);
 
         return job;
     }
@@ -409,17 +409,18 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     public void onFilterViewStateChanged(FilterViewStateChangeEvent ev) {
         mFilterViewState = ev.getFilterState();
 
-        Job job = JobManager.getInstance().findJob(mTaskListLoaderTag);
-        if (job != null) {
-            JobManager.getInstance().cancelJob(job.getJobId());
-        }
+        JobManager.getInstance().cancelAll(JobSelector.forJobTags(TASK_LIST_LOADER_TAG));
 
-        requestLoad("task_list_filtered" + String.valueOf(mFilterViewState.hashCode()), this);
+        String loaderTag = TASK_LIST_LOADER_TAG
+                + "filter:"
+                + String.valueOf(mFilterViewState.hashCode());
+
+        requestLoad(loaderTag, this);
     }
 
     @OnJobSuccess(SaveTaskBundleJob.class)
     public void onTaskSaved() {
-        requestLoad(mTaskListLoaderTag, this);
+        requestReload(TASK_LIST_LOADER_TAG, this);
     }
 
     @OnJobFailure(SaveTaskBundleJob.class)

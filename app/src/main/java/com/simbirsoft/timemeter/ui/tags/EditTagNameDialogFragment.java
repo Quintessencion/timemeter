@@ -21,6 +21,7 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
+import com.be.android.library.worker.util.JobSelector;
 import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
@@ -188,7 +189,7 @@ public class EditTagNameDialogFragment extends BaseDialogFragment {
             mEditNameView.setText(mTag.getName());
         }
 
-        if (getJobEventDispatcher().isPending(mSaveJobTag)) {
+        if (getJobEventDispatcher().isPending(JobSelector.forJobTags(mSaveJobTag))) {
             disableViews();
         }
 

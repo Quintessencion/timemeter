@@ -13,10 +13,10 @@ import com.be.android.library.worker.controllers.JobLoader;
 import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
+import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.injection.Injection;
-import com.simbirsoft.timemeter.jobs.LoadPeriodSplitActivityTimelineJob;
 import com.simbirsoft.timemeter.jobs.LoadStatisticsViewBinders;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
@@ -41,7 +41,7 @@ public class StatsListFragment extends BaseFragment implements
 
     private static final Logger LOG = LogFactory.getLogger(StatsListFragment.class);
 
-    private static final String sStatisticsBinderLoaderAttachTag = "StatsListFragment_statistics_binder_loader";
+    private static final String STATISTICS_BINDER_LOADER_TAG = "StatsListFragment_";
 
     @ViewById(android.R.id.list)
     RecyclerView mRecyclerView;
@@ -75,7 +75,7 @@ public class StatsListFragment extends BaseFragment implements
         mRecyclerView.setLayoutManager(statsLayoutManager);
         mRecyclerView.setAdapter(mStatsListAdapter);
 
-        requestLoad(sStatisticsBinderLoaderAttachTag, this);
+        requestLoad(STATISTICS_BINDER_LOADER_TAG, this);
         mBus.register(this);
     }
 
@@ -90,19 +90,18 @@ public class StatsListFragment extends BaseFragment implements
     public void onFilterViewStateChanged(FilterViewStateChangeEvent ev) {
         mFilterViewState = ev.getFilterState();
 
-        Job job = JobManager.getInstance().findJob(sStatisticsBinderLoaderAttachTag);
-        if (job != null) {
-            JobManager.getInstance().cancelJob(job.getJobId());
-        }
+        JobManager.getInstance().cancelAll(JobSelector.forJobTags(STATISTICS_BINDER_LOADER_TAG));
 
-        requestLoad("stats_list_filtered_" + String.valueOf(mFilterViewState.hashCode()), this);
+        String loaderTag = STATISTICS_BINDER_LOADER_TAG
+                + "_filter:"
+                + String.valueOf(mFilterViewState.hashCode());
+        requestLoad(loaderTag, this);
     }
 
     @OnJobSuccess(LoadStatisticsViewBinders.class)
     public void onStatisticsViewBindersLoaded(LoadJobResult<List<StatisticsViewBinder>> result) {
         mStatsListAdapter.setViewBinders(result.getData());
     }
-
 
     @OnJobFailure(LoadStatisticsViewBinders.class)
     public void onStatisticsViewBindersLoadFailed() {
@@ -112,6 +111,8 @@ public class StatsListFragment extends BaseFragment implements
     @Override
     public Job onCreateJob(String s) {
         LoadStatisticsViewBinders job = Injection.sJobsComponent.loadStatisticsViewBinders();
+        job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
+
         if (mFilterViewState != null) {
             job.getTaskLoadFilter()
                     .tags(mFilterViewState.tags)
@@ -120,7 +121,7 @@ public class StatsListFragment extends BaseFragment implements
                     .searchText(mFilterViewState.searchText);
         }
 
-        job.addTag(sStatisticsBinderLoaderAttachTag);
+        job.addTag(STATISTICS_BINDER_LOADER_TAG);
 
         return job;
     }

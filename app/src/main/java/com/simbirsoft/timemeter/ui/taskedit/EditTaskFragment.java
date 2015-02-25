@@ -440,6 +440,7 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         if (mTaskBundleLoaderAttachTag.equals(s)) {
             LoadTaskBundleJob job = Injection.sJobsComponent.loadTaskBundleJob();
             job.setTaskId(mExtraTaskId);
+            job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
 
             return job;
         }

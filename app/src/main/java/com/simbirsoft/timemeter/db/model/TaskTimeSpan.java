@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import nl.qbusict.cupboard.annotation.Column;
+import nl.qbusict.cupboard.annotation.Index;
 
 public class TaskTimeSpan implements Parcelable {
 
@@ -32,9 +33,11 @@ public class TaskTimeSpan implements Parcelable {
     private Long _id;
 
     @Column(COLUMN_TASK_ID)
+    @Index
     private Long taskId;
 
     @Column(COLUMN_DESCRIPTION)
+    @Index
     private String description;
 
     @Column(COLUMN_START_TIME)
