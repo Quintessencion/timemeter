@@ -38,6 +38,7 @@ public class LoadPeriodActivityTimelineJob extends LoadJob implements Filterable
     private final LoadPeriodActivityTimeSumJob mLoadActivitySumJob;
     private final DatabaseHelper mDatabaseHelper;
     private TaskLoadFilter mLoadFilter;
+    private long mOverallActivityDuration;
 
     @Inject
     public LoadPeriodActivityTimelineJob(LoadPeriodActivityTimeSumJob loadActivitySumJob,
@@ -56,6 +57,12 @@ public class LoadPeriodActivityTimelineJob extends LoadJob implements Filterable
     @Override
     public void setTaskLoadFilter(TaskLoadFilter filter) {
         mLoadFilter = filter;
+    }
+
+
+    @Override
+    protected void onPreExecute() throws Exception {
+        mOverallActivityDuration = 0;
     }
 
     @Override
@@ -98,7 +105,14 @@ public class LoadPeriodActivityTimelineJob extends LoadJob implements Filterable
             item.duration = duration;
             results.add(item);
 
+            mOverallActivityDuration += duration;
+
             currentDate.add(Calendar.DAY_OF_YEAR, 1);
+        }
+
+        if (mOverallActivityDuration == 0) {
+            // None results
+            results.clear();
         }
 
         return new LoadJobResult<>(results);

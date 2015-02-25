@@ -35,6 +35,7 @@ public class LoadPeriodSplitActivityTimelineJob extends LoadJob implements Filte
     private final LoadPeriodActivitySplitTimeSumJob mLoadActivitySplitSumJob;
     private final DatabaseHelper mDatabaseHelper;
     private TaskLoadFilter mLoadFilter;
+    private long mOverallTaskActivityDuration;
 
     @Inject
     public LoadPeriodSplitActivityTimelineJob(LoadTaskListJob loadTaskListJob,
@@ -56,6 +57,11 @@ public class LoadPeriodSplitActivityTimelineJob extends LoadJob implements Filte
     @Override
     public void setTaskLoadFilter(TaskLoadFilter filter) {
         mLoadFilter = filter;
+    }
+
+    @Override
+    protected void onPreExecute() throws Exception {
+        mOverallTaskActivityDuration = 0;
     }
 
     @Override
@@ -111,6 +117,11 @@ public class LoadPeriodSplitActivityTimelineJob extends LoadJob implements Filte
             currentDate.add(Calendar.DAY_OF_YEAR, 1);
         }
 
+        if (mOverallTaskActivityDuration == 0) {
+            // None results
+            results.clear();
+        }
+
         return new LoadJobResult<>(results);
     }
 
@@ -138,7 +149,9 @@ public class LoadPeriodSplitActivityTimelineJob extends LoadJob implements Filte
 
         for (TaskOverallActivity entry : activity) {
             int index = Iterables.indexOf(tasksDuration, (input) -> input[0] == entry.getId());
-            entry.setDuration(index > -1 ? tasksDuration.get(index)[1] : 0L);
+            long duration = index > -1 ? tasksDuration.get(index)[1] : 0L;
+            entry.setDuration(duration);
+            mOverallTaskActivityDuration += duration;
         }
     }
 }

@@ -41,6 +41,7 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnCh
     private VerticalChartLegendView mVerticalChartLegendView;
     private Legend mLegend;
     private boolean mIsDataBound;
+    private TextView mEmptyIndicatorView;
 
     public ActivityStackedTimelineBinder(List<DailyTaskActivityDuration> activityTimeline) {
         mActivityTimeline = activityTimeline;
@@ -127,6 +128,12 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnCh
         mChart.invalidate();
         mVerticalChartLegendView.requestLayout();
 
+        if (mActivityTimeline.isEmpty()) {
+            mEmptyIndicatorView.setVisibility(View.VISIBLE);
+        } else {
+            mEmptyIndicatorView.setVisibility(View.GONE);
+        }
+
         mIsDataBound = true;
     }
 
@@ -136,6 +143,8 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnCh
         mVerticalChartLegendView = (VerticalChartLegendView) mContentRoot.findViewById(R.id.legendPanel);
 
         mChart = (BarChart) mContentRoot.findViewById(R.id.chart);
+        mEmptyIndicatorView = (TextView) mContentRoot.findViewById(android.R.id.empty);
+        mEmptyIndicatorView.setVisibility(View.GONE);
         mTitleView = (TextView) mContentRoot.findViewById(android.R.id.title);
         mTitleView.setText(context.getString(R.string.title_activity_stacked_timeline));
         mChart.setDescription("");

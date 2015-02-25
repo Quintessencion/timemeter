@@ -36,6 +36,7 @@ public class ActivityTimelineBinder implements StatisticsViewBinder, OnChartValu
     private final List<DailyActivityDuration> mActivityTimeline;
     private int mLineColor;
     private boolean mIsDataBound;
+    private TextView mEmptyIndicatorView;
 
     public ActivityTimelineBinder(List<DailyActivityDuration> activityTimeline) {
         mActivityTimeline = activityTimeline;
@@ -96,6 +97,12 @@ public class ActivityTimelineBinder implements StatisticsViewBinder, OnChartValu
         measureChartView(mContentRoot.getResources());
         mChart.invalidate();
 
+        if (mActivityTimeline.isEmpty()) {
+            mEmptyIndicatorView.setVisibility(View.VISIBLE);
+        } else {
+            mEmptyIndicatorView.setVisibility(View.GONE);
+        }
+
         mIsDataBound = true;
     }
 
@@ -105,6 +112,8 @@ public class ActivityTimelineBinder implements StatisticsViewBinder, OnChartValu
         mLineColor = context.getResources().getColor(R.color.primary);
 
         mChart = (LineChart) mContentRoot.findViewById(R.id.chart);
+        mEmptyIndicatorView = (TextView) mContentRoot.findViewById(android.R.id.empty);
+        mEmptyIndicatorView.setVisibility(View.GONE);
         mTitleView = (TextView) mContentRoot.findViewById(android.R.id.title);
         mTitleView.setText(context.getString(R.string.title_activity_timeline));
         mChart.setDescription("");
