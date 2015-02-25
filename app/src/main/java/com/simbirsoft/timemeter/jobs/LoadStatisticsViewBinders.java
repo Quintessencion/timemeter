@@ -2,7 +2,6 @@ package com.simbirsoft.timemeter.jobs;
 
 import android.content.Context;
 
-import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.jobs.LoadJob;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.collect.Lists;
