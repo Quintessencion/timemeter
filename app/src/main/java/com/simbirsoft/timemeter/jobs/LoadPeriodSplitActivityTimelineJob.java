@@ -19,6 +19,7 @@ import com.simbirsoft.timemeter.ui.util.TimeUtils;
 
 import org.slf4j.Logger;
 
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -82,11 +83,16 @@ public class LoadPeriodSplitActivityTimelineJob extends LoadJob implements Filte
         } else {
             timelineEndMillis = Period.getPeriodEnd(filterPeriod, filterDateMillis);
         }
+        timelineEndMillis = (timelineEndMillis / 1000) * 1000;
 
-        long currentDateMillis = filterDateMillis;
-        final long millisPerDay = TimeUnit.DAYS.toMillis(1);
-        while (currentDateMillis < timelineEndMillis) {
-            final Date currentDate = new Date(currentDateMillis);
+        final Calendar currentDate = Calendar.getInstance();
+        currentDate.setTimeInMillis(filterDateMillis);
+
+        while (true) {
+            long currentTime = (currentDate.getTimeInMillis() / 1000) * 1000;
+            if (currentTime >= timelineEndMillis) {
+                break;
+            }
 
             int i = 0;
             TaskOverallActivity[] activity = new TaskOverallActivity[taskCount];
@@ -94,15 +100,15 @@ public class LoadPeriodSplitActivityTimelineJob extends LoadJob implements Filte
                 activity[i] = new TaskOverallActivity(taskBundle.getTask());
                 i++;
             }
-            fillDurationForDate(currentDateMillis, activity);
+            fillDurationForDate(currentTime, activity);
 
             DailyTaskActivityDuration item = new DailyTaskActivityDuration();
-            item.date = currentDate;
+            item.date = new Date(currentTime);
             item.tasks = activity;
 
             results.add(item);
 
-            currentDateMillis += millisPerDay;
+            currentDate.add(Calendar.DAY_OF_YEAR, 1);
         }
 
         return new LoadJobResult<>(results);

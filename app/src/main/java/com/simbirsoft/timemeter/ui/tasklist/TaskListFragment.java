@@ -414,7 +414,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
             JobManager.getInstance().cancelJob(job.getJobId());
         }
 
-        requestLoad(String.valueOf(mFilterViewState.hashCode()), this);
+        requestLoad("task_list_filtered" + String.valueOf(mFilterViewState.hashCode()), this);
     }
 
     @OnJobSuccess(SaveTaskBundleJob.class)

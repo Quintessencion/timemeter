@@ -77,21 +77,28 @@ public class LoadPeriodActivityTimelineJob extends LoadJob implements Filterable
 
         long timelineEndMillis;
         if (filterPeriod == null || filterPeriod == Period.ALL) {
-            timelineEndMillis = TimeUtils.tomorrowStart();;
+            timelineEndMillis = TimeUtils.tomorrowStart();
         } else {
             timelineEndMillis = Period.getPeriodEnd(filterPeriod, filterDateMillis);
         }
+        timelineEndMillis = (timelineEndMillis / 1000) * 1000;
 
-        long currentDateMillis = filterDateMillis;
-        final long millisPerDay = TimeUnit.DAYS.toMillis(1);
-        while (currentDateMillis < timelineEndMillis) {
-            int duration = getDurationForDay(currentDateMillis);
+        final Calendar currentDate = Calendar.getInstance();
+        currentDate.setTimeInMillis(filterDateMillis);
+
+        while (true) {
+            long currentTime = (currentDate.getTimeInMillis() / 1000) * 1000;
+            if (currentTime >= timelineEndMillis) {
+                break;
+            }
+
+            int duration = getDurationForDay(currentTime);
             DailyActivityDuration item = new DailyActivityDuration();
-            item.date = new Date(currentDateMillis);
+            item.date = new Date(currentTime);
             item.duration = duration;
             results.add(item);
 
-            currentDateMillis += millisPerDay;
+            currentDate.add(Calendar.DAY_OF_YEAR, 1);
         }
 
         return new LoadJobResult<>(results);

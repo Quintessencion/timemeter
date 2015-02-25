@@ -95,9 +95,7 @@ public class StatsListFragment extends BaseFragment implements
             JobManager.getInstance().cancelJob(job.getJobId());
         }
 
-        requestLoad(String.valueOf(mFilterViewState.hashCode()), this);
-
-        requestLoad(sStatisticsBinderLoaderAttachTag, this);
+        requestLoad("stats_list_filtered_" + String.valueOf(mFilterViewState.hashCode()), this);
     }
 
     @OnJobSuccess(LoadStatisticsViewBinders.class)
