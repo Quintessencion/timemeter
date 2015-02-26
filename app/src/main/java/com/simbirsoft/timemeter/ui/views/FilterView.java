@@ -3,6 +3,7 @@ package com.simbirsoft.timemeter.ui.views;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
+import android.os.Handler;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v7.widget.SearchView;
@@ -19,7 +20,13 @@ import android.widget.Toast;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
+import com.be.android.library.worker.base.ForkJoinJob;
+import com.be.android.library.worker.base.JobEvent;
+import com.be.android.library.worker.base.ThrottleJob;
+import com.be.android.library.worker.controllers.JobManager;
+import com.be.android.library.worker.exceptions.JobExecutionException;
 import com.be.android.library.worker.handlers.JobEventDispatcher;
+import com.be.android.library.worker.jobs.CallableForkJoinJob;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -47,6 +54,7 @@ import org.slf4j.Logger;
 
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -236,6 +244,7 @@ public class FilterView extends FrameLayout implements
     @Inject
     Bus mBus;
 
+    private final Handler mHandler = new Handler();
     private FilterState mState;
     private DatePeriodView mDatePeriodView;
     private FilteredArrayAdapter<Tag> mAdapter;
@@ -245,6 +254,7 @@ public class FilterView extends FrameLayout implements
     private boolean mIsSilentUpdate;
     private boolean mIsReset;
     private SearchView mSearchView;
+    private ThrottleJob mThrottleJob;
 
 
     public FilterView(Context context) {
@@ -296,7 +306,21 @@ public class FilterView extends FrameLayout implements
     @Override
     public boolean onQueryTextChange(String s) {
         mState.searchText = s;
-        postFilterUpdate();
+
+        if (mThrottleJob == null || mThrottleJob.isFinished()) {
+            mThrottleJob = new ThrottleJob();
+            mThrottleJob.setTargetJob(new CallableForkJoinJob(
+                    JobManager.JOB_GROUP_DEFAULT, () -> {
+
+                mHandler.post(FilterView.this::postFilterUpdate);
+
+                return JobEvent.ok();
+            }));
+            mThrottleJob.getThrottle().updateTimeout(180);
+            JobManager.getInstance().submitJob(mThrottleJob);
+        }
+
+        mThrottleJob.getThrottle().updateTimeout(180);
 
         return true;
     }
@@ -549,9 +573,9 @@ public class FilterView extends FrameLayout implements
             return;
         }
 
-        FilterViewStateChangeEvent ev = new FilterViewStateChangeEvent(getViewFilterState());
+        final FilterViewStateChangeEvent ev = new FilterViewStateChangeEvent(getViewFilterState());
         ev.setReset(mIsReset);
-        post(() -> mBus.post(ev));
+        mHandler.post(() -> mBus.post(ev));
     }
 
     private void updateFilterState() {
