@@ -5,17 +5,26 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.google.common.io.Closeables;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTag;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.persist.XmlTag;
+import com.simbirsoft.timemeter.persist.XmlTagRef;
+import com.simbirsoft.timemeter.persist.XmlTask;
+import com.simbirsoft.timemeter.persist.XmlTaskList;
+import com.simbirsoft.timemeter.persist.XmlTaskListReader;
 
 import org.slf4j.Logger;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -23,6 +32,7 @@ import javax.inject.Singleton;
 import nl.qbusict.cupboard.Cupboard;
 import nl.qbusict.cupboard.CupboardBuilder;
 import nl.qbusict.cupboard.CupboardFactory;
+import nl.qbusict.cupboard.DatabaseCompartment;
 
 @Singleton
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -61,96 +71,43 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void initTestData(Context context) {
         removeDatabase(context);
 
-        int[] colors = context.getResources().getIntArray(R.array.default_tag_colors);
+        DatabaseCompartment cupboard = cupboard().withDatabase(getWritableDatabase());
 
-        // Tags
-        Tag tag1 = new Tag();
-        tag1.setName("Дом");
-        tag1.setColor(colors[0]);
+        InputStream in = null;
+        try {
+            in = context.getAssets().open("testdata/tasklist-ru.xml");
+            XmlTaskList taskList = XmlTaskListReader.readXml(in);
+            LOG.trace("task list read successfully");
 
-        Tag tag2 = new Tag();
-        tag2.setName("Работа");
-        tag2.setColor(colors[3]);
+            for (XmlTag xmlTag : taskList.getTagList()) {
+                Tag tag = xmlTag.getTag();
+                cupboard.put(tag);
+            }
 
-        Tag tag3 = new Tag();
-        tag3.setName("Личное");
-        tag3.setColor(colors[5]);
+            for (XmlTask xmlTask : taskList.getTaskList()) {
+                Task task = xmlTask.getTask();
+                cupboard.put(task);
+                xmlTask.setId(task.getId());
+                List<TaskTimeSpan> spans = xmlTask.getTaskActivity();
+                cupboard.put(spans);
 
-        Tag tag4 = new Tag();
-        tag4.setName("Спорт");
-        tag4.setColor(colors[7]);
+                for (XmlTagRef tagRef : xmlTask.getTagList()) {
+                    TaskTag taskTag = new TaskTag();
+                    taskTag.setTaskId(task.getId());
+                    taskTag.setTagId(tagRef.getTagId());
+                    cupboard.put(taskTag);
+                }
+            }
 
-        Tag tag5 = new Tag();
-        tag5.setName("Совещания");
-        tag5.setColor(colors[9]);
+        } catch (IOException e) {
+            e.printStackTrace();
 
-        Tag tag6 = new Tag();
-        tag6.setName("TimeMeter");
-        tag6.setColor(colors[11]);
+        } catch (Exception e) {
+            e.printStackTrace();
 
-        cupboard().withDatabase(getWritableDatabase())
-                .put(tag1, tag2, tag3, tag4, tag5, tag6);
-
-        for (int i = 0; i < 31; i++) {
-            Tag tag = new Tag();
-            tag.setName("Test tag |" + String.valueOf(i) + "|");
-            tag.setColor(colors[13]);
-            cupboard().withDatabase(getWritableDatabase()).put(tag);
+        } finally {
+            Closeables.closeQuietly(in);
         }
-
-        // Tasks
-        Task task1 = new Task();
-        task1.setDescription("Купить продукты");
-        task1.setCreateDate(new Date(1389370800000L));
-
-        Task task2 = new Task();
-        task2.setDescription("Пропылесосить");
-        task2.setCreateDate(new Date(1389729690000L));
-
-        Task task3 = new Task();
-        task3.setDescription("Работать на работе");
-        task3.setCreateDate(new Date(1389517200000L));
-
-        Task task4 = new Task();
-        task4.setDescription("Совещание");
-        task4.setCreateDate(new Date(1388575800000L));
-
-        cupboard().withDatabase(getWritableDatabase())
-                  .put(task1, task2, task3, task4);
-
-        for (int i = 0; i < 45; i++) {
-            Task task = new Task();
-            task.setDescription("Пробная задача |" + String.valueOf(i) + "|");
-            task.setCreateDate(new Date(1419087010000L));
-            cupboard().withDatabase(getWritableDatabase()).put(task);
-        }
-
-        // Task Tags
-        TaskTag task1Tag1 = new TaskTag();
-        task1Tag1.setTagId(tag1.getId());
-        task1Tag1.setTaskId(task1.getId());
-
-        TaskTag task1Tag2 = new TaskTag();
-        task1Tag2.setTagId(tag4.getId());
-        task1Tag2.setTaskId(task1.getId());
-
-        TaskTag task2Tag1 = new TaskTag();
-        task2Tag1.setTagId(tag1.getId());
-        task2Tag1.setTaskId(task2.getId());
-
-        TaskTag task3Tag1 = new TaskTag();
-        task3Tag1.setTagId(tag2.getId());
-        task3Tag1.setTaskId(task3.getId());
-
-        TaskTag task4Tag1 = new TaskTag();
-        task4Tag1.setTagId(tag2.getId());
-        task4Tag1.setTaskId(task4.getId());
-        TaskTag task4Tag2 = new TaskTag();
-        task4Tag2.setTagId(tag5.getId());
-        task4Tag2.setTaskId(task4.getId());
-
-        cupboard().withDatabase(getWritableDatabase())
-                .put(task1Tag1, task1Tag2, task2Tag1, task3Tag1, task4Tag1, task4Tag2);
     }
 
     @Override

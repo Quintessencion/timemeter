@@ -20,11 +20,9 @@ public class App extends Application {
 
         Injection.init(this);
 
-        if (BuildConfig.DEBUG) {
-            if (!Injection.sDatabaseComponent.preferences().isDatabaseTestDataInitialized()) {
-                Injection.sDatabaseComponent.databaseHelper().initTestData(this);
-                Injection.sDatabaseComponent.preferences().setDatabaseTestDataInitialized(true);
-            }
+        if (!Injection.sDatabaseComponent.preferences().isDatabaseTestDataInitialized()) {
+            Injection.sDatabaseComponent.databaseHelper().initTestData(this);
+            Injection.sDatabaseComponent.preferences().setDatabaseTestDataInitialized(true);
         }
 
         JobManager.init(new WorkerJobManager(

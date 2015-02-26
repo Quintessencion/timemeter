@@ -1,0 +1,319 @@
+<XmlTaskList version="1">
+    <tasks>
+        <task createDate="2015-02-15 00:00:00 GMT">
+            <description>Работа над проектом</description>
+            <tagReferences>
+                <tagReference ref="1" />
+            </tagReferences>
+            <activity>
+                <activityEntry
+                    startDate="2015-02-16 09:00:00 GMT"
+                    endDate="2015-02-16 11:00:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-16 13:00:00 GMT"
+                    endDate="2015-02-16 16:00:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-17 10:00:00 GMT"
+                    endDate="2015-02-17 13:00:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-17 14:00:00 GMT"
+                    endDate="2015-02-17 19:00:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-18 10:00:00 GMT"
+                    endDate="2015-02-18 12:00:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-18 13:30:00 GMT"
+                    endDate="2015-02-18 18:30:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-19 11:00:00 GMT"
+                    endDate="2015-02-19 12:15:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-19 13:40:00 GMT"
+                    endDate="2015-02-19 18:40:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-20 10:30:00 GMT"
+                    endDate="2015-02-20 12:30:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-20 13:10:00 GMT"
+                    endDate="2015-02-20 16:00:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-23 10:30:00 GMT"
+                    endDate="2015-02-23 12:07:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-23 14:00:00 GMT"
+                    endDate="2015-02-23 18:04:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-24 09:00:00 GMT"
+                    endDate="2015-02-24 11:55:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-24 12:40:00 GMT"
+                    endDate="2015-02-24 18:49:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-25 09:20:00 GMT"
+                    endDate="2015-02-25 12:15:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-25 15:40:00 GMT"
+                    endDate="2015-02-25 18:01:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-26 09:32:00 GMT"
+                    endDate="2015-02-26 12:19:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-26 14:09:00 GMT"
+                    endDate="2015-02-26 17:49:00 GMT"/>
+
+                <!--
+                <activityEntry
+                    startDate="2015-02-27 10:30:00 GMT"
+                    endDate="2015-02-27 12:34:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-27 17:20:45 GMT"
+                    endDate="2015-02-27 20:31:00 GMT"/>-->
+            </activity>
+        </task>
+        <task createDate="2015-02-15 00:00:00 GMT">
+            <description>Совещание</description>
+            <tagReferences>
+                <tagReference ref="1" />
+            </tagReferences>
+            <activity>
+                <activityEntry
+                    startDate="2015-02-16 11:15:00 GMT"
+                    endDate="2015-02-16 11:55:00 GMT" />
+                <activityEntry
+                    startDate="2015-02-18 13:00:00 GMT"
+                    endDate="2015-02-18 13:30:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-19 13:00:00 GMT"
+                    endDate="2015-02-19 13:40:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-23 12:10:00 GMT"
+                    endDate="2015-02-23 13:05:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-25 12:57:00 GMT"
+                    endDate="2015-02-25 13:35:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-26 13:20:00 GMT"
+                    endDate="2015-02-26 13:58:00 GMT"/>
+                <!--
+                <activityEntry
+                    startDate="2015-02-27 13:01:00 GMT"
+                    endDate="2015-02-27 13:29:00 GMT"/>-->
+            </activity>
+        </task>
+        <task createDate="2015-02-15 00:00:00 GMT">
+            <description>Тестирование</description>
+            <tagReferences>
+                <tagReference ref="1" />
+            </tagReferences>
+            <activity>
+                <activityEntry
+                    startDate="2015-02-16 16:00:00 GMT"
+                    endDate="2015-02-16 18:00:00 GMT" />
+                <activityEntry
+                    startDate="2015-02-20 16:00:00 GMT"
+                    endDate="2015-02-20 18:30:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-25 13:35:00 GMT"
+                    endDate="2015-02-25 15:40:00 GMT"/>
+                <!--
+                <activityEntry
+                    startDate="2015-02-27 13:40:00 GMT"
+                    endDate="2015-02-27 15:49:00 GMT"/>-->3
+            </activity>
+        </task>
+        <task createDate="2015-02-15 00:00:00 GMT">
+            <description>Аналитика</description>
+            <tagReferences>
+                <tagReference ref="1" />
+            </tagReferences>
+            <activity>
+                <activityEntry
+                    startDate="2015-02-17 9:00:00 GMT"
+                    endDate="2015-02-17 13:00:00 GMT" />
+                <!--
+                <activityEntry
+                    startDate="2015-02-27 15:55:00 GMT"
+                    endDate="2015-02-27 17:20:00 GMT"/>-->
+            </activity>
+        </task>
+        <task createDate="2015-02-15 00:00:00 GMT">
+            <description>Обед</description>
+            <tagReferences>
+                <tagReference ref="6" />
+            </tagReferences>
+            <activity>
+                <activityEntry
+                    startDate="2015-02-16 12:00:00 GMT"
+                    endDate="2015-02-16 13:00:00 GMT" />
+                <activityEntry
+                    startDate="2015-02-17 13:00:00 GMT"
+                    endDate="2015-02-17 13:40:00 GMT" />
+                <activityEntry
+                    startDate="2015-02-18 12:00:00 GMT"
+                    endDate="2015-02-18 12:55:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-19 12:15:00 GMT"
+                    endDate="2015-02-19 13:00:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-20 12:30:00 GMT"
+                    endDate="2015-02-20 13:10:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-23 13:10:00 GMT"
+                    endDate="2015-02-23 13:55:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-24 11:55:00 GMT"
+                    endDate="2015-02-24 12:38:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-25 12:21:00 GMT"
+                    endDate="2015-02-25 12:57:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-26 12:35:00 GMT"
+                    endDate="2015-02-26 13:11:00 GMT"/>
+            </activity>
+        </task>
+        <task createDate="2015-02-15 00:00:00 GMT">
+            <description>Тренажерный зал</description>
+            <tagReferences>
+                <tagReference ref="3" />
+                <tagReference ref="4" />
+            </tagReferences>
+            <activity>
+                <activityEntry
+                    startDate="2015-02-19 8:30:00 GMT"
+                    endDate="2015-02-19 10:15:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-25 19:07:00 GMT"
+                    endDate="2015-02-25 20:50:00 GMT"/>
+                <!--
+                <activityEntry
+                    startDate="2015-02-27 8:30:00 GMT"
+                    endDate="2015-02-27 9:48:00 GMT"/>-->
+            </activity>
+        </task>
+        <task createDate="2015-02-15 00:00:00 GMT">
+            <description>Бассейн</description>
+            <tagReferences>
+                <tagReference ref="3" />
+            </tagReferences>
+            <activity>
+                <activityEntry
+                    startDate="2015-02-20 8:30:00 GMT"
+                    endDate="2015-02-20 10:00:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-23 9:07:00 GMT"
+                    endDate="2015-02-23 9:57:00 GMT"/>
+            </activity>
+        </task>
+        <task createDate="2015-02-15 00:00:00 GMT">
+            <description>Пробежка</description>
+            <tagReferences>
+                <tagReference ref="3" />
+            </tagReferences>
+            <activity>
+                <activityEntry
+                    startDate="2015-02-21 7:00:00 GMT"
+                    endDate="2015-02-21 8:00:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-22 7:08:00 GMT"
+                    endDate="2015-02-22 7:58:00 GMT"/>
+
+                <!--
+                <activityEntry
+                    startDate="2015-02-28 7:09:45 GMT"
+                    endDate="2015-02-28 8:05:00 GMT"/>
+                <activityEntry
+                    startDate="2015-03-01 6:49:45 GMT"
+                    endDate="2015-03-01 7:51:00 GMT"/>-->
+            </activity>
+        </task>
+        <task createDate="2015-02-15 00:00:00 GMT">
+            <description>Английский язык</description>
+            <tagReferences>
+                <tagReference ref="2" />
+                <tagReference ref="4" />
+            </tagReferences>
+            <activity>
+                <activityEntry
+                    startDate="2015-02-16 18:30:00 GMT"
+                    endDate="2015-02-16 20:00:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-19 19:00:00 GMT"
+                    endDate="2015-02-19 20:00:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-23 18:30:00 GMT"
+                    endDate="2015-02-23 20:03:30 GMT"/>
+                <activityEntry
+                    startDate="2015-02-26 18:15:00 GMT"
+                    endDate="2015-02-26 19:55:00 GMT"/>
+            </activity>
+        </task>
+        <task createDate="2015-02-15 00:00:00 GMT">
+            <description>Ремонт</description>
+            <tagReferences>
+                <tagReference ref="5" />
+            </tagReferences>
+            <activity>
+                <activityEntry
+                    startDate="2015-02-21 10:00:00 GMT"
+                    endDate="2015-02-21 14:00:00 GMT"/>
+                <activityEntry
+                    startDate="2015-02-21 15:00:00 GMT"
+                    endDate="2015-02-21 17:00:00 GMT"/>
+                <!--
+                <activityEntry
+                    startDate="2015-02-28 10:11:01 GMT"
+                    endDate="2015-02-28 15:24:00 GMT"/>-->
+            </activity>
+        </task>
+        <task createDate="2015-02-15 00:00:00 GMT">
+            <description>Уборка</description>
+            <tagReferences>
+                <tagReference ref="5" />
+            </tagReferences>
+            <activity>
+                <activityEntry
+                    startDate="2015-02-22 11:30:00 GMT"
+                    endDate="2015-02-22 14:26:00 GMT"/>
+                <!--
+                <activityEntry
+                    startDate="2015-03-01 11:09:33 GMT"
+                    endDate="2015-03-01 13:20:19 GMT"/>-->
+            </activity>
+        </task>
+        <task createDate="2015-02-15 00:00:00 GMT">
+            <description>Покупки</description>
+            <tagReferences>
+                <tagReference ref="6" />
+            </tagReferences>
+            <activity>
+                <activityEntry
+                    startDate="2015-02-22 15:30:00 GMT"
+                    endDate="2015-02-22 17:40:00 GMT"/>
+                <!--
+                <activityEntry
+                    startDate="2015-03-01 14:01:00 GMT"
+                    endDate="2015-03-01 15:41:22 GMT"/>-->
+            </activity>
+        </task>
+    </tasks>
+    <tags>
+        <tag color="#009688" id="1">
+            <name>Работа</name>
+        </tag>
+        <tag color="#9C27E0" id="2">
+            <name>Учеба</name>
+        </tag>
+        <tag color="#8BC34A" id="3">
+            <name>Спорт</name>
+        </tag>
+        <tag color="#FF3D00" id="4">
+            <name>Хобби</name>
+        </tag>
+        <tag color="#827717" id="5">
+            <name>Дом</name>
+        </tag>
+        <tag id="6">
+            <name>Прочее</name>
+        </tag>
+    </tags>
+</XmlTaskList>

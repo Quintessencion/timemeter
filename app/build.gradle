@@ -97,5 +97,10 @@ dependencies {
     compile 'com.github.andkulikov:transitions-everywhere:1.2.2'
     compile 'com.squareup.phrase:phrase:1.0.3'
     compile 'com.astuetz:pagerslidingtabstrip:1.0.1'
+    compile ('org.simpleframework:simple-xml:2.7.1') {
+        exclude module: 'stax'
+        exclude module: 'stax-api'
+        exclude module: 'xpp3'
+    }
     compile project(':MPChartLib')
 }
