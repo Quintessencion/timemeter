@@ -155,6 +155,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
             }
             mPagerAdapter.addFragments(pages);
         }
+        mViewPager.setOffscreenPageLimit(2);
         mViewPager.setAdapter(mPagerAdapter);
 
         LayoutInflater.from(getActivity()).inflate(R.layout.view_tabs, mContainerHeader, true);

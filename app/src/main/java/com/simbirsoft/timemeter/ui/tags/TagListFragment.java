@@ -38,6 +38,7 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
+import com.simbirsoft.timemeter.ui.main.MainFragment;
 import com.simbirsoft.timemeter.ui.tasklist.TaskListFragment;
 import com.simbirsoft.timemeter.ui.model.TagBundle;
 import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerDialog;
@@ -53,7 +54,7 @@ import org.slf4j.Logger;
 import java.util.List;
 
 @EFragment(R.layout.fragment_tag_list)
-public class TagListFragment extends BaseFragment implements JobLoader.JobLoaderCallbacks,
+public class TagListFragment extends MainFragment implements JobLoader.JobLoaderCallbacks,
         TagListAdapter.ItemClickListener,
         ColorPickerSwatch.OnColorSelectedListener {
 

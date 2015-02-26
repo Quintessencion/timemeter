@@ -1,4 +1,4 @@
-package com.simbirsoft.timemeter;
+package com.simbirsoft.timemeter.ui.main;
 
 import android.support.v7.app.ActionBarActivity;
 import android.app.Activity;
@@ -15,14 +15,15 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
+
+import com.simbirsoft.timemeter.R;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.ViewById;
+
+import java.util.Arrays;
 
 @EFragment(R.layout.fragment_navigation_drawer)
 public class NavigationDrawerFragment extends Fragment {
@@ -58,6 +59,7 @@ public class NavigationDrawerFragment extends Fragment {
     private int mCurrentSelectedPosition = 0;
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
+    private NavigationDrawerListAdapter mAdapter;
 
     public NavigationDrawerFragment() {
     }
@@ -89,17 +91,22 @@ public class NavigationDrawerFragment extends Fragment {
 
     @AfterViews
     void bindViews() {
+        mAdapter = new NavigationDrawerListAdapter();
+        NavigationDrawerListAdapter.NavigationItem tasks = new NavigationDrawerListAdapter.NavigationItem();
+        tasks.setDrawableId(R.drawable.ic_clock_32dp_selector);
+        tasks.setText(getString(R.string.title_tasks));
+
+        NavigationDrawerListAdapter.NavigationItem tags = new NavigationDrawerListAdapter.NavigationItem();
+        tags.setDrawableId(R.drawable.ic_tag_32dp_selector);
+        tags.setText(getString(R.string.title_tags));
+
+        mAdapter.setItems(Arrays.asList(tasks, tags));
+
+        mDrawerListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         mDrawerListView.setOnItemClickListener(
                 (parent, view, position, id) -> selectItem(position));
-        mDrawerListView.setAdapter(new ArrayAdapter<>(
-                getActivity(),
-                android.R.layout.simple_list_item_activated_1,
-                android.R.id.text1,
-                new String[]{
-                        getString(R.string.title_tasks),
-                        getString(R.string.title_tags),
-                        getString(R.string.title_stats),
-                }));
+
+        mDrawerListView.setAdapter(mAdapter);
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
     }
 
@@ -227,7 +234,6 @@ public class NavigationDrawerFragment extends Fragment {
         // If the drawer is open, show the global app actions in the action bar. See also
         // showGlobalContextActionBar, which controls the top-left area of the action bar.
         if (mDrawerLayout != null && isDrawerOpen()) {
-            inflater.inflate(R.menu.global, menu);
             showGlobalContextActionBar();
         }
         super.onCreateOptionsMenu(menu, inflater);

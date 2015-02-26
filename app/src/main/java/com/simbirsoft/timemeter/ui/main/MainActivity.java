@@ -11,13 +11,15 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 import com.google.common.collect.Lists;
-import com.simbirsoft.timemeter.NavigationDrawerFragment;
+import com.simbirsoft.timemeter.ui.main.NavigationDrawerFragment;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
+import com.simbirsoft.timemeter.ui.calendar.ActivityCalendarFragment_;
 import com.simbirsoft.timemeter.ui.stats.StatsFragment_;
 import com.simbirsoft.timemeter.ui.stats.StatsListFragment_;
+import com.simbirsoft.timemeter.ui.tags.TagListFragment_;
 import com.simbirsoft.timemeter.ui.tasklist.TaskListFragment_;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 
@@ -41,7 +43,6 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     private static final String TAG_CONTENT_FRAGMENT = "app_content_fragment_tag";
     private static final int SECTION_ID_TASKS = 0;
     private static final int SECTION_ID_TAGS = 1;
-    private static final int SECTION_ID_STATS = 2;
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -103,11 +104,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
                 break;
 
             case SECTION_ID_TAGS:
-                fragmentType = MainPagerFragment_.class;
-                break;
-
-            case SECTION_ID_STATS:
-                fragmentType = MainPagerFragment_.class;
+                fragmentType = TagListFragment_.class;
                 break;
 
             default:
@@ -216,12 +213,10 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
             case SECTION_ID_TASKS:
                 pages.add(TaskListFragment_.class.getName());
                 pages.add(StatsListFragment_.class.getName());
+                pages.add(ActivityCalendarFragment_.class.getName());
                 break;
 
             case SECTION_ID_TAGS:
-                break;
-
-            case SECTION_ID_STATS:
                 break;
 
             default:
