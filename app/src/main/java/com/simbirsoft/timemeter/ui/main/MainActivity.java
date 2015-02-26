@@ -2,22 +2,22 @@ package com.simbirsoft.timemeter.ui.main;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 import com.google.common.collect.Lists;
-import com.simbirsoft.timemeter.ui.main.NavigationDrawerFragment;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.calendar.ActivityCalendarFragment_;
-import com.simbirsoft.timemeter.ui.stats.StatsFragment_;
 import com.simbirsoft.timemeter.ui.stats.StatsListFragment_;
 import com.simbirsoft.timemeter.ui.tags.TagListFragment_;
 import com.simbirsoft.timemeter.ui.tasklist.TaskListFragment_;
@@ -25,9 +25,12 @@ import com.simbirsoft.timemeter.ui.views.FilterView;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @EActivity(R.layout.activity_main)
@@ -43,6 +46,9 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     private static final String TAG_CONTENT_FRAGMENT = "app_content_fragment_tag";
     private static final int SECTION_ID_TASKS = 0;
     private static final int SECTION_ID_TAGS = 1;
+
+    private static final String KEY_FRAGMENT_STATE_KEY = "MainActivity_content_fragment_state_key";
+    private static final String KEY_FRAGMENT_STATE = "MainActivity_content_fragment_state";
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -67,6 +73,9 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     @ViewById(R.id.toolbar)
     Toolbar mToolbar;
 
+    @InstanceState
+    ArrayList<Bundle> mSectionFragmentStates;
+
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
@@ -81,6 +90,10 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
 
     @AfterViews
     void bindViews() {
+        if (mSectionFragmentStates == null) {
+            mSectionFragmentStates = Lists.newArrayList();
+        }
+
         setSupportActionBar(mToolbar);
         mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.navigation_drawer);
@@ -92,6 +105,16 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         super.onNewIntent(intent);
 
         // TODO: handle task activity intent from notification bar
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        MainFragment fragment = getContentFragment();
+        if (fragment != null) {
+            saveSectionFragmentState(fragment);
+        }
     }
 
     @Override
@@ -119,9 +142,18 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
             return;
         }
 
+        if (fragment != null) {
+            saveSectionFragmentState(fragment);
+        }
+
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putInt(MainFragment.ARG_SECTION_ID, position);
         fragment = (MainFragment) Fragment.instantiate(this, fragmentType.getName(), fragmentArgs);
+
+        Fragment.SavedState fragmentState = getSectionFragmentState(fragment);
+        if (fragmentState != null) {
+            fragment.setInitialSavedState(fragmentState);
+        }
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
@@ -157,7 +189,6 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         BaseFragment fragment = getContentFragment();
-
         if (fragment != null) {
             fragment.onActivityResult(requestCode, resultCode, data);
         }
@@ -225,5 +256,58 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         }
 
         return pages;
+    }
+
+    private Fragment.SavedState getSectionFragmentState(MainFragment fragment) {
+        return popFragmentState(fragment.getFragmentStateKey());
+    }
+
+    private void saveSectionFragmentState(MainFragment fragment) {
+        Fragment.SavedState state = getSupportFragmentManager().saveFragmentInstanceState(fragment);
+        Bundle stateBundle = new Bundle();
+
+        stateBundle.putParcelable(KEY_FRAGMENT_STATE, state);
+        stateBundle.putString(KEY_FRAGMENT_STATE_KEY, fragment.getFragmentStateKey());
+        pushFragmentState(stateBundle);
+    }
+
+    private Fragment.SavedState popFragmentState(String fragmentStateKey) {
+        if (mSectionFragmentStates == null) {
+            return null;
+        }
+
+        if (TextUtils.isEmpty(fragmentStateKey)) {
+            LOG.error("unable to find fragment state for empty fragment key");
+            return null;
+        }
+
+        Iterator<Bundle> iter = mSectionFragmentStates.iterator();
+        while (iter.hasNext()) {
+            Bundle stateBundle = iter.next();
+
+            if (stateBundle.get(KEY_FRAGMENT_STATE_KEY).equals(fragmentStateKey)) {
+                iter.remove();
+
+                return stateBundle.getParcelable(KEY_FRAGMENT_STATE);
+            }
+        }
+
+        return null;
+    }
+
+    private void pushFragmentState(Bundle fragmentStateBundle) {
+        if (mSectionFragmentStates == null) {
+            return;
+        }
+        String fragmentStateKey = fragmentStateBundle.getString(KEY_FRAGMENT_STATE_KEY);
+
+        if (TextUtils.isEmpty(fragmentStateKey)) {
+            LOG.error("unable to save fragment state for empty fragment key");
+            return;
+        }
+
+        popFragmentState(fragmentStateKey);
+
+        mSectionFragmentStates.add(fragmentStateBundle);
     }
 }

@@ -21,4 +21,8 @@ public class MainFragment extends BaseFragment {
     public String getPageTitle() {
         return getClass().getSimpleName();
     }
+
+    public String getFragmentStateKey() {
+        return "_state_" + getClass().getSimpleName();
+    }
 }

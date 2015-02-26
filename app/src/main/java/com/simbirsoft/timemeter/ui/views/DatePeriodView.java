@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
@@ -26,6 +27,7 @@ import com.simbirsoft.timemeter.ui.util.ToastUtils;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EViewGroup;
+import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ItemSelect;
 import org.androidannotations.annotations.LongClick;
 import org.androidannotations.annotations.ViewById;
@@ -36,6 +38,8 @@ import org.slf4j.Logger;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 @EViewGroup(R.layout.view_date_period)
 public class DatePeriodView extends FrameLayout {
@@ -51,13 +55,12 @@ public class DatePeriodView extends FrameLayout {
     private static final String EXTRA_SUPER_STATE = "super_state";
     private static final String EXTRA_DATE_MILLIS = "date_millis";
 
-    private static final Period[] mPeriodsDefinition = new Period[] {
+    private static final List<Period> mPeriodsDefinition = Arrays.asList(
             Period.DAY,
             Period.WEEK,
             Period.MONTH,
             Period.YEAR,
-            Period.ALL
-    };
+            Period.ALL);
 
     @ViewById(R.id.taggedPanel)
     ViewGroup mTaggedPanel;
@@ -154,7 +157,7 @@ public class DatePeriodView extends FrameLayout {
         CharSequence item = (CharSequence) mPeriodSpinner.getSelectedItem();
         int index = Iterables.indexOf(mPeriodList, (s) -> Objects.equal(item, s));
 
-        return mPeriodsDefinition[index];
+        return mPeriodsDefinition.get(index);
     }
 
     @Override
@@ -184,6 +187,15 @@ public class DatePeriodView extends FrameLayout {
         mDateMillis = dateMillis;
 
         printDate();
+    }
+    public void setPeriod(Period period) {
+        int index = Iterables.indexOf(mPeriodsDefinition, input -> input == period);
+
+        if (index < 0) {
+            throw new IllegalArgumentException(String.format("period '%s' is not defined", period));
+        }
+
+        mPeriodSpinner.setSelection(index);
     }
 
     private void printDate() {

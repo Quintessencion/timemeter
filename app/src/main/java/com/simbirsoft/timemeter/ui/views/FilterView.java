@@ -562,6 +562,31 @@ public class FilterView extends FrameLayout implements
         }
     }
 
+    public void setFilterState(FilterState state) {
+        mState = state.copy();
+
+        mIsSilentUpdate = true;
+        if (state.tags != null && !state.tags.isEmpty()) {
+            for (Tag tag : state.tags) {
+                mTagsView.addObject(tag);
+            }
+        } else {
+            mTagsView.clear();
+        }
+
+        if (mState.dateMillis == 0) {
+            hideDatePeriod();
+        } else {
+            displayDatePeriod();
+        }
+
+        if (mDatePeriodView != null && mState.period != null) {
+            mDatePeriodView.setPeriod(mState.period);
+        }
+
+        mIsSilentUpdate = false;
+    }
+
     public FilterState getViewFilterState() {
         updateFilterState();
 

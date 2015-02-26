@@ -75,6 +75,9 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     @InstanceState
     boolean mIsSearchViewExpanded;
 
+    @InstanceState
+    FilterView.FilterState mFilterState;
+
     private PagerSlidingTabStrip mTabs;
     private FilterView mFilterView;
     private MainPagerAdapter mPagerAdapter;
@@ -140,6 +143,10 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
             showFilterView(false);
         } else {
             hideFilterView(false);
+        }
+
+        if (mFilterView != null && mFilterState != null) {
+            mFilterView.setFilterState(mFilterState);
         }
 
         mFilterView.setTokenListener(this);
@@ -254,6 +261,8 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
             hideFilterView();
             updateOptionsMenu();
         }
+
+        mFilterState = event.getFilterState().copy();
     }
 
     private void showFilterView(boolean animate) {
