@@ -179,6 +179,11 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
             return;
         }
 
+        View focusView = getActivity().getCurrentFocus();
+        if (focusView != null) {
+            KeyboardUtils.hideSoftInput(getActivity(), focusView.getWindowToken());
+        }
+
         if (mTaskEditScene != null) {
             mContentRoot.removeView(mTaskEditScene.layout);
         }
@@ -208,14 +213,6 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         transitionSet.setDuration(Consts.CONTENT_FADE_IN_DELAY_MILLIS);
         transitionSet.setInterpolator(new DecelerateInterpolator());
         TransitionManager.go(mTaskEditScene.scene, transitionSet);
-        mContentRoot.post(() -> {
-            View focusView = getActivity().getCurrentFocus();
-            if (focusView != null) {
-                KeyboardUtils.hideSoftInput(getActivity(), focusView.getWindowToken());
-            } else {
-                KeyboardUtils.hideSoftInput(getActivity(), mContentRoot.getWindowToken());
-            }
-        });
         mActionBar.setDisplayHomeAsUpEnabled(false);
         mActionBar.setHomeAsUpIndicator(R.drawable.ic_action_accept);
     }
