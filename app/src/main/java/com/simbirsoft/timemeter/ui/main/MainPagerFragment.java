@@ -171,6 +171,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
     @Override
     public void onDestroyView() {
+        hideFilterView(false);
         if (mFilterView != null) {
             mFilterView.setTokenListener(null);
             mFilterView.setOnSelectDateClickListener(null);
