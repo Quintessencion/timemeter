@@ -550,7 +550,10 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
                 } else {
                     String input = text.substring(pos).trim();
                     if (!Objects.equal(input, mTagFilter)) {
-                        if (TextUtils.isEmpty(input) || mTagListAdapter.containsItemWithName(input)) {
+                        if (TextUtils.isEmpty(input)
+                                || input.length() < 2
+                                || mTagListAdapter.containsItemWithName(input)) {
+
                             mTaskTagsEditScene.hideCreateTagView();
                         } else {
                             mTaskTagsEditScene.showCreateTagView(input);
