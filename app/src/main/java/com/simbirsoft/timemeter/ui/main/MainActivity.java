@@ -179,13 +179,6 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         }
     }
 
-    public void restoreActionBar() {
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle(mTitle);
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         BaseFragment fragment = getContentFragment();
@@ -225,6 +218,20 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         }
 
         return null;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mNavigationDrawerFragment.handleBackPress()) {
+            return;
+        }
+
+        MainFragment sectionFragment = getContentFragment();
+        if (sectionFragment != null && sectionFragment.handleBackPress()) {
+            return;
+        }
+
+        super.onBackPressed();
     }
 
     @Override

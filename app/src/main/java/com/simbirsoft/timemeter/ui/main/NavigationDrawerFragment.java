@@ -216,6 +216,15 @@ public class NavigationDrawerFragment extends Fragment {
         mCallbacks = null;
     }
 
+    public boolean handleBackPress() {
+        if (isDrawerOpen()) {
+            mDrawerLayout.closeDrawer(mFragmentContainerView);
+            return true;
+        }
+
+        return false;
+    }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
