@@ -7,9 +7,23 @@
         android:id="@android:id/empty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/title_activity_calendar"
+        android:text="@android:string/untitled"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:layout_marginTop="24dp"
         android:layout_centerHorizontal="true"/>
 
+    <!--
+    TODO: nest week calendar view to view pager, add navigation panel (PagerTitleStrip)
+    -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="12dp"
+        android:paddingTop="12dp">
+        <com.simbirsoft.timemeter.ui.views.WeekCalendarView
+            android:id="@+id/calendarView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#CCC"/>
+    </ScrollView>
 </RelativeLayout>

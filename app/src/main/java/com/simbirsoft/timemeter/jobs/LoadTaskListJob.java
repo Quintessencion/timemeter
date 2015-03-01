@@ -4,7 +4,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
-import com.be.android.library.worker.base.JobEvent;
 import com.be.android.library.worker.exceptions.JobExecutionException;
 import com.be.android.library.worker.jobs.LoadJob;
 import com.be.android.library.worker.models.LoadJobResult;

@@ -117,6 +117,10 @@ public class TaskTimeSpan implements Parcelable {
         this.isActive = isActive;
     }
 
+    public long getDuration() {
+        return endTimeMillis - startTimeMillis;
+    }
+
     @Override
     public int describeContents() {
         return 0;

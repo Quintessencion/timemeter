@@ -4,15 +4,20 @@ import java.util.Calendar;
 
 public final class TimeUtils {
 
+    public static long getDayStartMillis(Calendar calendar) {
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        return calendar.getTimeInMillis();
+    }
+
     public static long getDayStartMillis(long millis) {
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(millis);
-        c.set(Calendar.HOUR_OF_DAY, 0);
-        c.set(Calendar.MINUTE, 0);
-        c.set(Calendar.SECOND, 0);
-        c.set(Calendar.MILLISECOND, 0);
 
-        return c.getTimeInMillis();
+        return getDayStartMillis(c);
     }
 
     public static long tomorrowStart() {
