@@ -189,23 +189,6 @@ void startFinalizer(java.lang.Class,java.lang.Object);
 # Joda time
 -dontwarn org.joda.convert.**
 
-# Dagger 2
--keep class com.sweetsoft.ias.** {
-    @javax.inject.* *;
-}
-
--dontwarn dagger.internal.codegen.**
--keepclassmembers,allowobfuscation class * {
-    @javax.inject.* *;
-    @dagger.* *;
-    <init>();
-}
--keep class javax.inject.** { *; }
--keep class **$$ModuleAdapter
--keep class **$$InjectAdapter
--keep class **$$StaticInjection
--keep class dagger.** { *; }
-
 # Otto
 -keepattributes *Annotation*
 -keepclassmembers class ** {

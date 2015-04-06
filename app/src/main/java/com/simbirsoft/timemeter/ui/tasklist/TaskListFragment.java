@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.Spannable;
@@ -19,12 +18,9 @@ import android.widget.TextView;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
-import com.be.android.library.worker.base.JobEvent;
-import com.be.android.library.worker.base.ThrottleJob;
 import com.be.android.library.worker.controllers.JobLoader;
 import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.interfaces.Job;
-import com.be.android.library.worker.jobs.CallableForkJoinJob;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.melnykov.fab.FloatingActionButton;
@@ -63,7 +59,6 @@ import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;

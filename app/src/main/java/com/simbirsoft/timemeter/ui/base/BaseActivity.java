@@ -32,6 +32,7 @@ public class BaseActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
 
         mJobEventDispatcher = new JobEventDispatcher(this);
+        mJobEventDispatcher.restoreState(savedInstanceState);
     }
 
     @Override
@@ -73,13 +74,6 @@ public class BaseActivity extends ActionBarActivity {
         super.onSaveInstanceState(outState);
 
         mJobEventDispatcher.saveState(outState);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-
-        mJobEventDispatcher.restoreState(savedInstanceState);
     }
 
     protected int submitJob(Job job) {
