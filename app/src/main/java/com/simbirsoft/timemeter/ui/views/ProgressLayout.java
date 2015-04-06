@@ -13,7 +13,7 @@ import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.util.JobSelector;
 import com.pnikosis.materialishprogress.ProgressWheel;
-import com.simbirsoft.bestreview.R;
+import com.simbirsoft.timemeter.R;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EViewGroup;
