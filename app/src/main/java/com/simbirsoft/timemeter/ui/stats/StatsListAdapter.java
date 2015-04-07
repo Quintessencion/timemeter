@@ -3,17 +3,23 @@ package com.simbirsoft.timemeter.ui.stats;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.ui.model.TaskBundle;
 
 import java.util.Collection;
 import java.util.List;
 
 public class StatsListAdapter extends RecyclerView.Adapter<StatsListAdapter.ViewHolder> {
+
+    static interface ChartClickListener {
+        void onChartClicked();
+    }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -29,6 +35,14 @@ public class StatsListAdapter extends RecyclerView.Adapter<StatsListAdapter.View
     }
 
     private final List<StatisticsViewBinder> mViewBinders;
+    private ChartClickListener mChartClickListener;
+
+    private final View.OnClickListener mClickListener =
+            view -> {
+                if (mChartClickListener != null) {
+                    mChartClickListener.onChartClicked();
+                }
+            };
 
     public StatsListAdapter() {
         mViewBinders = Lists.newArrayList();
@@ -60,8 +74,9 @@ public class StatsListAdapter extends RecyclerView.Adapter<StatsListAdapter.View
         CardView view = (CardView) LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.view_statistics_card, parent, false);
 
-        View contentView = binder.createView(parent.getContext(), view);
+        View contentView = binder.createView(parent.getContext(), view, false);
         view.addView(contentView);
+        contentView.setOnClickListener(mClickListener);
 
         return new ViewHolder(view, contentView);
     }
@@ -76,5 +91,9 @@ public class StatsListAdapter extends RecyclerView.Adapter<StatsListAdapter.View
     @Override
     public int getItemCount() {
         return mViewBinders.size();
+    }
+
+    public void setChartClickListener(ChartClickListener chartClickListener) {
+        mChartClickListener = chartClickListener;
     }
 }

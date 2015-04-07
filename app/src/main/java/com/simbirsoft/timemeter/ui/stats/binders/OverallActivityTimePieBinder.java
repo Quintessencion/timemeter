@@ -52,12 +52,13 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
     }
 
     @Override
-    public View createView(Context context, ViewGroup parent) {
+    public View createView(Context context, ViewGroup parent, boolean touchable) {
         mContentRoot = (ViewGroup) LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.view_pie_chart, parent, false);
 
         initializePieChart();
-
+        mPieChart.setTouchEnabled(touchable);
+        mPieChart.setClickable(touchable);
         return mContentRoot;
     }
 

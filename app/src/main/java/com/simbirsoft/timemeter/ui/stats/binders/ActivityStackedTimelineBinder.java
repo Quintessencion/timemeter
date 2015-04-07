@@ -53,12 +53,13 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnCh
     }
 
     @Override
-    public View createView(Context context, ViewGroup parent) {
+    public View createView(Context context, ViewGroup parent, boolean touchable) {
         mContentRoot = (ViewGroup) LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.view_activity_stacked_timeline, parent, false);
 
         initializeChart();
-
+        mChart.setTouchEnabled(touchable);
+        mChart.setClickable(touchable);
         return mContentRoot;
     }
 

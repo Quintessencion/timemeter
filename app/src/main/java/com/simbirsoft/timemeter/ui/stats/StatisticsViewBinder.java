@@ -25,6 +25,6 @@ public interface StatisticsViewBinder {
 
     @BinderViewType
     public int getViewTypeId();
-    public View createView(Context context, ViewGroup parent);
+    public View createView(Context context, ViewGroup parent, boolean touchable);
     public void bindView(View view);
 }

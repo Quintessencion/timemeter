@@ -1,5 +1,6 @@
 package com.simbirsoft.timemeter.ui.stats;
 
+import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
@@ -20,6 +21,7 @@ import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadStatisticsViewBinders;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
+import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.squareup.otto.Bus;
@@ -37,7 +39,8 @@ import javax.inject.Inject;
 @EFragment(R.layout.fragment_stats_list)
 public class StatsListFragment extends BaseFragment implements
         JobLoader.JobLoaderCallbacks,
-        MainPagerAdapter.PageTitleProvider {
+        MainPagerAdapter.PageTitleProvider,
+        StatsListAdapter.ChartClickListener {
 
     private static final Logger LOG = LogFactory.getLogger(StatsListFragment.class);
 
@@ -62,6 +65,7 @@ public class StatsListFragment extends BaseFragment implements
         Injection.sUiComponent.injectStatsListFragment(this);
 
         mStatsListAdapter = new StatsListAdapter();
+        mStatsListAdapter.setChartClickListener(this);
     }
 
     @AfterViews
@@ -129,5 +133,15 @@ public class StatsListFragment extends BaseFragment implements
     @Override
     public String getPageTitle(Resources resources) {
         return resources.getString(R.string.title_stats);
+    }
+
+    @Override
+    public void onChartClicked() {
+        Bundle args = new Bundle();
+
+        Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
+                getActivity(), StatsDetailsFragment_.class.getName(), args);
+        getActivity().startActivityForResult(launchIntent, 1000);
+
     }
 }
