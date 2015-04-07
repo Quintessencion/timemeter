@@ -25,6 +25,8 @@
     <string name="caption_today">Сегодня</string>
     <string name="caption_accumulated_tasks_duration">Остальные</string>
     <string name="caption_empty_chart">Нет данных</string>
+    <string name="content_empty">Нет данных</string>
+    <string name="caption_progress">Загрузка&#8230;</string>
 
     <!-- Actions -->
     <string name="action_search">Поиск</string>
