@@ -18,7 +18,7 @@ import java.util.List;
 public class StatsListAdapter extends RecyclerView.Adapter<StatsListAdapter.ViewHolder> {
 
     static interface ChartClickListener {
-        void onChartClicked();
+        void onChartClicked(int viewType);
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -40,7 +40,7 @@ public class StatsListAdapter extends RecyclerView.Adapter<StatsListAdapter.View
     private final View.OnClickListener mClickListener =
             view -> {
                 if (mChartClickListener != null) {
-                    mChartClickListener.onChartClicked();
+                    mChartClickListener.onChartClicked((int)view.getTag());
                 }
             };
 
@@ -77,6 +77,7 @@ public class StatsListAdapter extends RecyclerView.Adapter<StatsListAdapter.View
         View contentView = binder.createView(parent.getContext(), view, false);
         view.addView(contentView);
         contentView.setOnClickListener(mClickListener);
+        contentView.setTag(viewType);
 
         return new ViewHolder(view, contentView);
     }

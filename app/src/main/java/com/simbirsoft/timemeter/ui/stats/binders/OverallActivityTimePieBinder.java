@@ -41,6 +41,7 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
     private VerticalChartLegendView mVerticalChartLegendView;
     private TextView mEmptyIndicatorView;
     private boolean mIsDataBound;
+    private boolean mIsFullScreenMode;
 
     public OverallActivityTimePieBinder(List<TaskOverallActivity> overallActivity) {
         mOverallActivity = overallActivity;
@@ -52,13 +53,11 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
     }
 
     @Override
-    public View createView(Context context, ViewGroup parent, boolean touchable) {
+    public View createView(Context context, ViewGroup parent, boolean fullScreenMode) {
         mContentRoot = (ViewGroup) LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.view_pie_chart, parent, false);
-
+        mIsFullScreenMode = fullScreenMode;
         initializePieChart();
-        mPieChart.setTouchEnabled(touchable);
-        mPieChart.setClickable(touchable);
         return mContentRoot;
     }
 
@@ -145,7 +144,8 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
         mPieChart.setDrawYValues(true);
         mPieChart.setUsePercentValues(true);
         mPieChart.setDrawLegend(false);
-        mPieChart.setTouchEnabled(true);
+        mPieChart.setTouchEnabled(mIsFullScreenMode);
+        mPieChart.setClickable(mIsFullScreenMode);
         mPieChart.setOffsets(0f, 0f, 0f, 0f);
         mPieChart.setValueFormatter(new ValueFormatter() {
             @Override
@@ -175,7 +175,8 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
             return;
         }
 
-        int preferredHeight = (int) res.getDimension(R.dimen.chart_height);
+        int preferredHeight = (mIsFullScreenMode) ? (int) res.getDimension(R.dimen.chart_full_screen_height) :
+                                                    (int) res.getDimension(R.dimen.chart_height);
         int minHeight = Math.min(preferredHeight, size);
 
         int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(minHeight, View.MeasureSpec.AT_MOST);

@@ -29,6 +29,7 @@ import com.be.android.library.worker.handlers.JobEventDispatcher;
 import com.be.android.library.worker.jobs.CallableForkJoinJob;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
@@ -53,6 +54,7 @@ import org.androidannotations.annotations.res.StringRes;
 import org.slf4j.Logger;
 
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -149,8 +151,10 @@ public class FilterView extends FrameLayout implements
         private FilterState(Parcel source) {
             int sz = source.readInt();
             if (sz > 0) {
-                Tag[] array = (Tag[]) source.readParcelableArray(FilterView.class.getClassLoader());
-                tags = Lists.newArrayList(array);
+                Parcelable[] array = source.readParcelableArray(FilterView.class.getClassLoader());
+                tags = Lists.newArrayList(Iterators.transform(
+                        Iterators.forArray(array),
+                        (input) -> (Tag) input));
             }
             dateMillis = source.readLong();
             periodMillis = source.readLong();

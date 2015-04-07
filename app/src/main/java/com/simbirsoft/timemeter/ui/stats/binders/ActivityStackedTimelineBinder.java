@@ -42,6 +42,7 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnCh
     private Legend mLegend;
     private boolean mIsDataBound;
     private TextView mEmptyIndicatorView;
+    private boolean mIsFullScreenMode;
 
     public ActivityStackedTimelineBinder(List<DailyTaskActivityDuration> activityTimeline) {
         mActivityTimeline = activityTimeline;
@@ -53,13 +54,11 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnCh
     }
 
     @Override
-    public View createView(Context context, ViewGroup parent, boolean touchable) {
+    public View createView(Context context, ViewGroup parent, boolean fullScreenMode) {
         mContentRoot = (ViewGroup) LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.view_activity_stacked_timeline, parent, false);
-
+        mIsFullScreenMode = fullScreenMode;
         initializeChart();
-        mChart.setTouchEnabled(touchable);
-        mChart.setClickable(touchable);
         return mContentRoot;
     }
 
@@ -153,7 +152,8 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnCh
         mChart.setDrawYLabels(true);
         mChart.setDrawYValues(false);
         mChart.setDrawLegend(false);
-        mChart.setTouchEnabled(true);
+        mChart.setTouchEnabled(mIsFullScreenMode);
+        mChart.setClickable(mIsFullScreenMode);
         mChart.setDoubleTapToZoomEnabled(false);
         mChart.setOffsets(0f, 0f, 0f, 0f);
         mChart.setValueTextColor(mContentRoot.getResources().getColor(R.color.accentPrimary));
@@ -174,7 +174,8 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnCh
             return;
         }
 
-        int preferredHeight = (int) res.getDimension(R.dimen.chart_height);
+        int preferredHeight = (mIsFullScreenMode) ? (int) res.getDimension(R.dimen.chart_full_screen_height) :
+                                                    (int) res.getDimension(R.dimen.chart_height);
         int minHeight = Math.min(preferredHeight, size);
 
         int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(minHeight, View.MeasureSpec.AT_MOST);

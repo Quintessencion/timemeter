@@ -136,9 +136,12 @@ public class StatsListFragment extends BaseFragment implements
     }
 
     @Override
-    public void onChartClicked() {
+    public void onChartClicked(int viewType) {
         Bundle args = new Bundle();
-
+        if (mFilterViewState != null) {
+            args.putParcelable(StatsDetailsFragment.EXTRA_TASK_FILTER, mFilterViewState);
+        }
+        args.putInt(StatsDetailsFragment.EXTRA_CHART_VIEW_TYPE, viewType);
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), StatsDetailsFragment_.class.getName(), args);
         getActivity().startActivityForResult(launchIntent, 1000);
