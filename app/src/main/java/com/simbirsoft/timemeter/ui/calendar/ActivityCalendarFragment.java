@@ -11,17 +11,22 @@ import com.be.android.library.worker.controllers.JobLoader;
 import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
+import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadActivityCalendarJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
 import com.simbirsoft.timemeter.ui.model.ActivityCalendar;
+import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.simbirsoft.timemeter.ui.views.WeekCalendarView;
+import com.squareup.otto.Subscribe;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
@@ -44,6 +49,9 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
     @ViewById(android.R.id.empty)
     TextView mEmptyIndicatorView;
 
+    @InstanceState
+    FilterView.FilterState mFilterViewState;
+
     @AfterViews
     void bindViews() {
         requestLoad(CALENDAR_LOADER_TAG, this);
@@ -52,6 +60,21 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
     @Override
     public String getPageTitle(Resources resources) {
         return resources.getString(R.string.title_activity_calendar);
+    }
+
+    @Subscribe
+    public void onFilterViewStateChanged(FilterViewStateChangeEvent ev) {
+        if (!isAdded()) {
+            return;
+        }
+        mFilterViewState = ev.getFilterState();
+
+        JobManager.getInstance().cancelAll(JobSelector.forJobTags(CALENDAR_LOADER_TAG));
+
+        String loaderTag = CALENDAR_LOADER_TAG
+                + "filter:"
+                + String.valueOf(mFilterViewState.hashCode());
+        requestLoad(loaderTag, this);
     }
 
     @OnJobSuccess(LoadActivityCalendarJob.class)
@@ -72,8 +95,14 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
         job.setStartDate(new Date(/* 16 Feb */1424044800000L));
         job.setEndDate(new Date(/* 22 Feb */ 1424563200000L));
 
-        // TODO: apply jobs filter (see TaskListFragment)
-
+        if (mFilterViewState != null) {
+            job.getTaskLoadFilter()
+                    .tags(mFilterViewState.tags)
+                    .dateMillis(mFilterViewState.dateMillis)
+                    .period(mFilterViewState.period)
+                    .searchText(mFilterViewState.searchText);
+        }
+        job.addTag(CALENDAR_LOADER_TAG);
         return job;
     }
 }

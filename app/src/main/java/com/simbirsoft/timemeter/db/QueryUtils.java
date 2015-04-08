@@ -7,7 +7,9 @@ import com.google.common.collect.Iterables;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTag;
+import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.model.Period;
+import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.squareup.phrase.Phrase;
 
 import java.util.Collection;
@@ -62,6 +64,26 @@ public final class QueryUtils {
 
         if (periodEnd > 0) {
             where += " AND " + beginTimeColumnName + " < " + String.valueOf(periodEnd);
+        }
+
+        return where;
+    }
+
+
+    public static String createCalendarPeriodRestrictionStatement(
+           long startMillis, long endMillis) {
+
+        String where = "";
+
+        if (startMillis == 0) {
+            return where;
+        }
+
+        String columnName = TaskTimeSpan.TABLE_NAME + "." + TaskTimeSpan.COLUMN_START_TIME;
+        where += columnName + " >= " + String.valueOf(startMillis);
+
+        if (endMillis > 0) {
+            where += " AND " + columnName + " < " + String.valueOf(endMillis);
         }
 
         return where;

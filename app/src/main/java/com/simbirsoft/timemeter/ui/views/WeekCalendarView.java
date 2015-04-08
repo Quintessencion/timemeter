@@ -13,6 +13,7 @@ import android.view.View;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.ui.model.ActivityCalendar;
+import com.simbirsoft.timemeter.ui.util.TimeUtils;
 
 import java.util.List;
 
@@ -34,7 +35,6 @@ public class WeekCalendarView extends View {
     private int mDateHeight;
     private int mHourWidth;
     private int mHourHeight;
-    private long mMillisCount;
     private Paint mDateTextPaint;
     private Paint mHourTextPaint;
     private Paint mMainLinePaint;
@@ -113,7 +113,6 @@ public class WeekCalendarView extends View {
         mDateHeight = 0;
         mHourWidth = 0;
         mHourHeight = 0;
-        mMillisCount = 0;
 
         if (daysCount > 0) {
             String dateLabelProbe = mActivityCalendar.getDateLabel(0);
@@ -127,7 +126,6 @@ public class WeekCalendarView extends View {
             mHourWidth = (int) Math.ceil(mHourTextPaint.measureText(hourLabelProbe))
                                 + mHourLabelPaddingHorizontal;
             mHourHeight = (int) Math.ceil(mHourTextPaint.getTextSize() + mHourLabelPaddingVertical * 2);
-            mMillisCount = hoursCount * 3600 * 1000;
         }
 
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
@@ -238,8 +236,8 @@ public class WeekCalendarView extends View {
     }
 
     private int millisToY(long millis) {
-        long offset = mActivityCalendar.getStartDate().getTime() - mActivityCalendar.getHour(0);
-        int y = (int)(((millis - offset)* mHourHeight) / mMillisCount);
+        long offset = mActivityCalendar.getStartDate().getTime() + TimeUtils.hoursToMillis(mActivityCalendar.getHour(0));
+        int y = (int)(((millis - offset)* mHourHeight) / TimeUtils.hoursToMillis(1));
         return (y < 0) ? 0 : (y > mHourHeight * mActivityCalendar.getHoursCount()) ? mHourHeight * mActivityCalendar.getHoursCount() : y;
     }
 }

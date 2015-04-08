@@ -32,6 +32,8 @@ public class ActivityCalendar {
 
     private final Calendar mStartDate;
     private final Calendar mEndDate;
+    private final Calendar mPeriodStart;
+    private final Calendar mPeriodEnd;
     private final Calendar mBufferCalendar;
     private int mStartHour = START_HOUR_DEFAULT;
     private int mEndHour = END_HOUR_DEFAULT;
@@ -43,6 +45,8 @@ public class ActivityCalendar {
         mDays = Lists.newArrayList();
         mStartDate = Calendar.getInstance();
         mEndDate = Calendar.getInstance();
+        mPeriodStart = Calendar.getInstance();
+        mPeriodEnd = Calendar.getInstance();
         mBufferCalendar = Calendar.getInstance();
     }
 
@@ -189,6 +193,14 @@ public class ActivityCalendar {
     public void setEndDate(Date endDate) {
         mEndDate.setTime(endDate);
         updateDays();
+    }
+
+    public void setPeriodStart(long millis) {
+        mPeriodStart.setTimeInMillis(millis);
+    }
+
+    public void setPeriodEnd(long millis) {
+        mPeriodEnd.setTimeInMillis(millis);
     }
 
     public int getDayIndex(long dayStartTimeMillis) {
