@@ -11,7 +11,10 @@ import android.util.DisplayMetrics;
 import android.view.View;
 
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.ui.model.ActivityCalendar;
+
+import java.util.List;
 
 public class WeekCalendarView extends View {
 
@@ -31,6 +34,7 @@ public class WeekCalendarView extends View {
     private int mDateHeight;
     private int mHourWidth;
     private int mHourHeight;
+    private long mMillisCount;
     private Paint mDateTextPaint;
     private Paint mHourTextPaint;
     private Paint mMainLinePaint;
@@ -109,6 +113,7 @@ public class WeekCalendarView extends View {
         mDateHeight = 0;
         mHourWidth = 0;
         mHourHeight = 0;
+        mMillisCount = 0;
 
         if (daysCount > 0) {
             String dateLabelProbe = mActivityCalendar.getDateLabel(0);
@@ -122,15 +127,15 @@ public class WeekCalendarView extends View {
             mHourWidth = (int) Math.ceil(mHourTextPaint.measureText(hourLabelProbe))
                                 + mHourLabelPaddingHorizontal;
             mHourHeight = (int) Math.ceil(mHourTextPaint.getTextSize() + mHourLabelPaddingVertical * 2);
+            mMillisCount = hoursCount * 3600 * 1000;
         }
 
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         if (widthMode == MeasureSpec.EXACTLY) {
-            // TODO: it's important to stretch or narrow view to fit maxWidth
-            // TODO: adjust cells width to fit container
-//            int maxWidth = MeasureSpec.getSize(widthMeasureSpec);
-            myWidth = mHourWidth + daysCount * mDateWidth;
-
+            myWidth = MeasureSpec.getSize(widthMeasureSpec);
+            if (daysCount > 0) {
+                mDateWidth = Math.max((myWidth - mHourWidth) / daysCount, 0);
+            }
         } else {
             myWidth = mHourWidth + daysCount * mDateWidth;
         }
@@ -144,6 +149,7 @@ public class WeekCalendarView extends View {
     protected void onDraw(Canvas canvas) {
         drawDates(canvas);
         drawHours(canvas);
+        drawActivities(canvas);
     }
 
     private void drawDates(Canvas canvas) {
@@ -163,8 +169,10 @@ public class WeekCalendarView extends View {
         for (int i = 0; i < daysCount; i++) {
             String dateText = mActivityCalendar.getDateLabel(i);
             mDateTextPaint.setColor(mActivityCalendar.getDateLabelColor(res, i));
+            int width = (int) Math.ceil(mDateTextPaint.measureText(dateText));
+            int offset = Math.max(0, (mDateWidth - width) / 2);
             canvas.drawText(dateText,
-                    mDateLabelPaddingHorizontal,
+                    offset,
                     mDateHeight - mDateLabelPaddingVertical,
                     mDateTextPaint);
             canvas.drawLine(mDateWidth, mDateHeight, mDateWidth, canvasHeight, mSecondaryLinePaint);
@@ -201,5 +209,37 @@ public class WeekCalendarView extends View {
         }
 
         canvas.restoreToCount(saveCount);
+    }
+
+    private void drawActivities(Canvas canvas) {
+        int daysCount = mActivityCalendar.getDaysCount();
+
+        if (daysCount == 0) {
+            return;
+        }
+        final int saveCount = canvas.save();
+        canvas.translate(mHourWidth, mDateHeight);
+        for (int i = 0; i < daysCount; i++) {
+            drawDay(canvas, i);
+            canvas.translate(mDateWidth, 0);
+        }
+        canvas.restoreToCount(saveCount);
+    }
+
+    private void drawDay(Canvas canvas, int dayIndex) {
+        List<TaskTimeSpan> spans = mActivityCalendar.getActivityForDayIndex(dayIndex);
+        if (spans.isEmpty()) return;
+        for (TaskTimeSpan span : spans) {
+            int startY = millisToY(span.getStartTimeMillis());
+            int endY = millisToY(span.getEndTimeMillis());
+            if (startY == endY) continue;
+            canvas.drawRect(0, startY, mDateWidth, endY, mSecondaryLinePaint);
+        }
+    }
+
+    private int millisToY(long millis) {
+        long offset = mActivityCalendar.getStartDate().getTime() - mActivityCalendar.getHour(0);
+        int y = (int)(((millis - offset)* mHourHeight) / mMillisCount);
+        return (y < 0) ? 0 : (y > mHourHeight * mActivityCalendar.getHoursCount()) ? mHourHeight * mActivityCalendar.getHoursCount() : y;
     }
 }
