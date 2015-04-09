@@ -8,12 +8,16 @@ import android.graphics.Paint;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
+import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.ActivityCalendar;
 import com.simbirsoft.timemeter.ui.util.TimeUtils;
+
+import org.slf4j.Logger;
 
 import java.util.List;
 
@@ -24,7 +28,7 @@ public class WeekCalendarView extends View {
     private static final int HOUR_LABEL_VERTICAL_PADDING_DEFAULT_DIP = 14;
     private static final int HOUR_LABEL_HORIZONTAL_PADDING_DEFAULT_DIP = 5;
 
-
+    private static final Logger LOG = LogFactory.getLogger(WeekCalendarView.class);
     private ActivityCalendar mActivityCalendar;
 
     private int mDateLabelPaddingHorizontal;
@@ -227,17 +231,20 @@ public class WeekCalendarView extends View {
     private void drawDay(Canvas canvas, int dayIndex) {
         List<TaskTimeSpan> spans = mActivityCalendar.getActivityForDayIndex(dayIndex);
         if (spans.isEmpty()) return;
+        long dayStart = mActivityCalendar.getDayStartMillis(dayIndex);
         for (TaskTimeSpan span : spans) {
-            int startY = millisToY(span.getStartTimeMillis());
-            int endY = millisToY(span.getEndTimeMillis());
-            if (startY == endY) continue;
+            int startY = millisToY(span.getStartTimeMillis(), dayStart);
+            int endY = millisToY(span.getEndTimeMillis(), dayStart);
+            if (startY == endY) {
+                endY = startY + 1;
+            }
             canvas.drawRect(0, startY, mDateWidth, endY, mSecondaryLinePaint);
         }
     }
 
-    private int millisToY(long millis) {
-        long offset = mActivityCalendar.getStartDate().getTime() + TimeUtils.hoursToMillis(mActivityCalendar.getHour(0));
-        int y = (int)(((millis - offset)* mHourHeight) / TimeUtils.hoursToMillis(1));
+    private int millisToY(long millis, long dayStart) {
+        long offset = dayStart + TimeUtils.hoursToMillis(mActivityCalendar.getHour(0));
+        int y = (int)(((millis - offset)* mHourHeight) / TimeUtils.MILLIS_IN_HOUR);
         return (y < 0) ? 0 : (y > mHourHeight * mActivityCalendar.getHoursCount()) ? mHourHeight * mActivityCalendar.getHoursCount() : y;
     }
 }

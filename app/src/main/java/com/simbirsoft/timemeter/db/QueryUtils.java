@@ -68,25 +68,4 @@ public final class QueryUtils {
 
         return where;
     }
-
-
-    public static String createCalendarPeriodRestrictionStatement(
-           long startMillis, long endMillis) {
-
-        String where = "";
-
-        if (startMillis == 0) {
-            return where;
-        }
-
-        String columnName = TaskTimeSpan.TABLE_NAME + "." + TaskTimeSpan.COLUMN_START_TIME;
-        where += columnName + " >= " + String.valueOf(startMillis);
-
-        if (endMillis > 0) {
-            where += " AND " + columnName + " < " + String.valueOf(endMillis);
-        }
-
-        return where;
-    }
-
 }

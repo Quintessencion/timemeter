@@ -1,6 +1,7 @@
 package com.simbirsoft.timemeter.ui.calendar;
 
 import android.content.res.Resources;
+import android.os.Bundle;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -20,8 +21,10 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
 import com.simbirsoft.timemeter.ui.model.ActivityCalendar;
+import com.simbirsoft.timemeter.ui.stats.StatsListAdapter;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.simbirsoft.timemeter.ui.views.WeekCalendarView;
+import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
 import org.androidannotations.annotations.AfterViews;
@@ -31,6 +34,8 @@ import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
 import java.util.Date;
+
+import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_activity_calendar)
 public class ActivityCalendarFragment extends BaseFragment implements MainPagerAdapter.PageTitleProvider,
@@ -52,9 +57,25 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
     @InstanceState
     FilterView.FilterState mFilterViewState;
 
+    @Inject
+    Bus mBus;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Injection.sUiComponent.injectActivityCalendarFragment(this);
+    }
+
     @AfterViews
     void bindViews() {
         requestLoad(CALENDAR_LOADER_TAG, this);
+        mBus.register(this);
+    }
+
+    @Override
+    public void onDestroyView() {
+        mBus.unregister(this);
+        super.onDestroyView();
     }
 
     @Override
@@ -92,8 +113,10 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
     public Job onCreateJob(String s) {
         LoadActivityCalendarJob job = Injection.sJobsComponent.loadActivityCalendarJob();
         job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
-        job.setStartDate(new Date(/* 16 Feb */1424044800000L));
-        job.setEndDate(new Date(/* 22 Feb */ 1424563200000L));
+        job.setPrevFilterDateMillis((mWeekCalendarView != null && mWeekCalendarView.getActivityCalendar() != null)
+                ? mWeekCalendarView.getActivityCalendar().getFilterDateMillis() : 0);
+        //job.setStartDate(new Date(/* 16 Feb */1424044800000L));
+        //job.setEndDate(new Date(/* 22 Feb */ 1424563200000L));
 
         if (mFilterViewState != null) {
             job.getTaskLoadFilter()

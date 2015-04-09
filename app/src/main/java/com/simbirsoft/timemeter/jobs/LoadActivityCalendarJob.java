@@ -6,10 +6,6 @@ import android.text.TextUtils;
 
 import com.be.android.library.worker.jobs.LoadJob;
 import com.be.android.library.worker.models.LoadJobResult;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.QueryUtils;
 import com.simbirsoft.timemeter.db.model.Tag;
@@ -18,20 +14,15 @@ import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.model.Period;
 import com.simbirsoft.timemeter.model.TaskLoadFilter;
-import com.simbirsoft.timemeter.model.TaskOverallActivity;
 import com.simbirsoft.timemeter.ui.model.ActivityCalendar;
 import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.squareup.phrase.Phrase;
 
 import org.slf4j.Logger;
 
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -45,6 +36,9 @@ public class LoadActivityCalendarJob extends LoadJob implements FilterableJob {
     private TaskLoadFilter mLoadFilter;
     private Date mStartDate;
     private Date mEndDate;
+    private long mPrevFilterDateMillis;
+    private long mPeriodStartMillis;
+    private long mPeriodEndMillis;
 
     @Inject
     public LoadActivityCalendarJob(DatabaseHelper databaseHelper) {
@@ -54,34 +48,35 @@ public class LoadActivityCalendarJob extends LoadJob implements FilterableJob {
 
     @Override
     protected LoadJobResult<ActivityCalendar> performLoad() throws Exception {
-        final Date startDate = mStartDate;
-        final Date endDate = mEndDate;
-
-        Preconditions.checkArgument(startDate != null, "start date is not defined");
-        Preconditions.checkArgument(endDate != null, "end date is not defined");
+        mPeriodStartMillis = mPeriodEndMillis = 0;
+        adjustDates();
 
         SQLiteDatabase db = mDatabaseHelper.getReadableDatabase();
+        final long startDateMillis = mStartDate.getTime();
+        final long endDateMillis = TimeUtils.getDayEndMillis(mEndDate.getTime());
+        long days = (endDateMillis - startDateMillis)/(24 * 3600 * 1000);
 
         final long filterDateMillis = mLoadFilter.getDateMillis();
-        final Period filterPeriod = mLoadFilter.getPeriod();
         final Collection<Tag> filterTags = mLoadFilter.getFilterTags();
 
-
-        long periodStart = 0;
-        long periodEnd = 0;
         StringBuilder where = new StringBuilder();
         StringBuilder join = new StringBuilder();
         boolean needJoin = false;
 
         Phrase queryPhrase = Phrase.from(
                 "SELECT {table_tts}.* " +
-                        "FROM {table_tts} {join} {where} " +
+                        "FROM {table_tts} {join} " +
+                        "WHERE {table_tts}.{table_tts_column_start_time} < {end_date} " +
+                        "AND {table_tts}.{table_tts_column_end_time} > {start_date} {and_where}" +
                         "ORDER BY {table_tts}.{table_tts_column_start_time}")
                 .put("table_tts", TaskTimeSpan.TABLE_NAME)
-                .put("table_tts_column_start_time", TaskTimeSpan.COLUMN_START_TIME);
+                .put("table_tts_column_start_time", TaskTimeSpan.COLUMN_START_TIME)
+                .put("table_tts_column_end_time", TaskTimeSpan.COLUMN_END_TIME)
+                .put("start_date", String.valueOf(startDateMillis))
+                .put("end_date", String.valueOf(endDateMillis));
 
         if (!TextUtils.isEmpty(mLoadFilter.getSearchText())) {
-            where.append(Phrase.from("{table_task}.{table_task_description} LIKE '%{search_text}%'")
+            where.append(Phrase.from(" AND {table_task}.{table_task_description} LIKE '%{search_text}%'")
                     .put("table_task", Task.TABLE_NAME)
                     .put("table_task_description", Task.COLUMN_DESCRIPTION)
                     .put("search_text", mLoadFilter.getSearchText())
@@ -89,29 +84,10 @@ public class LoadActivityCalendarJob extends LoadJob implements FilterableJob {
             needJoin = true;
         }
 
-        if (filterDateMillis > 0) {
-            // Select only tasks within given period
-            if (!TextUtils.isEmpty(where)) {
-                where.append(" AND ");
-            }
-            periodStart = TimeUtils.getWeekStartMillis(filterDateMillis);
-            if (filterPeriod != null) {
-                periodEnd = TimeUtils.getWeekEndMillis(Period.getPeriodEnd(filterPeriod, filterDateMillis));
-            }
-            where.append(QueryUtils.createCalendarPeriodRestrictionStatement(
-                    periodStart, periodEnd));
-        }
-
         if (!filterTags.isEmpty()) {
-            if (!TextUtils.isEmpty(where)) {
-                where.append(" AND ");
-            }
+            where.append(" AND ");
             where.append(QueryUtils.createTagsRestrictionStatement(filterTags));
             needJoin = true;
-        }
-
-        if (!TextUtils.isEmpty(where)) {
-            where.insert(0, "WHERE ");
         }
 
         if (needJoin) {
@@ -124,7 +100,7 @@ public class LoadActivityCalendarJob extends LoadJob implements FilterableJob {
                     .format());
         }
 
-        queryPhrase = queryPhrase.put("where", where);
+        queryPhrase = queryPhrase.put("and_where", where);
         queryPhrase = queryPhrase.put("join", join);
 
         final String query = queryPhrase.format().toString();
@@ -138,31 +114,17 @@ public class LoadActivityCalendarJob extends LoadJob implements FilterableJob {
         Cursor cursor = db.rawQuery(query, new String[0]);
         try {
             List<TaskTimeSpan> spans = cupboard().withCursor(cursor).list(TaskTimeSpan.class);
-            if (periodStart == 0) {
-                periodStart = (!spans.isEmpty()) ? TimeUtils.getWeekStartMillis(spans.get(0).getStartTimeMillis())
-                        : startDate.getTime();
-            }
-            if (periodEnd == 0) {
-                periodEnd = (!spans.isEmpty()) ? TimeUtils.getWeekEndMillis(getMaxEndTime(spans))
-                        : endDate.getTime();
-            }
-            calendar.setPeriodStart(periodStart);
-            calendar.setPeriodEnd(periodEnd);
-            if (startDate.getTime() < periodStart || endDate.getTime() > periodEnd) {
-                if (filterDateMillis > 0) {
-                    startDate.setTime(TimeUtils.getWeekStartMillis(filterDateMillis));
-                }
-                endDate.setTime(TimeUtils.getWeekEndMillis(startDate.getTime()));
-            }
-            calendar.setStartDate(startDate);
-            calendar.setEndDate(endDate);
+            calendar.setPeriodStartMillis(mPeriodStartMillis);
+            calendar.setPeriodEndMillis(mPeriodEndMillis);
+            calendar.setStartDate(mStartDate);
+            calendar.setEndDate(mEndDate);
+            calendar.setFilterDateMillis(filterDateMillis);
             calendar.setDailyActivity(spans);
             return new LoadJobResult<>(calendar);
         } catch (Exception e) {
-            LOG.trace(e.getStackTrace().toString());
-            return LoadJobResult.loadOk();
-        }
-        finally {
+            LOG.error(e.getStackTrace().toString());
+            throw e;
+        } finally {
             cursor.close();
         }
     }
@@ -193,11 +155,32 @@ public class LoadActivityCalendarJob extends LoadJob implements FilterableJob {
         mEndDate = endDate;
     }
 
-    private long getMaxEndTime(List<TaskTimeSpan> list) {
-        long time = 0;
-        for (TaskTimeSpan item : list) {
-            time = Math.max(time, item.getEndTimeMillis());
-        }
-        return time;
+    public long getPrevFilterDateMillis() {
+        return mPrevFilterDateMillis;
     }
+
+    public void setPrevFilterDateMillis(long millis) {
+        mPrevFilterDateMillis = millis;
+    }
+
+    private void adjustDates() {
+        final long filterDateMillis = mLoadFilter.getDateMillis();
+        final Period filterPeriod = mLoadFilter.getPeriod();
+        if (filterDateMillis != mPrevFilterDateMillis) {
+            mStartDate = null;
+            mEndDate = null;
+        }
+        if (filterDateMillis > 0) {
+            mPeriodStartMillis = TimeUtils.getWeekFirstDayStartMillis(filterDateMillis);
+            if (filterPeriod != null) {
+                mPeriodEndMillis = TimeUtils.getWeekLastDayStartMillis(Period.getPeriodEnd(filterPeriod, filterDateMillis));
+            }
+        }
+        if (mStartDate != null && mEndDate != null) return;
+        long startDateMillis = (mPeriodStartMillis > 0) ? mPeriodStartMillis :
+                TimeUtils.getWeekFirstDayStartMillis(new Date().getTime());
+        mStartDate = new Date(startDateMillis);
+        mEndDate = new Date(TimeUtils.getWeekLastDayStartMillis(startDateMillis));
+    }
+
 }

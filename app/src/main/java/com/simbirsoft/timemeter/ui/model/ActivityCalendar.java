@@ -14,7 +14,6 @@ import com.simbirsoft.timemeter.ui.util.TimeUtils;
 
 import org.slf4j.Logger;
 
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
@@ -32,8 +31,9 @@ public class ActivityCalendar {
 
     private final Calendar mStartDate;
     private final Calendar mEndDate;
-    private final Calendar mPeriodStart;
-    private final Calendar mPeriodEnd;
+    private final Calendar mPeriodStartMillis;
+    private final Calendar mPeriodEndMillis;
+    private final Calendar mFilterDateMillis;
     private final Calendar mBufferCalendar;
     private int mStartHour = START_HOUR_DEFAULT;
     private int mEndHour = END_HOUR_DEFAULT;
@@ -45,8 +45,9 @@ public class ActivityCalendar {
         mDays = Lists.newArrayList();
         mStartDate = Calendar.getInstance();
         mEndDate = Calendar.getInstance();
-        mPeriodStart = Calendar.getInstance();
-        mPeriodEnd = Calendar.getInstance();
+        mPeriodStartMillis = Calendar.getInstance();
+        mPeriodEndMillis = Calendar.getInstance();
+        mFilterDateMillis = Calendar.getInstance();
         mBufferCalendar = Calendar.getInstance();
     }
 
@@ -78,6 +79,8 @@ public class ActivityCalendar {
 
         Calendar start = Calendar.getInstance();
         start.setTime(mStartDate.getTime());
+        yearEnd = mEndDate.get(Calendar.YEAR);
+        dayEnd = mEndDate.get(Calendar.DAY_OF_YEAR);
         do {
             Date day = new Date(TimeUtils.getDayStartMillis(start));
             mDays.add(day);
@@ -85,8 +88,6 @@ public class ActivityCalendar {
 
             yearStart = start.get(Calendar.YEAR);
             dayStart = start.get(Calendar.DAY_OF_YEAR);
-            yearEnd = mEndDate.get(Calendar.YEAR);
-            dayEnd = mEndDate.get(Calendar.DAY_OF_YEAR);
 
             start.add(Calendar.DAY_OF_YEAR, 1);
 
@@ -195,12 +196,28 @@ public class ActivityCalendar {
         updateDays();
     }
 
-    public void setPeriodStart(long millis) {
-        mPeriodStart.setTimeInMillis(millis);
+    public long getPeriodStartMillis() {
+        return mPeriodStartMillis.getTimeInMillis();
     }
 
-    public void setPeriodEnd(long millis) {
-        mPeriodEnd.setTimeInMillis(millis);
+    public void setPeriodStartMillis(long millis) {
+        mPeriodStartMillis.setTimeInMillis(millis);
+    }
+
+    public long getPeriodEndMillis() {
+        return mPeriodEndMillis.getTimeInMillis();
+    }
+
+    public void setPeriodEndMillis(long millis) {
+        mPeriodEndMillis.setTimeInMillis(millis);
+    }
+
+    public long getFilterDateMillis() {
+        return mFilterDateMillis.getTimeInMillis();
+    }
+
+    public void setFilterDateMillis(long millis) {
+        mFilterDateMillis.setTimeInMillis(millis);
     }
 
     public int getDayIndex(long dayStartTimeMillis) {
@@ -214,6 +231,10 @@ public class ActivityCalendar {
         }
 
         return -1;
+    }
+
+    public long getDayStartMillis(int dayIndex) {
+        return mDays.get(dayIndex).getTime();
     }
 
     private static void splitTimeSpanByDays(Calendar calendar1, Calendar calendar2,
