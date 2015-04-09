@@ -76,8 +76,8 @@ public class StatsListAdapter extends RecyclerView.Adapter<StatsListAdapter.View
 
         View contentView = binder.createView(parent.getContext(), view, false);
         view.addView(contentView);
-        contentView.setOnClickListener(mClickListener);
-        contentView.setTag(viewType);
+        view.setOnClickListener(mClickListener);
+        view.setTag(viewType);
 
         return new ViewHolder(view, contentView);
     }
