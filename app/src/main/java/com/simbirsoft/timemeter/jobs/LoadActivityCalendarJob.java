@@ -61,13 +61,12 @@ public class LoadActivityCalendarJob extends LoadJob implements FilterableJob {
 
         StringBuilder where = new StringBuilder();
         StringBuilder join = new StringBuilder();
-        boolean needJoin = false;
 
         Phrase queryPhrase = Phrase.from(
                 "SELECT {table_tts}.* " +
                         "FROM {table_tts} {join} " +
                         "WHERE {table_tts}.{table_tts_column_start_time} < {end_date} " +
-                        "AND {table_tts}.{table_tts_column_end_time} > {start_date} {and_where}" +
+                        "AND {table_tts}.{table_tts_column_end_time} > {start_date} {and_where} " +
                         "ORDER BY {table_tts}.{table_tts_column_start_time}")
                 .put("table_tts", TaskTimeSpan.TABLE_NAME)
                 .put("table_tts_column_start_time", TaskTimeSpan.COLUMN_START_TIME)
@@ -81,23 +80,18 @@ public class LoadActivityCalendarJob extends LoadJob implements FilterableJob {
                     .put("table_task_description", Task.COLUMN_DESCRIPTION)
                     .put("search_text", mLoadFilter.getSearchText())
                     .format());
-            needJoin = true;
-        }
-
-        if (!filterTags.isEmpty()) {
-            where.append(" AND ");
-            where.append(QueryUtils.createTagsRestrictionStatement(filterTags));
-            needJoin = true;
-        }
-
-        if (needJoin) {
-            join.append(Phrase.from("INNER JOIN {table_task}" +
+            join.append(Phrase.from("INNER JOIN {table_task} " +
                     "ON {table_tts}.{table_tts_column_task_id}={table_task}.{table_task_column_id}")
                     .put("table_task", Task.TABLE_NAME)
                     .put("table_task_column_id", Task.COLUMN_ID)
                     .put("table_tts", TaskTimeSpan.TABLE_NAME)
                     .put("table_tts_column_task_id", TaskTimeSpan.COLUMN_TASK_ID)
                     .format());
+        }
+
+        if (!filterTags.isEmpty()) {
+            where.append(" AND ");
+            where.append(QueryUtils.createTagsRestrictionStatementForTimeSpan(filterTags));
         }
 
         queryPhrase = queryPhrase.put("and_where", where);
@@ -121,9 +115,6 @@ public class LoadActivityCalendarJob extends LoadJob implements FilterableJob {
             calendar.setFilterDateMillis(filterDateMillis);
             calendar.setDailyActivity(spans);
             return new LoadJobResult<>(calendar);
-        } catch (Exception e) {
-            LOG.error(e.getStackTrace().toString());
-            throw e;
         } finally {
             cursor.close();
         }

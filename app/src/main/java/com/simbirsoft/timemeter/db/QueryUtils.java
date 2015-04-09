@@ -68,4 +68,24 @@ public final class QueryUtils {
 
         return where;
     }
+
+    public static CharSequence createTagsRestrictionStatementForTimeSpan(Collection<Tag> tags) {
+        final String tagIds = Joiner.on(",").join(Iterables.transform(tags, Tag::getId));
+
+        return Phrase.from(
+                "(SELECT COUNT(*) " +
+                        "FROM {table_task_tag} " +
+                        "WHERE {table_task_tag}.{table_task_tag_column_task_id}={table_tts}.{table_tts_column_task_id} " +
+                        "AND {table_task_tag}.{table_task_tag_column_tag_id} IN ({tag_ids}) " +
+                        "GROUP BY {table_task_tag}.{table_task_tag_column_task_id})={tag_count}")
+                .put("table_tts", TaskTimeSpan.TABLE_NAME)
+                .put("table_task_tag", TaskTag.TABLE_NAME)
+                .put("table_tts_column_task_id", TaskTimeSpan.COLUMN_TASK_ID)
+                .put("table_task_tag_column_task_id", TaskTag.COLUMN_TASK_ID)
+                .put("table_task_tag_column_tag_id", TaskTag.COLUMN_TAG_ID)
+                .put("tag_ids", tagIds)
+                .put("tag_count", tags.size())
+                .format();
+    }
+
 }
