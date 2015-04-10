@@ -2,6 +2,7 @@ package com.simbirsoft.timemeter.ui.calendar;
 
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -68,6 +69,7 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
 
     @AfterViews
     void bindViews() {
+        mEmptyIndicatorView.setVisibility(View.GONE);
         requestLoad(CALENDAR_LOADER_TAG, this);
         mBus.register(this);
     }

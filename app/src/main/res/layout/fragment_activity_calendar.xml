@@ -23,7 +23,6 @@
         <com.simbirsoft.timemeter.ui.views.WeekCalendarView
             android:id="@+id/calendarView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#CCC"/>
+            android:layout_height="wrap_content"/>
     </ScrollView>
 </RelativeLayout>

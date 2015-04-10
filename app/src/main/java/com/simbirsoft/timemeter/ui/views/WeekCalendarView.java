@@ -8,7 +8,6 @@ import android.graphics.Paint;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
 
 import com.simbirsoft.timemeter.R;
@@ -25,6 +24,7 @@ public class WeekCalendarView extends View {
 
     private static final int DATE_LABEL_HORIZONTAL_PADDING_DEFAULT_DIP = 12;
     private static final int DATE_LABEL_VERTICAL_PADDING_DEFAULT_DIP = 6;
+    private static final int DATE_LABELS_SPACING_DEFAULT_DIP = 2;
     private static final int HOUR_LABEL_VERTICAL_PADDING_DEFAULT_DIP = 14;
     private static final int HOUR_LABEL_HORIZONTAL_PADDING_DEFAULT_DIP = 5;
 
@@ -33,6 +33,7 @@ public class WeekCalendarView extends View {
 
     private int mDateLabelPaddingHorizontal;
     private int mDateLabelPaddingVertical;
+    private int mDateLabelsSpacing;
     private int mHourLabelPaddingHorizontal;
     private int mHourLabelPaddingVertical;
     private int mDateWidth;
@@ -40,9 +41,11 @@ public class WeekCalendarView extends View {
     private int mHourWidth;
     private int mHourHeight;
     private Paint mDateTextPaint;
+    private Paint mWeekDayTextPaint;
     private Paint mHourTextPaint;
     private Paint mMainLinePaint;
     private Paint mSecondaryLinePaint;
+    private Paint mTimeSpanPaint;
 
     public WeekCalendarView(Context context) {
         super(context);
@@ -71,29 +74,37 @@ public class WeekCalendarView extends View {
         mActivityCalendar = new ActivityCalendar();
 
         mDateTextPaint = new Paint();
-        mDateTextPaint.setColor(res.getColor(R.color.darkGrey));
+        mDateTextPaint.setColor(res.getColor(R.color.calendar_date_text));
         mDateTextPaint.setTextSize(res.getDimension(R.dimen.calendar_date_text_size));
         mDateTextPaint.setAntiAlias(true);
 
+        mWeekDayTextPaint = new Paint();
+        mWeekDayTextPaint.setColor(res.getColor(R.color.calendar_date_text));
+        mWeekDayTextPaint.setTextSize(res.getDimension(R.dimen.calendar_day_text_size));
+        mWeekDayTextPaint.setAntiAlias(true);
+
         mHourTextPaint = new Paint();
-        mHourTextPaint.setColor(res.getColor(R.color.darkGrey));
+        mHourTextPaint.setColor(res.getColor(R.color.calendar_hour_text));
         mHourTextPaint.setTextSize(res.getDimension(R.dimen.calendar_hour_text_size));
         mHourTextPaint.setAntiAlias(true);
 
         mMainLinePaint = new Paint();
-        mMainLinePaint.setColor(res.getColor(R.color.primary));
+        mMainLinePaint.setColor(res.getColor(R.color.lightGrey));
         mMainLinePaint.setAntiAlias(true);
-        mMainLinePaint.setStrokeWidth(displayMetrics.density * 2);
+        mMainLinePaint.setStrokeWidth(2);
 
         mSecondaryLinePaint = new Paint();
-        mSecondaryLinePaint.setColor(res.getColor(R.color.primary));
+        mSecondaryLinePaint.setColor(res.getColor(R.color.lightGrey));
         mSecondaryLinePaint.setAntiAlias(true);
         mSecondaryLinePaint.setStrokeWidth(1);
+
+        mTimeSpanPaint = new Paint();
 
         mDateLabelPaddingHorizontal = (int) (displayMetrics.density * DATE_LABEL_HORIZONTAL_PADDING_DEFAULT_DIP);
         mDateLabelPaddingVertical = (int) (displayMetrics.density * DATE_LABEL_VERTICAL_PADDING_DEFAULT_DIP);
         mHourLabelPaddingHorizontal = (int) (displayMetrics.density * HOUR_LABEL_HORIZONTAL_PADDING_DEFAULT_DIP);
         mHourLabelPaddingVertical = (int) (displayMetrics.density * HOUR_LABEL_VERTICAL_PADDING_DEFAULT_DIP);
+        mDateLabelsSpacing = (int) (displayMetrics.density * DATE_LABELS_SPACING_DEFAULT_DIP);
     }
 
     public ActivityCalendar getActivityCalendar() {
@@ -119,10 +130,12 @@ public class WeekCalendarView extends View {
         mHourHeight = 0;
 
         if (daysCount > 0) {
-            String dateLabelProbe = mActivityCalendar.getDateLabel(0);
-            mDateWidth = (int) Math.ceil(mDateTextPaint.measureText(dateLabelProbe))
-                                + mDateLabelPaddingHorizontal * 2;
-            mDateHeight = (int) Math.ceil(mDateTextPaint.getTextSize() + mDateLabelPaddingVertical);
+            String dayLabelProbe = mActivityCalendar.getWeekDayLabel(0);
+            mDateWidth = (int) Math.max(Math.ceil(mDateTextPaint.measureText("00")),
+                                 Math.ceil(mWeekDayTextPaint.measureText(dayLabelProbe)))
+                                + mDateLabelPaddingHorizontal;
+            mDateHeight = (int) Math.ceil(mDateTextPaint.getTextSize() + mWeekDayTextPaint.getTextSize()
+                    + mDateLabelPaddingVertical + mDateLabelsSpacing);
         }
 
         if (hoursCount > 0) {
@@ -164,19 +177,25 @@ public class WeekCalendarView extends View {
         final int saveCount = canvas.save();
         final int canvasHeight = canvas.getHeight();
         final Resources res = getContext().getResources();
+        final int weekDayTextY = mDateHeight - mDateLabelPaddingVertical;
+        final int dateTextY = weekDayTextY - (int)mWeekDayTextPaint.getTextSize() - mDateLabelsSpacing;
 
         canvas.translate(mHourWidth, 0);
         canvas.drawLine(0, mDateHeight - 1, 0, canvasHeight, mMainLinePaint);
 
         for (int i = 0; i < daysCount; i++) {
+            String weekDayText = mActivityCalendar.getWeekDayLabel(i);
             String dateText = mActivityCalendar.getDateLabel(i);
             mDateTextPaint.setColor(mActivityCalendar.getDateLabelColor(res, i));
-            int width = (int) Math.ceil(mDateTextPaint.measureText(dateText));
-            int offset = Math.max(0, (mDateWidth - width) / 2);
+            mWeekDayTextPaint.setColor(mActivityCalendar.getDateLabelColor(res, i));
             canvas.drawText(dateText,
-                    offset,
-                    mDateHeight - mDateLabelPaddingVertical,
+                    0,
+                    dateTextY,
                     mDateTextPaint);
+            canvas.drawText(weekDayText,
+                    0,
+                    weekDayTextY,
+                    mWeekDayTextPaint);
             canvas.drawLine(mDateWidth, mDateHeight, mDateWidth, canvasHeight, mSecondaryLinePaint);
             canvas.translate(mDateWidth, 0);
         }
@@ -238,7 +257,8 @@ public class WeekCalendarView extends View {
             if (startY == endY) {
                 endY = startY + 1;
             }
-            canvas.drawRect(0, startY, mDateWidth, endY, mSecondaryLinePaint);
+            mTimeSpanPaint.setColor(mActivityCalendar.getTimeSpanColor(span));
+            canvas.drawRect(0, startY, mDateWidth, endY, mTimeSpanPaint);
         }
     }
 

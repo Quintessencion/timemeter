@@ -1,30 +1,39 @@
 package com.simbirsoft.timemeter.ui.model;
 
 import android.content.res.Resources;
+import android.graphics.Color;
 
+import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.util.ColorSets;
 import com.simbirsoft.timemeter.ui.util.TimeUtils;
 
 import org.slf4j.Logger;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 public class ActivityCalendar {
 
     private static final Logger LOG = LogFactory.getLogger(ActivityCalendar.class);
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("EE");
+    private static final SimpleDateFormat WEEK_DAY_FORMAT = new SimpleDateFormat("EE");
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("d");
 
     private static final int START_HOUR_DEFAULT = 0;
     private static final int END_HOUR_DEFAULT = 24;
@@ -39,6 +48,7 @@ public class ActivityCalendar {
     private int mEndHour = END_HOUR_DEFAULT;
     private final List<Date> mDays;
     private final Multimap<Integer, TaskTimeSpan> mDailyActivity;
+    private final HashMap<Long, Integer> mTaskColors;
 
     public ActivityCalendar() {
         mDailyActivity = Multimaps.newListMultimap(Maps.newHashMap(), Lists::newArrayList);
@@ -49,6 +59,7 @@ public class ActivityCalendar {
         mPeriodEndMillis = Calendar.getInstance();
         mFilterDateMillis = Calendar.getInstance();
         mBufferCalendar = Calendar.getInstance();
+        mTaskColors = Maps.newHashMap();
     }
 
     // TODO: test multi-day activity split
@@ -94,12 +105,23 @@ public class ActivityCalendar {
         } while (yearStart < yearEnd || (yearStart == yearEnd && dayStart < dayEnd));
     }
 
+    public String getWeekDayLabel(int dayIndex) {
+        return WEEK_DAY_FORMAT.format(getDay(dayIndex));
+    }
+
     public String getDateLabel(int dayIndex) {
-        return DATE_FORMAT.format(getDay(dayIndex)).toUpperCase();
+        return DATE_FORMAT.format(getDay(dayIndex));
     }
 
     public int getDateLabelColor(Resources res, int dayIndex) {
+        mBufferCalendar.setTime(new Date());
+        int dayOfYear = mBufferCalendar.get(Calendar.DAY_OF_YEAR);
         mBufferCalendar.setTime(getDay(dayIndex));
+
+        if (mBufferCalendar.get(Calendar.DAY_OF_YEAR) == dayOfYear) {
+            return res.getColor(R.color.primary);
+        }
+
         int dayOfWeek = mBufferCalendar.get(Calendar.DAY_OF_WEEK);
 
         if (dayOfWeek == Calendar.SATURDAY
@@ -108,7 +130,7 @@ public class ActivityCalendar {
             return res.getColor(R.color.accentPrimary);
         }
 
-        return res.getColor(R.color.darkGrey);
+        return res.getColor(R.color.calendar_date_text);
     }
 
     public String getHourLabel(int hourIndex) {
@@ -168,6 +190,7 @@ public class ActivityCalendar {
             mDailyActivity.put(dayIndex, span);
             LOG.debug("activity added to calendar day '{}'; duration: '{}'", dayIndex, span.getDuration());
         }
+        createColors();
     }
 
     public int getDaysCount() {
@@ -235,6 +258,33 @@ public class ActivityCalendar {
 
     public long getDayStartMillis(int dayIndex) {
         return mDays.get(dayIndex).getTime();
+    }
+
+    public Integer getTimeSpanColor(TaskTimeSpan span) {
+        Integer color;
+        try {
+            color = mTaskColors.get(span.getTaskId());
+            return color;
+        } catch (Exception e) {
+
+        }
+        return 0;
+    }
+
+    private void createColors () {
+        mTaskColors.clear();
+        Collection<TaskTimeSpan> spans = mDailyActivity.values();
+        HashSet<Long> taskIds = Sets.newHashSet();
+        for (TaskTimeSpan span : spans) {
+            taskIds.add(span.getTaskId());
+        }
+        if (taskIds.size() == 0) return;
+        ArrayList<Integer> colors = ColorTemplate.createColors(ColorSets.makeColorSet(ColorSets.MIXED_COLORS, taskIds.size()));
+        int i = 0;
+        for (Long id : taskIds) {
+            mTaskColors.put(id, colors.get(i));
+            i++;
+        }
     }
 
     private static void splitTimeSpanByDays(Calendar calendar1, Calendar calendar2,
