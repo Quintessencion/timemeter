@@ -61,7 +61,7 @@ public class ActivityCalendar {
         mTaskColors = Maps.newHashMap();
     }
 
-    // TODO: test multi-day activity split
+    
     public static List<TaskTimeSpan> splitTimeSpansByDays(List<TaskTimeSpan> input) {
         final List<TaskTimeSpan> result = Lists.newArrayListWithCapacity(input.size());
 
@@ -333,17 +333,18 @@ public class ActivityCalendar {
             newSpan.setId(span.getId());
             newSpan.setDescription(span.getDescription());
             newSpan.setStartTimeMillis(currentTimeMillis);
+            newSpan.setTaskId(span.getTaskId());
 
             calendar1.add(Calendar.DAY_OF_YEAR, 1);
 
-            currentTimeMillis = TimeUtils.getDayStartMillis(calendar1) - 1;
-            if (currentTimeMillis > spanEndTimeMillis) {
-                currentTimeMillis = spanEndTimeMillis;
+            currentTimeMillis = TimeUtils.getDayStartMillis(calendar1);
+            long newSpanEndTime = currentTimeMillis - 1;
+            if (newSpanEndTime > spanEndTimeMillis) {
+                newSpanEndTime = spanEndTimeMillis;
             }
             calendar1.setTimeInMillis(currentTimeMillis);
-            newSpan.setEndTimeMillis(currentTimeMillis);
+            newSpan.setEndTimeMillis(newSpanEndTime);
             container.add(newSpan);
-
             yearStart = calendar1.get(Calendar.YEAR);
             dayStart = calendar1.get(Calendar.DAY_OF_YEAR);
         }
