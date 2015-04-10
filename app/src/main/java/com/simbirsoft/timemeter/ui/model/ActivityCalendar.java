@@ -1,7 +1,6 @@
 package com.simbirsoft.timemeter.ui.model;
 
 import android.content.res.Resources;
-import android.graphics.Color;
 
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.common.base.Preconditions;
@@ -271,7 +270,28 @@ public class ActivityCalendar {
         return 0;
     }
 
-    private void createColors () {
+    public long getCellStartMillis(WeekCalendarCell cell) {
+        mBufferCalendar.setTime(getDay(cell.getDayIndex()));
+        mBufferCalendar.add(Calendar.HOUR_OF_DAY, mStartHour + cell.getHourIndex());
+        return mBufferCalendar.getTimeInMillis();
+    }
+
+    public List<TaskTimeSpan> getActivitiesInCell(WeekCalendarCell cell) {
+        ArrayList<TaskTimeSpan> result = Lists.newArrayList();
+        List<TaskTimeSpan> spans = getActivityForDayIndex(cell.getDayIndex());
+        long cellStart = getCellStartMillis(cell);
+        mBufferCalendar.setTimeInMillis(cellStart);
+        mBufferCalendar.add(Calendar.HOUR_OF_DAY, 1);
+        long cellEnd = mBufferCalendar.getTimeInMillis();
+        for (TaskTimeSpan span : spans) {
+            if (span.getStartTimeMillis() < cellEnd && span.getEndTimeMillis() >= cellStart) {
+                result.add(span);
+            }
+        }
+        return result;
+    }
+
+    private void createColors() {
         mTaskColors.clear();
         Collection<TaskTimeSpan> spans = mDailyActivity.values();
         HashSet<Long> taskIds = Sets.newHashSet();

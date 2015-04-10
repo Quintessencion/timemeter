@@ -8,12 +8,14 @@ import android.graphics.Paint;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.view.MotionEvent;
 import android.view.View;
 
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.ActivityCalendar;
+import com.simbirsoft.timemeter.ui.model.WeekCalendarCell;
 import com.simbirsoft.timemeter.ui.util.TimeUtils;
 
 import org.slf4j.Logger;
@@ -21,6 +23,10 @@ import org.slf4j.Logger;
 import java.util.List;
 
 public class WeekCalendarView extends View {
+
+    public interface OnCellClickListener {
+        public void onCellClicked(long cellStartMillis, long offsetInCellMillis, List<TaskTimeSpan> spans);
+    }
 
     private static final int DATE_LABEL_HORIZONTAL_PADDING_DEFAULT_DIP = 12;
     private static final int DATE_LABEL_VERTICAL_PADDING_DEFAULT_DIP = 6;
@@ -46,6 +52,8 @@ public class WeekCalendarView extends View {
     private Paint mMainLinePaint;
     private Paint mSecondaryLinePaint;
     private Paint mTimeSpanPaint;
+    private WeekCalendarCell mTouchedCell = null;
+    private OnCellClickListener mOnCellClickListener;
 
     public WeekCalendarView(Context context) {
         super(context);
@@ -117,6 +125,14 @@ public class WeekCalendarView extends View {
         invalidate();
     }
 
+    public OnCellClickListener getOnCellClickListener() {
+        return mOnCellClickListener;
+    }
+
+    public void setOnCellClickListener(OnCellClickListener listener) {
+        mOnCellClickListener = listener;
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int myWidth = 0;
@@ -166,6 +182,30 @@ public class WeekCalendarView extends View {
         drawHours(canvas);
         drawActivities(canvas);
     }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent e) {
+        super.onTouchEvent(e);
+        switch (e.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                mTouchedCell = getCell(e);
+                break;
+
+            case MotionEvent.ACTION_UP:
+                WeekCalendarCell cell = getCell(e);
+                if (mTouchedCell != null && cell != null && mTouchedCell.isEqual(cell)) {
+                    handleCellClicked(e);
+                }
+                mTouchedCell = null;
+                break;
+
+            case MotionEvent.ACTION_CANCEL:
+                mTouchedCell = null;
+                break;
+        }
+        return true;
+    }
+
 
     private void drawDates(Canvas canvas) {
         int daysCount = mActivityCalendar.getDaysCount();
@@ -267,4 +307,21 @@ public class WeekCalendarView extends View {
         int y = (int)(((millis - offset)* mHourHeight) / TimeUtils.MILLIS_IN_HOUR);
         return (y < 0) ? 0 : (y > mHourHeight * mActivityCalendar.getHoursCount()) ? mHourHeight * mActivityCalendar.getHoursCount() : y;
     }
+
+    private WeekCalendarCell getCell(MotionEvent e) {
+        int x = (int)e.getX() - mHourWidth;
+        int y = (int)e.getY() - mDateHeight;
+        if (x < 0 || y < 0 || mDateWidth == 0 || mHourHeight == 0) return null;
+        return new WeekCalendarCell(x / mDateWidth, y / mHourHeight);
+    }
+
+    private void handleCellClicked(MotionEvent e) {
+        if (mOnCellClickListener == null) return;
+        long cellStartMillis = mActivityCalendar.getCellStartMillis(mTouchedCell);
+        int offsetInCell = (int)e.getY() - mDateHeight - mTouchedCell.getHourIndex() * mHourHeight;
+        long offsetInCellMillis = (offsetInCell * TimeUtils.MILLIS_IN_HOUR) / mHourHeight;
+        List<TaskTimeSpan> spans = mActivityCalendar.getActivitiesInCell(mTouchedCell);
+        mOnCellClickListener.onCellClicked(cellStartMillis, offsetInCellMillis, spans);
+    }
+
 }
