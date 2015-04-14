@@ -64,7 +64,13 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     private final View.OnClickListener mEditClickListener =
             view -> {
                 if (mTaskClickListener != null) {
-                    //mTaskClickListener.onTaskEditClicked((TaskBundle) view.getTag());
+                    mTaskClickListener.onTaskEditClicked((TaskBundle) view.getTag());
+                }
+            };
+
+    private final View.OnClickListener mViewClickListener =
+            view -> {
+                if (mTaskClickListener != null) {
                     mTaskClickListener.onTaskViewClicked((TaskBundle) view.getTag());
                 }
             };
@@ -150,8 +156,10 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         holder.titleView = (TextView) view.findViewById(android.R.id.title);
         holder.timerView = (TextView) view.findViewById(R.id.timerText);
         holder.tagContainerView = (FlowLayout) view.findViewById(R.id.tagViewContainer);
-        holder.itemEditView = view.findViewById(android.R.id.edit);
-        holder.itemEditView.setOnClickListener(mEditClickListener);
+
+        holder.itemEditView = view.findViewById(R.id.edit_or_view);
+        holder.itemEditView.setOnClickListener(mViewClickListener);
+        // !!! куда девать длительное удержание на кнопку? пока оставил как было...
         holder.itemEditView.setOnLongClickListener(mEditLongClickListener);
 
         return holder;

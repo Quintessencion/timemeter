@@ -8,6 +8,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
+import android.text.Html;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.transitions.everywhere.ChangeBounds;
@@ -15,6 +16,7 @@ import android.transitions.everywhere.Fade;
 import android.transitions.everywhere.Scene;
 import android.transitions.everywhere.TransitionManager;
 import android.transitions.everywhere.TransitionSet;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -38,6 +40,7 @@ import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.injection.Injection;
@@ -52,6 +55,8 @@ import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.tags.TagListAdapter;
 import com.simbirsoft.timemeter.ui.util.KeyboardUtils;
+import com.simbirsoft.timemeter.ui.util.TagViewUtils;
+import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
 import com.simbirsoft.timemeter.ui.views.TagAutoCompleteTextView;
 import com.tokenautocomplete.FilteredArrayAdapter;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
@@ -61,6 +66,7 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
+import org.apmem.tools.layouts.FlowLayout;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -100,7 +106,7 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
     @InstanceState
     String mTagFilter;
 
-    private TaskEditScene mTaskEditScene;
+    private TaskViewScene mTaskViewScene;
     private String mTagsLoaderAttachTag;
     private String mTaskBundleLoaderAttachTag;
     private TagListAdapter mTagListAdapter;
@@ -124,22 +130,54 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
         inflater.inflate(R.menu.fragment_view_task, menu);
     }
 
-    private void goToMainScene() {
-        if (mTaskEditScene != null && mCurrentScene == mTaskEditScene.scene) {
+    private void bindTaskBundleToViews() {
+        if (mTaskBundle == null) {
             return;
         }
 
-        View focusView = getActivity().getCurrentFocus();
-        if (focusView != null) {
-            KeyboardUtils.hideSoftInput(getActivity(), focusView.getWindowToken());
+//        final Task task = mTaskBundle.getTask();
+//        if (mTaskViewScene != null && !TextUtils.isEmpty(task.getDescription())) {
+//            mTaskViewScene.descriptionView.setText(task.getDescription());
+//        }
+
+        final List<Tag> tags = mTaskBundle.getTags();
+        if (tags != null) {
+            for (Tag tag : tags) {
+                if (mTaskViewScene != null) {
+                    mTaskViewScene.tagsView.addObject(tag);
+                }
+            }
+        }
+    }
+
+    private TaskViewScene createRootScene() {
+        TaskViewScene scene = TaskViewScene.create(getActivity(), mContentRoot);
+        scene.tagsView.allowDuplicates(false);
+        scene.tagsView.allowCollapse(false);
+        scene.tagsView.setImeActionLabel(
+                getString(R.string.ime_action_create),
+                EditorInfo.IME_ACTION_NEXT);
+        scene.tagsView.setImeOptions(EditorInfo.IME_ACTION_NEXT);
+
+        return scene;
+    }
+
+    private void goToMainScene() {
+        if (mTaskViewScene != null && mCurrentScene == mTaskViewScene.scene) {
+            return;
         }
 
-        if (mTaskEditScene != null) {
-            mContentRoot.removeView(mTaskEditScene.layout);
+        //View focusView = getActivity().getCurrentFocus();
+        //if (focusView != null) {
+        //    KeyboardUtils.hideSoftInput(getActivity(), focusView.getWindowToken());
+        //}
+
+        if (mTaskViewScene != null) {
+            mContentRoot.removeView(mTaskViewScene.layout);
         }
 
-        mTaskEditScene = createRootScene();
-        mCurrentScene = mTaskEditScene.scene;
+        mTaskViewScene = createRootScene();
+        mCurrentScene = mTaskViewScene.scene;
 
         if (mTaskBundle == null) {
             if (mExtraTaskBundle != null) {
@@ -162,10 +200,10 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
         transitionSet.setOrdering(TransitionSet.ORDERING_TOGETHER);
         transitionSet.setDuration(Consts.CONTENT_FADE_IN_DELAY_MILLIS);
         transitionSet.setInterpolator(new DecelerateInterpolator());
-        TransitionManager.go(mTaskEditScene.scene, transitionSet);
+        TransitionManager.go(mTaskViewScene.scene, transitionSet);
 
-        mActionBar.setDisplayHomeAsUpEnabled(false);
-        mActionBar.setHomeAsUpIndicator(R.drawable.ic_action_cancel);
+        mActionBar.setDisplayHomeAsUpEnabled(true);
+        //mActionBar.setHomeAsUpIndicator(R.drawable.ic_action_cancel);
     }
 
     @AfterViews
@@ -174,7 +212,7 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
         if (mExtraTitle != null) {
             mActionBar.setTitle(mExtraTitle);
         }
-        mActionBar.setHomeAsUpIndicator(R.drawable.ic_action_cancel);
+        //mActionBar.setHomeAsUpIndicator(R.drawable.ic_action_cancel);
         goToMainScene();
     }
 
@@ -221,21 +259,6 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
         return super.onOptionsItemSelected(item);
     }
 
-/*
-    private boolean validateInput() {
-        if (TextUtils.isEmpty(mTaskBundle.getTask().getDescription())) {
-            SnackbarManager.show(Snackbar.with(getActivity())
-                    .text(R.string.hint_task_description_is_empty)
-                    .colorResource(R.color.lightRed)
-                    .animation(false)
-                    .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE));
-
-            return false;
-        }
-
-        return true;
-    }
-*/
     @OnJobSuccess(SaveTaskBundleJob.class)
     public void onTaskSaved(SaveTaskBundleJob.SaveTaskResult result) {
         Intent resultData = new Intent();
@@ -282,29 +305,6 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
         }
     }
 
-    private void bindTaskBundleToViews() {
-        if (mTaskBundle == null) {
-            return;
-        }
-
-        final Task task = mTaskBundle.getTask();
-        if (mTaskEditScene != null && !TextUtils.isEmpty(task.getDescription())) {
-            mTaskEditScene.descriptionView.setText(task.getDescription());
-        }
-
-        final List<Tag> tags = mTaskBundle.getTags();
-        if (tags != null) {
-            for (Tag tag : tags) {
-                //if (mTaskTagsEditScene != null) {
-                //    mTaskTagsEditScene.tagsView.addObject(tag);
-                //}
-                if (mTaskEditScene != null) {
-                    mTaskEditScene.tagsView.addObject(tag);
-                }
-            }
-        }
-    }
-
     @OnJobSuccess(LoadTaskBundleJob.class)
     public void onTaskBundleLoaded(LoadJobResult<TaskBundle> taskBundle) {
         mTaskBundle = taskBundle.getData();
@@ -340,27 +340,7 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
                     }
                 }));
     }
-/*
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case REQUEST_CODE_DISCARD_CHANGES_AND_EXIT:
-                if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
-                    getActivity().finish();
-                    return;
-                }
-            case REQUEST_CODE_PERFORM_REMOVE_TASK:
-                if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
-                    RemoveTaskJob removeJob = Injection.sJobsComponent.removeTaskJob();
-                    removeJob.setTaskId(mTaskBundle.getTask().getId());
-                    submitJob(removeJob);
-                    return;
-                }
-        }
 
-        super.onActivityResult(requestCode, resultCode, data);
-    }
-*/
     @Override
     public boolean handleBackPress() {
         getActivity().finish();
@@ -405,202 +385,86 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
 
         return job;
     }
-/*
-    @Override
-    public void onTokenAdded(Object o) {
-        Tag tag = (Tag) o;
-        List<Tag> bundledTags = mTaskBundle.getTags();
 
-        if (tag.getId() == null) {
-            tag.setName(tag.getName().trim());
-            Tag item = mTagListAdapter.findItemWithName(tag.getName());
-            if (item != null) {
-                tag = item;
-            }
+/*    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_CODE_DISCARD_CHANGES_AND_EXIT:
+                if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
+                    getActivity().finish();
+                    return;
+                }
+            case REQUEST_CODE_PERFORM_REMOVE_TASK:
+                if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
+                    RemoveTaskJob removeJob = Injection.sJobsComponent.removeTaskJob();
+                    removeJob.setTaskId(mTaskBundle.getTask().getId());
+                    submitJob(removeJob);
+                    return;
+                }
         }
 
-        if (bundledTags.contains(tag)) {
-            final Tag addedToken = tag;
-            List<Object> tokens = mTaskTagsEditScene.tagsView.getObjects();
-            int count = Collections2.filter(tokens, (token) ->
-                    ((Tag) token).getName().equalsIgnoreCase(addedToken.getName())).size();
-
-            if (count > 1) {
-                mTaskTagsEditScene.tagsView.removeObject(o);
-            }
-        } else {
-            bundledTags.add(tag);
-            if (!getActivity().isFinishing()) {
-                refilterTagList();
-            }
-        }
-    }
-
-    @Override
-    public void onTokenRemoved(Object o) {
-        mTaskBundle.getTags().remove((Tag) o);
-    }
-
-    private void refilterTagList() {
-        if (mTagListAdapter != null) {
-            mTagListAdapter.getFilter()
-                    .clearExclusions()
-                    .excludeTags(mTaskBundle.getTags())
-                    .filter(mTagFilter);
-        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 */
-    private TaskEditScene createRootScene() {
-        TaskEditScene scene = TaskEditScene.create(getActivity(), mContentRoot);
-        scene.tagsView.allowDuplicates(false);
-        scene.tagsView.allowCollapse(false);
-        scene.tagsView.setImeActionLabel(
-                getString(R.string.ime_action_create),
-                EditorInfo.IME_ACTION_NEXT);
-        scene.tagsView.setImeOptions(EditorInfo.IME_ACTION_NEXT);
-        /*
-        scene.tagsView.setOnFocusChangeListener((view, isFocused) -> {
-            if (isFocused) {
-                goToEditTagsScene();
-            }
-        });
-        scene.tagsView.setAdapter(createTokenAdapterStub());
-        scene.descriptionView.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-                mTaskBundle.getTask().setDescription(scene.descriptionView.getText().toString());
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-            }
-        });
-        */
-        return scene;
-    }
 /*
-    private TaskTagsEditScene createEditTagsScene() {
-        TaskTagsEditScene scene = TaskTagsEditScene.create(getActivity(), mContentRoot);
-        scene.tagsView.setTokenListener(this);
-        scene.tagsView.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-            }
+    public RecyclerView.ViewHolder CreateViewHolder(ViewGroup viewGroup, int i) {
+        View view = LayoutInflater.from(viewGroup.getContext())
+                .inflate(R.layout.view_task_card, viewGroup, false);
 
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-                String text = charSequence.toString();
-                int pos = text.lastIndexOf(", ");
-                if (pos > -1) {
-                    pos += 2; // Skip dot-space
-                } else {
-                    pos = 0; // Consider full text
-                }
+        RecyclerView.ViewHolder holder = new RecyclerView.ViewHolder(view);
 
-                if (pos >= text.length()) {
-                    if (!TextUtils.isEmpty(mTagFilter)) {
-                        mTaskTagsEditScene.hideCreateTagView();
-                    }
-                    mTagFilter = null;
-                } else {
-                    String input = text.substring(pos).trim();
-                    if (!Objects.equal(input, mTagFilter)) {
-                        if (TextUtils.isEmpty(input)
-                                || input.length() < 2
-                                || mTagListAdapter.containsItemWithName(input)) {
+        holder.titleView = (TextView) view.findViewById(android.R.id.title);
+        holder.tagContainerView = (FlowLayout) view.findViewById(R.id.tagViewContainer);
 
-                            mTaskTagsEditScene.hideCreateTagView();
-                        } else {
-                            mTaskTagsEditScene.showCreateTagView(input);
-                        }
-                    }
-                    mTagFilter = input;
-                }
-                refilterTagList();
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-            }
-        });
-        scene.tagsView.allowDuplicates(false);
-        scene.tagsView.setImeActionLabel(
-                getString(R.string.ime_action_done),
-                EditorInfo.IME_ACTION_DONE);
-        scene.tagsView.setAdapter(createTokenAdapterStub());
-        RecyclerView.LayoutManager mTagListLayoutManager = new LinearLayoutManager(
-                getActivity(),
-                LinearLayoutManager.VERTICAL,
-                false);
-        scene.tagsRecyclerView.setLayoutManager(mTagListLayoutManager);
-        scene.tagsRecyclerView.addItemDecoration(
-                new HorizontalDividerItemDecoration.Builder(getActivity()).build());
-        scene.createTagView.setOnClickListener((v) -> onCreateTagClicked());
-
-        mTagListAdapter = new TagListAdapter();
-        mTagListAdapter.setItemClickListener(new TagListAdapter.AbsItemClickListener() {
-            @Override
-            public void onItemClicked(Tag item) {
-                if (!TextUtils.isEmpty(mTagFilter)) {
-                    scene.tagsView.performCompletion();
-                    mContentRoot.post(() -> {
-                        List<Object> tags = scene.tagsView.getObjects();
-                        if (!tags.isEmpty()) {
-                            scene.tagsView.removeObject(tags.get(tags.size() - 1));
-                        }
-                    });
-                }
-                mContentRoot.post(() -> {
-                    mTaskBundle.getTags().add(item);
-                    scene.tagsView.addObject(item);
-                    refilterTagList();
-                });
-            }
-        });
-        scene.tagsRecyclerView.setAdapter(mTagListAdapter);
-
-        return scene;
+        return holder;
     }
 
-    private void onCreateTagClicked() {
-        if (TextUtils.isEmpty(mTagFilter)) {
-            return;
+    private void bindTagViews(ViewGroup tagLayout, List<Tag> tags) {
+        final int tagCount = tags.size();
+        final View[] reuseViews = new View[tagCount];
+
+        final int reuseViewCount = tagLayout.getChildCount();
+        for (int i = 0; i < reuseViewCount; i++) {
+            mReuseTagViews.add(tagLayout.getChildAt(i));
+        }
+        tagLayout.removeAllViewsInLayout();
+
+        for (int i = 0; i < tagCount; i++) {
+            if (mReuseTagViews.isEmpty()) {
+                reuseViews[i] = TagViewUtils.inflateTagView(
+                        LayoutInflater.from(tagLayout.getContext()),
+                        tagLayout,
+                        0);
+            } else {
+                reuseViews[i] = mReuseTagViews.pop();
+            }
+
+            tagLayout.addView(reuseViews[i]);
         }
 
-        mTaskTagsEditScene.tagsView.performCompletion();
+        if (tagCount > 0) {
+            for (int i = 0; i < tagCount; i++) {
+                Tag tag = tags.get(i);
+                TextView tagView = (TextView) reuseViews[i];
+                tagView.setText(tag.getName());
+                TagViewUtils.updateTagViewColor(tagView, tag.getColor());
+            }
+            tagLayout.setVisibility(View.VISIBLE);
+        } else {
+            tagLayout.setVisibility(View.GONE);
+        }
     }
 
-    private ArrayAdapter<Tag> createTokenAdapterStub() {
-        return new FilteredArrayAdapter<Tag>(
-                getActivity(),
-                android.R.layout.simple_list_item_1,
-                new Tag[0]) {
+    private void bindViewHolder(RecyclerView.ViewHolder holder, TaskBundle item) {
+        final Task task = item.getTask();
 
-            @Override
-            protected boolean keepObject(Tag tag, String s) {
-                final String name = s.trim();
+        holder.titleView.setText(task.getDescription());
+        holder.item = item;
 
-                if (TextUtils.isEmpty(name)) {
-                    return false;
-                }
+        holder.itemView.setTag(item);
+        holder.itemEditView.setTag(item);
 
-                return tag.getName().toLowerCase().contains(s.toLowerCase());
-            }
-
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                Tag item = getItem(position);
-                TextView view = (TextView) super.getView(position, convertView, parent);
-
-                view.setText(item.getName());
-
-                return view;
-            }
-        };
+        bindTagViews(holder.tagContainerView, item.getTags());
     }
     */
 }

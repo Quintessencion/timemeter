@@ -64,7 +64,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:contentDescription="@string/hint_edit"
-                android:src="@drawable/ic_arrow_expand_grey600_24dp"/>
+                android:src="@drawable/ic_edit_grey600_24dp"/>
 
         </FrameLayout>
 
