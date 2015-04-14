@@ -31,6 +31,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
     static interface TaskClickListener {
         void onTaskEditClicked(TaskBundle item);
+        void onTaskViewClicked(TaskBundle item);
         void onTaskEditLongClicked(TaskBundle item, View itemView);
         void onTaskCardClicked(TaskBundle item);
     }
@@ -63,7 +64,8 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     private final View.OnClickListener mEditClickListener =
             view -> {
                 if (mTaskClickListener != null) {
-                    mTaskClickListener.onTaskEditClicked((TaskBundle) view.getTag());
+                    //mTaskClickListener.onTaskEditClicked((TaskBundle) view.getTag());
+                    mTaskClickListener.onTaskViewClicked((TaskBundle) view.getTag());
                 }
             };
 

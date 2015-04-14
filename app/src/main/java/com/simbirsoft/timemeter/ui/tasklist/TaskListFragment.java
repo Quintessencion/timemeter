@@ -47,6 +47,8 @@ import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
+import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
+import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
 import com.simbirsoft.timemeter.ui.util.TaskFilterPredicate;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.squareup.otto.Bus;
@@ -372,6 +374,19 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
 
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), EditTaskFragment_.class.getName(), args);
+        getActivity().startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TASK);
+    }
+
+    @Override
+    public void onTaskViewClicked(TaskBundle item) {
+        LOG.debug("view task: {}", item);
+
+        Bundle args = new Bundle();
+        args.putString(ViewTaskFragment.EXTRA_TITLE, item.getTask().getDescription());
+        args.putLong(ViewTaskFragment.EXTRA_TASK_ID, item.getTask().getId());
+
+        Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
+                getActivity(), ViewTaskFragment_.class.getName(), args);
         getActivity().startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TASK);
     }
 
