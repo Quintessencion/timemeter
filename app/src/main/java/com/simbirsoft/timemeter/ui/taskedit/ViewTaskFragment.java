@@ -52,8 +52,10 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.AppAlertDialogFragment;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
+import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.tags.TagListAdapter;
+import com.simbirsoft.timemeter.ui.tasklist.TaskListFragment;
 import com.simbirsoft.timemeter.ui.util.KeyboardUtils;
 import com.simbirsoft.timemeter.ui.util.TagViewUtils;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
@@ -70,6 +72,7 @@ import org.apmem.tools.layouts.FlowLayout;
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.Stack;
 
 @EFragment(R.layout.fragment_view_task)
 public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoaderCallbacks {
@@ -113,6 +116,8 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
     private Scene mCurrentScene;
     private ActionBar mActionBar;
 
+    private final Stack<View> mReuseTagViews = new Stack<>();
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -135,30 +140,47 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
             return;
         }
 
-//        final Task task = mTaskBundle.getTask();
-//        if (mTaskViewScene != null && !TextUtils.isEmpty(task.getDescription())) {
-//            mTaskViewScene.descriptionView.setText(task.getDescription());
-//        }
+        bindTagViews(mTaskViewScene.tagViewContainer, mTaskBundle.getTags());
+    }
 
-        final List<Tag> tags = mTaskBundle.getTags();
-        if (tags != null) {
-            for (Tag tag : tags) {
-                if (mTaskViewScene != null) {
-                    mTaskViewScene.tagsView.addObject(tag);
-                }
+    public void bindTagViews(ViewGroup tagLayout, List<Tag> tags) {
+        final int tagCount = tags.size();
+        final View[] reuseViews = new View[tagCount];
+
+        final int reuseViewCount = tagLayout.getChildCount();
+        for (int i = 0; i < reuseViewCount; i++) {
+            mReuseTagViews.add(tagLayout.getChildAt(i));
+        }
+        tagLayout.removeAllViewsInLayout();
+
+        for (int i = 0; i < tagCount; i++) {
+            if (mReuseTagViews.isEmpty()) {
+                reuseViews[i] = TagViewUtils.inflateTagView(
+                        LayoutInflater.from(tagLayout.getContext()),
+                        tagLayout,
+                        0);
+            } else {
+                reuseViews[i] = mReuseTagViews.pop();
             }
+
+            tagLayout.addView(reuseViews[i]);
+        }
+
+        if (tagCount > 0) {
+            for (int i = 0; i < tagCount; i++) {
+                Tag tag = tags.get(i);
+                TextView tagView = (TextView) reuseViews[i];
+                tagView.setText(tag.getName());
+                TagViewUtils.updateTagViewColor(tagView, tag.getColor());
+            }
+            tagLayout.setVisibility(View.VISIBLE);
+        } else {
+            tagLayout.setVisibility(View.GONE);
         }
     }
 
     private TaskViewScene createRootScene() {
         TaskViewScene scene = TaskViewScene.create(getActivity(), mContentRoot);
-        scene.tagsView.allowDuplicates(false);
-        scene.tagsView.allowCollapse(false);
-        scene.tagsView.setImeActionLabel(
-                getString(R.string.ime_action_create),
-                EditorInfo.IME_ACTION_NEXT);
-        scene.tagsView.setImeOptions(EditorInfo.IME_ACTION_NEXT);
-
         return scene;
     }
 
@@ -216,6 +238,16 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
         goToMainScene();
     }
 
+    private void goToEditTask() {
+        Bundle args = new Bundle();
+        args.putString(EditTaskFragment.EXTRA_TITLE, getString(R.string.title_edit_task));
+        args.putLong(EditTaskFragment.EXTRA_TASK_ID, mExtraTaskId);
+
+        Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
+                getActivity(), EditTaskFragment_.class.getName(), args);
+        getActivity().startActivityForResult(launchIntent, TaskListFragment.REQUEST_CODE_EDIT_TASK);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (mTaskBundle == null) {
@@ -224,16 +256,14 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
 
         switch (item.getItemId()) {
 
-            /*
-            case R.id.cancel:
+            case R.id.edit:
                 if (mTaskBundle.getTask().hasId()) {
-                    //displayRemoveTaskAlert();
+                    goToEditTask();
                 } else {
                     getActivity().finish();
                 }
-
                 return true;
-            */
+
             case android.R.id.home:
                 LOG.debug("task view home clicked");
                 getActivity().finish();
@@ -307,7 +337,7 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
 
     @OnJobSuccess(LoadTaskBundleJob.class)
     public void onTaskBundleLoaded(LoadJobResult<TaskBundle> taskBundle) {
-        mTaskBundle = taskBundle.getData();
+         mTaskBundle = taskBundle.getData();
         mTaskBundle.saveState();
 
         bindTaskBundleToViews();
@@ -386,85 +416,9 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
         return job;
     }
 
-/*    @Override
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case REQUEST_CODE_DISCARD_CHANGES_AND_EXIT:
-                if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
-                    getActivity().finish();
-                    return;
-                }
-            case REQUEST_CODE_PERFORM_REMOVE_TASK:
-                if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
-                    RemoveTaskJob removeJob = Injection.sJobsComponent.removeTaskJob();
-                    removeJob.setTaskId(mTaskBundle.getTask().getId());
-                    submitJob(removeJob);
-                    return;
-                }
-        }
-
-        super.onActivityResult(requestCode, resultCode, data);
+        getActivity().setResult(resultCode, data);
+        getActivity().finish();
     }
-*/
-/*
-    public RecyclerView.ViewHolder CreateViewHolder(ViewGroup viewGroup, int i) {
-        View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.view_task_card, viewGroup, false);
-
-        RecyclerView.ViewHolder holder = new RecyclerView.ViewHolder(view);
-
-        holder.titleView = (TextView) view.findViewById(android.R.id.title);
-        holder.tagContainerView = (FlowLayout) view.findViewById(R.id.tagViewContainer);
-
-        return holder;
-    }
-
-    private void bindTagViews(ViewGroup tagLayout, List<Tag> tags) {
-        final int tagCount = tags.size();
-        final View[] reuseViews = new View[tagCount];
-
-        final int reuseViewCount = tagLayout.getChildCount();
-        for (int i = 0; i < reuseViewCount; i++) {
-            mReuseTagViews.add(tagLayout.getChildAt(i));
-        }
-        tagLayout.removeAllViewsInLayout();
-
-        for (int i = 0; i < tagCount; i++) {
-            if (mReuseTagViews.isEmpty()) {
-                reuseViews[i] = TagViewUtils.inflateTagView(
-                        LayoutInflater.from(tagLayout.getContext()),
-                        tagLayout,
-                        0);
-            } else {
-                reuseViews[i] = mReuseTagViews.pop();
-            }
-
-            tagLayout.addView(reuseViews[i]);
-        }
-
-        if (tagCount > 0) {
-            for (int i = 0; i < tagCount; i++) {
-                Tag tag = tags.get(i);
-                TextView tagView = (TextView) reuseViews[i];
-                tagView.setText(tag.getName());
-                TagViewUtils.updateTagViewColor(tagView, tag.getColor());
-            }
-            tagLayout.setVisibility(View.VISIBLE);
-        } else {
-            tagLayout.setVisibility(View.GONE);
-        }
-    }
-
-    private void bindViewHolder(RecyclerView.ViewHolder holder, TaskBundle item) {
-        final Task task = item.getTask();
-
-        holder.titleView.setText(task.getDescription());
-        holder.item = item;
-
-        holder.itemView.setTag(item);
-        holder.itemEditView.setTag(item);
-
-        bindTagViews(holder.tagContainerView, item.getTags());
-    }
-    */
 }

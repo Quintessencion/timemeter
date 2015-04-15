@@ -75,8 +75,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
 
     private static final String SNACKBAR_TAG = "task_list_snackbar";
     private static final String TASK_LIST_LOADER_TAG = "TaskListFragment_";
-    private static final int REQUEST_CODE_EDIT_TASK = 100;
-
+    public static final int REQUEST_CODE_EDIT_TASK = 100;
     private static final int COLUMN_COUNT_DEFAULT = 2;
     private int mColumnCount;
 
@@ -275,6 +274,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
                         LOG.debug("result: task created");
                         addTaskToList(bundle);
                         break;
+
                     case EditTaskFragment.RESULT_CODE_TASK_RECREATED:
                         LOG.debug("result: task recreated");
                         requestReload(TASK_LIST_LOADER_TAG, this);
@@ -381,6 +381,8 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     public void onTaskViewClicked(TaskBundle item) {
         LOG.debug("view task: {}", item);
 
+        SnackbarManager.dismiss();
+
         Bundle args = new Bundle();
         args.putString(ViewTaskFragment.EXTRA_TITLE, item.getTask().getDescription());
         args.putLong(ViewTaskFragment.EXTRA_TASK_ID, item.getTask().getId());
@@ -393,6 +395,11 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     @Override
     public void onTaskEditLongClicked(TaskBundle item, View itemView) {
         showToastWithAnchor(R.string.hint_edit_task, itemView);
+    }
+
+    @Override
+    public void onTaskViewLongClicked(TaskBundle item, View itemView) {
+        showToastWithAnchor(R.string.hint_view_task, itemView);
     }
 
     private void backupRemovedTask(TaskBundle taskBundle, Snackbar snackbar) {
