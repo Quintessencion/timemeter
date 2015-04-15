@@ -71,7 +71,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_below="@android:id/title"
-            android:layout_toLeftOf="@+id/actionsPanel" />
+            android:layout_toLeftOf="@+id/actionsPanel"/>
     </RelativeLayout>
 
 </android.support.v7.widget.CardView>

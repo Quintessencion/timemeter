@@ -225,7 +225,6 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
         TransitionManager.go(mTaskViewScene.scene, transitionSet);
 
         mActionBar.setDisplayHomeAsUpEnabled(true);
-        //mActionBar.setHomeAsUpIndicator(R.drawable.ic_action_cancel);
     }
 
     @AfterViews
@@ -234,7 +233,6 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
         if (mExtraTitle != null) {
             mActionBar.setTitle(mExtraTitle);
         }
-        //mActionBar.setHomeAsUpIndicator(R.drawable.ic_action_cancel);
         goToMainScene();
     }
 
@@ -260,6 +258,7 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
                 if (mTaskBundle.getTask().hasId()) {
                     goToEditTask();
                 } else {
+                    //????
                     getActivity().finish();
                 }
                 return true;
@@ -267,22 +266,6 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
             case android.R.id.home:
                 LOG.debug("task view home clicked");
                 getActivity().finish();
-                /*if (mTaskTagsEditScene != null && mCurrentScene == mTaskTagsEditScene.scene) {
-                    goToMainScene();
-                    return true;
-                }
-
-                LOG.debug("save task clicked");
-                if (mTaskBundle.isEqualToSavedState() && mTaskBundle.getTask().hasId()) {
-                    LOG.debug("task remain unchanged");
-                    getActivity().finish();
-
-                } else if (validateInput()) {
-                    SaveTaskBundleJob job = Injection.sJobsComponent.saveTaskBundleJob();
-                    job.setTaskBundle(mTaskBundle);
-                    submitJob(job);
-                }*/
-
                 return true;
         }
 
@@ -374,29 +357,6 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
     @Override
     public boolean handleBackPress() {
         getActivity().finish();
-        /*
-        if (mTaskTagsEditScene != null && mCurrentScene == mTaskTagsEditScene.scene) {
-            goToMainScene();
-            return true;
-        }
-
-        if (mTaskBundle == null || mTaskBundle.isEqualToSavedState()) {
-            return super.handleBackPress();
-        }
-
-        // There are unsaved changes - show alert
-        Bundle args = AppAlertDialogFragment.prepareArgs(getActivity(),
-                R.string.dialog_cancel_task_changes_warning_title,
-                R.string.dialog_cancel_task_changes_warning_message,
-                R.string.action_accept_yes,
-                R.string.action_cancel);
-
-        Intent launchIntent = DialogContainerActivity.prepareDialogLaunchIntent(
-                getActivity(),
-                AppAlertDialogFragment.class.getName(),
-                args);
-        getActivity().startActivityForResult(launchIntent, REQUEST_CODE_DISCARD_CHANGES_AND_EXIT);
-*/
         return true;
     }
 
@@ -419,6 +379,44 @@ public class ViewTaskFragment extends BaseFragment implements JobLoader.JobLoade
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         getActivity().setResult(resultCode, data);
-        getActivity().finish();
+        switch (requestCode) {
+            case TaskListFragment.REQUEST_CODE_EDIT_TASK:
+                if (resultCode == EditTaskFragment.RESULT_CODE_CANCELLED) {
+                    LOG.debug("result: task edit cancelled");
+                    return;
+                }
+                final long taskId = data.getLongExtra(EditTaskFragment.EXTRA_TASK_ID, -1);
+                final TaskBundle bundle = data.getParcelableExtra(
+                        EditTaskFragment.EXTRA_TASK_BUNDLE);
+
+                switch (resultCode) {
+                    case EditTaskFragment.RESULT_CODE_TASK_CREATED:
+                        LOG.debug("result: task created");
+                        getActivity().finish();
+                        break;
+
+                    case EditTaskFragment.RESULT_CODE_TASK_RECREATED:
+                        LOG.debug("result: task recreated");
+                        getActivity().finish();
+                        break;
+
+                    case EditTaskFragment.RESULT_CODE_TASK_REMOVED:
+                        LOG.debug("result: task removed");
+                        getActivity().finish();
+                        break;
+
+                    case EditTaskFragment.RESULT_CODE_TASK_UPDATED:
+                        LOG.debug("result: task updated");
+                        bindTagViews(mTaskViewScene.tagViewContainer, bundle.getTags());
+                        // или можно попробовать(пока незнаю как лучше)
+                        // requestLoad(mTaskBundleLoaderAttachTag, this);
+                        break;
+                }
+                return;
+
+            default:
+                break;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }

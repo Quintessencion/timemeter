@@ -28,6 +28,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_marginTop="4dp"
-        android:layout_below="@+id/separatorLine"/>
+        android:layout_below="@+id/separatorLine"
+        android:layout_toLeftOf="@+id/actionsPanel"
+        android:layout_alignLeft=""/>
 
 </RelativeLayout>
