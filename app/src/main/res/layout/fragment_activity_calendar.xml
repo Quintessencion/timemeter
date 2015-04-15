@@ -12,14 +12,17 @@
         android:layout_marginTop="24dp"
         android:layout_centerHorizontal="true"/>
 
-    <!--
-    TODO: nest week calendar view to view pager, add navigation panel (PagerTitleStrip)
-    -->
+    <com.simbirsoft.timemeter.ui.views.CalendarNavigationView_
+        android:id="@+id/calendarNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"/>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingLeft="12dp"
-        android:paddingTop="12dp">
+        android:paddingTop="12dp"
+        android:layout_below="@+id/calendarNavigationView">
         <com.simbirsoft.timemeter.ui.views.WeekCalendarView
             android:id="@+id/calendarView"
             android:layout_width="match_parent"

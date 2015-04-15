@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/calendar_navigation_panel">
+
+    <LinearLayout
+        android:id="@+id/calendarTextLayout"
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="false"
+        android:layout_centerInParent="true"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Text"
+            android:id="@+id/firstTextView"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Text"
+            android:id="@+id/secondTextView"/>
+    </LinearLayout>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/prevButton"
+        android:layout_centerVertical="true"
+        android:layout_toStartOf="@+id/calendarTextLayout"
+        android:layout_toLeftOf="@+id/calendarTextLayout"
+        android:background="?android:selectableItemBackground"
+        android:src="@drawable/ic_keyboard_arrow_left_white_36dp"/>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/nextButton"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@+id/calendarTextLayout"
+        android:layout_toRightOf="@+id/calendarTextLayout"
+        android:background="?android:selectableItemBackground"
+        android:src="@drawable/ic_keyboard_arrow_right_white_36dp"/>
+</RelativeLayout>

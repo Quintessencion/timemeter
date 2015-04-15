@@ -15,6 +15,8 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.model.Period;
 import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.ui.model.ActivityCalendar;
+import com.simbirsoft.timemeter.ui.model.CalendarData;
+import com.simbirsoft.timemeter.ui.model.CalendarPeriod;
 import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.squareup.phrase.Phrase;
 
@@ -47,7 +49,7 @@ public class LoadActivityCalendarJob extends LoadJob implements FilterableJob {
     }
 
     @Override
-    protected LoadJobResult<ActivityCalendar> performLoad() throws Exception {
+    protected LoadJobResult<CalendarData> performLoad() throws Exception {
         mPeriodStartMillis = mPeriodEndMillis = 0;
         adjustDates();
 
@@ -105,16 +107,19 @@ public class LoadActivityCalendarJob extends LoadJob implements FilterableJob {
         }
 
         ActivityCalendar calendar = new ActivityCalendar();
+        CalendarPeriod period = new CalendarPeriod();
         Cursor cursor = db.rawQuery(query, new String[0]);
         try {
             List<TaskTimeSpan> spans = cupboard().withCursor(cursor).list(TaskTimeSpan.class);
-            calendar.setPeriodStartMillis(mPeriodStartMillis);
-            calendar.setPeriodEndMillis(mPeriodEndMillis);
             calendar.setStartDate(mStartDate);
             calendar.setEndDate(mEndDate);
-            calendar.setFilterDateMillis(filterDateMillis);
             calendar.setDailyActivity(spans);
-            return new LoadJobResult<>(calendar);
+            period.setFilterDateMillis(filterDateMillis);
+            period.setPeriodStartMillis(mPeriodStartMillis);
+            period.setPeriodEndMillis(mPeriodEndMillis);
+            period.setStartDate(mStartDate);
+            period.setEndDate(mEndDate);
+            return new LoadJobResult<>(new CalendarData(calendar, period));
         } finally {
             cursor.close();
         }
@@ -164,7 +169,10 @@ public class LoadActivityCalendarJob extends LoadJob implements FilterableJob {
         if (filterDateMillis > 0) {
             mPeriodStartMillis = TimeUtils.getWeekFirstDayStartMillis(filterDateMillis);
             if (filterPeriod != null) {
-                mPeriodEndMillis = TimeUtils.getWeekLastDayStartMillis(Period.getPeriodEnd(filterPeriod, filterDateMillis));
+                long filterPeriodEnd = Period.getPeriodEnd(filterPeriod, filterDateMillis);
+                if (filterPeriodEnd != 0) {
+                    mPeriodEndMillis = TimeUtils.getWeekLastDayStartMillis(filterPeriodEnd);
+                }
             }
         }
         if (mStartDate != null && mEndDate != null) return;

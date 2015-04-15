@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 
 public class ActivityCalendar {
 
@@ -39,9 +40,6 @@ public class ActivityCalendar {
 
     private final Calendar mStartDate;
     private final Calendar mEndDate;
-    private final Calendar mPeriodStartMillis;
-    private final Calendar mPeriodEndMillis;
-    private final Calendar mFilterDateMillis;
     private final Calendar mBufferCalendar;
     private int mStartHour = START_HOUR_DEFAULT;
     private int mEndHour = END_HOUR_DEFAULT;
@@ -54,14 +52,11 @@ public class ActivityCalendar {
         mDays = Lists.newArrayList();
         mStartDate = Calendar.getInstance();
         mEndDate = Calendar.getInstance();
-        mPeriodStartMillis = Calendar.getInstance();
-        mPeriodEndMillis = Calendar.getInstance();
-        mFilterDateMillis = Calendar.getInstance();
         mBufferCalendar = Calendar.getInstance();
         mTaskColors = Maps.newHashMap();
     }
 
-    
+
     public static List<TaskTimeSpan> splitTimeSpansByDays(List<TaskTimeSpan> input) {
         final List<TaskTimeSpan> result = Lists.newArrayListWithCapacity(input.size());
 
@@ -216,30 +211,6 @@ public class ActivityCalendar {
     public void setEndDate(Date endDate) {
         mEndDate.setTime(endDate);
         updateDays();
-    }
-
-    public long getPeriodStartMillis() {
-        return mPeriodStartMillis.getTimeInMillis();
-    }
-
-    public void setPeriodStartMillis(long millis) {
-        mPeriodStartMillis.setTimeInMillis(millis);
-    }
-
-    public long getPeriodEndMillis() {
-        return mPeriodEndMillis.getTimeInMillis();
-    }
-
-    public void setPeriodEndMillis(long millis) {
-        mPeriodEndMillis.setTimeInMillis(millis);
-    }
-
-    public long getFilterDateMillis() {
-        return mFilterDateMillis.getTimeInMillis();
-    }
-
-    public void setFilterDateMillis(long millis) {
-        mFilterDateMillis.setTimeInMillis(millis);
     }
 
     public int getDayIndex(long dayStartTimeMillis) {

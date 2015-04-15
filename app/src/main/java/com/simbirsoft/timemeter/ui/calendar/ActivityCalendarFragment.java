@@ -6,7 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.be.android.library.worker.annotations.OnJobEvent;
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
 import com.be.android.library.worker.controllers.JobLoader;
@@ -22,8 +21,9 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
 import com.simbirsoft.timemeter.ui.model.ActivityCalendar;
-import com.simbirsoft.timemeter.ui.stats.StatsListAdapter;
+import com.simbirsoft.timemeter.ui.model.CalendarData;
 import com.simbirsoft.timemeter.ui.views.FilterView;
+import com.simbirsoft.timemeter.ui.views.CalendarNavigationView;
 import com.simbirsoft.timemeter.ui.views.WeekCalendarView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
@@ -33,8 +33,6 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
-
-import java.util.Date;
 
 import javax.inject.Inject;
 
@@ -54,6 +52,9 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
 
     @ViewById(android.R.id.empty)
     TextView mEmptyIndicatorView;
+
+    @ViewById(R.id.calendarNavigationView)
+    CalendarNavigationView mCalendarNavigationView;
 
     @InstanceState
     FilterView.FilterState mFilterViewState;
@@ -101,8 +102,9 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
     }
 
     @OnJobSuccess(LoadActivityCalendarJob.class)
-    public void onCalendarActivityLoaded(LoadJobResult<ActivityCalendar> result) {
-        mWeekCalendarView.setActivityCalendar(result.getData());
+    public void onCalendarActivityLoaded(LoadJobResult<CalendarData> result) {
+        mWeekCalendarView.setActivityCalendar(result.getData().getActivityCalendar());
+        mCalendarNavigationView.setCalendarPeriod(result.getData().getCalendarPeriod());
     }
 
     @OnJobFailure(LoadActivityCalendarJob.class)
@@ -115,8 +117,8 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
     public Job onCreateJob(String s) {
         LoadActivityCalendarJob job = Injection.sJobsComponent.loadActivityCalendarJob();
         job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
-        job.setPrevFilterDateMillis((mWeekCalendarView != null && mWeekCalendarView.getActivityCalendar() != null)
-                ? mWeekCalendarView.getActivityCalendar().getFilterDateMillis() : 0);
+        job.setPrevFilterDateMillis((mCalendarNavigationView != null && mCalendarNavigationView.getCalendarPeriod() != null)
+                ? mCalendarNavigationView.getCalendarPeriod().getFilterDateMillis() : 0);
         //job.setStartDate(new Date(/* 16 Feb */1424044800000L));
         //job.setEndDate(new Date(/* 22 Feb */ 1424563200000L));
 

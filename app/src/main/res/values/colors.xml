@@ -32,6 +32,7 @@
     <color name="black">#000000</color>
     <color name="calendar_date_text">#232323</color>
     <color name="calendar_hour_text">#727272</color>
+    <color name="calendar_navigation_panel">#e2eef9</color>
 
 
     <array name="default_tag_colors">
