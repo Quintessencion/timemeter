@@ -2,6 +2,8 @@ package com.simbirsoft.timemeter.ui.calendar;
 
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.v4.view.ViewPager;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -22,6 +24,7 @@ import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
 import com.simbirsoft.timemeter.ui.model.ActivityCalendar;
 import com.simbirsoft.timemeter.ui.model.CalendarData;
+import com.simbirsoft.timemeter.ui.views.CalendarViewPager;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.simbirsoft.timemeter.ui.views.CalendarNavigationView;
 import com.simbirsoft.timemeter.ui.views.WeekCalendarView;
@@ -34,11 +37,13 @@ import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
+import java.util.Date;
+
 import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_activity_calendar)
 public class ActivityCalendarFragment extends BaseFragment implements MainPagerAdapter.PageTitleProvider,
-        JobLoader.JobLoaderCallbacks {
+        JobLoader.JobLoaderCallbacks, CalendarNavigationView.OnCalendarNavigateListener {
 
     private static final Logger LOG = LogFactory.getLogger(ActivityCalendarFragment.class);
 
@@ -47,11 +52,9 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
     @ViewById(R.id.calendarContentRoot)
     ViewGroup mCalendarContentRoot;
 
-    @ViewById(R.id.calendarView)
-    WeekCalendarView mWeekCalendarView;
+    @ViewById(R.id.calendarViewPager)
+    CalendarViewPager mCalendarViewPager;
 
-    @ViewById(android.R.id.empty)
-    TextView mEmptyIndicatorView;
 
     @ViewById(R.id.calendarNavigationView)
     CalendarNavigationView mCalendarNavigationView;
@@ -62,6 +65,8 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
     @Inject
     Bus mBus;
 
+    private CalendarPagerAdapter mPagerAdapter;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,7 +75,14 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
 
     @AfterViews
     void bindViews() {
-        mEmptyIndicatorView.setVisibility(View.GONE);
+        mPagerAdapter = new CalendarPagerAdapter(getActivity(), mCalendarViewPager);
+        mCalendarViewPager.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return true;
+            }
+        });
+        mCalendarNavigationView.setOnCalendarNavigateListener(this);
         requestLoad(CALENDAR_LOADER_TAG, this);
         mBus.register(this);
     }
@@ -103,8 +115,8 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
 
     @OnJobSuccess(LoadActivityCalendarJob.class)
     public void onCalendarActivityLoaded(LoadJobResult<CalendarData> result) {
-        mWeekCalendarView.setActivityCalendar(result.getData().getActivityCalendar());
         mCalendarNavigationView.setCalendarPeriod(result.getData().getCalendarPeriod());
+        mPagerAdapter.setCurrentViewActivityCalendar(result.getData().getActivityCalendar());
     }
 
     @OnJobFailure(LoadActivityCalendarJob.class)
@@ -117,10 +129,12 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
     public Job onCreateJob(String s) {
         LoadActivityCalendarJob job = Injection.sJobsComponent.loadActivityCalendarJob();
         job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
-        job.setPrevFilterDateMillis((mCalendarNavigationView != null && mCalendarNavigationView.getCalendarPeriod() != null)
-                ? mCalendarNavigationView.getCalendarPeriod().getFilterDateMillis() : 0);
-        //job.setStartDate(new Date(/* 16 Feb */1424044800000L));
-        //job.setEndDate(new Date(/* 22 Feb */ 1424563200000L));
+
+        if (mCalendarNavigationView != null && mCalendarNavigationView.getCalendarPeriod() != null) {
+            job.setPrevFilterDateMillis(mCalendarNavigationView.getCalendarPeriod().getFilterDateMillis());
+            job.setStartDate(mCalendarNavigationView.getCalendarPeriod().getStartDate());
+            job.setEndDate(mCalendarNavigationView.getCalendarPeriod().getEndDate());
+        }
 
         if (mFilterViewState != null) {
             job.getTaskLoadFilter()
@@ -131,5 +145,28 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
         }
         job.addTag(CALENDAR_LOADER_TAG);
         return job;
+    }
+
+    @Override
+    public void onMovedNext(Date newStartDate, Date newEndDate) {
+        mPagerAdapter.moveNext(newStartDate, newEndDate);
+        requestLoad(newStartDate, newEndDate);
+    }
+
+    @Override
+    public void onMovedPrev(Date newStartDate, Date newEndDate) {
+        mPagerAdapter.movePrev(newStartDate, newEndDate);
+        requestLoad(newStartDate, newEndDate);
+    }
+
+    private void requestLoad(Date newStartDate, Date newEndDate) {
+        JobManager.getInstance().cancelAll(JobSelector.forJobTags(CALENDAR_LOADER_TAG));
+
+        String loaderTag = CALENDAR_LOADER_TAG
+                + "period:"
+                + String.valueOf(newStartDate.getTime())
+                + "_"
+                + String.valueOf(newEndDate.getTime());
+        requestLoad(loaderTag, this);
     }
 }

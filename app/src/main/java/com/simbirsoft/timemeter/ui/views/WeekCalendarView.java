@@ -33,6 +33,7 @@ public class WeekCalendarView extends View {
     private static final int DATE_LABELS_SPACING_DEFAULT_DIP = 2;
     private static final int HOUR_LABEL_VERTICAL_PADDING_DEFAULT_DIP = 14;
     private static final int HOUR_LABEL_HORIZONTAL_PADDING_DEFAULT_DIP = 5;
+    private static final int PADDING_DEFAULT_DIP = 12;
 
     private static final Logger LOG = LogFactory.getLogger(WeekCalendarView.class);
     private ActivityCalendar mActivityCalendar;
@@ -42,6 +43,8 @@ public class WeekCalendarView extends View {
     private int mDateLabelsSpacing;
     private int mHourLabelPaddingHorizontal;
     private int mHourLabelPaddingVertical;
+    private int mPaddingVertical;
+    private int mPaddingHorizontal;
     private int mDateWidth;
     private int mDateHeight;
     private int mHourWidth;
@@ -57,25 +60,26 @@ public class WeekCalendarView extends View {
 
     public WeekCalendarView(Context context) {
         super(context);
+        setup();
     }
 
     public WeekCalendarView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        setup();
     }
 
     public WeekCalendarView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        setup();
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public WeekCalendarView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
+        setup();
     }
 
-    @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-
+    private void setup() {
         final Resources res = getContext().getResources();
         final DisplayMetrics displayMetrics = res.getDisplayMetrics();
 
@@ -113,6 +117,7 @@ public class WeekCalendarView extends View {
         mHourLabelPaddingHorizontal = (int) (displayMetrics.density * HOUR_LABEL_HORIZONTAL_PADDING_DEFAULT_DIP);
         mHourLabelPaddingVertical = (int) (displayMetrics.density * HOUR_LABEL_VERTICAL_PADDING_DEFAULT_DIP);
         mDateLabelsSpacing = (int) (displayMetrics.density * DATE_LABELS_SPACING_DEFAULT_DIP);
+        mPaddingVertical = mPaddingHorizontal = (int) (displayMetrics.density * PADDING_DEFAULT_DIP);
     }
 
     public ActivityCalendar getActivityCalendar() {
@@ -151,13 +156,13 @@ public class WeekCalendarView extends View {
                                  Math.ceil(mWeekDayTextPaint.measureText(dayLabelProbe)))
                                 + mDateLabelPaddingHorizontal;
             mDateHeight = (int) Math.ceil(mDateTextPaint.getTextSize() + mWeekDayTextPaint.getTextSize()
-                    + mDateLabelPaddingVertical + mDateLabelsSpacing);
+                    + mDateLabelPaddingVertical + mDateLabelsSpacing + mPaddingVertical);
         }
 
         if (hoursCount > 0) {
             String hourLabelProbe = mActivityCalendar.getHourLabel(0);
             mHourWidth = (int) Math.ceil(mHourTextPaint.measureText(hourLabelProbe))
-                                + mHourLabelPaddingHorizontal;
+                                + mHourLabelPaddingHorizontal + mPaddingHorizontal;
             mHourHeight = (int) Math.ceil(mHourTextPaint.getTextSize() + mHourLabelPaddingVertical * 2);
         }
 
@@ -261,7 +266,7 @@ public class WeekCalendarView extends View {
             if (i > 0) {
                 String hourText = mActivityCalendar.getHourLabel(i);
                 canvas.drawText(hourText,
-                        0,
+                        mPaddingHorizontal,
                         drawLabelOffset,
                         mHourTextPaint);
             }

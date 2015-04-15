@@ -20,10 +20,17 @@ import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EViewGroup;
 import org.androidannotations.annotations.ViewById;
 
+import java.util.Date;
 import java.util.List;
 
 @EViewGroup(R.layout.view_calendar_navigation)
 public class CalendarNavigationView extends RelativeLayout{
+    public interface OnCalendarNavigateListener {
+        public void onMovedNext(Date newStartDate, Date newEndDate);
+        public void onMovedPrev(Date newStartDate, Date newEndDate);
+    }
+
+
     private static final int TEXT_PADDING_DEFAULT_DIP = 5;
 
     @ViewById(R.id.firstTextView)
@@ -44,6 +51,8 @@ public class CalendarNavigationView extends RelativeLayout{
     private int mTextPadding;
 
     private CalendarPeriod mCalendarPeriod;
+
+    private OnCalendarNavigateListener mOnCalendarNavigateListener;
 
     public CalendarNavigationView(Context context) {
         super(context);
@@ -92,12 +101,18 @@ public class CalendarNavigationView extends RelativeLayout{
     void nextButtonClicked() {
         mCalendarPeriod.moveNext();
         update();
+        if (mOnCalendarNavigateListener != null) {
+            mOnCalendarNavigateListener.onMovedNext(mCalendarPeriod.getStartDate(), mCalendarPeriod.getEndDate());
+        }
     }
 
     @Click(R.id.prevButton)
     void prevButtonClicked() {
         mCalendarPeriod.movePrev();
         update();
+        if (mOnCalendarNavigateListener != null) {
+            mOnCalendarNavigateListener.onMovedPrev(mCalendarPeriod.getStartDate(), mCalendarPeriod.getEndDate());
+        }
     }
 
     public CalendarPeriod getCalendarPeriod() {
@@ -108,6 +123,15 @@ public class CalendarNavigationView extends RelativeLayout{
         mCalendarPeriod = period;
         update();
     }
+
+    public OnCalendarNavigateListener getOnCalendarNavigateListener() {
+        return mOnCalendarNavigateListener;
+    }
+
+    public void setOnCalendarNavigateListener(OnCalendarNavigateListener onCalendarNavigateListener) {
+        mOnCalendarNavigateListener = onCalendarNavigateListener;
+    }
+
 
     private void update() {
         mFirstTextView.setText(mCalendarPeriod.getPeriodFirstString());
