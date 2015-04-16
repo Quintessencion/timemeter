@@ -369,8 +369,6 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         SnackbarManager.dismiss();
 
         Bundle args = new Bundle();
-        args.putString(ViewTaskFragment.EXTRA_TITLE, item.getTask().getDescription());
-        args.putLong(ViewTaskFragment.EXTRA_TASK_ID, item.getTask().getId());
         args.putParcelable(ViewTaskFragment.EXTRA_TASK_BUNDLE, item);
 
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(

@@ -4,23 +4,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.transitions.everywhere.ChangeBounds;
-import android.transitions.everywhere.Fade;
-import android.transitions.everywhere.TransitionManager;
-import android.transitions.everywhere.TransitionSet;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.TextView;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
-import com.be.android.library.worker.annotations.OnJobSuccess;
-import com.be.android.library.worker.models.LoadJobResult;
-import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.jobs.LoadTaskBundleJob;
@@ -34,33 +26,25 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.ViewById;
+import org.apmem.tools.layouts.FlowLayout;
 import org.slf4j.Logger;
 
 import java.util.List;
 
 @EFragment(R.layout.fragment_view_task)
 public class ViewTaskFragment extends BaseFragment {
-    public static final String EXTRA_TITLE = "extra_title";
-    public static final String EXTRA_TASK_ID = "extra_task_id";
     public static final String EXTRA_TASK_BUNDLE = "extra_task_bundle";
 
     private static final Logger LOG = LogFactory.getLogger(ViewTaskFragment.class);
 
     private static final int REQUEST_CODE_EDIT_TASK = 100;
 
-    @FragmentArg(EXTRA_TITLE)
-    String mExtraTitle;
-
-    @FragmentArg(EXTRA_TASK_ID)
-    Long mExtraTaskId;
-
     @FragmentArg(EXTRA_TASK_BUNDLE)
     TaskBundle mExtraTaskBundle;
 
-    @ViewById(R.id.rootScene)
-    ViewGroup mContentRoot;
+    @ViewById(R.id.tagViewContainer)
+    FlowLayout tagViewContainer;
 
-    private TaskViewScene mTaskViewScene;
     private ActionBar mActionBar;
 
     @Override
@@ -71,9 +55,6 @@ public class ViewTaskFragment extends BaseFragment {
 
         setShouldSubscribeForJobEvents(false);
     }
-
-//    @OnJobSuccess(LoadTaskBundleJob.class)
-//    public void onTaskBundleLoaded(LoadJobResult<TaskBundle> taskBundle) {}
 
     // Без обьявления данного метода почемуто падает проект во время открытия просмотра задач
     @OnJobFailure(LoadTaskBundleJob.class)
@@ -87,77 +68,52 @@ public class ViewTaskFragment extends BaseFragment {
     }
 
     public void bindTagViews(ViewGroup tagLayout, List<Tag> tags) {
-        final int tagCount = tags.size();
-        final View[] reuseViews = new View[tagCount];
+        if ((tagLayout != null) && (tags != null)) {
+            final int tagCount = tags.size();
+            final View[] reuseViews = new View[tagCount];
 
-        tagLayout.removeAllViewsInLayout();
+            tagLayout.removeAllViewsInLayout();
 
-        for (int i = 0; i < tagCount; i++) {
-            reuseViews[i] = TagViewUtils.inflateTagView(
-                    LayoutInflater.from(tagLayout.getContext()),
-                    tagLayout,
-                    0);
-            tagLayout.addView(reuseViews[i]);
-        }
-
-        if (tagCount > 0) {
             for (int i = 0; i < tagCount; i++) {
-                Tag tag = tags.get(i);
-                TextView tagView = (TextView) reuseViews[i];
-                tagView.setText(tag.getName());
-                TagViewUtils.updateTagViewColor(tagView, tag.getColor());
+                reuseViews[i] = TagViewUtils.inflateTagView(
+                        LayoutInflater.from(tagLayout.getContext()),
+                        tagLayout,
+                        0);
+                tagLayout.addView(reuseViews[i]);
             }
-            tagLayout.setVisibility(View.VISIBLE);
-        } else {
-            tagLayout.setVisibility(View.GONE);
+
+            if (tagCount > 0) {
+                for (int i = 0; i < tagCount; i++) {
+                    Tag tag = tags.get(i);
+                    TextView tagView = (TextView) reuseViews[i];
+                    tagView.setText(tag.getName());
+                    TagViewUtils.updateTagViewColor(tagView, tag.getColor());
+                }
+                tagLayout.setVisibility(View.VISIBLE);
+            } else {
+                tagLayout.setVisibility(View.GONE);
+            }
         }
     }
 
-    private void bindTaskBundleToViews() {
-        if (mExtraTaskBundle == null) {
-            return;
-        }
-
-        bindTagViews(mTaskViewScene.tagViewContainer, mExtraTaskBundle.getTags());
-    }
-
-    private TaskViewScene createRootScene() {
-        return TaskViewScene.create(getActivity(), mContentRoot);
-    }
-
-    private void setActionBarTitle(String title) {
+    private void setActionBarTitleAndHome(String title) {
         mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
         if (title != null) {
             mActionBar.setTitle(title);
         }
-    }
-
-    private void goToMainScene() {
-        mTaskViewScene = createRootScene();
-
-        bindTaskBundleToViews();
-
-        TransitionSet transitionSet = new TransitionSet();
-        transitionSet.addTransition(new Fade(Fade.IN));
-        transitionSet.addTransition(new ChangeBounds());
-        transitionSet.setOrdering(TransitionSet.ORDERING_TOGETHER);
-        transitionSet.setDuration(Consts.CONTENT_FADE_IN_DELAY_MILLIS);
-        transitionSet.setInterpolator(new DecelerateInterpolator());
-        TransitionManager.go(mTaskViewScene.scene, transitionSet);
-
         mActionBar.setDisplayHomeAsUpEnabled(true);
     }
 
     @AfterViews
     void bindViews() {
-        setActionBarTitle(mExtraTitle);
-        goToMainScene();
+        setActionBarTitleAndHome(mExtraTaskBundle.getTask().getDescription());
+        bindTagViews(tagViewContainer, mExtraTaskBundle.getTags());
     }
 
     private void goToEditTask() {
         Bundle args = new Bundle();
         args.putString(EditTaskFragment.EXTRA_TITLE, getString(R.string.title_edit_task));
-        args.putLong(EditTaskFragment.EXTRA_TASK_ID, mExtraTaskId);
+        args.putLong(EditTaskFragment.EXTRA_TASK_ID, mExtraTaskBundle.getTask().getId());
 
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), EditTaskFragment_.class.getName(), args);
@@ -207,8 +163,8 @@ public class ViewTaskFragment extends BaseFragment {
 
                     case EditTaskFragment.RESULT_CODE_TASK_UPDATED:
                         LOG.debug("result: task updated");
-                        bindTagViews(mTaskViewScene.tagViewContainer, bundle.getTags());
-                        setActionBarTitle(bundle.getTask().getDescription());
+                        bindTagViews(tagViewContainer, bundle.getTags());
+                        setActionBarTitleAndHome(bundle.getTask().getDescription());
                         break;
                 }
                 return;
