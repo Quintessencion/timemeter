@@ -12,10 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.be.android.library.worker.annotations.OnJobFailure;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
-import com.simbirsoft.timemeter.jobs.LoadTaskBundleJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
@@ -45,20 +43,13 @@ public class ViewTaskFragment extends BaseFragment {
     @ViewById(R.id.tagViewContainer)
     FlowLayout tagViewContainer;
 
-    private ActionBar mActionBar;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        setShouldSubscribeForJobEvents(false);
         super.onCreate(savedInstanceState);
 
         setHasOptionsMenu(true);
-
-        setShouldSubscribeForJobEvents(false);
     }
-
-    // Без обьявления данного метода почемуто падает проект во время открытия просмотра задач
-    @OnJobFailure(LoadTaskBundleJob.class)
-    public void onTaskBundleLoadFailure() {}
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -97,7 +88,7 @@ public class ViewTaskFragment extends BaseFragment {
     }
 
     private void setActionBarTitleAndHome(String title) {
-        mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
+        ActionBar mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
         if (title != null) {
             mActionBar.setTitle(title);
         }
@@ -135,12 +126,6 @@ public class ViewTaskFragment extends BaseFragment {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean handleBackPress() {
-        getActivity().finish();
-        return true;
     }
 
     @Override
