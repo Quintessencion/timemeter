@@ -30,8 +30,8 @@ import java.util.Stack;
 public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
 
     static interface TaskClickListener {
-        void onTaskEditClicked(TaskBundle item);
-        void onTaskEditLongClicked(TaskBundle item, View itemView);
+        void onTaskViewClicked(TaskBundle item);
+        void onTaskViewLongClicked(TaskBundle item, View itemView);
         void onTaskCardClicked(TaskBundle item);
     }
 
@@ -60,17 +60,17 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                 }
             };
 
-    private final View.OnClickListener mEditClickListener =
+    private final View.OnClickListener mViewClickListener =
             view -> {
                 if (mTaskClickListener != null) {
-                    mTaskClickListener.onTaskEditClicked((TaskBundle) view.getTag());
+                    mTaskClickListener.onTaskViewClicked((TaskBundle) view.getTag());
                 }
             };
 
-    private final View.OnLongClickListener mEditLongClickListener =
+    private final View.OnLongClickListener mViewLongClickListener =
             view -> {
                 if (mTaskClickListener != null) {
-                    mTaskClickListener.onTaskEditLongClicked((TaskBundle) view.getTag(), view);
+                    mTaskClickListener.onTaskViewLongClicked((TaskBundle) view.getTag(), view);
                     return true;
                 }
 
@@ -148,10 +148,10 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         holder.titleView = (TextView) view.findViewById(android.R.id.title);
         holder.timerView = (TextView) view.findViewById(R.id.timerText);
         holder.tagContainerView = (FlowLayout) view.findViewById(R.id.tagViewContainer);
-        holder.itemEditView = view.findViewById(android.R.id.edit);
-        holder.itemEditView.setOnClickListener(mEditClickListener);
-        holder.itemEditView.setOnLongClickListener(mEditLongClickListener);
 
+        holder.itemEditView = view.findViewById(R.id.edit_or_view);
+        holder.itemEditView.setOnClickListener(mViewClickListener);
+        holder.itemEditView.setOnLongClickListener(mViewLongClickListener);
         return holder;
     }
 
