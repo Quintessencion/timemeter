@@ -2,47 +2,36 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/calendar_navigation_panel">
+                android:background="@color/calendar_navigation_panel"
+                android:paddingTop="@dimen/calendar_navigation_vertical_padding"
+                android:paddingBottom="@dimen/calendar_navigation_vertical_padding">
 
-    <LinearLayout
-        android:id="@+id/calendarTextLayout"
-        android:orientation="vertical"
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="false"
+        android:textColor="@color/primary"
+        android:textSize="@dimen/calendar_navigation_text_size"
+        android:id="@+id/periodTextView"
         android:layout_centerInParent="true"
-        android:gravity="center_horizontal">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="New Text"
-            android:id="@+id/firstTextView"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="New Text"
-            android:id="@+id/secondTextView"/>
-    </LinearLayout>
+        android:gravity="center"/>
 
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/prevButton"
         android:layout_centerVertical="true"
-        android:layout_toStartOf="@+id/calendarTextLayout"
-        android:layout_toLeftOf="@+id/calendarTextLayout"
+        android:layout_toStartOf="@+id/periodTextView"
+        android:layout_toLeftOf="@+id/periodTextView"
         android:background="?android:selectableItemBackground"
-        android:src="@drawable/ic_keyboard_arrow_left_white_36dp"/>
+        android:src="@drawable/ic_keyboard_arrow_left"/>
 
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/nextButton"
         android:layout_centerVertical="true"
-        android:layout_toEndOf="@+id/calendarTextLayout"
-        android:layout_toRightOf="@+id/calendarTextLayout"
+        android:layout_toEndOf="@+id/periodTextView"
+        android:layout_toRightOf="@+id/periodTextView"
         android:background="?android:selectableItemBackground"
-        android:src="@drawable/ic_keyboard_arrow_right_white_36dp"/>
+        android:src="@drawable/ic_keyboard_arrow_right"/>
 </RelativeLayout>

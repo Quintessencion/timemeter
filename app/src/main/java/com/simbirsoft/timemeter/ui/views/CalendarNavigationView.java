@@ -5,18 +5,14 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Paint;
 import android.os.Build;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.SparseArray;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.simbirsoft.timemeter.R;
-import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.CalendarPeriod;
 
 import org.androidannotations.annotations.AfterViews;
@@ -37,20 +33,14 @@ public class CalendarNavigationView extends RelativeLayout{
 
     private static final int TEXT_PADDING_DEFAULT_DIP = 5;
 
-    @ViewById(R.id.firstTextView)
-    TextView mFirstTextView;
-
-    @ViewById(R.id.secondTextView)
-    TextView mSecondTextView;
+    @ViewById(R.id.periodTextView)
+    TextView mTextView;
 
     @ViewById(R.id.prevButton)
     ImageButton mPrevButton;
 
     @ViewById(R.id.nextButton)
     ImageButton mNextButton;
-
-    @ViewById(R.id.calendarTextLayout)
-    LinearLayout mTextLayout;
 
     private int mTextPadding;
 
@@ -77,28 +67,23 @@ public class CalendarNavigationView extends RelativeLayout{
 
     @AfterViews
     void bindViews() {
-        mCalendarPeriod = new CalendarPeriod();
         final Resources res = getContext().getResources();
         final DisplayMetrics displayMetrics = res.getDisplayMetrics();
         mTextPadding = (int) (displayMetrics.density * TEXT_PADDING_DEFAULT_DIP);
+        mCalendarPeriod = new CalendarPeriod();
         update();
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        Paint firstPaint = mFirstTextView.getPaint();
-        Paint secondPaint = mSecondTextView.getPaint();
+        Paint paint = mTextView.getPaint();
         float width = 0;
-        List<String> firstTextString = mCalendarPeriod.getFirstTestString();
-        List<String> secondTextString = mCalendarPeriod.getSecondTestString();
-        for (String test : firstTextString) {
-            width = Math.max(width, firstPaint.measureText(test));
+        List<String> strings = mCalendarPeriod.getTestStrings();
+        for (String test : strings) {
+            width = Math.max(width, paint.measureText(test));
         }
-        for (String test : secondTextString) {
-            width = Math.max(width, secondPaint.measureText(test));
-        }
-        mTextLayout.setMinimumWidth((int)width  + 2 * mTextPadding);
+        mTextView.setMinimumWidth((int)width  + 2 * mTextPadding);
     }
 
     @Click(R.id.nextButton)
@@ -138,9 +123,8 @@ public class CalendarNavigationView extends RelativeLayout{
 
 
     private void update() {
-        mFirstTextView.setText(mCalendarPeriod.getPeriodFirstString());
-        mSecondTextView.setText(mCalendarPeriod.getPeriodSecondString());
-        mNextButton.setEnabled(mCalendarPeriod.canMoveNext());
-        mPrevButton.setEnabled(mCalendarPeriod.canMovePrev());
+        mTextView.setText(mCalendarPeriod.getPeriodString());
+        mNextButton.setVisibility(mCalendarPeriod.canMoveNext() ? VISIBLE : INVISIBLE);
+        mPrevButton.setVisibility(mCalendarPeriod.canMovePrev() ? VISIBLE : INVISIBLE);
     }
 }

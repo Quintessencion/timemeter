@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -34,6 +35,11 @@ public class WeekCalendarView extends View {
     private static final int HOUR_LABEL_VERTICAL_PADDING_DEFAULT_DIP = 14;
     private static final int HOUR_LABEL_HORIZONTAL_PADDING_DEFAULT_DIP = 5;
     private static final int PADDING_DEFAULT_DIP = 12;
+    private static final int MAIN_LINE_WIDTH_PX = 2;
+    private static final int SECONDARY_LINE_WIDTH_PX = 1;
+    private static final int BLOCK_PADDING_H_PX = 2;
+    private static final int BLOCK_PADDING_V_PX = 1;
+    private static final int BLOCK_CORNER_RADIUS_PX = 4;
 
     private static final Logger LOG = LogFactory.getLogger(WeekCalendarView.class);
     private ActivityCalendar mActivityCalendar;
@@ -103,14 +109,16 @@ public class WeekCalendarView extends View {
         mMainLinePaint = new Paint();
         mMainLinePaint.setColor(res.getColor(R.color.lightGrey));
         mMainLinePaint.setAntiAlias(true);
-        mMainLinePaint.setStrokeWidth(2);
+        mMainLinePaint.setStrokeWidth(MAIN_LINE_WIDTH_PX);
 
         mSecondaryLinePaint = new Paint();
         mSecondaryLinePaint.setColor(res.getColor(R.color.lightGrey));
         mSecondaryLinePaint.setAntiAlias(true);
-        mSecondaryLinePaint.setStrokeWidth(1);
+        mSecondaryLinePaint.setStrokeWidth(SECONDARY_LINE_WIDTH_PX);
 
         mTimeSpanPaint = new Paint();
+        mTimeSpanPaint.setAntiAlias(true);
+        mTimeSpanPaint.setStrokeWidth(SECONDARY_LINE_WIDTH_PX);
 
         mDateLabelPaddingHorizontal = (int) (displayMetrics.density * DATE_LABEL_HORIZONTAL_PADDING_DEFAULT_DIP);
         mDateLabelPaddingVertical = (int) (displayMetrics.density * DATE_LABEL_VERTICAL_PADDING_DEFAULT_DIP);
@@ -241,7 +249,9 @@ public class WeekCalendarView extends View {
                     0,
                     weekDayTextY,
                     mWeekDayTextPaint);
-            canvas.drawLine(mDateWidth, mDateHeight, mDateWidth, canvasHeight, mSecondaryLinePaint);
+            if (i < daysCount - 1) {
+                canvas.drawLine(mDateWidth, mDateHeight, mDateWidth, canvasHeight, mSecondaryLinePaint);
+            }
             canvas.translate(mDateWidth, 0);
         }
 
@@ -270,7 +280,9 @@ public class WeekCalendarView extends View {
                         drawLabelOffset,
                         mHourTextPaint);
             }
-            canvas.drawLine(mHourWidth, mHourHeight, canvasWidth, mHourHeight, mSecondaryLinePaint);
+            if (i < hoursCount - 1) {
+                canvas.drawLine(mHourWidth, mHourHeight, canvasWidth, mHourHeight, mSecondaryLinePaint);
+            }
             canvas.translate(0, mHourHeight);
         }
 
@@ -298,12 +310,16 @@ public class WeekCalendarView extends View {
         long dayStart = mActivityCalendar.getDayStartMillis(dayIndex);
         for (TaskTimeSpan span : spans) {
             int startY = millisToY(span.getStartTimeMillis(), dayStart);
-            int endY = millisToY(span.getEndTimeMillis(), dayStart);
-            if (startY == endY) {
-                endY = startY + 1;
-            }
+            startY += ((startY == 0) ? MAIN_LINE_WIDTH_PX : 0) + BLOCK_PADDING_V_PX;
+            int endY = millisToY(span.getEndTimeMillis(), dayStart) - BLOCK_PADDING_V_PX;
+            int startX = ((dayIndex == 0) ? MAIN_LINE_WIDTH_PX  : SECONDARY_LINE_WIDTH_PX) + BLOCK_PADDING_H_PX;
+            int endX = mDateWidth - BLOCK_PADDING_H_PX - SECONDARY_LINE_WIDTH_PX;
             mTimeSpanPaint.setColor(mActivityCalendar.getTimeSpanColor(span));
-            canvas.drawRect(0, startY, mDateWidth, endY, mTimeSpanPaint);
+            if (startY > endY) {
+                canvas.drawLine(startX, startY, endX, startY, mTimeSpanPaint);
+            } else {
+                canvas.drawRoundRect(new RectF(startX, startY, endX, endY), BLOCK_CORNER_RADIUS_PX, BLOCK_CORNER_RADIUS_PX, mTimeSpanPaint);
+            }
         }
     }
 

@@ -24,9 +24,7 @@ public class CalendarPeriod implements Parcelable {
         }
     };
 
-    private static final SimpleDateFormat DAY_FORMAT = new SimpleDateFormat("d");
-    private static final SimpleDateFormat DAY_MONTH_FORMAT = new SimpleDateFormat("d MMM");
-    private static final SimpleDateFormat YEAR_FORMAT = new SimpleDateFormat("yyyy");
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MMMM yyyy");
     private static final int MONTHS_IN_YEAR = 12;
 
     private final Calendar mStartDate = Calendar.getInstance();
@@ -87,37 +85,24 @@ public class CalendarPeriod implements Parcelable {
         mEndDate.setTime(endDate);
     }
 
-    public String getPeriodFirstString() {
+    public String getPeriodString() {
         if (mStartDate.getTimeInMillis() == 0 || mEndDate.getTimeInMillis() == 0) return "";
-        if (mStartDate.get(Calendar.YEAR) == mEndDate.get(Calendar.YEAR) &&
-                mStartDate.get(Calendar.MONTH) == mEndDate.get(Calendar.MONTH)) {
-            return String.format("%s - %s", DAY_FORMAT.format(mStartDate.getTime()), DAY_MONTH_FORMAT.format(mEndDate.getTime()));
-        }
-        return String.format("%s - %s", DAY_MONTH_FORMAT.format(mStartDate.getTime()), DAY_MONTH_FORMAT.format(mEndDate.getTime()));
+        return DATE_FORMAT.format(mStartDate.getTime());
     }
 
-    public String getPeriodSecondString() {
-        if (mEndDate.getTimeInMillis() == 0) return "";
-        return YEAR_FORMAT.format(mEndDate.getTime());
-    }
 
-    public List<String> getFirstTestString() {
+    public List<String> getTestStrings() {
         ArrayList<String> list = Lists.newArrayList();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
         calendar.set(Calendar.DAY_OF_MONTH, 20);
         for (int i = 0; i < MONTHS_IN_YEAR; i++) {
             calendar.set(Calendar.MONTH, i);
-            list.add(String.format("%s - %s", DAY_MONTH_FORMAT.format(calendar.getTime()), DAY_MONTH_FORMAT.format(calendar.getTime())));
+            list.add(DATE_FORMAT.format(calendar.getTime()));
         }
         return list;
     }
 
-    public List<String> getSecondTestString() {
-        ArrayList<String> list = Lists.newArrayList();
-        list.add(YEAR_FORMAT.format(new Date()));
-        return list;
-    }
 
     public boolean canMoveNext() {
         if (mPeriodEndMillis.getTimeInMillis() == 0 || mEndDate.getTimeInMillis() == 0) return true;
