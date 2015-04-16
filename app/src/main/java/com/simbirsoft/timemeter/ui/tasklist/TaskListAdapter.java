@@ -30,9 +30,7 @@ import java.util.Stack;
 public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
 
     static interface TaskClickListener {
-        void onTaskEditClicked(TaskBundle item);
         void onTaskViewClicked(TaskBundle item);
-        void onTaskEditLongClicked(TaskBundle item, View itemView);
         void onTaskViewLongClicked(TaskBundle item, View itemView);
         void onTaskCardClicked(TaskBundle item);
     }
@@ -62,28 +60,11 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                 }
             };
 
-    private final View.OnClickListener mEditClickListener =
-            view -> {
-                if (mTaskClickListener != null) {
-                    mTaskClickListener.onTaskEditClicked((TaskBundle) view.getTag());
-                }
-            };
-
     private final View.OnClickListener mViewClickListener =
             view -> {
                 if (mTaskClickListener != null) {
                     mTaskClickListener.onTaskViewClicked((TaskBundle) view.getTag());
                 }
-            };
-
-    private final View.OnLongClickListener mEditLongClickListener =
-            view -> {
-                if (mTaskClickListener != null) {
-                    mTaskClickListener.onTaskEditLongClicked((TaskBundle) view.getTag(), view);
-                    return true;
-                }
-
-                return false;
             };
 
     private final View.OnLongClickListener mViewLongClickListener =

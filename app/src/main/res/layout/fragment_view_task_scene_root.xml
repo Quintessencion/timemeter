@@ -27,7 +27,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="8dp"
         android:layout_below="@+id/separatorLine"
         android:layout_toLeftOf="@+id/actionsPanel"/>
 

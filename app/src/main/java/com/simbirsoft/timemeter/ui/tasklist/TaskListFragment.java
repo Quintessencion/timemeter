@@ -75,7 +75,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
 
     private static final String SNACKBAR_TAG = "task_list_snackbar";
     private static final String TASK_LIST_LOADER_TAG = "TaskListFragment_";
-    public static final int REQUEST_CODE_EDIT_TASK = 100;
+    private static final int REQUEST_CODE_EDIT_TASK = 100;
     private static final int COLUMN_COUNT_DEFAULT = 2;
     private int mColumnCount;
 
@@ -363,21 +363,6 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     }
 
     @Override
-    public void onTaskEditClicked(TaskBundle item) {
-        LOG.debug("edit task: {}", item);
-
-        SnackbarManager.dismiss();
-
-        Bundle args = new Bundle();
-        args.putString(EditTaskFragment.EXTRA_TITLE, getString(R.string.title_edit_task));
-        args.putLong(EditTaskFragment.EXTRA_TASK_ID, item.getTask().getId());
-
-        Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
-                getActivity(), EditTaskFragment_.class.getName(), args);
-        getActivity().startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TASK);
-    }
-
-    @Override
     public void onTaskViewClicked(TaskBundle item) {
         LOG.debug("view task: {}", item);
 
@@ -386,15 +371,11 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         Bundle args = new Bundle();
         args.putString(ViewTaskFragment.EXTRA_TITLE, item.getTask().getDescription());
         args.putLong(ViewTaskFragment.EXTRA_TASK_ID, item.getTask().getId());
+        args.putParcelable(ViewTaskFragment.EXTRA_TASK_BUNDLE, item);
 
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), ViewTaskFragment_.class.getName(), args);
         getActivity().startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TASK);
-    }
-
-    @Override
-    public void onTaskEditLongClicked(TaskBundle item, View itemView) {
-        showToastWithAnchor(R.string.hint_edit_task, itemView);
     }
 
     @Override
