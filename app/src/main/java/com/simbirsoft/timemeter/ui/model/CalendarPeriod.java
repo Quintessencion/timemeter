@@ -1,6 +1,8 @@
 package com.simbirsoft.timemeter.ui.model;
 
 
+import android.os.Parcelable;
+import android.os.Parcel;
 import com.google.common.collect.Lists;
 
 import java.text.SimpleDateFormat;
@@ -9,24 +11,40 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-public class CalendarPeriod {
+public class CalendarPeriod implements Parcelable {
+
+    public static final Parcelable.Creator<CalendarPeriod> CREATOR
+            = new Parcelable.Creator<CalendarPeriod>() {
+        public CalendarPeriod createFromParcel(Parcel in) {
+            return new CalendarPeriod(in);
+        }
+
+        public CalendarPeriod[] newArray(int size) {
+            return new CalendarPeriod[size];
+        }
+    };
+
     private static final SimpleDateFormat DAY_FORMAT = new SimpleDateFormat("d");
     private static final SimpleDateFormat DAY_MONTH_FORMAT = new SimpleDateFormat("d MMM");
     private static final SimpleDateFormat YEAR_FORMAT = new SimpleDateFormat("yyyy");
     private static final int MONTHS_IN_YEAR = 12;
 
-    private final Calendar mStartDate;
-    private final Calendar mEndDate;
-    private final Calendar mPeriodStartMillis;
-    private final Calendar mPeriodEndMillis;
-    private final Calendar mFilterDateMillis;
+    private final Calendar mStartDate = Calendar.getInstance();
+    private final Calendar mEndDate = Calendar.getInstance();
+    private final Calendar mPeriodStartMillis = Calendar.getInstance();
+    private final Calendar mPeriodEndMillis = Calendar.getInstance();
+    private final Calendar mFilterDateMillis = Calendar.getInstance();
 
     public CalendarPeriod() {
-        mStartDate = Calendar.getInstance();
-        mEndDate = Calendar.getInstance();
-        mPeriodStartMillis = Calendar.getInstance();
-        mPeriodEndMillis = Calendar.getInstance();
-        mFilterDateMillis = Calendar.getInstance();
+
+    }
+
+    private CalendarPeriod(Parcel in) {
+        mStartDate.setTimeInMillis(in.readLong());
+        mEndDate.setTimeInMillis(in.readLong());
+        mPeriodStartMillis.setTimeInMillis(in.readLong());
+        mPeriodEndMillis.setTimeInMillis(in.readLong());
+        mFilterDateMillis.setTimeInMillis(in.readLong());
     }
 
     public long getPeriodStartMillis() {
@@ -119,5 +137,19 @@ public class CalendarPeriod {
     public void movePrev() {
         mStartDate.add(Calendar.WEEK_OF_YEAR, -1);
         mEndDate.add(Calendar.WEEK_OF_YEAR, -1);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeLong(mStartDate.getTimeInMillis());
+        parcel.writeLong(mEndDate.getTimeInMillis());
+        parcel.writeLong(mPeriodStartMillis.getTimeInMillis());
+        parcel.writeLong(mPeriodEndMillis.getTimeInMillis());
+        parcel.writeLong(mFilterDateMillis.getTimeInMillis());
     }
 }

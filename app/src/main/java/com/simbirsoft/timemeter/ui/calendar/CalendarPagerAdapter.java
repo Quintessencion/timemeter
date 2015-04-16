@@ -22,6 +22,7 @@ public class CalendarPagerAdapter extends PagerAdapter {
     private Context mContext;
     private CalendarViewPager mViewPager;
     private HashMap<Integer, WeekCalendarView> mViews = Maps.newHashMap();
+    private ArrayList<WeekCalendarView> mCashedViews = Lists.newArrayList();
 
     public CalendarPagerAdapter(Context context, CalendarViewPager viewPager) {
         mContext = context;
@@ -48,6 +49,7 @@ public class CalendarPagerAdapter extends PagerAdapter {
         if (v != null) {
             container.removeView (v);
             mViews.remove(position);
+            mCashedViews.add(v);
         }
     }
 
@@ -101,7 +103,12 @@ public class CalendarPagerAdapter extends PagerAdapter {
     private WeekCalendarView dequeueView(int position) {
         WeekCalendarView v = getView(position);
         if (v == null) {
-            v = new WeekCalendarView(mContext);
+            if (!mCashedViews.isEmpty()) {
+                v = mCashedViews.get(0);
+                mCashedViews.remove(v);
+            } else {
+                v = new WeekCalendarView(mContext);
+            }
             mViews.put(position, v);
         }
         return v;

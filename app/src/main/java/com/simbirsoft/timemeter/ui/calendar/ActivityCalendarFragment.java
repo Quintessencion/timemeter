@@ -24,6 +24,7 @@ import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
 import com.simbirsoft.timemeter.ui.model.ActivityCalendar;
 import com.simbirsoft.timemeter.ui.model.CalendarData;
+import com.simbirsoft.timemeter.ui.model.CalendarPeriod;
 import com.simbirsoft.timemeter.ui.views.CalendarViewPager;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.simbirsoft.timemeter.ui.views.CalendarNavigationView;
@@ -62,6 +63,9 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
     @InstanceState
     FilterView.FilterState mFilterViewState;
 
+    @InstanceState
+    CalendarPeriod mCalendarPeriod;
+
     @Inject
     Bus mBus;
 
@@ -76,12 +80,6 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
     @AfterViews
     void bindViews() {
         mPagerAdapter = new CalendarPagerAdapter(getActivity(), mCalendarViewPager);
-        mCalendarViewPager.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return true;
-            }
-        });
         mCalendarNavigationView.setOnCalendarNavigateListener(this);
         requestLoad(CALENDAR_LOADER_TAG, this);
         mBus.register(this);
@@ -115,7 +113,8 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
 
     @OnJobSuccess(LoadActivityCalendarJob.class)
     public void onCalendarActivityLoaded(LoadJobResult<CalendarData> result) {
-        mCalendarNavigationView.setCalendarPeriod(result.getData().getCalendarPeriod());
+        mCalendarPeriod = result.getData().getCalendarPeriod();
+        mCalendarNavigationView.setCalendarPeriod(mCalendarPeriod);
         mPagerAdapter.setCurrentViewActivityCalendar(result.getData().getActivityCalendar());
     }
 
@@ -127,13 +126,14 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
 
     @Override
     public Job onCreateJob(String s) {
+        LOG.debug("Calendrr create job");
         LoadActivityCalendarJob job = Injection.sJobsComponent.loadActivityCalendarJob();
         job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
 
-        if (mCalendarNavigationView != null && mCalendarNavigationView.getCalendarPeriod() != null) {
-            job.setPrevFilterDateMillis(mCalendarNavigationView.getCalendarPeriod().getFilterDateMillis());
-            job.setStartDate(mCalendarNavigationView.getCalendarPeriod().getStartDate());
-            job.setEndDate(mCalendarNavigationView.getCalendarPeriod().getEndDate());
+        if (mCalendarPeriod != null) {
+            job.setPrevFilterDateMillis(mCalendarPeriod.getFilterDateMillis());
+            job.setStartDate(mCalendarPeriod.getStartDate());
+            job.setEndDate(mCalendarPeriod.getEndDate());
         }
 
         if (mFilterViewState != null) {

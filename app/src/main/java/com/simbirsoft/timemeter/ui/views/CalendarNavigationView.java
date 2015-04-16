@@ -5,14 +5,18 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Paint;
 import android.os.Build;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.SparseArray;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.CalendarPeriod;
 
 import org.androidannotations.annotations.AfterViews;
@@ -139,6 +143,4 @@ public class CalendarNavigationView extends RelativeLayout{
         mNextButton.setEnabled(mCalendarPeriod.canMoveNext());
         mPrevButton.setEnabled(mCalendarPeriod.canMovePrev());
     }
-
-
 }
