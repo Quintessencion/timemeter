@@ -16,11 +16,13 @@ import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
+import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.util.TagViewUtils;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
 
 import org.apmem.tools.layouts.FlowLayout;
+import org.slf4j.Logger;
 
 import java.util.Collections;
 import java.util.List;
@@ -99,9 +101,12 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         int index = Iterables.indexOf(mItems, (input) ->
                 Objects.equal(input.getTask().getId(), item.getTask().getId()));
 
-        Preconditions.checkArgument(index > -1, "no item to replace");
+        if (index < 0) {
+            mItems.add(item);
+        } else {
+            mItems.set(index, item);
+        }
 
-        mItems.set(index, item);
         notifyDataSetChanged();
     }
 
