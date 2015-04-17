@@ -7,11 +7,14 @@ import android.graphics.Paint;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.andexert.library.RippleView;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.ui.model.CalendarPeriod;
 
@@ -31,16 +34,22 @@ public class CalendarNavigationView extends RelativeLayout{
     }
 
 
-    private static final int TEXT_PADDING_DEFAULT_DIP = 5;
+    private static final int TEXT_PADDING_DEFAULT_DIP = 2;
 
     @ViewById(R.id.periodTextView)
     TextView mTextView;
 
     @ViewById(R.id.prevButton)
-    ImageButton mPrevButton;
+    ImageView mPrevButton;
 
     @ViewById(R.id.nextButton)
-    ImageButton mNextButton;
+    ImageView mNextButton;
+
+    @ViewById(R.id.nextButtonRipple)
+    RippleView mNextButtonBackground;
+
+    @ViewById(R.id.prevButtonRipple)
+    RippleView mPrevButtonBackground;
 
     private int mTextPadding;
 
@@ -124,7 +133,7 @@ public class CalendarNavigationView extends RelativeLayout{
 
     private void update() {
         mTextView.setText(mCalendarPeriod.getPeriodString());
-        mNextButton.setVisibility(mCalendarPeriod.canMoveNext() ? VISIBLE : INVISIBLE);
-        mPrevButton.setVisibility(mCalendarPeriod.canMovePrev() ? VISIBLE : INVISIBLE);
+        mNextButtonBackground.setVisibility(mCalendarPeriod.canMoveNext() ? VISIBLE : INVISIBLE);
+        mPrevButtonBackground.setVisibility(mCalendarPeriod.canMovePrev() ? VISIBLE : INVISIBLE);
     }
 }

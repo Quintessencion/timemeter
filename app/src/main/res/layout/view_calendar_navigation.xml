@@ -15,23 +15,37 @@
         android:layout_centerInParent="true"
         android:gravity="center"/>
 
-    <ImageButton
+    <com.andexert.library.RippleView
+        android:id="@+id/prevButtonRipple"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/prevButton"
         android:layout_centerVertical="true"
+        android:padding="10dp"
         android:layout_toStartOf="@+id/periodTextView"
         android:layout_toLeftOf="@+id/periodTextView"
-        android:background="?android:selectableItemBackground"
-        android:src="@drawable/ic_keyboard_arrow_left"/>
+        rv_centered="true">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/prevButton"
+            android:layout_centerInParent="true"
+            android:src="@drawable/ic_keyboard_arrow_left"/>
+        </com.andexert.library.RippleView>
 
-    <ImageButton
+    <com.andexert.library.RippleView
+        android:id="@+id/nextButtonRipple"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/nextButton"
         android:layout_centerVertical="true"
+        android:padding="10dp"
         android:layout_toEndOf="@+id/periodTextView"
         android:layout_toRightOf="@+id/periodTextView"
-        android:background="?android:selectableItemBackground"
-        android:src="@drawable/ic_keyboard_arrow_right"/>
+        rv_centered="true">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/nextButton"
+            android:layout_centerInParent="true"
+            android:src="@drawable/ic_keyboard_arrow_right"/>
+    </com.andexert.library.RippleView>
 </RelativeLayout>

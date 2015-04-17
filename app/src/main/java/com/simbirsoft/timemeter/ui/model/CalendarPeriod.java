@@ -87,7 +87,9 @@ public class CalendarPeriod implements Parcelable {
 
     public String getPeriodString() {
         if (mStartDate.getTimeInMillis() == 0 || mEndDate.getTimeInMillis() == 0) return "";
-        return DATE_FORMAT.format(mStartDate.getTime());
+        Date date = (mStartDate.get(Calendar.MONTH) != mEndDate.get(Calendar.MONTH) &&
+                mEndDate.get(Calendar.DAY_OF_MONTH) >= 4) ? mEndDate.getTime() : mStartDate.getTime();
+        return DATE_FORMAT.format(date);
     }
 
 
