@@ -9,6 +9,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.Menu;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
@@ -165,16 +166,37 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         return (MainFragment) getSupportFragmentManager().findFragmentByTag(TAG_CONTENT_FRAGMENT);
     }
 
+    public void restoreActionBar() {
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+        actionBar.setDisplayShowTitleEnabled(true);
+        actionBar.setTitle(mTitle);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (!mNavigationDrawerFragment.isDrawerOpen()) {
+            // Only show items in the action bar relevant to this screen
+            // if the drawer is not showing. Otherwise, let the drawer
+            // decide what to show in the action bar.
+            getMenuInflater().inflate(R.menu.main, menu);
+            restoreActionBar();
+            return true;
+        }
+        return super.onCreateOptionsMenu(menu);
+    }
+
     public void onSectionAttached(int number) {
         switch (number) {
-            case 1:
-                mTitle = getString(R.string.title_tasks);
+            case SECTION_ID_TASKS:
+                mTitle = getString(R.string.app_name);//getString(R.string.title_tasks);
                 break;
-            case 2:
+            case SECTION_ID_TAGS:
                 mTitle = getString(R.string.title_tags);
                 break;
-            case 3:
-                mTitle = getString(R.string.title_stats);
+            default:
+                LOG.error("unknown section title attached");
+                mTitle = getString(R.string.title_tasks);
                 break;
         }
     }

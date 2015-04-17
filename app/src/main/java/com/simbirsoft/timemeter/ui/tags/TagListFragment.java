@@ -1,10 +1,9 @@
 package com.simbirsoft.timemeter.ui.tags;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -38,8 +37,8 @@ import com.simbirsoft.timemeter.jobs.RemoveTagJob;
 import com.simbirsoft.timemeter.jobs.SaveTagJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
-import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
+import com.simbirsoft.timemeter.ui.main.MainActivity;
 import com.simbirsoft.timemeter.ui.main.MainFragment;
 import com.simbirsoft.timemeter.ui.tasklist.TaskListFragment;
 import com.simbirsoft.timemeter.ui.model.TagBundle;
@@ -116,17 +115,15 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
                 }
             };
 
-    private void setActionBarTitle(String title) {
-        ActionBar mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
-        if (title != null) {
-            mActionBar.setTitle(title);
-        }
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        ((MainActivity) activity).onSectionAttached(getSectionId());
     }
 
     @AfterViews
     void bindViews() {
         mToolbar = ((BaseActivity) getActivity()).getToolbar();
-        setActionBarTitle(getString(R.string.title_tags));
         RecyclerView.LayoutManager mTagListLayoutManager = new LinearLayoutManager(
                 getActivity(),
                 LinearLayoutManager.VERTICAL,
