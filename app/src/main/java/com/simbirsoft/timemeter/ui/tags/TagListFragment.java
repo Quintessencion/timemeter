@@ -3,6 +3,8 @@ package com.simbirsoft.timemeter.ui.tags;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -114,9 +116,17 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
                 }
             };
 
+    private void setActionBarTitle(String title) {
+        ActionBar mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
+        if (title != null) {
+            mActionBar.setTitle(title);
+        }
+    }
+
     @AfterViews
     void bindViews() {
         mToolbar = ((BaseActivity) getActivity()).getToolbar();
+        setActionBarTitle(getString(R.string.title_tags));
         RecyclerView.LayoutManager mTagListLayoutManager = new LinearLayoutManager(
                 getActivity(),
                 LinearLayoutManager.VERTICAL,
