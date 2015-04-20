@@ -22,6 +22,7 @@ import com.squareup.phrase.Phrase;
 
 import org.slf4j.Logger;
 
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -166,20 +167,28 @@ public class LoadActivityCalendarJob extends LoadJob implements FilterableJob {
             mStartDate = null;
             mEndDate = null;
         }
-        if (filterDateMillis > 0) {
-            mPeriodStartMillis = TimeUtils.getWeekFirstDayStartMillis(filterDateMillis);
-            if (filterPeriod != null) {
-                long filterPeriodEnd = Period.getPeriodEnd(filterPeriod, filterDateMillis);
-                if (filterPeriodEnd != 0) {
-                    mPeriodEndMillis = TimeUtils.getWeekLastDayStartMillis(filterPeriodEnd);
-                }
-            }
-        }
+        calculatePeriodStartEnd(filterDateMillis, filterPeriod);
         if (mStartDate != null && mEndDate != null) return;
         long startDateMillis = (mPeriodStartMillis > 0) ? mPeriodStartMillis :
                 TimeUtils.getWeekFirstDayStartMillis(new Date().getTime());
         mStartDate = new Date(startDateMillis);
         mEndDate = new Date(TimeUtils.getWeekLastDayStartMillis(startDateMillis));
+    }
+
+    private void calculatePeriodStartEnd(long filterDateMillis, Period filterPeriod) {
+        if (filterDateMillis == 0) return;
+        mPeriodStartMillis = TimeUtils.getWeekFirstDayStartMillis(filterDateMillis);
+        if (filterPeriod == null) return;
+        long filterPeriodEnd = Period.getPeriodEnd(filterPeriod, filterDateMillis);
+        if (filterPeriodEnd == 0) return;
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(filterPeriodEnd);
+        calendar.add(Calendar.DAY_OF_YEAR, -1);
+        mPeriodEndMillis = TimeUtils.getWeekLastDayStartMillis(calendar);
+        if (mEndDate != null && mEndDate.getTime() > mPeriodEndMillis) {
+            mStartDate = null;
+            mEndDate = null;
+        }
     }
 
 }

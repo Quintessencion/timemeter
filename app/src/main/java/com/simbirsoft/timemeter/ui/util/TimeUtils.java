@@ -39,7 +39,8 @@ public final class TimeUtils {
 
     public static long getWeekFirstDayStartMillis(Calendar calendar) {
         calendar.setTimeInMillis(getDayStartMillis(calendar));
-        calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+        int days = calendar.get(Calendar.DAY_OF_WEEK) - Calendar.MONDAY;
+        calendar.add(Calendar.DAY_OF_YEAR, (days >=0) ? -days : (-days - 7));
         return calendar.getTimeInMillis();
     }
 
@@ -50,9 +51,9 @@ public final class TimeUtils {
     }
 
     public static long getWeekLastDayStartMillis(Calendar calendar) {
-        calendar.setTimeInMillis(getWeekFirstDayStartMillis(calendar));
-        calendar.add(Calendar.WEEK_OF_YEAR, 1);
-        calendar.add(Calendar.DAY_OF_YEAR, -1);
+        calendar.setTimeInMillis(getDayStartMillis(calendar));
+        int days = Calendar.SUNDAY - calendar.get(Calendar.DAY_OF_WEEK);
+        calendar.add(Calendar.DAY_OF_YEAR, (days >=0) ? days : (7 + days));
         return calendar.getTimeInMillis();
     }
 
