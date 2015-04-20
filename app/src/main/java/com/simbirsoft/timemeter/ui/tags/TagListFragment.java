@@ -38,8 +38,11 @@ import com.simbirsoft.timemeter.jobs.SaveTagJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
+import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.MainActivity;
 import com.simbirsoft.timemeter.ui.main.MainFragment;
+import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
+import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
 import com.simbirsoft.timemeter.ui.tasklist.TaskListFragment;
 import com.simbirsoft.timemeter.ui.model.TagBundle;
 import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerDialog;
@@ -63,6 +66,8 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
     private static final Logger LOG = LogFactory.getLogger(TaskListFragment.class);
 
     private static final int REQUEST_CODE_EDIT_TAG_NAME = 10002;
+    private static final int REQUEST_CODE_CREATE_TAG = 10003;
+
     private static final String SNACKBAR_TAG = "tag_list_snackbar";
     private static final int DEFAULT_COLOR_COLUMNS_COUNT = 4;
     private static final String TAG_COLOR_PICKER = "color_picker";
@@ -199,6 +204,22 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.create_tag:
+                boolean isTablet = getResources().getBoolean(R.bool.isTablet);
+                int[] colors = getResources().getIntArray(R.array.default_tag_colors);
+                int size = isTablet ? CreateTagFragment.SIZE_LARGE : CreateTagFragment.SIZE_SMALL;
+
+                Bundle args = new Bundle();
+                args.putString(CreateTagFragment.EXTRA_TITLE, getString(R.string.title_create_tag));
+                args.putIntArray(CreateTagFragment.KEY_COLORS, colors);
+                args.putInt(CreateTagFragment.KEY_COLUMNS, DEFAULT_COLOR_COLUMNS_COUNT);
+                args.putInt(CreateTagFragment.KEY_SIZE, size);
+
+                Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
+                        getActivity(), CreateTagFragment_.class.getName(), args);
+                getActivity().startActivityForResult(launchIntent, REQUEST_CODE_CREATE_TAG);
+                return true;
+
             case R.id.edit:
                 startActionMode();
                 return true;
@@ -362,7 +383,13 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
                     Tag tag = data.getParcelableExtra(EditTagNameDialogFragment.EXTRA_TAG);
                     mTagListAdapter.replaceItem(mRecyclerView, tag);
                 }
+                return;
 
+            case REQUEST_CODE_CREATE_TAG:
+//                if (resultCode == ) {
+//                    Tag tag = data.getParcelableArrayExtra(CreateTagFragment.EXTRA_TAG);
+//                    //mTagListAdapter.
+//                }
                 return;
 
             default:

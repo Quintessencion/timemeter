@@ -3,6 +3,11 @@
       xmlns:tools="http://schemas.android.com/tools"
       tools:context=".MainActivity">
     <item
+        android:id="@+id/create_tag"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_add_white_24dp"
+        android:title="@string/action_create_tag"/>
+    <item
         android:id="@+id/edit"
         app:showAsAction="ifRoom"
         android:icon="@drawable/ic_edit_white_24dp"

@@ -8,6 +8,7 @@
     <string name="title_activity_calendar">Календарь</string>
     <string name="title_begin_new_task">Начать новую задачу</string>
     <string name="title_edit_task">Редактировать задачу</string>
+    <string name="title_create_tag">Новая метка</string>
     <string name="title_view_task">Просмотреть задачу</string>
     <string name="title_view_params">ФИЛЬТР</string>
     <string name="title_view_date">ДАТА:</string>
@@ -88,6 +89,8 @@
     <string name="dialog_remove_task_warning_message">Удалить задачу?</string>
     <string name="dialog_edit_tag_name_title">Введите название метки</string>
     <string name="dialog_edit_tag_color_title">Выберите цвет</string>
+    <string name="dialog_cancel_tag_changes_warning_title">Метка не сохранена</string>
+    <string name="dialog_cancel_tag_changes_warning_message">Завершить редактирование без сохранения?</string>
 
     <string-array name="period_array">
         <item>День</item>
