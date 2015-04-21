@@ -255,13 +255,24 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     public void removeItem(Tag item) {
         synchronized (mItemsOriginal) {
             removeItemImpl(item);
-            removeItemImpl(item);
         }
     }
 
     private void removeItemImpl(Tag item) {
         mItems.remove(item);
         mItemsOriginal.remove(item);
+        notifyDataSetChanged();
+    }
+
+    public void addItem(Tag item) {
+        synchronized (mItemsOriginal) {
+            addItemImpl(item);
+        }
+    }
+
+    private void addItemImpl(Tag item) {
+        mItems.add(item);
+        mItemsOriginal.add(item);
         notifyDataSetChanged();
     }
 

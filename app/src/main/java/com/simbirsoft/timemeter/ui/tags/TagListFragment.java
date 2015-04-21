@@ -386,10 +386,10 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
                 return;
 
             case REQUEST_CODE_CREATE_TAG:
-//                if (resultCode == ) {
-//                    Tag tag = data.getParcelableArrayExtra(CreateTagFragment.EXTRA_TAG);
-//                    //mTagListAdapter.
-//                }
+                if (resultCode == CreateTagFragment.RESULT_CODE_OK) {
+                    Tag tag = data.getParcelableExtra(CreateTagFragment.EXTRA_TAG);
+                    mTagListAdapter.addItem(tag);
+                }
                 return;
 
             default:
