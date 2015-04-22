@@ -129,6 +129,13 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
         }
     }
 
+    private static final Comparator<Tag> tagComparator = new Comparator<Tag>() {
+        @Override
+        public int compare(Tag lhs, Tag rhs) {
+            return lhs.getName().compareTo(rhs.getName());
+        }
+    };
+
     private long mToggleActionPanelTimeMillis;
     private boolean mIsActionButtonsShown;
     private final List<Tag> mItemsOriginal;
@@ -275,12 +282,6 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     private void addItemImpl(Tag item) {
         mItems.add(item);
         mItemsOriginal.add(item);
-        Comparator<Tag> tagComparator = new Comparator<Tag>() {
-            @Override
-            public int compare(Tag lhs, Tag rhs) {
-                return lhs.getName().compareTo(rhs.getName());
-            }
-        };
         Collections.sort(mItems, tagComparator);
         Collections.sort(mItemsOriginal, tagComparator);
         notifyDataSetChanged();

@@ -83,6 +83,7 @@
     <string name="error_unable_to_remove_tag">Ошибка при удалении метки</string>
     <string name="error_unable_to_backup_tag">Ошибка при восстановлении метки</string>
     <string name="error_unable_to_backup_task">Ошибка при восстановлении задачи</string>
+    <string name="error_tag_has_already_exists">Тэг с таким именем уже существует</string>
 
     <!-- Dialogs -->
     <string name="dialog_cancel_task_changes_warning_title">Задача не сохранена</string>

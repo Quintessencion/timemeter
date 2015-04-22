@@ -1,7 +1,6 @@
 package com.simbirsoft.timemeter.ui.tags;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -15,9 +14,6 @@ import android.widget.ProgressBar;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
-import com.nispok.snackbar.Snackbar;
-import com.nispok.snackbar.SnackbarManager;
-import com.nispok.snackbar.enums.SnackbarType;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.injection.Injection;
@@ -55,8 +51,6 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
 
     private static final int REQUEST_CODE_DISCARD_CHANGES_AND_EXIT = 212;
 
-    private static final String SNACKBAR_TAG = "tag_list_snackbar";
-
     private static final Logger LOG = LogFactory.getLogger(CreateTagFragment.class);
 
     @FragmentArg(EXTRA_TITLE)
@@ -81,11 +75,10 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
     ProgressBar mProgress;
 
     private int mSelectedColor;
-    private ActionBar mActionBar;
 
     @AfterViews
     void bindViews() {
-        mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
+        ActionBar mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
         if (mExtraTitle != null) {
             mActionBar.setTitle(mExtraTitle);
         }
@@ -106,18 +99,7 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
 
     @Override
     public void onDestroy() {
-        LOG.debug("destroy");
-        Snackbar sb = SnackbarManager.getCurrentSnackbar();
-        if (sb != null && sb.isShowing() && SNACKBAR_TAG.equals(sb.getTag())) {
-            sb.dismiss();
-        }
         super.onDestroy();
-    }
-
-    @Override
-    public void onPause() {
-        LOG.debug("pause");
-        super.onPause();
     }
 
     @Override
@@ -139,21 +121,12 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
                 }
                 return true;
         }
-        LOG.debug("default");
         return super.onOptionsItemSelected(item);
     }
 
     private boolean validateInput() {
-        LOG.debug("Check input:");
         if (TextUtils.isEmpty(mTagName.getText().toString())) {
-            LOG.debug("tag name is empty -> show snackbar");
-            Snackbar bar = Snackbar.with(getActivity())
-                    .type(SnackbarType.MULTI_LINE)
-                    .text(R.string.hint_tag_name_is_empty)
-                    .colorResource(R.color.lightRed)
-                    .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE);
-            bar.setTag(SNACKBAR_TAG);
-            SnackbarManager.show(bar);
+            showSnackBarLightRed(R.string.hint_tag_name_is_empty);
             return false;
         }
 
@@ -162,10 +135,8 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        LOG.debug("Result activity:");
         switch(requestCode) {
             case REQUEST_CODE_DISCARD_CHANGES_AND_EXIT:
-                LOG.debug("with code: REQUEST_CODE_DISCARD_CHANGES_AND_EXIT");
                 if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
                     getActivity().finish();
                     return;
@@ -213,13 +184,7 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
 
     @OnJobFailure(SaveTagJob.class)
     public void onSaveTagFailed() {
-        Snackbar bar = Snackbar.with(getActivity())
-                .type(SnackbarType.MULTI_LINE)
-                .text(R.string.error_unable_to_save_tag)
-                .colorResource(R.color.lightRed)
-                .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE);
-        bar.setTag(SNACKBAR_TAG);
-        SnackbarManager.show(bar);
+        showSnackBarLightRed(R.string.error_tag_has_already_exists);
     }
 
     @OnJobSuccess(SaveTagJob.class)
