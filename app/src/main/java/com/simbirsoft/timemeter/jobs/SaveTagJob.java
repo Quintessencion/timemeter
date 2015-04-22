@@ -69,11 +69,28 @@ public class SaveTagJob extends BaseJob {
 
     @Override
     protected JobEvent executeImpl() throws Exception {
-        LOG.trace("saving tag {}", mTag);
         SQLiteDatabase db = mDatabaseHelper.getWritableDatabase();
-        cupboard().withDatabase(db).put(mTag);
-        LOG.trace("saved tag {}", mTag);
+        DatabaseCompartment cupboard = cupboard().withDatabase(db);
 
-        return new SaveTagResult(mTag);
+        try {
+            db.beginTransaction();
+
+            Tag tag = cupboard.query(Tag.class)
+                    .withSelection(Tag.COLUMN_NAME + "=?", mTag.getName())
+                    .query()
+                    .get();
+
+            Preconditions.checkState((tag == null), String.format("tag name:'%s' have already exists", mTag.getName()));
+
+            LOG.trace("saving tag {}", mTag);
+            cupboard.put(mTag);
+            LOG.trace("saved tag {}", mTag);
+
+            db.setTransactionSuccessful();
+
+            return new SaveTagResult(mTag);
+        } finally {
+            db.endTransaction();
+        }
     }
 }

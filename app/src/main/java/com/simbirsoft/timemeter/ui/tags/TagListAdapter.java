@@ -23,6 +23,8 @@ import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.ui.util.TagViewUtils;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -273,6 +275,18 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     private void addItemImpl(Tag item) {
         mItems.add(item);
         mItemsOriginal.add(item);
+        Collections.sort(mItems, new Comparator<Tag>() {
+            @Override
+            public int compare(Tag lhs, Tag rhs) {
+                return lhs.getName().compareTo(rhs.getName());
+            }
+        });
+        Collections.sort(mItemsOriginal, new Comparator<Tag>() {
+            @Override
+            public int compare(Tag lhs, Tag rhs) {
+                return lhs.getName().compareTo(rhs.getName());
+            }
+        });
         notifyDataSetChanged();
     }
 

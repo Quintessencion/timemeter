@@ -29,6 +29,7 @@
     <string name="caption_empty_chart">Нет данных</string>
     <string name="content_empty">Нет данных</string>
     <string name="caption_progress">Загрузка&#8230;</string>
+    <string name="label_color">Цвет</string>
 
     <!-- Actions -->
     <string name="action_search">Поиск</string>
@@ -59,6 +60,7 @@
     <string name="hint_edit_task">Редактировать задачу</string>
     <string name="hint_view_task">Просмотреть задачу</string>
     <string name="hint_task_description_is_empty">Пожалуйста, введите описание задачи</string>
+    <string name="hint_tag_name_is_empty">Пожалуйста, введите название метки</string>
     <string name="hint_task_removed">Задача удалена</string>
     <string name="hint_tag_removed">Метка удалена</string>
     <string name="hint_tag_name">Название метки</string>
