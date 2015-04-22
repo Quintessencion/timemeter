@@ -72,25 +72,33 @@ public class SaveTagJob extends BaseJob {
         SQLiteDatabase db = mDatabaseHelper.getWritableDatabase();
         DatabaseCompartment cupboard = cupboard().withDatabase(db);
 
-        try {
-            db.beginTransaction();
-
-            Tag tag = cupboard.query(Tag.class)
-                    .withSelection(Tag.COLUMN_NAME + "=?", mTag.getName())
-                    .query()
-                    .get();
-
-            Preconditions.checkState((tag == null), String.format("tag name:'%s' have already exists", mTag.getName()));
-
+        if (mTag.hasId()) {
             LOG.trace("saving tag {}", mTag);
             cupboard.put(mTag);
             LOG.trace("saved tag {}", mTag);
 
-            db.setTransactionSuccessful();
-
             return new SaveTagResult(mTag);
-        } finally {
-            db.endTransaction();
+        } else {
+            try {
+                db.beginTransaction();
+
+                Tag tag = cupboard.query(Tag.class)
+                        .withSelection(Tag.COLUMN_NAME + "=?", mTag.getName())
+                        .query()
+                        .get();
+
+                Preconditions.checkState((tag == null), String.format("tag name:'%s' have already exists", mTag.getName()));
+
+                LOG.trace("saving tag {}", mTag);
+                cupboard.put(mTag);
+                LOG.trace("saved tag {}", mTag);
+
+                db.setTransactionSuccessful();
+
+                return new SaveTagResult(mTag);
+            } finally {
+                db.endTransaction();
+            }
         }
     }
 }
