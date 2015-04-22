@@ -16,11 +16,13 @@ import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
+import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.util.TagViewUtils;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
 
 import org.apmem.tools.layouts.FlowLayout;
+import org.slf4j.Logger;
 
 import java.util.Collections;
 import java.util.List;
@@ -30,8 +32,8 @@ import java.util.Stack;
 public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
 
     static interface TaskClickListener {
-        void onTaskEditClicked(TaskBundle item);
-        void onTaskEditLongClicked(TaskBundle item, View itemView);
+        void onTaskViewClicked(TaskBundle item);
+        void onTaskViewLongClicked(TaskBundle item, View itemView);
         void onTaskCardClicked(TaskBundle item);
     }
 
@@ -60,17 +62,17 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                 }
             };
 
-    private final View.OnClickListener mEditClickListener =
+    private final View.OnClickListener mViewClickListener =
             view -> {
                 if (mTaskClickListener != null) {
-                    mTaskClickListener.onTaskEditClicked((TaskBundle) view.getTag());
+                    mTaskClickListener.onTaskViewClicked((TaskBundle) view.getTag());
                 }
             };
 
-    private final View.OnLongClickListener mEditLongClickListener =
+    private final View.OnLongClickListener mViewLongClickListener =
             view -> {
                 if (mTaskClickListener != null) {
-                    mTaskClickListener.onTaskEditLongClicked((TaskBundle) view.getTag(), view);
+                    mTaskClickListener.onTaskViewLongClicked((TaskBundle) view.getTag(), view);
                     return true;
                 }
 
@@ -99,9 +101,12 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         int index = Iterables.indexOf(mItems, (input) ->
                 Objects.equal(input.getTask().getId(), item.getTask().getId()));
 
-        Preconditions.checkArgument(index > -1, "no item to replace");
+        if (index < 0) {
+            mItems.add(item);
+        } else {
+            mItems.set(index, item);
+        }
 
-        mItems.set(index, item);
         notifyDataSetChanged();
     }
 
@@ -148,10 +153,10 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         holder.titleView = (TextView) view.findViewById(android.R.id.title);
         holder.timerView = (TextView) view.findViewById(R.id.timerText);
         holder.tagContainerView = (FlowLayout) view.findViewById(R.id.tagViewContainer);
-        holder.itemEditView = view.findViewById(android.R.id.edit);
-        holder.itemEditView.setOnClickListener(mEditClickListener);
-        holder.itemEditView.setOnLongClickListener(mEditLongClickListener);
 
+        holder.itemEditView = view.findViewById(R.id.edit_or_view);
+        holder.itemEditView.setOnClickListener(mViewClickListener);
+        holder.itemEditView.setOnLongClickListener(mViewLongClickListener);
         return holder;
     }
 

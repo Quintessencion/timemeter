@@ -1,45 +1,75 @@
 package com.simbirsoft.timemeter.ui.main;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.view.ViewGroup;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.simbirsoft.timemeter.R;
 
 import java.util.Collection;
 import java.util.List;
 
 public class MainPagerAdapter extends FragmentPagerAdapter {
 
-    private final Resources mResources;
-
     public static interface PageTitleProvider {
         String getPageTitle(Resources resources);
     }
 
-    private final List<Fragment> mFragments;
+    private final Context mContext;
+    private final FragmentManager mFragmentManager;
+    private final int mPagerViewId;
+    private final Resources mResources;
 
-    public MainPagerAdapter(Resources resources, FragmentManager fm) {
+    private final List<PageItem> mPages;
+
+    public MainPagerAdapter(Context context, FragmentManager fm, int pagerViewId) {
         super(fm);
-        mResources = resources;
 
-        mFragments = Lists.newArrayList();
+        mContext = context;
+        mFragmentManager = fm;
+        mPagerViewId = pagerViewId;
+        mResources = context.getResources();
+        mPages = Lists.newArrayList();
     }
 
-    public void addFragments(Collection<Fragment> fragments) {
-        mFragments.addAll(fragments);
+    public void setPages(Collection<PageItem> pages) {
+        mPages.clear();
+        mPages.addAll(pages);
         notifyDataSetChanged();
+    }
+
+    public PageItem getPage(int position) {
+        Preconditions.checkPositionIndex(position, mPages.size());
+
+        return mPages.get(position);
     }
 
     @Override
     public Fragment getItem(int position) {
-        return mFragments.get(position);
+        PageItem page = getPage(position);
+
+        Fragment pageFragment = page.getFragment();
+        if (pageFragment == null) {
+            pageFragment = mFragmentManager.findFragmentByTag(getPageFragmentTag(position));
+
+            if (pageFragment == null) {
+                pageFragment = Fragment.instantiate(mContext, page.fragmentName());
+            }
+
+            page.setFragment(pageFragment);
+        }
+
+        return pageFragment;
     }
 
     @Override
     public int getCount() {
-        return mFragments.size();
+        return mPages.size();
     }
 
     @Override
@@ -51,5 +81,9 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
         }
 
         return page.getClass().getSimpleName();
+    }
+
+    private String getPageFragmentTag(int position) {
+        return "android:switcher:" + String.valueOf(mPagerViewId) + ":" + String.valueOf(position);
     }
 }

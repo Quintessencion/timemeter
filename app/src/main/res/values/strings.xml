@@ -8,6 +8,7 @@
     <string name="title_activity_calendar">Календарь</string>
     <string name="title_begin_new_task">Начать новую задачу</string>
     <string name="title_edit_task">Редактировать задачу</string>
+    <string name="title_view_task">Просмотреть задачу</string>
     <string name="title_view_params">ФИЛЬТР</string>
     <string name="title_view_date">ДАТА:</string>
     <string name="title_view_tags">МЕТКИ:</string>
@@ -55,6 +56,7 @@
     <string name="hint_edit">Редактировать</string>
     <string name="hint_remove">Удалить</string>
     <string name="hint_edit_task">Редактировать задачу</string>
+    <string name="hint_view_task">Просмотреть задачу</string>
     <string name="hint_task_description_is_empty">Пожалуйста, введите описание задачи</string>
     <string name="hint_task_removed">Задача удалена</string>
     <string name="hint_tag_removed">Метка удалена</string>

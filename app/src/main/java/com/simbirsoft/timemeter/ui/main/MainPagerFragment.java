@@ -29,7 +29,6 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.log.LogFactory;
-import com.simbirsoft.timemeter.ui.util.KeyboardUtils;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
@@ -152,15 +151,9 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mFilterView.setTokenListener(this);
         mFilterView.setOnSelectDateClickListener(this);
 
-        mPagerAdapter = new MainPagerAdapter(getResources(), getChildFragmentManager());
+        mPagerAdapter = new MainPagerAdapter(getActivity(), getChildFragmentManager(), R.id.pager);
         if (mPageNames != null) {
-            List<Fragment> pages = Lists.newArrayListWithCapacity(mPageNames.size());
-            for (String pageFragmentName : mPageNames) {
-                Fragment pageFragment = Fragment.instantiate(getActivity(), pageFragmentName);
-                pages.add(pageFragment);
-                LOG.debug("page created: {}", pageFragment.getClass().getSimpleName());
-            }
-            mPagerAdapter.addFragments(pages);
+            mPagerAdapter.setPages(Lists.transform(mPageNames, PageItem::create));
         }
         mViewPager.setOffscreenPageLimit(2);
         mViewPager.setAdapter(mPagerAdapter);

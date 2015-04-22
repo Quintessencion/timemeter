@@ -47,6 +47,8 @@ import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
+import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
+import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
 import com.simbirsoft.timemeter.ui.util.TaskFilterPredicate;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.squareup.otto.Bus;
@@ -74,7 +76,6 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     private static final String SNACKBAR_TAG = "task_list_snackbar";
     private static final String TASK_LIST_LOADER_TAG = "TaskListFragment_";
     private static final int REQUEST_CODE_EDIT_TASK = 100;
-
     private static final int COLUMN_COUNT_DEFAULT = 2;
     private int mColumnCount;
 
@@ -273,6 +274,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
                         LOG.debug("result: task created");
                         addTaskToList(bundle);
                         break;
+
                     case EditTaskFragment.RESULT_CODE_TASK_RECREATED:
                         LOG.debug("result: task recreated");
                         requestReload(TASK_LIST_LOADER_TAG, this);
@@ -361,23 +363,22 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     }
 
     @Override
-    public void onTaskEditClicked(TaskBundle item) {
-        LOG.debug("edit task: {}", item);
+    public void onTaskViewClicked(TaskBundle item) {
+        LOG.debug("view task: {}", item);
 
         SnackbarManager.dismiss();
 
         Bundle args = new Bundle();
-        args.putString(EditTaskFragment.EXTRA_TITLE, getString(R.string.title_edit_task));
-        args.putLong(EditTaskFragment.EXTRA_TASK_ID, item.getTask().getId());
+        args.putParcelable(ViewTaskFragment.EXTRA_TASK_BUNDLE, item);
 
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
-                getActivity(), EditTaskFragment_.class.getName(), args);
+                getActivity(), ViewTaskFragment_.class.getName(), args);
         getActivity().startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TASK);
     }
 
     @Override
-    public void onTaskEditLongClicked(TaskBundle item, View itemView) {
-        showToastWithAnchor(R.string.hint_edit_task, itemView);
+    public void onTaskViewLongClicked(TaskBundle item, View itemView) {
+        showToastWithAnchor(R.string.hint_view_task, itemView);
     }
 
     private void backupRemovedTask(TaskBundle taskBundle, Snackbar snackbar) {
