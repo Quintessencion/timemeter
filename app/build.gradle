@@ -109,4 +109,5 @@ dependencies {
     }
     compile 'com.github.frankiesardo:auto-parcel:0.3'
     apt 'com.github.frankiesardo:auto-parcel-processor:0.3'
+    compile 'com.rengwuxian.materialedittext:library:2.0.3'
 }
