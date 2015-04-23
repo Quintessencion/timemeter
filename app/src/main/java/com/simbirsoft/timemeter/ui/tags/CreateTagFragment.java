@@ -24,8 +24,6 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.AppAlertDialogFragment;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
-import com.simbirsoft.timemeter.ui.main.MainActivity;
-import com.simbirsoft.timemeter.ui.main.MainActivity_;
 import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerPalette;
 import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerSwatch;
 
@@ -35,9 +33,6 @@ import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
-/**
- * Created by Alexander Ismailov on 20.04.15.
- */
 @EFragment(R.layout.fragment_tag_create)
 public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch.OnColorSelectedListener {
 
@@ -54,8 +49,6 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
     protected static final String KEY_SIZE = "size";
 
     private static final int REQUEST_CODE_DISCARD_CHANGES_AND_EXIT = 212;
-
-    private static final Logger LOG = LogFactory.getLogger(CreateTagFragment.class);
 
     @FragmentArg(EXTRA_TITLE)
     String mExtraTitle;
@@ -99,11 +92,6 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
         super.onCreate(savedInstanceState);
 
         setHasOptionsMenu(true);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
     }
 
     public static void hideKeyboard(Activity activity) {
