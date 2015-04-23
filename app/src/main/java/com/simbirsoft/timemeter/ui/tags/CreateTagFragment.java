@@ -1,6 +1,7 @@
 package com.simbirsoft.timemeter.ui.tags;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -9,6 +10,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 
@@ -22,6 +24,8 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.AppAlertDialogFragment;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
+import com.simbirsoft.timemeter.ui.main.MainActivity;
+import com.simbirsoft.timemeter.ui.main.MainActivity_;
 import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerPalette;
 import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerSwatch;
 
@@ -102,14 +106,21 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
         super.onDestroy();
     }
 
+    public static void hideKeyboard(Activity activity) {
+        if (activity != null &&
+            activity.getWindow() != null &&
+            activity.getWindow().getDecorView() != null) {
+            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(activity.getWindow().getDecorView().getWindowToken(), 0);
+        }
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        LOG.debug("Options item selected:");
         switch(item.getItemId()) {
             case android.R.id.home:
-                LOG.debug("selected home");
+                hideKeyboard(getActivity());
                 if (validateInput()) {
-                    LOG.debug("tag name isn't empty -> create tag");
                     Tag tag = new Tag();
                     tag.setName(mTagName.getText().toString());
                     tag.setColor(mSelectedColor);
@@ -170,6 +181,7 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
 
     @Override
     public void onColorSelected(int color) {
+        hideKeyboard(getActivity());
         if (getTargetFragment() instanceof ColorPickerSwatch.OnColorSelectedListener) {
             final ColorPickerSwatch.OnColorSelectedListener listener =
                     (ColorPickerSwatch.OnColorSelectedListener) getTargetFragment();
