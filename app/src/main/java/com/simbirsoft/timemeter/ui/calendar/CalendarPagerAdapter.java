@@ -2,9 +2,7 @@ package com.simbirsoft.timemeter.ui.calendar;
 
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -22,7 +20,7 @@ public class CalendarPagerAdapter extends PagerAdapter {
     private Context mContext;
     private CalendarViewPager mViewPager;
     private HashMap<Integer, WeekCalendarView> mViews = Maps.newHashMap();
-    private ArrayList<WeekCalendarView> mCashedViews = Lists.newArrayList();
+    private ArrayList<WeekCalendarView> mCachedViews = Lists.newArrayList();
 
     public CalendarPagerAdapter(Context context, CalendarViewPager viewPager) {
         mContext = context;
@@ -32,35 +30,35 @@ public class CalendarPagerAdapter extends PagerAdapter {
     }
 
     @Override
-    public int getItemPosition (Object object) {
+    public int getItemPosition(Object object) {
         return POSITION_NONE;
     }
 
     @Override
-    public Object instantiateItem (ViewGroup container, int position) {
+    public Object instantiateItem(ViewGroup container, int position) {
         WeekCalendarView v = dequeueView(position);
         container.addView (v);
         return v;
     }
 
     @Override
-    public void destroyItem (ViewGroup container, int position, Object object) {
+    public void destroyItem(ViewGroup container, int position, Object object) {
         WeekCalendarView v = getView(position);
         if (v != null) {
             container.removeView (v);
             mViews.remove(position);
-            mCashedViews.add(v);
+            mCachedViews.add(v);
         }
     }
 
     @Override
-    public int getCount () {
+    public int getCount() {
         return Integer.MAX_VALUE;
     }
 
 
     @Override
-    public boolean isViewFromObject (View view, Object object) {
+    public boolean isViewFromObject(View view, Object object) {
         return view == object;
     }
 
@@ -103,9 +101,9 @@ public class CalendarPagerAdapter extends PagerAdapter {
     private WeekCalendarView dequeueView(int position) {
         WeekCalendarView v = getView(position);
         if (v == null) {
-            if (!mCashedViews.isEmpty()) {
-                v = mCashedViews.get(0);
-                mCashedViews.remove(v);
+            if (!mCachedViews.isEmpty()) {
+                v = mCachedViews.get(0);
+                mCachedViews.remove(v);
             } else {
                 v = new WeekCalendarView(mContext);
             }

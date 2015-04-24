@@ -57,7 +57,6 @@ public class LoadActivityCalendarJob extends LoadJob implements FilterableJob {
         SQLiteDatabase db = mDatabaseHelper.getReadableDatabase();
         final long startDateMillis = mStartDate.getTime();
         final long endDateMillis = TimeUtils.getDayEndMillis(mEndDate.getTime());
-        long days = (endDateMillis - startDateMillis)/(24 * 3600 * 1000);
 
         final long filterDateMillis = mLoadFilter.getDateMillis();
         final Collection<Tag> filterTags = mLoadFilter.getFilterTags();
@@ -160,6 +159,11 @@ public class LoadActivityCalendarJob extends LoadJob implements FilterableJob {
         mPrevFilterDateMillis = millis;
     }
 
+    /**
+     * Checks if need to recalculate weed start and end dates (mStartDate and mEndDate)
+     * Calculates week start and end dates
+     * Calculates calendar period start and end dates (mPeriodStartMillis and mPeriodEndMillis)
+     **/
     private void adjustDates() {
         final long filterDateMillis = mLoadFilter.getDateMillis();
         final Period filterPeriod = mLoadFilter.getPeriod();
@@ -169,12 +173,18 @@ public class LoadActivityCalendarJob extends LoadJob implements FilterableJob {
         }
         calculatePeriodStartEnd(filterDateMillis, filterPeriod);
         if (mStartDate != null && mEndDate != null) return;
-        long startDateMillis = (mPeriodStartMillis > 0) ? mPeriodStartMillis :
-                TimeUtils.getWeekFirstDayStartMillis(new Date().getTime());
+        long startDateMillis = (mPeriodStartMillis > 0)
+                ? mPeriodStartMillis
+                : TimeUtils.getWeekFirstDayStartMillis(new Date().getTime());
         mStartDate = new Date(startDateMillis);
         mEndDate = new Date(TimeUtils.getWeekLastDayStartMillis(startDateMillis));
     }
 
+    /**
+     * Calculates calendar period start and end dates by TaskLoadFilter parameters
+     * @param filterDateMillis - period start date in milliseconds
+     * @param filterPeriod - period duration
+     */
     private void calculatePeriodStartEnd(long filterDateMillis, Period filterPeriod) {
         if (filterDateMillis == 0) return;
         mPeriodStartMillis = TimeUtils.getWeekFirstDayStartMillis(filterDateMillis);

@@ -1,6 +1,7 @@
 package com.simbirsoft.timemeter.ui.model;
 
 
+import android.content.Context;
 import android.os.Parcelable;
 import android.os.Parcel;
 import com.google.common.collect.Lists;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class CalendarPeriod implements Parcelable {
 
@@ -24,8 +26,10 @@ public class CalendarPeriod implements Parcelable {
         }
     };
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MMMM yyyy");
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("LLLL yyyy");
+
     private static final int MONTHS_IN_YEAR = 12;
+    private static final int MAX_DAYS_IN_HALF_WEEK = 4;
 
     private final Calendar mStartDate = Calendar.getInstance();
     private final Calendar mEndDate = Calendar.getInstance();
@@ -87,8 +91,9 @@ public class CalendarPeriod implements Parcelable {
 
     public String getPeriodString() {
         if (mStartDate.getTimeInMillis() == 0 || mEndDate.getTimeInMillis() == 0) return "";
-        Date date = (mStartDate.get(Calendar.MONTH) != mEndDate.get(Calendar.MONTH) &&
-                mEndDate.get(Calendar.DAY_OF_MONTH) >= 4) ? mEndDate.getTime() : mStartDate.getTime();
+        Date date = (mStartDate.get(Calendar.MONTH) != mEndDate.get(Calendar.MONTH)
+                && mEndDate.get(Calendar.DAY_OF_MONTH) >= MAX_DAYS_IN_HALF_WEEK)
+                ? mEndDate.getTime() : mStartDate.getTime();
         return DATE_FORMAT.format(date);
     }
 

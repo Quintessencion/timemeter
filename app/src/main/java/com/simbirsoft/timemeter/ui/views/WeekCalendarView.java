@@ -63,6 +63,7 @@ public class WeekCalendarView extends View {
     private Paint mTimeSpanPaint;
     private WeekCalendarCell mTouchedCell = null;
     private OnCellClickListener mOnCellClickListener;
+    private RectF mRect;
 
     public WeekCalendarView(Context context) {
         super(context);
@@ -119,6 +120,8 @@ public class WeekCalendarView extends View {
         mTimeSpanPaint = new Paint();
         mTimeSpanPaint.setAntiAlias(true);
         mTimeSpanPaint.setStrokeWidth(SECONDARY_LINE_WIDTH_PX);
+
+        mRect = new RectF();
 
         mDateLabelPaddingHorizontal = (int) (displayMetrics.density * DATE_LABEL_HORIZONTAL_PADDING_DEFAULT_DIP);
         mDateLabelPaddingVertical = (int) (displayMetrics.density * DATE_LABEL_VERTICAL_PADDING_DEFAULT_DIP);
@@ -318,7 +321,8 @@ public class WeekCalendarView extends View {
             if (startY > endY) {
                 canvas.drawLine(startX, startY, endX, startY, mTimeSpanPaint);
             } else {
-                canvas.drawRoundRect(new RectF(startX, startY, endX, endY), BLOCK_CORNER_RADIUS_PX, BLOCK_CORNER_RADIUS_PX, mTimeSpanPaint);
+                mRect.set(startX, startY, endX, endY);
+                canvas.drawRoundRect(mRect, BLOCK_CORNER_RADIUS_PX, BLOCK_CORNER_RADIUS_PX, mTimeSpanPaint);
             }
         }
     }
@@ -326,7 +330,8 @@ public class WeekCalendarView extends View {
     private int millisToY(long millis, long dayStart) {
         long offset = dayStart + TimeUtils.hoursToMillis(mActivityCalendar.getHour(0));
         int y = (int)(((millis - offset)* mHourHeight) / TimeUtils.MILLIS_IN_HOUR);
-        return (y < 0) ? 0 : (y > mHourHeight * mActivityCalendar.getHoursCount()) ? mHourHeight * mActivityCalendar.getHoursCount() : y;
+        int maxY = mHourHeight * mActivityCalendar.getHoursCount();
+        return Math.max(0, Math.min(y, maxY));
     }
 
     private WeekCalendarCell getCell(MotionEvent e) {
