@@ -8,6 +8,7 @@ import com.simbirsoft.timemeter.receiver.StopTaskActivityReceiver;
 import com.simbirsoft.timemeter.ui.main.MainPagerFragment;
 import com.simbirsoft.timemeter.ui.stats.StatsDetailsFragment;
 import com.simbirsoft.timemeter.ui.stats.StatsListFragment;
+import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment;
 import com.simbirsoft.timemeter.ui.tasklist.TaskListFragment;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 
@@ -21,4 +22,5 @@ public interface UiComponent {
     public void injectStatsListFragment(StatsListFragment fragment);
     public void injectMainPagerFragment(MainPagerFragment fragment);
     public void injectStatsDetailsFragment(StatsDetailsFragment fragment);
+    public void injectTaskActivitiesFragment(TaskActivitiesFragment fragment);
 }
