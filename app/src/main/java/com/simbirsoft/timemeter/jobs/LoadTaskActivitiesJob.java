@@ -9,10 +9,9 @@ import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
-import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.TaskActivityDateItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
-import com.simbirsoft.timemeter.ui.model.TaskActivityListItem;
+import com.simbirsoft.timemeter.ui.model.TaskActivitySpansItem;
 import com.simbirsoft.timemeter.ui.util.TimeUtils;
 
 import java.util.Calendar;
@@ -91,7 +90,7 @@ public class LoadTaskActivitiesJob extends LoadJob {
 
     private void createListItem(List<TaskActivityItem> items, List<TaskTimeSpan> dailySpans, Calendar currentDay) {
         if (!dailySpans.isEmpty()) {
-            TaskActivityListItem item = new TaskActivityListItem();
+            TaskActivitySpansItem item = new TaskActivitySpansItem();
             item.setDate(currentDay.getTime());
             item.setList(Lists.newArrayList(dailySpans));
             items.add(item);

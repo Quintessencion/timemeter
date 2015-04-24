@@ -20,8 +20,9 @@
             android:id="@+id/weekDaytextView"/>
     </LinearLayout>
 
-    <FrameLayout
+    <com.simbirsoft.timemeter.ui.views.TaskDailyActivitiesView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-    </FrameLayout>
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:id="@+id/taskActivitiesView"/>
 </LinearLayout>
