@@ -65,8 +65,8 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
     @ViewById(R.id.color_picker)
     ColorPickerPalette mPalette;
 
-    @ViewById(R.id.progress)
-    ProgressBar mProgress;
+    //@ViewById(R.id.progress)
+    //ProgressBar mProgress;
 
     private int mSelectedColor;
 
@@ -177,8 +177,7 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
     }
 
     public void showPaletteView() {
-        if (mProgress != null && mPalette != null) {
-            mProgress.setVisibility(View.GONE);
+        if (mPalette != null) {
             refreshPalette();
             mPalette.setVisibility(View.VISIBLE);
         }
