@@ -7,19 +7,11 @@ import com.be.android.library.worker.base.BaseJob;
 import com.be.android.library.worker.base.JobEvent;
 import com.be.android.library.worker.models.JobResultStatus;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Tag;
-import com.simbirsoft.timemeter.db.model.Task;
-import com.simbirsoft.timemeter.db.model.TaskTag;
 import com.simbirsoft.timemeter.log.LogFactory;
-import com.simbirsoft.timemeter.ui.model.TaskBundle;
 
 import org.slf4j.Logger;
-
-import java.util.Date;
-import java.util.List;
-
 import javax.inject.Inject;
 
 import nl.qbusict.cupboard.DatabaseCompartment;
@@ -27,14 +19,14 @@ import nl.qbusict.cupboard.DatabaseCompartment;
 import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 
 public class SaveTagJob extends BaseJob {
+    public static final int EVENT_CODE_TAG_ALREADY_EXISTS = 4;
     public static class SaveTagResult extends JobEvent {
-
         private Tag mTag;
 
-        SaveTagResult(Tag tag) {
+        SaveTagResult(Tag tag, int eventCode) {
             mTag = tag;
 
-            setEventCode(EVENT_CODE_OK);
+            setEventCode(eventCode);
             setJobStatus(JobResultStatus.OK);
         }
 
@@ -55,7 +47,6 @@ public class SaveTagJob extends BaseJob {
 
     public void setTag(Tag tag) {
         Preconditions.checkState(mTag == null, "tag already set");
-
         mTag = tag;
     }
 
@@ -72,28 +63,19 @@ public class SaveTagJob extends BaseJob {
         SQLiteDatabase db = mDatabaseHelper.getWritableDatabase();
         DatabaseCompartment cupboard = cupboard().withDatabase(db);
 
-        if (mTag.hasId()) {
-            LOG.trace("saving tag {}", mTag);
-            cupboard.put(mTag);
-            LOG.trace("saved tag {}", mTag);
-
-            return new SaveTagResult(mTag);
-        }
         try {
             db.beginTransaction();
-
             Tag tag = cupboard.query(Tag.class)
-                    .withSelection(Tag.COLUMN_NAME + "=?", mTag.getName())
+                    .withSelection("UPPER(" + Tag.COLUMN_NAME + ")=?", mTag.getName().toUpperCase())
                     .query()
                     .get();
-            Preconditions.checkState((tag == null),
-                    String.format("tag name:'%s' have already exists", mTag.getName()));
-            LOG.trace("saving tag {}", mTag);
-            cupboard.put(mTag);
-            LOG.trace("saved tag {}", mTag);
-            db.setTransactionSuccessful();
 
-            return new SaveTagResult(mTag);
+            if (tag == null) {
+                cupboard.put(mTag);
+                db.setTransactionSuccessful();
+                return new SaveTagResult(mTag, SaveTagResult.EVENT_CODE_OK);
+            }
+            return new SaveTagResult(mTag, EVENT_CODE_TAG_ALREADY_EXISTS);
         } finally {
             db.endTransaction();
         }

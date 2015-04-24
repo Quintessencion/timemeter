@@ -10,7 +10,6 @@ import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
@@ -64,9 +63,6 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
 
     @ViewById(R.id.color_picker)
     ColorPickerPalette mPalette;
-
-    //@ViewById(R.id.progress)
-    //ProgressBar mProgress;
 
     private int mSelectedColor;
 
@@ -170,6 +166,11 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
 
     @OnJobSuccess(SaveTagJob.class)
     public void onTagSaved(SaveTagJob.SaveTagResult tag) {
+        switch(tag.getEventCode()) {
+            case SaveTagJob.EVENT_CODE_TAG_ALREADY_EXISTS:
+                showSnackBarLightRed(R.string.error_tag_has_already_exists);
+                return;
+        }
         Intent data = new Intent();
         data.putExtra(EXTRA_TAG, (Parcelable) tag.getTag());
         getActivity().setResult(RESULT_CODE_OK, data);
