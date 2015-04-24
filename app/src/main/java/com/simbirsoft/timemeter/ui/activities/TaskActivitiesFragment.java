@@ -7,27 +7,45 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 
+import com.be.android.library.worker.annotations.OnJobFailure;
+import com.be.android.library.worker.annotations.OnJobSuccess;
+import com.be.android.library.worker.controllers.JobLoader;
+import com.be.android.library.worker.controllers.JobManager;
+import com.be.android.library.worker.interfaces.Job;
+import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.injection.Injection;
+import com.simbirsoft.timemeter.jobs.LoadTaskActivitiesJob;
+import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.model.TaskActivityDateItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivityListItem;
+import com.squareup.otto.Bus;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.ViewById;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+
+import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_task_activities)
-public class TaskActivitiesFragment extends BaseFragment {
+public class TaskActivitiesFragment extends BaseFragment implements
+        JobLoader.JobLoaderCallbacks {
     public static final String EXTRA_TASK_ID = "extra_task_id";
     public static final String EXTRA_TITLE = "extra_title";
+
+    private static final String LOADER_TAG = "TaskActivitiesFragment_";
+
+    private static final Logger LOG = LogFactory.getLogger(TaskActivitiesFragment.class);
 
     @ViewById(android.R.id.list)
     RecyclerView mRecyclerView;
@@ -39,14 +57,23 @@ public class TaskActivitiesFragment extends BaseFragment {
     @FragmentArg(EXTRA_TITLE)
     String mExtraTitle;
 
+    @Inject
+    Bus mBus;
+
     private ActionBar mActionBar;
     private TaskActivitiesAdapter mAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        setShouldSubscribeForJobEvents(false);
         super.onCreate(savedInstanceState);
         Injection.sUiComponent.injectTaskActivitiesFragment(this);
+        mBus.register(this);
+    }
+
+    @Override
+    public void onDestroyView() {
+        mBus.unregister(this);
+        super.onDestroyView();
     }
 
     @AfterViews
@@ -56,32 +83,6 @@ public class TaskActivitiesFragment extends BaseFragment {
         if (mExtraTitle != null) {
            mActionBar.setTitle(mExtraTitle);
         }
-        ArrayList<TaskActivityItem> items = Lists.newArrayList();
-        Calendar calendar = Calendar.getInstance();
-        TaskActivityDateItem item1 = new TaskActivityDateItem();
-        calendar.set(2015, 4, 1);
-        item1.setDate(calendar.getTime());
-        items.add(item1);
-
-        TaskActivityListItem item2 = new TaskActivityListItem();
-        calendar.set(2015, 4, 3);
-        item2.setDate(calendar.getTime());
-        items.add(item2);
-
-        TaskActivityListItem item3 = new TaskActivityListItem();
-        calendar.set(2015, 4, 20);
-        item3.setDate(calendar.getTime());
-        items.add(item3);
-
-        TaskActivityDateItem item4 = new TaskActivityDateItem();
-        calendar.set(2015, 5, 1);
-        item1.setDate(calendar.getTime());
-        items.add(item4);
-
-        TaskActivityListItem item5 = new TaskActivityListItem();
-        calendar.set(2015, 4, 20);
-        item5.setDate(calendar.getTime());
-        items.add(item5);
 
         final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -89,7 +90,26 @@ public class TaskActivitiesFragment extends BaseFragment {
 
         mAdapter = new TaskActivitiesAdapter();
         mRecyclerView.setAdapter(mAdapter);
-        mAdapter.setItems(items);
+        requestLoad(LOADER_TAG, this);
+    }
+
+    @OnJobSuccess(LoadTaskActivitiesJob.class)
+    public void onLoadSuccess(LoadJobResult<List<TaskActivityItem>> result) {
+        mAdapter.setItems(result.getData());
+    }
+
+    @OnJobFailure(LoadTaskActivitiesJob.class)
+    public void onLoadFailed() {
+        LOG.error("LoadTaskActivitiesJob failed");
+    }
+
+    @Override
+    public Job onCreateJob(String s) {
+        LoadTaskActivitiesJob job = Injection.sJobsComponent.loadTaskActivitiesJob();
+        job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
+        job.setTaskId(mExtraTaskId);
+        job.addTag(LOADER_TAG);
+        return job;
     }
 
 }
