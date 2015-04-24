@@ -45,7 +45,6 @@ public class ActivityCalendar {
     private int mEndHour = END_HOUR_DEFAULT;
     private final List<Date> mDays;
     private final Multimap<Integer, TaskTimeSpan> mDailyActivity;
-    private final HashMap<Long, Integer> mTaskColors;
 
     public ActivityCalendar() {
         mDailyActivity = Multimaps.newListMultimap(Maps.newHashMap(), Lists::newArrayList);
@@ -53,7 +52,6 @@ public class ActivityCalendar {
         mStartDate = Calendar.getInstance();
         mEndDate = Calendar.getInstance();
         mBufferCalendar = Calendar.getInstance();
-        mTaskColors = Maps.newHashMap();
     }
 
 
@@ -184,7 +182,6 @@ public class ActivityCalendar {
             mDailyActivity.put(dayIndex, span);
             LOG.debug("activity added to calendar day '{}'; duration: '{}'", dayIndex, span.getDuration());
         }
-        createColors();
     }
 
     public int getDaysCount() {
@@ -230,15 +227,8 @@ public class ActivityCalendar {
         return mDays.get(dayIndex).getTime();
     }
 
-    public Integer getTimeSpanColor(TaskTimeSpan span) {
-        Integer color;
-        try {
-            color = mTaskColors.get(span.getTaskId());
-            return color;
-        } catch (Exception e) {
-
-        }
-        return 0;
+    public int getTimeSpanColor(TaskTimeSpan span) {
+        return ColorSets.getTaskColor(span.getTaskId());
     }
 
     public long getCellStartMillis(WeekCalendarCell cell) {
@@ -260,22 +250,6 @@ public class ActivityCalendar {
             }
         }
         return result;
-    }
-
-    private void createColors() {
-        mTaskColors.clear();
-        Collection<TaskTimeSpan> spans = mDailyActivity.values();
-        HashSet<Long> taskIds = Sets.newHashSet();
-        for (TaskTimeSpan span : spans) {
-            taskIds.add(span.getTaskId());
-        }
-        if (taskIds.size() == 0) return;
-        ArrayList<Integer> colors = ColorTemplate.createColors(ColorSets.makeColorSet(ColorSets.MIXED_COLORS, taskIds.size()));
-        int i = 0;
-        for (Long id : taskIds) {
-            mTaskColors.put(id, colors.get(i));
-            i++;
-        }
     }
 
     private static void splitTimeSpanByDays(Calendar calendar1, Calendar calendar2,
