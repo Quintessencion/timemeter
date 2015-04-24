@@ -157,12 +157,6 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
     @Override
     public void onColorSelected(int color) {
         KeyboardUtils.hideSoftInput(getActivity());
-        if (getTargetFragment() instanceof ColorPickerSwatch.OnColorSelectedListener) {
-            final ColorPickerSwatch.OnColorSelectedListener listener =
-                    (ColorPickerSwatch.OnColorSelectedListener) getTargetFragment();
-            listener.onColorSelected(color);
-        }
-
         if (color != mSelectedColor) {
             mSelectedColor = color;
             mPalette.drawPalette(mColors, mSelectedColor);
