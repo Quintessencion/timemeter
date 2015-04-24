@@ -1,7 +1,6 @@
 package com.simbirsoft.timemeter.ui.tags;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -10,7 +9,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 
@@ -20,10 +18,10 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.SaveTagJob;
-import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.AppAlertDialogFragment;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
+import com.simbirsoft.timemeter.ui.util.KeyboardUtils;
 import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerPalette;
 import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerSwatch;
 
@@ -31,7 +29,6 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.ViewById;
-import org.slf4j.Logger;
 
 @EFragment(R.layout.fragment_tag_create)
 public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch.OnColorSelectedListener {
@@ -94,20 +91,11 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
         setHasOptionsMenu(true);
     }
 
-    public static void hideKeyboard(Activity activity) {
-        if (activity != null &&
-            activity.getWindow() != null &&
-            activity.getWindow().getDecorView() != null) {
-            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(activity.getWindow().getDecorView().getWindowToken(), 0);
-        }
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case android.R.id.home:
-                hideKeyboard(getActivity());
+                KeyboardUtils.hideSoftInput(getActivity());
                 if (validateInput()) {
                     Tag tag = new Tag();
                     tag.setName(mTagName.getText().toString());
@@ -149,27 +137,26 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
     public boolean handleBackPress() {
         if (TextUtils.isEmpty(mTagName.getText().toString())) {
             return super.handleBackPress();
-        } else {
-            Bundle args = AppAlertDialogFragment.prepareArgs(getActivity(),
-                    R.string.dialog_cancel_tag_changes_warning_title,
-                    R.string.dialog_cancel_tag_changes_warning_message,
-                    R.string.action_accept_yes,
-                    R.string.action_cancel);
-
-            Intent launchIntent = DialogContainerActivity.prepareDialogLaunchIntent(
-                    getActivity(),
-                    AppAlertDialogFragment.class.getName(),
-                    args);
-
-            getActivity().startActivityForResult(launchIntent,
-                    REQUEST_CODE_DISCARD_CHANGES_AND_EXIT);
         }
+
+        Bundle args = AppAlertDialogFragment.prepareArgs(getActivity(),
+                R.string.dialog_cancel_tag_changes_warning_title,
+                R.string.dialog_cancel_tag_changes_warning_message,
+                R.string.action_accept_yes,
+                R.string.action_cancel);
+        Intent launchIntent = DialogContainerActivity.prepareDialogLaunchIntent(
+                getActivity(),
+                AppAlertDialogFragment.class.getName(),
+                args);
+        getActivity().startActivityForResult(launchIntent,
+                REQUEST_CODE_DISCARD_CHANGES_AND_EXIT);
+
         return true;
     }
 
     @Override
     public void onColorSelected(int color) {
-        hideKeyboard(getActivity());
+        KeyboardUtils.hideSoftInput(getActivity());
         if (getTargetFragment() instanceof ColorPickerSwatch.OnColorSelectedListener) {
             final ColorPickerSwatch.OnColorSelectedListener listener =
                     (ColorPickerSwatch.OnColorSelectedListener) getTargetFragment();

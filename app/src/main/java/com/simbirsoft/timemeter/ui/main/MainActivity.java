@@ -189,7 +189,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     public void onSectionAttached(int number) {
         switch (number) {
             case SECTION_ID_TASKS:
-                mTitle = getString(R.string.app_name);//getString(R.string.title_tasks);
+                mTitle = getString(R.string.app_name);
                 break;
             case SECTION_ID_TAGS:
                 mTitle = getString(R.string.title_tags);

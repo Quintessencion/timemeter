@@ -78,27 +78,24 @@ public class SaveTagJob extends BaseJob {
             LOG.trace("saved tag {}", mTag);
 
             return new SaveTagResult(mTag);
-        } else {
-            try {
-                db.beginTransaction();
+        }
+        try {
+            db.beginTransaction();
 
-                Tag tag = cupboard.query(Tag.class)
-                        .withSelection(Tag.COLUMN_NAME + "=?", mTag.getName())
-                        .query()
-                        .get();
+            Tag tag = cupboard.query(Tag.class)
+                    .withSelection(Tag.COLUMN_NAME + "=?", mTag.getName())
+                    .query()
+                    .get();
+            Preconditions.checkState((tag == null),
+                    String.format("tag name:'%s' have already exists", mTag.getName()));
+            LOG.trace("saving tag {}", mTag);
+            cupboard.put(mTag);
+            LOG.trace("saved tag {}", mTag);
+            db.setTransactionSuccessful();
 
-                Preconditions.checkState((tag == null), String.format("tag name:'%s' have already exists", mTag.getName()));
-
-                LOG.trace("saving tag {}", mTag);
-                cupboard.put(mTag);
-                LOG.trace("saved tag {}", mTag);
-
-                db.setTransactionSuccessful();
-
-                return new SaveTagResult(mTag);
-            } finally {
-                db.endTransaction();
-            }
+            return new SaveTagResult(mTag);
+        } finally {
+            db.endTransaction();
         }
     }
 }
