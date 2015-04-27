@@ -2,30 +2,38 @@ package com.simbirsoft.timemeter.ui.model;
 
 import android.content.res.Resources;
 
+import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.util.ColorSets;
 import com.simbirsoft.timemeter.ui.util.TimeUtils;
 
 import org.slf4j.Logger;
 
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 
 public class ActivityCalendar {
 
     private static final Logger LOG = LogFactory.getLogger(ActivityCalendar.class);
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("EE");
+    private static final SimpleDateFormat WEEK_DAY_FORMAT = new SimpleDateFormat("EE");
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("d");
 
     private static final int START_HOUR_DEFAULT = 0;
     private static final int END_HOUR_DEFAULT = 24;
@@ -46,7 +54,7 @@ public class ActivityCalendar {
         mBufferCalendar = Calendar.getInstance();
     }
 
-    // TODO: test multi-day activity split
+
     public static List<TaskTimeSpan> splitTimeSpansByDays(List<TaskTimeSpan> input) {
         final List<TaskTimeSpan> result = Lists.newArrayListWithCapacity(input.size());
 
@@ -74,6 +82,8 @@ public class ActivityCalendar {
 
         Calendar start = Calendar.getInstance();
         start.setTime(mStartDate.getTime());
+        yearEnd = mEndDate.get(Calendar.YEAR);
+        dayEnd = mEndDate.get(Calendar.DAY_OF_YEAR);
         do {
             Date day = new Date(TimeUtils.getDayStartMillis(start));
             mDays.add(day);
@@ -81,20 +91,29 @@ public class ActivityCalendar {
 
             yearStart = start.get(Calendar.YEAR);
             dayStart = start.get(Calendar.DAY_OF_YEAR);
-            yearEnd = mEndDate.get(Calendar.YEAR);
-            dayEnd = mEndDate.get(Calendar.DAY_OF_YEAR);
 
             start.add(Calendar.DAY_OF_YEAR, 1);
 
         } while (yearStart < yearEnd || (yearStart == yearEnd && dayStart < dayEnd));
     }
 
+    public String getWeekDayLabel(int dayIndex) {
+        return WEEK_DAY_FORMAT.format(getDay(dayIndex));
+    }
+
     public String getDateLabel(int dayIndex) {
-        return DATE_FORMAT.format(getDay(dayIndex)).toUpperCase();
+        return DATE_FORMAT.format(getDay(dayIndex));
     }
 
     public int getDateLabelColor(Resources res, int dayIndex) {
+        mBufferCalendar.setTime(new Date());
+        int dayOfYear = mBufferCalendar.get(Calendar.DAY_OF_YEAR);
         mBufferCalendar.setTime(getDay(dayIndex));
+
+        if (mBufferCalendar.get(Calendar.DAY_OF_YEAR) == dayOfYear) {
+            return res.getColor(R.color.primary);
+        }
+
         int dayOfWeek = mBufferCalendar.get(Calendar.DAY_OF_WEEK);
 
         if (dayOfWeek == Calendar.SATURDAY
@@ -103,7 +122,7 @@ public class ActivityCalendar {
             return res.getColor(R.color.accentPrimary);
         }
 
-        return res.getColor(R.color.darkGrey);
+        return res.getColor(R.color.calendar_date_text);
     }
 
     public String getHourLabel(int hourIndex) {
@@ -204,6 +223,35 @@ public class ActivityCalendar {
         return -1;
     }
 
+    public long getDayStartMillis(int dayIndex) {
+        return mDays.get(dayIndex).getTime();
+    }
+
+    public int getTimeSpanColor(TaskTimeSpan span) {
+        return ColorSets.getTaskColor(span.getTaskId());
+    }
+
+    public long getCellStartMillis(WeekCalendarCell cell) {
+        mBufferCalendar.setTime(getDay(cell.getDayIndex()));
+        mBufferCalendar.add(Calendar.HOUR_OF_DAY, mStartHour + cell.getHourIndex());
+        return mBufferCalendar.getTimeInMillis();
+    }
+
+    public List<TaskTimeSpan> getActivitiesInCell(WeekCalendarCell cell) {
+        ArrayList<TaskTimeSpan> result = Lists.newArrayList();
+        List<TaskTimeSpan> spans = getActivityForDayIndex(cell.getDayIndex());
+        long cellStart = getCellStartMillis(cell);
+        mBufferCalendar.setTimeInMillis(cellStart);
+        mBufferCalendar.add(Calendar.HOUR_OF_DAY, 1);
+        long cellEnd = mBufferCalendar.getTimeInMillis();
+        for (TaskTimeSpan span : spans) {
+            if (span.getStartTimeMillis() < cellEnd && span.getEndTimeMillis() >= cellStart) {
+                result.add(span);
+            }
+        }
+        return result;
+    }
+
     private static void splitTimeSpanByDays(Calendar calendar1, Calendar calendar2,
                                             TaskTimeSpan span, List<TaskTimeSpan> container) {
 
@@ -230,17 +278,18 @@ public class ActivityCalendar {
             newSpan.setId(span.getId());
             newSpan.setDescription(span.getDescription());
             newSpan.setStartTimeMillis(currentTimeMillis);
+            newSpan.setTaskId(span.getTaskId());
 
             calendar1.add(Calendar.DAY_OF_YEAR, 1);
 
-            currentTimeMillis = TimeUtils.getDayStartMillis(calendar1) - 1;
-            if (currentTimeMillis > spanEndTimeMillis) {
-                currentTimeMillis = spanEndTimeMillis;
+            currentTimeMillis = TimeUtils.getDayStartMillis(calendar1);
+            long newSpanEndTime = currentTimeMillis - 1;
+            if (newSpanEndTime > spanEndTimeMillis) {
+                newSpanEndTime = spanEndTimeMillis;
             }
             calendar1.setTimeInMillis(currentTimeMillis);
-            newSpan.setEndTimeMillis(currentTimeMillis);
+            newSpan.setEndTimeMillis(newSpanEndTime);
             container.add(newSpan);
-
             yearStart = calendar1.get(Calendar.YEAR);
             dayStart = calendar1.get(Calendar.DAY_OF_YEAR);
         }

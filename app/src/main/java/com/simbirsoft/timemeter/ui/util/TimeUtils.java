@@ -4,6 +4,8 @@ import java.util.Calendar;
 
 public final class TimeUtils {
 
+    public static final long MILLIS_IN_HOUR = 3600000;
+
     public static long getDayStartMillis(Calendar calendar) {
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
@@ -35,4 +37,47 @@ public final class TimeUtils {
         return tomorrow.getTimeInMillis();
     }
 
+    public static long getWeekFirstDayStartMillis(Calendar calendar) {
+        calendar.setTimeInMillis(getDayStartMillis(calendar));
+        int days = calendar.get(Calendar.DAY_OF_WEEK) - Calendar.MONDAY;
+        calendar.add(Calendar.DAY_OF_YEAR, (days >=0) ? -days : (-days - 7));
+        return calendar.getTimeInMillis();
+    }
+
+    public static long getWeekFirstDayStartMillis(long millis) {
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(millis);
+        return getWeekFirstDayStartMillis(c);
+    }
+
+    public static long getWeekLastDayStartMillis(Calendar calendar) {
+        calendar.setTimeInMillis(getDayStartMillis(calendar));
+        int days = Calendar.SUNDAY - calendar.get(Calendar.DAY_OF_WEEK);
+        calendar.add(Calendar.DAY_OF_YEAR, (days >=0) ? days : (7 + days));
+        return calendar.getTimeInMillis();
+    }
+
+    public static long getWeekLastDayStartMillis(long millis) {
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(millis);
+        return getWeekLastDayStartMillis(c);
+    }
+
+    public static long getDayEndMillis(Calendar calendar) {
+        calendar.setTimeInMillis(getDayStartMillis(calendar));
+        calendar.add(Calendar.DAY_OF_YEAR, 1);
+        return calendar.getTimeInMillis();
+    }
+
+    public static long getDayEndMillis(long millis) {
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(millis);
+
+        return getDayEndMillis(c);
+    }
+
+
+    public static long hoursToMillis(int hours) {
+        return hours * MILLIS_IN_HOUR;
+    }
 }

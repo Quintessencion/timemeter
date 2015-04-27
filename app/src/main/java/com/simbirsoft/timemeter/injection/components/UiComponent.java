@@ -5,6 +5,7 @@ import android.content.Context;
 import com.simbirsoft.timemeter.receiver.NotificationUpdateReceiver;
 import com.simbirsoft.timemeter.receiver.ScreenLockReceiver;
 import com.simbirsoft.timemeter.receiver.StopTaskActivityReceiver;
+import com.simbirsoft.timemeter.ui.calendar.ActivityCalendarFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerFragment;
 import com.simbirsoft.timemeter.ui.stats.StatsDetailsFragment;
 import com.simbirsoft.timemeter.ui.stats.StatsListFragment;
@@ -22,5 +23,6 @@ public interface UiComponent {
     public void injectStatsListFragment(StatsListFragment fragment);
     public void injectMainPagerFragment(MainPagerFragment fragment);
     public void injectStatsDetailsFragment(StatsDetailsFragment fragment);
+    public void injectActivityCalendarFragment(ActivityCalendarFragment fragment);
     public void injectTaskActivitiesFragment(TaskActivitiesFragment fragment);
 }
