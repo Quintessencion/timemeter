@@ -12,6 +12,7 @@ import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.ui.model.TaskActivityDateItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivitySpansItem;
+import com.simbirsoft.timemeter.ui.util.TimeSpanDaysSplitter;
 import com.simbirsoft.timemeter.ui.util.TimeUtils;
 
 import java.util.Calendar;
@@ -69,7 +70,7 @@ public class LoadTaskActivitiesJob extends LoadJob {
         final List<TaskTimeSpan> dailySpans = Lists.newArrayList();
 
         for(TaskTimeSpan span : spans) {
-            splitTimeSpanByDays(cal1, cal2,span, splitSpans);
+            TimeSpanDaysSplitter.splitTimeSpanByDays(cal1, cal2, span, splitSpans);
             for (TaskTimeSpan span1 : splitSpans) {
                 if (!isInDay(currentDay, cal1, span1)) {
                     createListItem(items, dailySpans, currentDay);
@@ -115,48 +116,4 @@ public class LoadTaskActivitiesJob extends LoadJob {
         return (monthCalendar.get(Calendar.YEAR) == calendar.get(Calendar.YEAR) &&
                 monthCalendar.get(Calendar.MONTH) == calendar.get(Calendar.MONTH));
     }
-
-    private static void splitTimeSpanByDays(Calendar calendar1, Calendar calendar2,
-                                            TaskTimeSpan span, List<TaskTimeSpan> container) {
-
-        final long spanEndTimeMillis = span.getEndTimeMillis();
-
-        calendar1.setTimeInMillis(span.getStartTimeMillis());
-        calendar2.setTimeInMillis(span.getEndTimeMillis());
-
-        int yearStart = calendar1.get(Calendar.YEAR);
-        int dayStart = calendar1.get(Calendar.DAY_OF_YEAR);
-        final int yearEnd = calendar2.get(Calendar.YEAR);
-        final int dayEnd = calendar2.get(Calendar.DAY_OF_YEAR);
-
-        if (yearStart == yearEnd && dayStart == dayEnd) {
-            // Span covers single day
-            container.add(span);
-            return;
-        }
-
-        long currentTimeMillis = span.getStartTimeMillis();
-
-        while (yearStart < yearEnd || (yearStart == yearEnd && dayStart <= dayEnd)) {
-            TaskTimeSpan newSpan = new TaskTimeSpan();
-            newSpan.setId(span.getId());
-            newSpan.setDescription(span.getDescription());
-            newSpan.setStartTimeMillis(currentTimeMillis);
-            newSpan.setTaskId(span.getTaskId());
-
-            calendar1.add(Calendar.DAY_OF_YEAR, 1);
-
-            currentTimeMillis = TimeUtils.getDayStartMillis(calendar1);
-            long newSpanEndTime = currentTimeMillis;
-            if (newSpanEndTime > spanEndTimeMillis) {
-                newSpanEndTime = spanEndTimeMillis;
-            }
-            calendar1.setTimeInMillis(currentTimeMillis);
-            newSpan.setEndTimeMillis(newSpanEndTime);
-            container.add(newSpan);
-            yearStart = calendar1.get(Calendar.YEAR);
-            dayStart = calendar1.get(Calendar.DAY_OF_YEAR);
-        }
-    }
-
 }
