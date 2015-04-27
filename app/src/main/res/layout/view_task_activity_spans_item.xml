@@ -1,28 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:paddingTop="10dp"
+                android:paddingLeft="10dp">
 
     <LinearLayout
+        android:id="@+id/textLayout"
         android:orientation="vertical"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/dateTextView"/>
+            android:id="@+id/dateTextView"
+            android:textColor="@color/calendar_date_text"
+            android:textSize="@dimen/calendar_date_text_size"
+            android:includeFontPadding="false"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/weekDaytextView"/>
+            android:id="@+id/weekDaytextView"
+            android:textColor="@color/calendar_date_text"
+            android:textSize="@dimen/calendar_day_text_size"
+            android:includeFontPadding="false"/>
     </LinearLayout>
 
     <com.simbirsoft.timemeter.ui.views.TaskDailyActivitiesView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
-        android:id="@+id/taskActivitiesView"/>
-</LinearLayout>
+        android:id="@+id/taskActivitiesView"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/textLayout"
+        android:layout_toRightOf="@+id/textLayout"/>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:id="@+id/divider"
+        android:background="@color/lightGrey"
+        android:layout_marginTop="20dp"
+        android:layout_alignStart="@+id/taskActivitiesView"
+        android:layout_alignLeft="@+id/taskActivitiesView"
+        android:layout_below="@+id/taskActivitiesView"/>
+</RelativeLayout>

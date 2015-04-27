@@ -5,10 +5,13 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.TaskActivityDateItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivitySpansItem;
@@ -37,8 +40,11 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         TextView weekDayTextView;
         TextView dateTextView;
         TaskDailyActivitiesView activitiesView;
+        FrameLayout divider;
     }
 
+    private static final int DATE_ITEM_TYPE = 0;
+    private static final int SPANS_ITEM_TYPE = 1;
 
     private final List<TaskActivityItem> mItems;
 
@@ -55,18 +61,18 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
 
     public int getItemViewType (int position) {
         TaskActivityItem item = mItems.get(position);
-        return (item instanceof TaskActivitySpansItem) ? 1 : 0;
+        return (item instanceof TaskActivitySpansItem) ? SPANS_ITEM_TYPE : DATE_ITEM_TYPE;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-       return (getItemViewType(i) == 0) ? createDateItemViewHolder(viewGroup)
+       return (getItemViewType(i) == DATE_ITEM_TYPE) ? createDateItemViewHolder(viewGroup)
                : createSpansItemViewHolder(viewGroup);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
-        if (getItemViewType(position) == 0) {
+        if (getItemViewType(position) == DATE_ITEM_TYPE) {
            bindDateItemViewHolder((DateItemViewHolder)viewHolder, position);
         } else {
             bindSpansItemViewHolder((SpansItemViewHolder) viewHolder, position);
@@ -95,6 +101,7 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         holder.weekDayTextView = (TextView)view.findViewById(R.id.weekDaytextView);
         holder.dateTextView = (TextView)view.findViewById(R.id.dateTextView);
         holder.activitiesView = (TaskDailyActivitiesView)view.findViewById(R.id.taskActivitiesView);
+        holder.divider = (FrameLayout)view.findViewById(R.id.divider);
         return holder;
     }
 
@@ -105,8 +112,11 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
 
     private void bindSpansItemViewHolder(SpansItemViewHolder viewHolder, int position) {
         TaskActivitySpansItem item = (TaskActivitySpansItem)mItems.get(position);
-        viewHolder.weekDayTextView.setText(item.getWeekDayString());
         viewHolder.dateTextView.setText(item.getDateString());
+        viewHolder.weekDayTextView.setText(item.getWeekDayString());
         viewHolder.activitiesView.setTaskActivitySpansItem(item);
+        viewHolder.divider.setVisibility(
+                (position < getItemCount() - 1 && getItemViewType(position + 1) == SPANS_ITEM_TYPE)
+                ? View.VISIBLE : View.INVISIBLE);
     }
 }
