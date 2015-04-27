@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -12,7 +13,10 @@ import android.util.DisplayMetrics;
 import android.view.View;
 
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.TaskActivitySpansItem;
+
+import java.util.logging.Logger;
 
 public class TaskDailyActivitiesView extends View{
     private static final int BLOCK_HORIZONTAL_PADDING_DEFAULT_DIP = 10;
@@ -21,7 +25,7 @@ public class TaskDailyActivitiesView extends View{
     private static final int DASH_PADDING_DEFAULT_DIP = 5;
     private static final int DASH_WIDTH_DEFAULT_DIP = 10;
     private static final int BLOCK_SPACING_DEFAULT_DIP = 10;
-    private static final int BLOCK_CORNER_RADIUS_DEFAULT_DIP = 8;
+    private static final int BLOCK_CORNER_RADIUS_DEFAULT_DIP = 10;
 
     private Paint mTextPaint;
     private Paint mBlockPaint;
@@ -34,6 +38,8 @@ public class TaskDailyActivitiesView extends View{
     private int mBlockHeight;
     private int mBlockSpacing;
     private int mBlockCornerRadius;
+    private RectF mRect;
+    private Rect mTextBounds;
 
     private TaskActivitySpansItem mItem;
 
@@ -77,6 +83,8 @@ public class TaskDailyActivitiesView extends View{
         mBlockCornerRadius = (int) (displayMetrics.density * BLOCK_CORNER_RADIUS_DEFAULT_DIP);
 
         mItem = new TaskActivitySpansItem();
+        mRect = new RectF();
+        mTextBounds = new Rect();
     }
 
     public void setTaskActivitySpansItem(TaskActivitySpansItem item) {
@@ -89,9 +97,10 @@ public class TaskDailyActivitiesView extends View{
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int myWidth = 0;
         int myHeight = 0;
-        mBlockHeight = (int)Math.ceil(mTextPaint.getTextSize()) + 2 * mBlockVerticalPadding;
-        mBlockWidth  = (int)Math.ceil(mTextPaint.measureText(TaskActivitySpansItem.TEST_STRING)) +
-            2 * mBlockHorizontalPadding;
+        mTextPaint.getTextBounds(TaskActivitySpansItem.TEST_STRING,0, TaskActivitySpansItem.TEST_STRING.length(), mTextBounds);
+        mBlockHeight = mTextBounds.bottom - mTextBounds.top + 2 * mBlockVerticalPadding;
+        mBlockWidth  = mTextBounds.right - mTextBounds.left + 2 * mBlockHorizontalPadding;
+
         int count = mItem.getSpansCount();
         myHeight = Math.max(0, count * mBlockHeight + (count - 1) * mBlockSpacing);
         myWidth = 2 * (mBlockWidth + mDashPadding) + mDashWidth;
@@ -122,8 +131,9 @@ public class TaskDailyActivitiesView extends View{
     }
 
     private void drawBlock(Canvas canvas, String text) {
-        RectF rect = new RectF(0, 0, mBlockWidth, mBlockHeight);
-        canvas.drawRoundRect(rect, mBlockCornerRadius, mBlockCornerRadius, mBlockPaint);
-        canvas.drawText(text, mBlockHorizontalPadding, mBlockHeight - mBlockVerticalPadding, mTextPaint);
+        mRect.set(0, 0, mBlockWidth, mBlockHeight);
+        canvas.drawRoundRect(mRect, mBlockCornerRadius, mBlockCornerRadius, mBlockPaint);
+        Paint.FontMetrics metrics = mTextPaint.getFontMetrics();
+        canvas.drawText(text, mBlockHorizontalPadding - mTextBounds.left, mBlockHeight - mBlockVerticalPadding - mTextBounds.bottom, mTextPaint);
     }
 }
