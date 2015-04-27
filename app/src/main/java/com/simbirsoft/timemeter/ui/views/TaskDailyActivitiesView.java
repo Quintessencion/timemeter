@@ -7,36 +7,32 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.View;
 
 import com.simbirsoft.timemeter.R;
-import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.TaskActivitySpansItem;
-
-import java.util.logging.Logger;
 
 public class TaskDailyActivitiesView extends View{
     private static final int BLOCK_HORIZONTAL_PADDING_DEFAULT_DIP = 10;
-    private static final int BLOCK_VERTICAL_PADDING_DEFAULT_DIP = 4;
-    private static final int DASH_STROKE_DEFAULT_PX = 2;
-    private static final int DASH_PADDING_DEFAULT_DIP = 5;
-    private static final int DASH_WIDTH_DEFAULT_DIP = 10;
-    private static final int BLOCK_SPACING_DEFAULT_DIP = 10;
-    private static final int BLOCK_CORNER_RADIUS_DEFAULT_DIP = 10;
+    private static final int BLOCK_VERTICAL_PADDING_DEFAULT_DIP = 5;
+    private static final int BLOCK_VERTICAL_SPACING_DEFAULT_DIP = 10;
+    private static final int BLOCK_HORIZONTAL_SPACING_DEFAULT_DIP = 15;
+    private static final int BLOCK_CORNER_RADIUS_DEFAULT_DIP = 4;
 
-    private Paint mTextPaint;
+    private Paint mTimeTextPaint;
+    private Paint mDurationTextPaint;
     private Paint mBlockPaint;
 
     private int mBlockHorizontalPadding;
     private int mBlockVerticalPadding;
-    private int mDashWidth;
-    private int mDashPadding;
-    private int mBlockWidth;
+    private int mTimeBlockWidth;
     private int mBlockHeight;
-    private int mBlockSpacing;
+    private int mBlockVerticalSpacing;
+    private int mBlockHorizontalSpacing;
     private int mBlockCornerRadius;
     private RectF mRect;
     private Rect mTextBounds;
@@ -65,21 +61,24 @@ public class TaskDailyActivitiesView extends View{
         super.onFinishInflate();
         final Resources res = getContext().getResources();
         final DisplayMetrics displayMetrics = res.getDisplayMetrics();
-        mTextPaint = new Paint();
-        mTextPaint.setColor(res.getColor(R.color.white));
-        mTextPaint.setTextSize(res.getDimension(R.dimen.task_activity_text_size));
-        mTextPaint.setAntiAlias(true);
+        mTimeTextPaint = new Paint();
+        mTimeTextPaint.setColor(res.getColor(R.color.white));
+        mTimeTextPaint.setTextSize(res.getDimension(R.dimen.task_activity_text_size));
+        mTimeTextPaint.setAntiAlias(true);
+
+        mDurationTextPaint = new Paint();
+        mDurationTextPaint.setColor(res.getColor(R.color.white));
+        mDurationTextPaint.setTextSize(res.getDimension(R.dimen.task_activity_text_size));
+        mDurationTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        mDurationTextPaint.setAntiAlias(true);
 
         mBlockPaint = new Paint();
-        mBlockPaint.setColor(res.getColor(R.color.primary));
-        mBlockPaint.setStrokeWidth(DASH_STROKE_DEFAULT_PX);
         mBlockPaint.setAntiAlias(true);
 
         mBlockHorizontalPadding = (int) (displayMetrics.density * BLOCK_HORIZONTAL_PADDING_DEFAULT_DIP);
         mBlockVerticalPadding = (int) (displayMetrics.density * BLOCK_VERTICAL_PADDING_DEFAULT_DIP);
-        mDashWidth = (int) (displayMetrics.density * DASH_WIDTH_DEFAULT_DIP);
-        mDashPadding = (int) (displayMetrics.density * DASH_PADDING_DEFAULT_DIP);
-        mBlockSpacing = (int) (displayMetrics.density * BLOCK_SPACING_DEFAULT_DIP);
+        mBlockVerticalSpacing = (int) (displayMetrics.density * BLOCK_VERTICAL_SPACING_DEFAULT_DIP);
+        mBlockHorizontalSpacing = (int) (displayMetrics.density * BLOCK_HORIZONTAL_SPACING_DEFAULT_DIP);
         mBlockCornerRadius = (int) (displayMetrics.density * BLOCK_CORNER_RADIUS_DEFAULT_DIP);
 
         mItem = new TaskActivitySpansItem();
@@ -97,13 +96,15 @@ public class TaskDailyActivitiesView extends View{
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int myWidth = 0;
         int myHeight = 0;
-        mTextPaint.getTextBounds(TaskActivitySpansItem.TEST_STRING,0, TaskActivitySpansItem.TEST_STRING.length(), mTextBounds);
-        mBlockHeight = mTextBounds.bottom - mTextBounds.top + 2 * mBlockVerticalPadding;
-        mBlockWidth  = mTextBounds.right - mTextBounds.left + 2 * mBlockHorizontalPadding;
-
+        mBlockHeight = (int)Math.ceil(Math.max(mTimeTextPaint.getTextSize(), mDurationTextPaint.getTextSize()))
+                + 2 * mBlockVerticalPadding;
+        String testString = mItem.getSpanTimeTestLabel();
+        mTimeBlockWidth = (int)Math.ceil(mTimeTextPaint.measureText(testString)) + 2 * mBlockHorizontalPadding;
+        testString = mItem.getSpanDurationTestLabel(getContext());
+        int durationBlockWidth = (int)Math.ceil(mDurationTextPaint.measureText(testString)) + 2 * mBlockHorizontalPadding;
         int count = mItem.getSpansCount();
-        myHeight = Math.max(0, count * mBlockHeight + (count - 1) * mBlockSpacing);
-        myWidth = 2 * (mBlockWidth + mDashPadding) + mDashWidth;
+        myHeight = Math.max(0, count * mBlockHeight + (count - 1) * mBlockVerticalSpacing);
+        myWidth = mTimeBlockWidth + durationBlockWidth + mBlockHorizontalSpacing;
 
        setMeasuredDimension(myWidth, myHeight);
     }
@@ -115,25 +116,30 @@ public class TaskDailyActivitiesView extends View{
         final int saveCount = canvas.save();
         for (int i = 0; i < count; i++) {
             drawItem(canvas, i);
-            canvas.translate(0, mBlockHeight + mBlockSpacing);
+            canvas.translate(0, mBlockHeight + mBlockVerticalSpacing);
         }
         canvas.restoreToCount(saveCount);
     }
 
     private void drawItem(Canvas canvas, int index) {
+        final Resources res = getContext().getResources();
         final int saveCount = canvas.save();
-        drawBlock(canvas, mItem.getStartHourLabel(index));
-        canvas.translate(mBlockWidth + mDashPadding, 0);
-        canvas.drawLine(0, mBlockHeight/2, mDashWidth, mBlockHeight/2, mBlockPaint);
-        canvas.translate(mDashWidth + mDashPadding, 0);
-        drawBlock(canvas, mItem.getEndHourLabel(index));
+        mBlockPaint.setColor(res.getColor(R.color.primary));
+        drawBlock(canvas, mItem.getSpanTimeLabel(index), mTimeBlockWidth, mTimeTextPaint);
+        canvas.translate(mTimeBlockWidth + mBlockHorizontalSpacing, 0);
+        mBlockPaint.setColor(res.getColor(R.color.primaryDark));
+        drawBlock(canvas, mItem.getSpanDurationLabel(index, getContext()), 0, mDurationTextPaint);
         canvas.restoreToCount(saveCount);
     }
 
-    private void drawBlock(Canvas canvas, String text) {
-        mRect.set(0, 0, mBlockWidth, mBlockHeight);
+    private void drawBlock(Canvas canvas, String text, int blockWidth, Paint textPaint) {
+        textPaint.getTextBounds(text, 0, text.length(), mTextBounds);
+        int width = (blockWidth == 0)
+                ? (mTextBounds.right - mTextBounds.left) + 2 * mBlockHorizontalPadding
+                : blockWidth;
+        mRect.set(0, 0, width, mBlockHeight);
         canvas.drawRoundRect(mRect, mBlockCornerRadius, mBlockCornerRadius, mBlockPaint);
-        Paint.FontMetrics metrics = mTextPaint.getFontMetrics();
-        canvas.drawText(text, mBlockHorizontalPadding - mTextBounds.left, mBlockHeight - mBlockVerticalPadding - mTextBounds.bottom, mTextPaint);
+        int offset = (mBlockHeight - (mTextBounds.bottom - mTextBounds.top)) / 2;
+        canvas.drawText(text, mBlockHorizontalPadding - mTextBounds.left, mBlockHeight - offset - mTextBounds.bottom, textPaint);
     }
 }
