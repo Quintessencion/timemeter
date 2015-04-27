@@ -12,17 +12,20 @@ import com.be.android.library.worker.controllers.JobLoader;
 import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
+import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskActivitiesJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
+import com.simbirsoft.timemeter.ui.views.ProgressLayout;
 import com.squareup.otto.Bus;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
+import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
@@ -43,12 +46,17 @@ public class TaskActivitiesFragment extends BaseFragment implements
     @ViewById(android.R.id.list)
     RecyclerView mRecyclerView;
 
+    @ViewById(R.id.progressLayout)
+    ProgressLayout mProgressLayout;
 
     @FragmentArg(EXTRA_TASK_ID)
     Long mExtraTaskId;
 
     @FragmentArg(EXTRA_TITLE)
     String mExtraTitle;
+
+    @InstanceState
+    int mListPosition;
 
     @Inject
     Bus mBus;
@@ -69,6 +77,17 @@ public class TaskActivitiesFragment extends BaseFragment implements
         super.onDestroyView();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if (mAdapter.getItemCount() > 0) {
+            mListPosition = ((LinearLayoutManager)
+                    mRecyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+        }
+    }
+
+
     @AfterViews
     void bindViews() {
         mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
@@ -77,18 +96,33 @@ public class TaskActivitiesFragment extends BaseFragment implements
            mActionBar.setTitle(mExtraTitle);
         }
 
+        mRecyclerView.setHasFixedSize(false);
         final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(layoutManager);
 
         mAdapter = new TaskActivitiesAdapter();
         mRecyclerView.setAdapter(mAdapter);
+        mProgressLayout.setProgressLayoutCallbacks(
+                new ProgressLayout.JobProgressLayoutCallbacks(JobSelector.forJobTags(LOADER_TAG)) {
+                    @Override
+                    public boolean hasContent() {
+                        return mAdapter.getItemCount() > 0;
+                    }
+
+                });
         requestLoad(LOADER_TAG, this);
+        mProgressLayout.updateProgressView();
     }
 
     @OnJobSuccess(LoadTaskActivitiesJob.class)
     public void onLoadSuccess(LoadJobResult<List<TaskActivityItem>> result) {
         mAdapter.setItems(result.getData());
+        mProgressLayout.updateProgressView();
+        if (mListPosition != 0) {
+            mRecyclerView.getLayoutManager().scrollToPosition(mListPosition);
+            mListPosition = 0;
+        }
     }
 
     @OnJobFailure(LoadTaskActivitiesJob.class)

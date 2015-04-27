@@ -116,7 +116,8 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         viewHolder.weekDayTextView.setText(item.getWeekDayString());
         viewHolder.activitiesView.setTaskActivitySpansItem(item);
         viewHolder.divider.setVisibility(
-                (position < getItemCount() - 1 && getItemViewType(position + 1) == SPANS_ITEM_TYPE)
+                (position == getItemCount() - 1) ? View.VISIBLE
+                : (getItemViewType(position + 1) == SPANS_ITEM_TYPE)
                 ? View.VISIBLE : View.INVISIBLE);
     }
 }
