@@ -8,6 +8,8 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.Build;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
@@ -43,6 +45,7 @@ public class WeekCalendarView extends View implements GestureDetector.OnGestureL
     private static final int BLOCK_PADDING_H_PX = 2;
     private static final int BLOCK_PADDING_V_PX = 1;
     private static final int BLOCK_CORNER_RADIUS_PX = 4;
+    private static final int HIGHLIGHTED_ALPHA = 150;
 
     private static final Logger LOG = LogFactory.getLogger(WeekCalendarView.class);
     private ActivityCalendar mActivityCalendar;
@@ -64,6 +67,7 @@ public class WeekCalendarView extends View implements GestureDetector.OnGestureL
     private Paint mMainLinePaint;
     private Paint mSecondaryLinePaint;
     private Paint mTimeSpanPaint;
+    private Paint mSelectionPaint;
     private OnCellClickListener mOnCellClickListener;
     private RectF mRect;
     private GestureDetector mGestureDetector;
@@ -125,6 +129,12 @@ public class WeekCalendarView extends View implements GestureDetector.OnGestureL
         mTimeSpanPaint.setAntiAlias(true);
         mTimeSpanPaint.setStrokeWidth(SECONDARY_LINE_WIDTH_PX);
 
+        mSelectionPaint = new Paint();
+        mSelectionPaint.setAntiAlias(true);
+        mSelectionPaint.setStrokeWidth(MAIN_LINE_WIDTH_PX);
+        mSelectionPaint.setColor(res.getColor(R.color.black));
+        mSelectionPaint.setAlpha(HIGHLIGHTED_ALPHA);
+
         mRect = new RectF();
 
         mDateLabelPaddingHorizontal = (int) (displayMetrics.density * DATE_LABEL_HORIZONTAL_PADDING_DEFAULT_DIP);
@@ -144,6 +154,7 @@ public class WeekCalendarView extends View implements GestureDetector.OnGestureL
 
     public void setActivityCalendar(ActivityCalendar activityCalendar) {
         mActivityCalendar = activityCalendar;
+        mSelectedCell = null;
         requestLayout();
         invalidate();
     }
@@ -302,25 +313,28 @@ public class WeekCalendarView extends View implements GestureDetector.OnGestureL
         List<TaskTimeSpan> spans = mActivityCalendar.getActivityForDayIndex(dayIndex);
         if (spans.isEmpty()) return;
         long dayStart = mActivityCalendar.getDayStartMillis(dayIndex);
-        List<TaskTimeSpan> selectedSpans = (mSelectedCell != null)
-                ? mActivityCalendar.getActivitiesInCell(mSelectedCell) : Lists.newArrayList();
+        List<TaskTimeSpan> selectedSpans = (mSelectedCell != null && mSelectedCell.getDayIndex() == dayIndex)
+                ? mActivityCalendar.getActivitiesInCell(mSelectedCell) : null;
         for (TaskTimeSpan span : spans) {
             int startY = millisToY(span.getStartTimeMillis(), dayStart);
             startY += ((startY == 0) ? MAIN_LINE_WIDTH_PX : 0) + BLOCK_PADDING_V_PX;
             int endY = millisToY(span.getEndTimeMillis(), dayStart) - BLOCK_PADDING_V_PX;
             int startX = ((dayIndex == 0) ? MAIN_LINE_WIDTH_PX  : SECONDARY_LINE_WIDTH_PX) + BLOCK_PADDING_H_PX;
             int endX = mDateWidth - BLOCK_PADDING_H_PX - SECONDARY_LINE_WIDTH_PX;
-            if (selectedSpans.contains(span)) {
-                startX = 0;
-                endX = mDateWidth;
-            }
             mTimeSpanPaint.setColor(mActivityCalendar.getTimeSpanColor(span));
-            if (startY > endY) {
-                canvas.drawLine(startX, startY, endX, startY, mTimeSpanPaint);
-            } else {
-                mRect.set(startX, startY, endX, endY);
-                canvas.drawRoundRect(mRect, BLOCK_CORNER_RADIUS_PX, BLOCK_CORNER_RADIUS_PX, mTimeSpanPaint);
+            drawSpan(canvas, startX, startY, endX, endY, mTimeSpanPaint);
+            if (selectedSpans != null && selectedSpans.contains(span)) {
+                drawSpan(canvas, startX, startY, endX, endY, mSelectionPaint);
             }
+        }
+    }
+
+    private void drawSpan(Canvas canvas, int startX, int startY, int endX, int endY, Paint paint) {
+        if (startY > endY) {
+            canvas.drawLine(startX, startY, endX, startY, paint);
+        } else {
+            mRect.set(startX, startY, endX, endY);
+            canvas.drawRoundRect(mRect, BLOCK_CORNER_RADIUS_PX, BLOCK_CORNER_RADIUS_PX, paint);
         }
     }
 
@@ -339,8 +353,11 @@ public class WeekCalendarView extends View implements GestureDetector.OnGestureL
     }
 
     public boolean onSingleTapUp(MotionEvent e) {
+        WeekCalendarCell prevCell = mSelectedCell;
         mSelectedCell = getCell(e);
-        postInvalidate();
+        if (!(prevCell != null && mSelectedCell != null && mSelectedCell.equals(prevCell))) {
+            invalidate();
+        }
         return true;
     }
 
