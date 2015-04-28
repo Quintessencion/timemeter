@@ -14,7 +14,9 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.simbirsoft.timemeter.R;
@@ -27,6 +29,7 @@ public class CalendarPopupHelper {
     protected PopupWindow mWindow;
 
     protected View mView;
+    protected LinearLayout mLinearLayout;
 
     protected Drawable mBackgroundDrawable = null;
     protected ShowListener showListener;
@@ -43,42 +46,53 @@ public class CalendarPopupHelper {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         setContentView(layoutInflater.inflate(viewResource, null));
+        mLinearLayout = (LinearLayout)mView.findViewById(R.id.popupLinearLayout);
     }
 
     public CalendarPopupHelper(Context context) {
         this(context, R.layout.view_calendar_popup);
-
     }
 
     public void show(View anchor, Point anchorPoint) {
         preShow();
         int[] location = new int[2];
 
+        for (int i = 0; i < 20; i++) {
+            TextView tv= new TextView(mContext);
+            tv.setText(String.format("Item %d", i));
+            mLinearLayout.addView(tv);
+        }
+
         anchor.getLocationOnScreen(location);
-        anchorPoint.offset(location[0], location[1]);
 
-        mView.measure(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        mLinearLayout.measure(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 
-        int rootHeight = mView.getMeasuredHeight();
-        int rootWidth = mView.getMeasuredWidth();
+        int rootHeight = mLinearLayout.getMeasuredHeight();
+        int rootWidth = mLinearLayout.getMeasuredWidth();
 
-        final int parentWidth = anchor.getWidth();
-        final int parentHeight = anchor.getHeight();
+        final int anchorWidth = anchor.getWidth();
+        final int anchorHeight = anchor.getHeight();
 
-        int yPos = anchorPoint.y - rootHeight;
+        rootWidth = Math.min(rootWidth, anchorWidth);
+        rootHeight = Math.min(rootHeight, anchorHeight);
 
+        int yPos = 0;
         boolean onTop = true;
 
-        if (anchorPoint.y < parentHeight / 2) {
+        if (anchorPoint.y < anchorHeight / 2) {
             yPos = anchorPoint.y;
+            rootHeight = Math.min(rootHeight, anchorHeight - yPos);
             onTop = false;
+        } else {
+            rootHeight = Math.min(anchorPoint.y, rootHeight);
+            yPos = anchorPoint.y - rootHeight;
         }
 
         int xPos = 0;
 
         // ETXTREME RIGHT CLIKED
-        if (anchorPoint.x + rootWidth > parentWidth) {
-            xPos = (parentWidth - rootWidth);
+        if (anchorPoint.x + rootWidth > anchorWidth) {
+            xPos = (anchorWidth - rootWidth);
         }
         // ETXTREME LEFT CLIKED
         else if (anchorPoint.x - (rootWidth / 2) < 0) {
@@ -88,9 +102,9 @@ public class CalendarPopupHelper {
         else {
             xPos = (anchorPoint.x - (rootWidth / 2));
         }
-
-        mWindow.showAtLocation(anchor, Gravity.NO_GRAVITY, xPos, yPos);
-
+        mWindow.setWidth(Math.min(rootWidth, anchorWidth - xPos));
+        mWindow.setHeight(rootHeight);
+        mWindow.showAtLocation(anchor, Gravity.NO_GRAVITY, xPos + location[0], yPos + location[1]);
     }
 
     protected void preShow() {
@@ -109,8 +123,6 @@ public class CalendarPopupHelper {
         else
             mWindow.setBackgroundDrawable(mBackgroundDrawable);
 
-        mWindow.setWidth(WindowManager.LayoutParams.WRAP_CONTENT);
-        mWindow.setHeight(WindowManager.LayoutParams.WRAP_CONTENT);
         mWindow.setTouchable(true);
         mWindow.setFocusable(true);
         mWindow.setOutsideTouchable(true);

@@ -178,7 +178,8 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
     }
 
     public void onCellClicked(Point point, List<TaskTimeSpan> spans) {
-        point.offset(-mCalendarScrollView.getScrollX(), -mCalendarScrollView.getScrollY());
+        point.offset(0, -mCalendarScrollView.getScrollY());
+        point.y = Math.min(mCalendarScrollView.getHeight(), Math.max(0, point.y));
         CalendarPopupHelper helper = new CalendarPopupHelper(getActivity());
         helper.setOnDismissListener(this);
         helper.show(mCalendarScrollView, point);
