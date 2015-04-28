@@ -56,14 +56,14 @@ public class TaskActivitySpansItem extends TaskActivityItem {
     }
 
     public String getSpanDurationTestLabel(Context context) {
-        return Html.fromHtml(TimerTextFormatter.formatTaskTimerText(
+        return Html.fromHtml(TimerTextFormatter.formatTaskSpanText(
                 context.getResources(), DURATION_TEST_VALUE)).toString();
     }
 
     public String getSpanDurationLabel(int index, Context context) {
         Preconditions.checkElementIndex(index, mList.size(), "index is out of items range");
         TaskTimeSpan span = mList.get(index);
-        return Html.fromHtml(TimerTextFormatter.formatTaskTimerText(
+        return Html.fromHtml(TimerTextFormatter.formatTaskSpanText(
                 context.getResources(), span.getDuration())).toString();
     }
 

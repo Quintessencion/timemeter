@@ -57,6 +57,30 @@ public final class TimerTextFormatter {
         return sb.toString();
     }
 
+    public static String formatTaskSpanText(Resources res, long durationMillis) {
+        SplitTime t = fetchSplitTime(durationMillis);
+
+        StringBuilder sb = new StringBuilder();
+        if (t.hours > 0) {
+            sb.append(t.hours)
+                    .append("<small>")
+                    .append(res.getString(R.string.hours_mark))
+                    .append("&nbsp;</small>");
+        }
+
+        sb.append(String.format("%02d", t.minutes))
+                .append("<small>")
+                .append(res.getString(R.string.minutes_mark))
+                .append("&nbsp;</small>");
+
+        sb.append(String.format("%02d", t.seconds))
+                .append("<small>")
+                .append(res.getString(R.string.seconds_mark))
+                .append("&nbsp;</small>");
+
+        return sb.toString();
+    }
+
     private static SplitTime fetchSplitTime(long timeMillis) {
         SplitTime t = new SplitTime();
 

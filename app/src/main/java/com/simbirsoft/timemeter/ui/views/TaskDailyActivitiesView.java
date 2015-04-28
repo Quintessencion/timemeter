@@ -100,13 +100,19 @@ public class TaskDailyActivitiesView extends View{
                 + 2 * mBlockVerticalPadding;
         String testString = mItem.getSpanTimeTestLabel();
         mTimeBlockWidth = (int)Math.ceil(mTimeTextPaint.measureText(testString)) + 2 * mBlockHorizontalPadding;
-        testString = mItem.getSpanDurationTestLabel(getContext());
-        int durationBlockWidth = (int)Math.ceil(mDurationTextPaint.measureText(testString)) + 2 * mBlockHorizontalPadding;
         int count = mItem.getSpansCount();
         myHeight = Math.max(0, count * mBlockHeight + (count - 1) * mBlockVerticalSpacing);
-        myWidth = mTimeBlockWidth + durationBlockWidth + mBlockHorizontalSpacing;
 
-       setMeasuredDimension(myWidth, myHeight);
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+        if (widthMode == MeasureSpec.EXACTLY) {
+            myWidth = MeasureSpec.getSize(widthMeasureSpec);
+        } else {
+            testString = mItem.getSpanDurationTestLabel(getContext());
+            int durationBlockWidth = (int)Math.ceil(mDurationTextPaint.measureText(testString)) + 2 * mBlockHorizontalPadding;
+            myWidth = mTimeBlockWidth + durationBlockWidth + mBlockHorizontalSpacing;
+        }
+
+        setMeasuredDimension(myWidth, myHeight);
     }
 
     @Override
