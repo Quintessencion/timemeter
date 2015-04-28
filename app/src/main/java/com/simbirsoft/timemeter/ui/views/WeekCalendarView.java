@@ -3,15 +3,18 @@ package com.simbirsoft.timemeter.ui.views;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Resources;
+import android.gesture.GestureOverlayView;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.log.LogFactory;
@@ -23,7 +26,7 @@ import org.slf4j.Logger;
 
 import java.util.List;
 
-public class WeekCalendarView extends View {
+public class WeekCalendarView extends View implements GestureDetector.OnGestureListener {
 
     public interface OnCellClickListener {
         public void onCellClicked(long cellStartMillis, long offsetInCellMillis, List<TaskTimeSpan> spans);
@@ -61,9 +64,10 @@ public class WeekCalendarView extends View {
     private Paint mMainLinePaint;
     private Paint mSecondaryLinePaint;
     private Paint mTimeSpanPaint;
-    private WeekCalendarCell mTouchedCell = null;
     private OnCellClickListener mOnCellClickListener;
     private RectF mRect;
+    private GestureDetector mGestureDetector;
+    private WeekCalendarCell mSelectedCell;
 
     public WeekCalendarView(Context context) {
         super(context);
@@ -129,6 +133,9 @@ public class WeekCalendarView extends View {
         mHourLabelPaddingVertical = (int) (displayMetrics.density * HOUR_LABEL_VERTICAL_PADDING_DEFAULT_DIP);
         mDateLabelsSpacing = (int) (displayMetrics.density * DATE_LABELS_SPACING_DEFAULT_DIP);
         mPaddingVertical = mPaddingHorizontal = (int) (displayMetrics.density * PADDING_DEFAULT_DIP);
+
+        mGestureDetector = new GestureDetector(getContext(), this);
+        mSelectedCell = null;
     }
 
     public ActivityCalendar getActivityCalendar() {
@@ -202,23 +209,7 @@ public class WeekCalendarView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         super.onTouchEvent(e);
-        switch (e.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                mTouchedCell = getCell(e);
-                break;
-
-            case MotionEvent.ACTION_UP:
-                WeekCalendarCell cell = getCell(e);
-                if (mTouchedCell != null && cell != null && mTouchedCell.isEqual(cell)) {
-                    handleCellClicked(e);
-                }
-                mTouchedCell = null;
-                break;
-
-            case MotionEvent.ACTION_CANCEL:
-                mTouchedCell = null;
-                break;
-        }
+        mGestureDetector.onTouchEvent(e);
         return true;
     }
 
@@ -311,12 +302,18 @@ public class WeekCalendarView extends View {
         List<TaskTimeSpan> spans = mActivityCalendar.getActivityForDayIndex(dayIndex);
         if (spans.isEmpty()) return;
         long dayStart = mActivityCalendar.getDayStartMillis(dayIndex);
+        List<TaskTimeSpan> selectedSpans = (mSelectedCell != null)
+                ? mActivityCalendar.getActivitiesInCell(mSelectedCell) : Lists.newArrayList();
         for (TaskTimeSpan span : spans) {
             int startY = millisToY(span.getStartTimeMillis(), dayStart);
             startY += ((startY == 0) ? MAIN_LINE_WIDTH_PX : 0) + BLOCK_PADDING_V_PX;
             int endY = millisToY(span.getEndTimeMillis(), dayStart) - BLOCK_PADDING_V_PX;
             int startX = ((dayIndex == 0) ? MAIN_LINE_WIDTH_PX  : SECONDARY_LINE_WIDTH_PX) + BLOCK_PADDING_H_PX;
             int endX = mDateWidth - BLOCK_PADDING_H_PX - SECONDARY_LINE_WIDTH_PX;
+            if (selectedSpans.contains(span)) {
+                startX = 0;
+                endX = mDateWidth;
+            }
             mTimeSpanPaint.setColor(mActivityCalendar.getTimeSpanColor(span));
             if (startY > endY) {
                 canvas.drawLine(startX, startY, endX, startY, mTimeSpanPaint);
@@ -341,13 +338,29 @@ public class WeekCalendarView extends View {
         return new WeekCalendarCell(x / mDateWidth, y / mHourHeight);
     }
 
-    private void handleCellClicked(MotionEvent e) {
-        if (mOnCellClickListener == null) return;
-        long cellStartMillis = mActivityCalendar.getCellStartMillis(mTouchedCell);
-        int offsetInCell = (int)e.getY() - mDateHeight - mTouchedCell.getHourIndex() * mHourHeight;
-        long offsetInCellMillis = (offsetInCell * TimeUtils.MILLIS_IN_HOUR) / mHourHeight;
-        List<TaskTimeSpan> spans = mActivityCalendar.getActivitiesInCell(mTouchedCell);
-        mOnCellClickListener.onCellClicked(cellStartMillis, offsetInCellMillis, spans);
+    public boolean onSingleTapUp(MotionEvent e) {
+        mSelectedCell = getCell(e);
+        postInvalidate();
+        return true;
     }
 
+    public void onLongPress(MotionEvent e) {
+    }
+
+    public boolean onScroll(MotionEvent e1, MotionEvent e2,
+                            float distanceX, float distanceY) {
+        return false;
+    }
+
+    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+                           float velocityY) {
+        return false;
+    }
+
+    public void onShowPress(MotionEvent e) {
+    }
+
+    public boolean onDown(MotionEvent e) {
+        return false;
+    }
 }
