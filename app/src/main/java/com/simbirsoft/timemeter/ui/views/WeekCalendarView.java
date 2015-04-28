@@ -6,6 +6,7 @@ import android.content.res.Resources;
 import android.gesture.GestureOverlayView;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,8 +14,10 @@ import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.PopupWindow;
 
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
@@ -31,7 +34,7 @@ import java.util.List;
 public class WeekCalendarView extends View implements GestureDetector.OnGestureListener {
 
     public interface OnCellClickListener {
-        public void onCellClicked(long cellStartMillis, long offsetInCellMillis, List<TaskTimeSpan> spans);
+        public void onCellClicked(Point point, List<TaskTimeSpan> spans);
     }
 
     private static final int DATE_LABEL_HORIZONTAL_PADDING_DEFAULT_DIP = 12;
@@ -167,6 +170,13 @@ public class WeekCalendarView extends View implements GestureDetector.OnGestureL
         mOnCellClickListener = listener;
     }
 
+    public void deselectCell() {
+        if (mSelectedCell != null) {
+            mSelectedCell = null;
+            invalidate();
+        }
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int myWidth = 0;
@@ -220,6 +230,9 @@ public class WeekCalendarView extends View implements GestureDetector.OnGestureL
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         super.onTouchEvent(e);
+        if (mOnCellClickListener == null) {
+            return false;
+        }
         mGestureDetector.onTouchEvent(e);
         return true;
     }
@@ -352,12 +365,24 @@ public class WeekCalendarView extends View implements GestureDetector.OnGestureL
         return new WeekCalendarCell(x / mDateWidth, y / mHourHeight);
     }
 
+    private Point getCellCoordinate(WeekCalendarCell cell) {
+        int x = (int)(mHourWidth + mDateWidth * (cell.getDayIndex() + 0.5));
+        int y = (int)(mDateHeight + mHourHeight * (cell.getHourIndex() + 0.5));
+        return new Point(x, y);
+    }
+
     public boolean onSingleTapUp(MotionEvent e) {
-        WeekCalendarCell prevCell = mSelectedCell;
         mSelectedCell = getCell(e);
-        if (!(prevCell != null && mSelectedCell != null && mSelectedCell.equals(prevCell))) {
-            invalidate();
+        if (mSelectedCell == null) {
+            return true;
         }
+        List<TaskTimeSpan> spans = mActivityCalendar.getActivitiesInCell(mSelectedCell);
+        if (spans.isEmpty()) {
+            mSelectedCell = null;
+            return true;
+        }
+        invalidate();
+        mOnCellClickListener.onCellClicked(getCellCoordinate(mSelectedCell), spans);
         return true;
     }
 

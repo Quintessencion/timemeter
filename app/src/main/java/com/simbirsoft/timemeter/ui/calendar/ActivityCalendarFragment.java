@@ -1,11 +1,14 @@
 package com.simbirsoft.timemeter.ui.calendar;
 
 import android.content.res.Resources;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.PopupWindow;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
@@ -16,6 +19,7 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadActivityCalendarJob;
@@ -25,6 +29,7 @@ import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
 import com.simbirsoft.timemeter.ui.model.ActivityCalendar;
 import com.simbirsoft.timemeter.ui.model.CalendarData;
 import com.simbirsoft.timemeter.ui.model.CalendarPeriod;
+import com.simbirsoft.timemeter.ui.views.CalendarPopupHelper;
 import com.simbirsoft.timemeter.ui.views.CalendarViewPager;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.simbirsoft.timemeter.ui.views.CalendarNavigationView;
@@ -39,19 +44,21 @@ import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_activity_calendar)
 public class ActivityCalendarFragment extends BaseFragment implements MainPagerAdapter.PageTitleProvider,
-        JobLoader.JobLoaderCallbacks, CalendarNavigationView.OnCalendarNavigateListener {
+        JobLoader.JobLoaderCallbacks, CalendarNavigationView.OnCalendarNavigateListener,
+        WeekCalendarView.OnCellClickListener, PopupWindow.OnDismissListener {
 
     private static final Logger LOG = LogFactory.getLogger(ActivityCalendarFragment.class);
 
     private static final String CALENDAR_LOADER_TAG = "ActivityCalendarFragment_calendar_loader";
 
-    @ViewById(R.id.calendarContentRoot)
-    ViewGroup mCalendarContentRoot;
+    @ViewById(R.id.calendarScrollView)
+    ScrollView mCalendarScrollView;
 
     @ViewById(R.id.calendarViewPager)
     CalendarViewPager mCalendarViewPager;
@@ -79,7 +86,7 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
 
     @AfterViews
     void bindViews() {
-        mPagerAdapter = new CalendarPagerAdapter(getActivity(), mCalendarViewPager);
+        mPagerAdapter = new CalendarPagerAdapter(getActivity(), mCalendarViewPager, this);
         mCalendarNavigationView.setOnCalendarNavigateListener(this);
         requestLoad(CALENDAR_LOADER_TAG, this);
         mBus.register(this);
@@ -168,5 +175,16 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
                 + "_"
                 + String.valueOf(newEndDate.getTime());
         requestLoad(loaderTag, this);
+    }
+
+    public void onCellClicked(Point point, List<TaskTimeSpan> spans) {
+        point.offset(-mCalendarScrollView.getScrollX(), -mCalendarScrollView.getScrollY());
+        CalendarPopupHelper helper = new CalendarPopupHelper(getActivity());
+        helper.setOnDismissListener(this);
+        helper.show(mCalendarScrollView, point);
+    }
+
+    public void onDismiss() {
+        mPagerAdapter.deselectCurrentViewCell();
     }
 }
