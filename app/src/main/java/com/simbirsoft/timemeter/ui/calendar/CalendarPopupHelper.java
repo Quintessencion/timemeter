@@ -1,0 +1,202 @@
+package com.simbirsoft.timemeter.ui.calendar;
+
+import android.content.Context;
+import android.graphics.Point;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.TextView;
+
+import com.be.android.library.worker.annotations.OnJobFailure;
+import com.be.android.library.worker.annotations.OnJobSuccess;
+import com.be.android.library.worker.controllers.JobManager;
+import com.be.android.library.worker.handlers.JobEventDispatcher;
+import com.be.android.library.worker.models.LoadJobResult;
+import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.model.Task;
+import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
+import com.simbirsoft.timemeter.injection.Injection;
+import com.simbirsoft.timemeter.jobs.LoadTasksJob;
+import com.simbirsoft.timemeter.log.LogFactory;
+
+import org.slf4j.Logger;
+
+import java.util.List;
+
+public class CalendarPopupHelper {
+    private static final Logger LOG = LogFactory.getLogger(CalendarPopupHelper.class);
+    private static final String LOADER_TAG = "CalendarPopup_loader";
+
+    private WindowManager mWindowManager;
+
+    private Context mContext;
+    private PopupWindow mWindow;
+
+    private View mView;
+    private LinearLayout mLinearLayout;
+
+    private Drawable mBackgroundDrawable = null;
+    private ShowListener showListener;
+    private JobEventDispatcher mJobEventDispatcher;
+    private View mAnchorView;
+    private Point mAnchorPoint;
+
+    public CalendarPopupHelper(Context context, int viewResource) {
+        mContext = context;
+        mWindow = new PopupWindow(context);
+
+        mWindowManager = (WindowManager) context
+                .getSystemService(Context.WINDOW_SERVICE);
+
+
+        LayoutInflater layoutInflater = (LayoutInflater) context
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+        setContentView(layoutInflater.inflate(viewResource, null));
+        mLinearLayout = (LinearLayout)mView.findViewById(R.id.popupLinearLayout);
+        mJobEventDispatcher = new JobEventDispatcher(mContext);
+        mJobEventDispatcher.register(this);
+    }
+
+
+    public CalendarPopupHelper(Context context) {
+        this(context, R.layout.view_calendar_popup);
+    }
+
+    public void unregister() {
+        mJobEventDispatcher.unregister(this);
+    }
+
+    @OnJobSuccess(LoadTasksJob.class)
+    public void onTaskLoaded(LoadJobResult<List<Task>> result) {
+        preShow();
+        int[] location = new int[2];
+
+        mLinearLayout.removeAllViews();
+        for (Task task : result.getData()) {
+            TextView tv= new TextView(mContext);
+            tv.setText(task.getDescription());
+            mLinearLayout.addView(tv);
+        }
+
+        mAnchorView.getLocationOnScreen(location);
+
+        mLinearLayout.measure(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+
+        int rootHeight = mLinearLayout.getMeasuredHeight();
+        int rootWidth = mLinearLayout.getMeasuredWidth();
+
+        final int anchorWidth = mAnchorView.getWidth();
+        final int anchorHeight = mAnchorView.getHeight();
+
+        rootWidth = Math.min(rootWidth, anchorWidth);
+        rootHeight = Math.min(rootHeight, anchorHeight);
+
+        int xPos = 0;
+
+        if (mAnchorPoint.x < anchorWidth / 2) {
+            xPos = mAnchorPoint.x;
+            rootWidth = Math.min(rootWidth, anchorWidth - xPos);
+        } else {
+            rootWidth = Math.min(mAnchorPoint.x, rootWidth);
+            xPos = mAnchorPoint.x - rootWidth;
+        }
+
+        int yPos = 0;
+
+        if (mAnchorPoint.y + rootHeight > anchorHeight) {
+            yPos = (anchorHeight - rootHeight);
+        }
+        else if (mAnchorPoint.y - (rootHeight / 2) < 0) {
+            yPos = mAnchorPoint.y;
+        }
+        else {
+            yPos = (mAnchorPoint.y - (rootHeight / 2));
+        }
+        mWindow.setWidth(rootWidth);
+        mWindow.setHeight(Math.min(rootHeight, anchorHeight - yPos));
+        mWindow.showAtLocation(mAnchorView, Gravity.NO_GRAVITY, xPos + location[0], yPos + location[1]);
+    }
+
+    @OnJobFailure(LoadTasksJob.class)
+    public void onTaskLoadFailed() {
+        // TODO: display error explanation message
+        LOG.error("failed to load tasks");
+    }
+
+    public void show(View anchor, Point anchorPoint, List<TaskTimeSpan> spans) {
+        mAnchorView = anchor;
+        mAnchorPoint = anchorPoint;
+        LoadTasksJob job = Injection.sJobsComponent.loadTasksJob();
+        job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
+        job.addTag(LOADER_TAG);
+        job.setSpans(spans);
+        mJobEventDispatcher.submitJob(job);
+    }
+
+
+    private void preShow() {
+        if (mView == null)
+            throw new IllegalStateException("view undefined");
+
+        if (showListener != null) {
+            showListener.onPreShow();
+            showListener.onShow();
+        }
+
+        if (mBackgroundDrawable == null)
+            mWindow.setBackgroundDrawable(new BitmapDrawable());
+        else
+            mWindow.setBackgroundDrawable(mBackgroundDrawable);
+
+        mWindow.setTouchable(true);
+        mWindow.setFocusable(true);
+        mWindow.setOutsideTouchable(true);
+
+        mWindow.setContentView(mView);
+    }
+
+    public void setBackgroundDrawable(Drawable background) {
+        mBackgroundDrawable = background;
+    }
+
+    public void setContentView(View root) {
+        mView = root;
+
+        mWindow.setContentView(root);
+    }
+
+    public void setContentView(int layoutResID) {
+        LayoutInflater inflator = (LayoutInflater) mContext
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+        setContentView(inflator.inflate(layoutResID, null));
+    }
+
+    public void setOnDismissListener(PopupWindow.OnDismissListener listener) {
+        mWindow.setOnDismissListener(listener);
+    }
+
+    public void dismiss() {
+        mWindow.dismiss();
+        if (showListener != null) {
+            showListener.onDismiss();
+        }
+    }
+
+    public static interface ShowListener {
+        void onPreShow();
+        void onDismiss();
+        void onShow();
+    }
+
+    public void setShowListener(ShowListener showListener) {
+        this.showListener = showListener;
+    }
+}

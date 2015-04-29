@@ -3,13 +3,8 @@ package com.simbirsoft.timemeter.ui.calendar;
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.support.v4.view.ViewPager;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.PopupWindow;
 import android.widget.ScrollView;
-import android.widget.TextView;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
@@ -26,10 +21,8 @@ import com.simbirsoft.timemeter.jobs.LoadActivityCalendarJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
-import com.simbirsoft.timemeter.ui.model.ActivityCalendar;
 import com.simbirsoft.timemeter.ui.model.CalendarData;
 import com.simbirsoft.timemeter.ui.model.CalendarPeriod;
-import com.simbirsoft.timemeter.ui.views.CalendarPopupHelper;
 import com.simbirsoft.timemeter.ui.views.CalendarViewPager;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.simbirsoft.timemeter.ui.views.CalendarNavigationView;
@@ -77,6 +70,7 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
     Bus mBus;
 
     private CalendarPagerAdapter mPagerAdapter;
+    private CalendarPopupHelper mPopupHelper;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -86,6 +80,8 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
 
     @AfterViews
     void bindViews() {
+        mPopupHelper = new CalendarPopupHelper(getActivity());
+        mPopupHelper.setOnDismissListener(this);
         mPagerAdapter = new CalendarPagerAdapter(getActivity(), mCalendarViewPager, this);
         mCalendarNavigationView.setOnCalendarNavigateListener(this);
         requestLoad(CALENDAR_LOADER_TAG, this);
@@ -94,6 +90,7 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
 
     @Override
     public void onDestroyView() {
+        mPopupHelper.unregister();
         mBus.unregister(this);
         super.onDestroyView();
     }
@@ -180,9 +177,7 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
     public void onCellClicked(Point point, List<TaskTimeSpan> spans) {
         point.offset(0, -mCalendarScrollView.getScrollY());
         point.y = Math.min(mCalendarScrollView.getHeight(), Math.max(0, point.y));
-        CalendarPopupHelper helper = new CalendarPopupHelper(getActivity());
-        helper.setOnDismissListener(this);
-        helper.show(mCalendarScrollView, point);
+        mPopupHelper.show(mCalendarScrollView, point, spans);
     }
 
     public void onDismiss() {
