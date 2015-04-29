@@ -4,6 +4,10 @@ import android.content.Context;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +28,7 @@ import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTasksJob;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.model.TaskBundle;
 
 import org.slf4j.Logger;
 
@@ -39,7 +44,8 @@ public class CalendarPopupHelper {
     private PopupWindow mWindow;
 
     private View mView;
-    private LinearLayout mLinearLayout;
+    private RecyclerView mRecyclerView;
+    private CalendarPopupAdapter mAdapter;
 
     private Drawable mBackgroundDrawable = null;
     private ShowListener showListener;
@@ -59,7 +65,11 @@ public class CalendarPopupHelper {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         setContentView(layoutInflater.inflate(viewResource, null));
-        mLinearLayout = (LinearLayout)mView.findViewById(R.id.popupLinearLayout);
+        mRecyclerView = (RecyclerView)mView.findViewById(android.R.id.list);
+        RecyclerView.LayoutManager layoutManager = new CalendarPopupLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
+        mRecyclerView.setLayoutManager(layoutManager);
+        mAdapter = new CalendarPopupAdapter();
+        mRecyclerView.setAdapter(mAdapter);
         mJobEventDispatcher = new JobEventDispatcher(mContext);
         mJobEventDispatcher.register(this);
     }
@@ -74,23 +84,16 @@ public class CalendarPopupHelper {
     }
 
     @OnJobSuccess(LoadTasksJob.class)
-    public void onTaskLoaded(LoadJobResult<List<Task>> result) {
+    public void onTaskLoaded(LoadJobResult<List<TaskBundle>> result) {
         preShow();
         int[] location = new int[2];
-
-        mLinearLayout.removeAllViews();
-        for (Task task : result.getData()) {
-            TextView tv= new TextView(mContext);
-            tv.setText(task.getDescription());
-            mLinearLayout.addView(tv);
-        }
-
         mAnchorView.getLocationOnScreen(location);
 
-        mLinearLayout.measure(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        mAdapter.setItems(result.getData());
+        mRecyclerView.measure(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 
-        int rootHeight = mLinearLayout.getMeasuredHeight();
-        int rootWidth = mLinearLayout.getMeasuredWidth();
+        int rootHeight = mRecyclerView.getMeasuredHeight();
+        int rootWidth = mRecyclerView.getMeasuredWidth();
 
         final int anchorWidth = mAnchorView.getWidth();
         final int anchorHeight = mAnchorView.getHeight();

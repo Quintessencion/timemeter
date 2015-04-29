@@ -14,10 +14,12 @@ import com.simbirsoft.timemeter.db.QueryUtils;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
+import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.ui.model.ActivityCalendar;
 import com.simbirsoft.timemeter.ui.model.CalendarData;
 import com.simbirsoft.timemeter.ui.model.CalendarPeriod;
+import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.squareup.phrase.Phrase;
 
@@ -49,7 +51,7 @@ public class LoadTasksJob extends LoadJob {
     }
 
     @Override
-    protected LoadJobResult<List<Task>> performLoad() throws Exception {
+    protected LoadJobResult<List<TaskBundle>> performLoad() throws Exception {
         List<Long> taskIds = Lists.newArrayList();
         StringBuilder idsSet = new StringBuilder();
         for (TaskTimeSpan span : mSpans) {
@@ -75,7 +77,18 @@ public class LoadTasksJob extends LoadJob {
             List<Task> tasks = cupboard().withCursor(cursor).list(Task.class);
             Collections.sort(tasks, (item1, item2) ->
                     (taskIds.indexOf(item1.getId()) - taskIds.indexOf(item2.getId())));
-            return new LoadJobResult<>(JobResultStatus.OK, tasks);
+            final List<TaskBundle> result = Lists.newArrayListWithCapacity(tasks.size());
+            final LoadTaskTagsJob loadJob = Injection.sJobsComponent.loadTaskTagsJob();
+            for (Task task : tasks) {
+                if (isCancelled()) {
+                    return LoadJobResult.loadOk();
+                }
+                loadJob.setTaskId(task.getId());
+                List<Tag> taskTags = ((LoadJobResult<List<Tag>>) forkJob(loadJob).join()).getData();
+                result.add(TaskBundle.create(task, taskTags));
+                loadJob.reset();
+            }
+            return new LoadJobResult<>(result);
 
         } finally {
             cursor.close();
