@@ -2,6 +2,7 @@ package com.simbirsoft.timemeter.ui.util;
 
 
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
+import com.simbirsoft.timemeter.log.LogFactory;
 
 import java.util.Calendar;
 import java.util.List;
@@ -43,8 +44,10 @@ public class TimeSpanDaysSplitter {
                 newSpanEndTime = spanEndTimeMillis;
             }
             calendar1.setTimeInMillis(currentTimeMillis);
-            newSpan.setEndTimeMillis(newSpanEndTime);
-            container.add(newSpan);
+            if (newSpan.getStartTimeMillis() != newSpanEndTime) {
+                newSpan.setEndTimeMillis(newSpanEndTime);
+                container.add(newSpan);
+            }
             yearStart = calendar1.get(Calendar.YEAR);
             dayStart = calendar1.get(Calendar.DAY_OF_YEAR);
         }
