@@ -16,10 +16,9 @@ import android.view.View;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.ui.model.TaskActivitySpansItem;
 
-public class TaskDailyActivitiesView extends View{
+public class TaskActivityItemView extends View{
     private static final int BLOCK_HORIZONTAL_PADDING_DEFAULT_DIP = 10;
     private static final int BLOCK_VERTICAL_PADDING_DEFAULT_DIP = 5;
-    private static final int BLOCK_VERTICAL_SPACING_DEFAULT_DIP = 10;
     private static final int BLOCK_HORIZONTAL_SPACING_DEFAULT_DIP = 15;
     private static final int BLOCK_CORNER_RADIUS_DEFAULT_DIP = 4;
 
@@ -31,28 +30,28 @@ public class TaskDailyActivitiesView extends View{
     private int mBlockVerticalPadding;
     private int mTimeBlockWidth;
     private int mBlockHeight;
-    private int mBlockVerticalSpacing;
     private int mBlockHorizontalSpacing;
     private int mBlockCornerRadius;
     private RectF mRect;
     private Rect mTextBounds;
 
     private TaskActivitySpansItem mItem;
+    private int mIndex;
 
-    public TaskDailyActivitiesView(Context context) {
+    public TaskActivityItemView(Context context) {
         super(context);
     }
 
-    public TaskDailyActivitiesView(Context context, AttributeSet attrs) {
+    public TaskActivityItemView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public TaskDailyActivitiesView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public TaskActivityItemView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public TaskDailyActivitiesView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public TaskActivityItemView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
@@ -77,64 +76,51 @@ public class TaskDailyActivitiesView extends View{
 
         mBlockHorizontalPadding = (int) (displayMetrics.density * BLOCK_HORIZONTAL_PADDING_DEFAULT_DIP);
         mBlockVerticalPadding = (int) (displayMetrics.density * BLOCK_VERTICAL_PADDING_DEFAULT_DIP);
-        mBlockVerticalSpacing = (int) (displayMetrics.density * BLOCK_VERTICAL_SPACING_DEFAULT_DIP);
         mBlockHorizontalSpacing = (int) (displayMetrics.density * BLOCK_HORIZONTAL_SPACING_DEFAULT_DIP);
         mBlockCornerRadius = (int) (displayMetrics.density * BLOCK_CORNER_RADIUS_DEFAULT_DIP);
 
+        mIndex = -1;
         mItem = new TaskActivitySpansItem();
         mRect = new RectF();
         mTextBounds = new Rect();
     }
 
-    public void setTaskActivitySpansItem(TaskActivitySpansItem item) {
+    public void setTaskActivitySpansItem(TaskActivitySpansItem item, int index) {
         mItem = item;
-        requestLayout();
+        mIndex = index;
         invalidate();
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int myWidth = 0;
-        int myHeight = 0;
         mBlockHeight = (int)Math.ceil(Math.max(mTimeTextPaint.getTextSize(), mDurationTextPaint.getTextSize()))
                 + 2 * mBlockVerticalPadding;
-        String testString = mItem.getSpanTimeTestLabel();
-        mTimeBlockWidth = (int)Math.ceil(mTimeTextPaint.measureText(testString)) + 2 * mBlockHorizontalPadding;
-        int count = mItem.getSpansCount();
-        myHeight = Math.max(0, count * mBlockHeight + (count - 1) * mBlockVerticalSpacing);
+        String text = (mIndex < 0) ? mItem.getSpanTimeTestLabel() : mItem.getSpanTimeLabel(mIndex);
+        mTimeBlockWidth = (int)Math.ceil(mTimeTextPaint.measureText(text)) + 2 * mBlockHorizontalPadding;
 
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         if (widthMode == MeasureSpec.EXACTLY) {
             myWidth = MeasureSpec.getSize(widthMeasureSpec);
         } else {
-            testString = mItem.getSpanDurationTestLabel(getContext());
-            int durationBlockWidth = (int)Math.ceil(mDurationTextPaint.measureText(testString)) + 2 * mBlockHorizontalPadding;
+            text = (mIndex < 0) ? mItem.getSpanDurationTestLabel(getContext()) : mItem.getSpanDurationLabel(mIndex, getContext());
+            int durationBlockWidth = (int)Math.ceil(mDurationTextPaint.measureText(text)) + 2 * mBlockHorizontalPadding;
             myWidth = mTimeBlockWidth + durationBlockWidth + mBlockHorizontalSpacing;
         }
 
-        setMeasuredDimension(myWidth, myHeight);
+        setMeasuredDimension(myWidth, mBlockHeight);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        int count = mItem.getSpansCount();
-        if (count == 0) return;
-        final int saveCount = canvas.save();
-        for (int i = 0; i < count; i++) {
-            drawItem(canvas, i);
-            canvas.translate(0, mBlockHeight + mBlockVerticalSpacing);
-        }
-        canvas.restoreToCount(saveCount);
-    }
-
-    private void drawItem(Canvas canvas, int index) {
+        if (mIndex < 0) return;
         final Resources res = getContext().getResources();
         final int saveCount = canvas.save();
         mBlockPaint.setColor(res.getColor(R.color.primary));
-        drawBlock(canvas, mItem.getSpanTimeLabel(index), mTimeBlockWidth, mTimeTextPaint);
+        drawBlock(canvas, mItem.getSpanTimeLabel(mIndex), mTimeBlockWidth, mTimeTextPaint);
         canvas.translate(mTimeBlockWidth + mBlockHorizontalSpacing, 0);
         mBlockPaint.setColor(res.getColor(R.color.primaryDark));
-        drawBlock(canvas, mItem.getSpanDurationLabel(index, getContext()), 0, mDurationTextPaint);
+        drawBlock(canvas, mItem.getSpanDurationLabel(mIndex, getContext()), 0, mDurationTextPaint);
         canvas.restoreToCount(saveCount);
     }
 

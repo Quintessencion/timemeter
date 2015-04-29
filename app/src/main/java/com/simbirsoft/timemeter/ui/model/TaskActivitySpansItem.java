@@ -18,7 +18,7 @@ public class TaskActivitySpansItem extends TaskActivityItem {
     private static final String TIME_TEST_STRING = String.format("00:00 %c 00:00", EM_DASH);
     private static final long DURATION_TEST_VALUE = (20 * 3600 + 20 * 60 + 20) * 1000;
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("d");
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd");
     private static final SimpleDateFormat WEEK_DAY_FORMAT = new SimpleDateFormat("EE");
 
     private List<TaskTimeSpan> mList;

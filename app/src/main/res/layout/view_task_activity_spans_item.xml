@@ -2,15 +2,16 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingTop="10dp"
-                android:paddingLeft="10dp">
+                android:orientation="horizontal">
 
     <LinearLayout
         android:id="@+id/textLayout"
         android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="15dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true">
 
@@ -30,11 +31,12 @@
             android:includeFontPadding="false"/>
     </LinearLayout>
 
-    <com.simbirsoft.timemeter.ui.views.TaskDailyActivitiesView
+    <com.simbirsoft.timemeter.ui.views.TaskActivityItemsLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:id="@+id/taskActivitiesView"
+        android:orientation="vertical"
+        android:layout_marginTop="5dp"
+        android:id="@+id/taskActivityItemsLayout"
         android:layout_alignParentTop="true"
         android:layout_toEndOf="@+id/textLayout"
         android:layout_toRightOf="@+id/textLayout"/>
@@ -44,8 +46,8 @@
         android:layout_height="1dp"
         android:id="@+id/divider"
         android:background="@color/lightGrey"
-        android:layout_marginTop="20dp"
-        android:layout_alignStart="@+id/taskActivitiesView"
-        android:layout_alignLeft="@+id/taskActivitiesView"
-        android:layout_below="@+id/taskActivitiesView"/>
+        android:layout_marginTop="10dp"
+        android:layout_alignStart="@+id/taskActivityItemsLayout"
+        android:layout_alignLeft="@+id/taskActivityItemsLayout"
+        android:layout_below="@+id/taskActivityItemsLayout"/>
 </RelativeLayout>
