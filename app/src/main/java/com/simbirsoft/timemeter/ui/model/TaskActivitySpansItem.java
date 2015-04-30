@@ -42,11 +42,11 @@ public class TaskActivitySpansItem extends TaskActivityItem {
     }
 
     public String getDateString() {
-        return DATE_FORMAT.format(getDate()).toUpperCase();
+        return DATE_FORMAT.format(getDate());
     }
 
     public String getWeekDayString() {
-        return WEEK_DAY_FORMAT.format(getDate());
+        return WEEK_DAY_FORMAT.format(getDate()).toUpperCase();
     }
 
     public String getSpanTimeTestLabel() {

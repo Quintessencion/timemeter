@@ -13,7 +13,7 @@
     <dimen name="task_activity_time_text_size">16sp</dimen>
     <dimen name="task_activity_month_text_size">22sp</dimen>
     <dimen name="task_activity_date_text_size">22sp</dimen>
-    <dimen name="task_activity_weekday_text_size">18sp</dimen>
+    <dimen name="task_activity_weekday_text_size">16sp</dimen>
     <dimen name="task_activity_span_item_padding">4dp</dimen>
     <dimen name="task_activity_date_text_margin">16dp</dimen>
     <dimen name="task_activity_middle_item_padding_bottom">20dp</dimen>

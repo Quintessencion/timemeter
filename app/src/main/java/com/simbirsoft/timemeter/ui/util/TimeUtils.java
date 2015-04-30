@@ -1,10 +1,12 @@
 package com.simbirsoft.timemeter.ui.util;
 
 import java.util.Calendar;
+import java.util.Date;
 
 public final class TimeUtils {
-
     public static final long MILLIS_IN_HOUR = 3600000;
+
+    private static final Calendar CALENDAR = Calendar.getInstance();
 
     public static long getDayStartMillis(Calendar calendar) {
         calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -76,6 +78,26 @@ public final class TimeUtils {
         return getDayEndMillis(c);
     }
 
+    public static boolean isCurrentYear(long millis) {
+        CALENDAR.setTimeInMillis(millis);
+        int year = CALENDAR.get(Calendar.YEAR);
+        CALENDAR.setTime(new Date());
+        return CALENDAR.get(Calendar.YEAR) == year;
+    }
+
+    public static boolean isCurrentDay(long millis) {
+        CALENDAR.setTimeInMillis(millis);
+        int year = CALENDAR.get(Calendar.YEAR);
+        int dayOfYear = CALENDAR.get(Calendar.DAY_OF_YEAR);
+        CALENDAR.setTime(new Date());
+        return CALENDAR.get(Calendar.YEAR) == year && CALENDAR.get(Calendar.DAY_OF_YEAR) == dayOfYear;
+    }
+
+    public static boolean isHoliday(long millis) {
+        CALENDAR.setTimeInMillis(millis);
+        int dayOfWeek = CALENDAR.get(Calendar.DAY_OF_WEEK);
+        return dayOfWeek == CALENDAR.SATURDAY || dayOfWeek == CALENDAR.SUNDAY;
+    }
 
     public static long hoursToMillis(int hours) {
         return hours * MILLIS_IN_HOUR;

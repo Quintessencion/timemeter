@@ -15,6 +15,7 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.ui.model.TaskActivityDateItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivitySpansItem;
+import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.simbirsoft.timemeter.ui.views.TaskActivityItemsLayout;
 
 import java.util.HashSet;
@@ -58,6 +59,9 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
     private int mMiddleItemPaddingBottom;
     private int mFirstItemPaddingTop;
     private int mLastItemPaddingBottom;
+    private int mDateColor;
+    private int mCurrentDateColor;
+    private int mHolidayDateColor;
 
     public TaskActivitiesAdapter(Context context) {
         mContext = context;
@@ -68,6 +72,9 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         mMiddleItemPaddingBottom = res.getDimensionPixelSize(R.dimen.task_activity_middle_item_padding_bottom);
         mFirstItemPaddingTop = res.getDimensionPixelSize(R.dimen.task_activity_first_item_padding_top);
         mLastItemPaddingBottom = res.getDimensionPixelSize(R.dimen.task_activity_last_item_padding_bottom);
+        mDateColor = res.getColor(R.color.calendar_date_text);
+        mCurrentDateColor = res.getColor(R.color.primary);
+        mHolidayDateColor = res.getColor(R.color.accentPrimary);
     }
 
     public void setItems(List<TaskActivityItem> items) {
@@ -124,6 +131,15 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
 
     private void bindSpansItemViewHolder(SpansItemViewHolder viewHolder, int position) {
         TaskActivitySpansItem item = (TaskActivitySpansItem)mItems.get(position);
+        int dateColor = mDateColor;
+        long millis = item.getDateMillis();
+        if (TimeUtils.isCurrentDay(millis)) {
+            dateColor = mCurrentDateColor;
+        } else if (TimeUtils.isHoliday(millis)) {
+            dateColor = mHolidayDateColor;
+        }
+        viewHolder.mDateTextView.setTextColor(dateColor);
+        viewHolder.mWeekDayTextView.setTextColor(dateColor);
         viewHolder.mDateTextView.setText(item.getDateString());
         viewHolder.mWeekDayTextView.setText(item.getWeekDayString());
         viewHolder.mActivitiesLayout.setTaskActivitySpansItem(item);
