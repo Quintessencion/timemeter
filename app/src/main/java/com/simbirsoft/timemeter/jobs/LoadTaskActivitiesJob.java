@@ -51,7 +51,7 @@ public class LoadTaskActivitiesJob extends LoadJob {
             public int compare(TaskTimeSpan lhs, TaskTimeSpan rhs) {
                 long millis1 = lhs.getStartTimeMillis();
                 long millis2 = rhs.getStartTimeMillis();
-                return (millis1 == millis2) ? 0 : (millis1 < millis2) ? -1 : 1;
+                return (millis1 == millis2) ? 0 : (millis1 > millis2) ? -1 : 1;
             }
         });
         return new LoadJobResult<>(convert(spans));
@@ -71,6 +71,7 @@ public class LoadTaskActivitiesJob extends LoadJob {
 
         for(TaskTimeSpan span : spans) {
             TimeSpanDaysSplitter.splitTimeSpanByDays(cal1, cal2, span, splitSpans);
+            Collections.reverse(splitSpans);
             for (TaskTimeSpan span1 : splitSpans) {
                 if (!isInDay(currentDay, cal1, span1)) {
                     createListItem(items, dailySpans, currentDay);
@@ -91,6 +92,7 @@ public class LoadTaskActivitiesJob extends LoadJob {
 
     private void createListItem(List<TaskActivityItem> items, List<TaskTimeSpan> dailySpans, Calendar currentDay) {
         if (!dailySpans.isEmpty()) {
+            Collections.reverse(dailySpans);
             TaskActivitySpansItem item = new TaskActivitySpansItem();
             item.setDate(currentDay.getTime());
             item.setList(Lists.newArrayList(dailySpans));
