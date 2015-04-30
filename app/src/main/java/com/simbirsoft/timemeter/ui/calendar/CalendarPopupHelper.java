@@ -8,11 +8,13 @@ import android.graphics.drawable.GradientDrawable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Pair;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
+import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
@@ -37,6 +39,7 @@ import java.util.List;
 public class CalendarPopupHelper {
     private static final Logger LOG = LogFactory.getLogger(CalendarPopupHelper.class);
     private static final String LOADER_TAG = "CalendarPopup_loader";
+    private static final int POPUP_MARGIN_DEFAULT_DIP = 2;
 
     private WindowManager mWindowManager;
 
@@ -52,6 +55,7 @@ public class CalendarPopupHelper {
     private JobEventDispatcher mJobEventDispatcher;
     private View mAnchorView;
     private Point mAnchorPoint;
+    private int mPopupMargin;
 
     public CalendarPopupHelper(Context context, int viewResource) {
         mContext = context;
@@ -70,6 +74,9 @@ public class CalendarPopupHelper {
         mRecyclerView.setLayoutManager(layoutManager);
         mAdapter = new CalendarPopupAdapter();
         mRecyclerView.setAdapter(mAdapter);
+
+        mPopupMargin =  (int) (context.getResources().getDisplayMetrics().density * POPUP_MARGIN_DEFAULT_DIP);
+
         mJobEventDispatcher = new JobEventDispatcher(mContext);
         mJobEventDispatcher.register(this);
     }
@@ -92,38 +99,26 @@ public class CalendarPopupHelper {
         mAdapter.setItems(result.getData());
         mRecyclerView.measure(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 
-        int rootHeight = mRecyclerView.getMeasuredHeight();
-        int rootWidth = mRecyclerView.getMeasuredWidth();
+        int popupHeight = mRecyclerView.getMeasuredHeight() + mView.getPaddingTop() + mView.getPaddingBottom();
+        int popupWidth = mRecyclerView.getMeasuredWidth() + mView.getPaddingLeft() + mView.getPaddingRight();
 
         final int anchorWidth = mAnchorView.getWidth();
         final int anchorHeight = mAnchorView.getHeight();
 
-        rootWidth = Math.min(rootWidth, anchorWidth);
-        rootHeight = Math.min(rootHeight, anchorHeight);
+        popupWidth = Math.min(popupWidth, anchorWidth - 2 * mPopupMargin);
+        popupHeight = Math.min(popupHeight, anchorHeight - 2 * mPopupMargin);
 
-        int xPos = 0;
-
-        if (mAnchorPoint.x < anchorWidth / 2) {
-            xPos = mAnchorPoint.x;
-            rootWidth = Math.min(rootWidth, anchorWidth - xPos);
+        int xPos, yPos;
+        if (popupWidth <= getMaxSize(mAnchorPoint.x, anchorWidth)) {
+            xPos = getPositionOnSide(mAnchorPoint.x, anchorWidth, popupWidth);
+            yPos = getCenteredPosition(mAnchorPoint.y, anchorHeight, popupHeight);
         } else {
-            rootWidth = Math.min(mAnchorPoint.x, rootWidth);
-            xPos = mAnchorPoint.x - rootWidth;
+            popupHeight = Math.min(popupHeight, getMaxSize(mAnchorPoint.y, anchorHeight));
+            xPos = getCenteredPosition(mAnchorPoint.x, anchorWidth, popupWidth);
+            yPos = getPositionOnSide(mAnchorPoint.y, anchorHeight, popupHeight);
         }
-
-        int yPos = 0;
-
-        if (mAnchorPoint.y + rootHeight > anchorHeight) {
-            yPos = (anchorHeight - rootHeight);
-        }
-        else if (mAnchorPoint.y - (rootHeight / 2) < 0) {
-            yPos = mAnchorPoint.y;
-        }
-        else {
-            yPos = (mAnchorPoint.y - (rootHeight / 2));
-        }
-        mWindow.setWidth(rootWidth);
-        mWindow.setHeight(Math.min(rootHeight, anchorHeight - yPos));
+        mWindow.setWidth(popupWidth);
+        mWindow.setHeight(popupHeight);
         mWindow.showAtLocation(mAnchorView, Gravity.NO_GRAVITY, xPos + location[0], yPos + location[1]);
     }
 
@@ -163,6 +158,9 @@ public class CalendarPopupHelper {
         mWindow.setOutsideTouchable(true);
 
         mWindow.setContentView(mView);
+
+        mAnchorPoint.x = Math.min(mAnchorView.getWidth() - mPopupMargin, Math.max(mPopupMargin, mAnchorPoint.x));
+        mAnchorPoint.y = Math.min(mAnchorView.getHeight() - mPopupMargin, Math.max(mPopupMargin, mAnchorPoint.y));
     }
 
     public void setBackgroundDrawable(Drawable background) {
@@ -201,5 +199,23 @@ public class CalendarPopupHelper {
 
     public void setShowListener(ShowListener showListener) {
         this.showListener = showListener;
+    }
+
+    private int getMaxSize(int anchorPos, int anchorSize) {
+        return Math.max(anchorPos, anchorSize - anchorPos) - mPopupMargin;
+    }
+
+    private int getCenteredPosition(int anchorPos, int anchorSize, int popupSize) {
+        int pos = (anchorPos - (popupSize / 2));
+        if (pos + popupSize > anchorSize - mPopupMargin) {
+            pos = anchorSize - mPopupMargin - popupSize;
+        } else if (pos < mPopupMargin) {
+            pos = mPopupMargin;
+        }
+        return pos;
+    }
+
+    private int getPositionOnSide(int anchorPos, int anchorSize, int popupSize) {
+        return  (anchorPos < anchorSize / 2) ? anchorPos : anchorPos - popupSize;
     }
 }

@@ -176,7 +176,6 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
 
     public void onCellClicked(Point point, List<TaskTimeSpan> spans) {
         point.offset(0, -mCalendarScrollView.getScrollY());
-        point.y = Math.min(mCalendarScrollView.getHeight(), Math.max(0, point.y));
         mPopupHelper.show(mCalendarScrollView, point, spans);
     }
 

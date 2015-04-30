@@ -10,6 +10,7 @@
     <dimen name="calendar_navigation_text_size">18sp</dimen>
     <dimen name="calendar_navigation_vertical_padding">2dp</dimen>
     <dimen name="stats_details_padding">4dp</dimen>
+    <dimen name="task_marker_size">8dp</dimen>
 
     <!-- Per the design guidelines, navigation drawers should be between 240dp and 320dp:
          https://developer.android.com/design/patterns/navigation-drawer.html -->

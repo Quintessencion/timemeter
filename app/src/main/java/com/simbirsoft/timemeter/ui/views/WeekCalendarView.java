@@ -365,12 +365,6 @@ public class WeekCalendarView extends View implements GestureDetector.OnGestureL
         return new WeekCalendarCell(x / mDateWidth, y / mHourHeight);
     }
 
-    private Point getCellCoordinate(WeekCalendarCell cell) {
-        int x = (int)(mHourWidth + mDateWidth * (cell.getDayIndex() + 0.5));
-        int y = (int)(mDateHeight + mHourHeight * (cell.getHourIndex() + 0.5));
-        return new Point(x, y);
-    }
-
     public boolean onSingleTapUp(MotionEvent e) {
         mSelectedCell = getCell(e);
         if (mSelectedCell == null) {
@@ -382,7 +376,7 @@ public class WeekCalendarView extends View implements GestureDetector.OnGestureL
             return true;
         }
         invalidate();
-        mOnCellClickListener.onCellClicked(getCellCoordinate(mSelectedCell), spans);
+        mOnCellClickListener.onCellClicked(new Point((int)e.getX(), (int)e.getY()), spans);
         return true;
     }
 

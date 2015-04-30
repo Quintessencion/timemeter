@@ -60,7 +60,7 @@ public class LoadTasksJob extends LoadJob {
                     idsSet.append(',');
                 }
                 idsSet.append(span.getTaskId());
-                taskIds.add(span.getId());
+                taskIds.add(span.getTaskId());
             }
         }
         final String query = Phrase.from(
