@@ -101,7 +101,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(layoutManager);
 
-        mAdapter = new TaskActivitiesAdapter();
+        mAdapter = new TaskActivitiesAdapter(getActivity());
         mRecyclerView.setAdapter(mAdapter);
         mProgressLayout.setProgressLayoutCallbacks(
                 new ProgressLayout.JobProgressLayoutCallbacks(JobSelector.forJobTags(LOADER_TAG)) {

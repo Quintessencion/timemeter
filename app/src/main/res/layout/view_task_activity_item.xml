@@ -4,11 +4,12 @@
               xmlns:app="http://schemas.android.com/apk/res-auto"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:padding="5dp"
+              android:paddingTop="@dimen/task_activity_span_item_padding"
+              android:paddingBottom="@dimen/task_activity_span_item_padding"
               app:rv_centered="true"
               app:rv_alpha="250">
                 <com.simbirsoft.timemeter.ui.views.TaskActivityItemView
-                    android:id="@+id/taskActivityUtemView"
+                    android:id="@+id/taskActivityItemView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
 </com.andexert.library.RippleView>

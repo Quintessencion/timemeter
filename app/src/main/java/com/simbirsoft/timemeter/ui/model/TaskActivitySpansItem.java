@@ -25,8 +25,12 @@ public class TaskActivitySpansItem extends TaskActivityItem {
     private final Calendar mCalendar;
 
     public TaskActivitySpansItem() {
-        super();
         mCalendar = Calendar.getInstance();
+    }
+
+    @Override
+    public int getItemType() {
+        return SPANS_ITEM_TYPE;
     }
 
     public List<TaskTimeSpan> getList() {
@@ -38,7 +42,7 @@ public class TaskActivitySpansItem extends TaskActivityItem {
     }
 
     public String getDateString() {
-        return DATE_FORMAT.format(getDate());
+        return DATE_FORMAT.format(getDate()).toUpperCase();
     }
 
     public String getWeekDayString() {

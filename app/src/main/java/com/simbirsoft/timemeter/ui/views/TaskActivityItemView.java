@@ -19,7 +19,7 @@ import com.simbirsoft.timemeter.ui.model.TaskActivitySpansItem;
 public class TaskActivityItemView extends View{
     private static final int BLOCK_HORIZONTAL_PADDING_DEFAULT_DIP = 10;
     private static final int BLOCK_VERTICAL_PADDING_DEFAULT_DIP = 5;
-    private static final int BLOCK_HORIZONTAL_SPACING_DEFAULT_DIP = 15;
+    private static final int BLOCK_HORIZONTAL_SPACING_DEFAULT_DIP = 10;
     private static final int BLOCK_CORNER_RADIUS_DEFAULT_DIP = 4;
 
     private Paint mTimeTextPaint;
@@ -34,6 +34,9 @@ public class TaskActivityItemView extends View{
     private int mBlockCornerRadius;
     private RectF mRect;
     private Rect mTextBounds;
+    private Context mContext;
+    private int mTimeBlockColor;
+    private int mDurationBlockColor;
 
     private TaskActivitySpansItem mItem;
     private int mIndex;
@@ -58,16 +61,18 @@ public class TaskActivityItemView extends View{
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        final Resources res = getContext().getResources();
+        mContext = getContext();
+        final Resources res = mContext.getResources();
         final DisplayMetrics displayMetrics = res.getDisplayMetrics();
+
         mTimeTextPaint = new Paint();
         mTimeTextPaint.setColor(res.getColor(R.color.white));
-        mTimeTextPaint.setTextSize(res.getDimension(R.dimen.task_activity_text_size));
+        mTimeTextPaint.setTextSize(res.getDimension(R.dimen.task_activity_time_text_size));
         mTimeTextPaint.setAntiAlias(true);
 
         mDurationTextPaint = new Paint();
         mDurationTextPaint.setColor(res.getColor(R.color.white));
-        mDurationTextPaint.setTextSize(res.getDimension(R.dimen.task_activity_text_size));
+        mDurationTextPaint.setTextSize(res.getDimension(R.dimen.task_activity_time_text_size));
         mDurationTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
         mDurationTextPaint.setAntiAlias(true);
 
@@ -78,6 +83,9 @@ public class TaskActivityItemView extends View{
         mBlockVerticalPadding = (int) (displayMetrics.density * BLOCK_VERTICAL_PADDING_DEFAULT_DIP);
         mBlockHorizontalSpacing = (int) (displayMetrics.density * BLOCK_HORIZONTAL_SPACING_DEFAULT_DIP);
         mBlockCornerRadius = (int) (displayMetrics.density * BLOCK_CORNER_RADIUS_DEFAULT_DIP);
+
+        mTimeBlockColor = res.getColor(R.color.primary);
+        mDurationBlockColor = res.getColor(R.color.primaryDark);
 
         mIndex = -1;
         mItem = new TaskActivitySpansItem();
@@ -103,7 +111,7 @@ public class TaskActivityItemView extends View{
         if (widthMode == MeasureSpec.EXACTLY) {
             myWidth = MeasureSpec.getSize(widthMeasureSpec);
         } else {
-            text = (mIndex < 0) ? mItem.getSpanDurationTestLabel(getContext()) : mItem.getSpanDurationLabel(mIndex, getContext());
+            text = (mIndex < 0) ? mItem.getSpanDurationTestLabel(mContext) : mItem.getSpanDurationLabel(mIndex, mContext);
             int durationBlockWidth = (int)Math.ceil(mDurationTextPaint.measureText(text)) + 2 * mBlockHorizontalPadding;
             myWidth = mTimeBlockWidth + durationBlockWidth + mBlockHorizontalSpacing;
         }
@@ -114,13 +122,12 @@ public class TaskActivityItemView extends View{
     @Override
     protected void onDraw(Canvas canvas) {
         if (mIndex < 0) return;
-        final Resources res = getContext().getResources();
         final int saveCount = canvas.save();
-        mBlockPaint.setColor(res.getColor(R.color.primary));
+        mBlockPaint.setColor(mTimeBlockColor);
         drawBlock(canvas, mItem.getSpanTimeLabel(mIndex), mTimeBlockWidth, mTimeTextPaint);
         canvas.translate(mTimeBlockWidth + mBlockHorizontalSpacing, 0);
-        mBlockPaint.setColor(res.getColor(R.color.primaryDark));
-        drawBlock(canvas, mItem.getSpanDurationLabel(mIndex, getContext()), 0, mDurationTextPaint);
+        mBlockPaint.setColor(mDurationBlockColor);
+        drawBlock(canvas, mItem.getSpanDurationLabel(mIndex, mContext), 0, mDurationTextPaint);
         canvas.restoreToCount(saveCount);
     }
 

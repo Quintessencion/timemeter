@@ -5,7 +5,12 @@ import java.util.Calendar;
 import java.util.Date;
 
 public abstract class TaskActivityItem {
+    public static final int DATE_ITEM_TYPE = 0;
+    public static final int SPANS_ITEM_TYPE = 1;
+
     private final Calendar mDate;
+
+    public abstract int getItemType();
 
     public TaskActivityItem() {
         mDate = Calendar.getInstance();

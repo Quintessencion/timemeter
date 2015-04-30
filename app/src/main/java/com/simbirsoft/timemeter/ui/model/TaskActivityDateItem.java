@@ -6,8 +6,9 @@ import java.text.SimpleDateFormat;
 public class TaskActivityDateItem extends TaskActivityItem {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("LLLL yyyy");
 
-    public TaskActivityDateItem() {
-        super();
+    @Override
+    public int getItemType() {
+        return DATE_ITEM_TYPE;
     }
 
     public String getDateString() {

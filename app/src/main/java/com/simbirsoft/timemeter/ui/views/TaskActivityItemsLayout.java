@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -57,15 +56,16 @@ public class TaskActivityItemsLayout extends LinearLayout {
     }
 
     private void update() {
-        if (mAdapter == null)
+        if (mAdapter == null) {
             throw new IllegalStateException("TaskActivityItemsAdapter is not set");
+        }
         int spansCount = mItem.getSpansCount();
         int childCount = getChildCount();
         if (childCount > spansCount) {
             removeItems(childCount - spansCount);
         }
         for (int i = 0; i < spansCount; i++) {
-            View itemView = null;
+            View itemView;
             if (i < childCount) {
                 itemView = getChildAt(i);
             } else {
