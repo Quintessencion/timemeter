@@ -95,7 +95,13 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mContainerCallbacks = (ContentFragmentCallbacks) activity;
         int sectionId = getSectionId();
         mPageNames = Lists.newArrayList(((PagesProvides) activity).getPageNames(sectionId));
-        ((MainActivity) activity).onSectionAttached(getSectionId());
+        try {
+            SectionFragmentContainer container = (SectionFragmentContainer) activity;
+            container.onSectionAttached(getSectionId());
+        } catch (ClassCastException e) {
+            throw new RuntimeException(String.format("%s should implement %s", activity.getClass().getName(), SectionFragmentContainer.class.getName()));
+        }
+
     }
 
     @Override

@@ -2,7 +2,6 @@ package com.simbirsoft.timemeter.ui.main;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
@@ -38,7 +37,8 @@ import java.util.List;
 public class MainActivity extends BaseActivity implements NavigationDrawerFragment.NavigationDrawerCallbacks,
         ContentFragmentCallbacks,
         FilterViewProvider,
-        MainPagerFragment.PagesProvides {
+        MainPagerFragment.PagesProvides,
+        SectionFragmentContainer {
 
     private static final Logger LOG = LogFactory.getLogger(MainActivity.class);
 
@@ -186,6 +186,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         return super.onCreateOptionsMenu(menu);
     }
 
+    @Override
     public void onSectionAttached(int number) {
         switch (number) {
             case SECTION_ID_TASKS:

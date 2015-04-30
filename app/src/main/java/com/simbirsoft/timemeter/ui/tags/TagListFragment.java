@@ -41,6 +41,7 @@ import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.MainActivity;
 import com.simbirsoft.timemeter.ui.main.MainFragment;
+import com.simbirsoft.timemeter.ui.main.SectionFragmentContainer;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
 import com.simbirsoft.timemeter.ui.tasklist.TaskListFragment;
@@ -123,7 +124,12 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        ((MainActivity) activity).onSectionAttached(getSectionId());
+        try {
+            SectionFragmentContainer container = (SectionFragmentContainer) activity;
+            container.onSectionAttached(getSectionId());
+        } catch (ClassCastException e) {
+            throw new RuntimeException(String.format("%s should implement %s", activity.getClass().getName(), SectionFragmentContainer.class.getName()));
+        }
     }
 
     @AfterViews
