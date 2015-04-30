@@ -54,6 +54,7 @@ import org.androidannotations.annotations.res.StringRes;
 import org.slf4j.Logger;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -135,7 +136,7 @@ public class FilterView extends FrameLayout implements
             state.dateMillis = dateMillis;
             state.periodMillis = periodMillis;
             state.period = period;
-            state.tags = Lists.newArrayList(tags);
+            state.tags = Lists.newArrayList(tags == null ? Collections.emptyList() : tags);
             state.searchText = searchText;
 
             return state;

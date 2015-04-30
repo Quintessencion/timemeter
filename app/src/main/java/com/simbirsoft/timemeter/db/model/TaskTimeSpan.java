@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import nl.qbusict.cupboard.annotation.Column;
+import nl.qbusict.cupboard.annotation.Ignore;
 import nl.qbusict.cupboard.annotation.Index;
 
 public class TaskTimeSpan implements Parcelable {
@@ -48,6 +49,9 @@ public class TaskTimeSpan implements Parcelable {
 
     @Column(COLUMN_IS_ACTIVE)
     private boolean isActive;
+
+    @Ignore
+    private float durationRatio;
 
     public TaskTimeSpan() {
     }
@@ -119,6 +123,14 @@ public class TaskTimeSpan implements Parcelable {
 
     public long getDuration() {
         return endTimeMillis - startTimeMillis;
+    }
+
+    public float getDurationRatio() {
+        return durationRatio;
+    }
+
+    public void setDurationRatio(float durationRatio) {
+        this.durationRatio = durationRatio;
     }
 
     @Override
