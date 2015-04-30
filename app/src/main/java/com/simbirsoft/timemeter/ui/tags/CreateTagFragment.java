@@ -13,10 +13,12 @@ import android.widget.EditText;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
+import com.be.android.library.worker.base.JobEvent;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.SaveTagJob;
+import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.AppAlertDialogFragment;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
@@ -28,6 +30,7 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.ViewById;
+import org.slf4j.Logger;
 
 @EFragment(R.layout.fragment_tag_create)
 public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch.OnColorSelectedListener {
@@ -45,6 +48,8 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
     protected static final String KEY_SIZE = "size";
 
     private static final int REQUEST_CODE_DISCARD_CHANGES_AND_EXIT = 212;
+
+    private static final Logger LOG = LogFactory.getLogger(CreateTagFragment.class);
 
     @FragmentArg(EXTRA_TITLE)
     String mExtraTitle;
@@ -92,28 +97,19 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
         switch(item.getItemId()) {
             case android.R.id.home:
                 KeyboardUtils.hideSoftInput(getActivity());
-                if (validateInput()) {
-                    Tag tag = new Tag();
-                    tag.setName(mTagName.getText().toString());
-                    tag.setColor(mSelectedColor);
-                    tag.setId(null);
 
-                    SaveTagJob job = Injection.sJobsComponent.saveTagJob();
-                    job.setTag(tag);
-                    submitJob(job);
-                }
+                Tag tag = new Tag();
+                tag.setName(mTagName.getText().toString());
+                tag.setColor(mSelectedColor);
+                tag.setId(null);
+
+                SaveTagJob job = Injection.sJobsComponent.saveTagJob();
+                job.setTag(tag);
+                submitJob(job);
+
                 return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private boolean validateInput() {
-        if (TextUtils.isEmpty(mTagName.getText().toString())) {
-            showSnackBarLightRed(R.string.hint_tag_name_is_empty);
-            return false;
-        }
-
-        return true;
     }
 
     @Override
@@ -160,17 +156,22 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
     }
 
     @OnJobFailure(SaveTagJob.class)
-    public void onSaveTagFailed() {
-        showSnackBarLightRed(R.string.error_tag_has_already_exists);
+    public void onSaveTagFailed(JobEvent jobEvent) {
+        switch(jobEvent.getEventCode()) {
+            case SaveTagJob.EVENT_CODE_TAG_ALREADY_EXISTS:
+                showSnackBarLightRed(R.string.error_tag_already_exists);
+                return;
+            case SaveTagJob.EVENT_CODE_TAG_NAME_IS_EMPTY:
+                showSnackBarLightRed(R.string.error_tag_name_is_empty);
+                return;
+            default:
+                LOG.debug("default error handle!");
+                return;
+        }
     }
 
     @OnJobSuccess(SaveTagJob.class)
     public void onTagSaved(SaveTagJob.SaveTagResult tag) {
-        switch(tag.getEventCode()) {
-            case SaveTagJob.EVENT_CODE_TAG_ALREADY_EXISTS:
-                showSnackBarLightRed(R.string.error_tag_has_already_exists);
-                return;
-        }
         Intent data = new Intent();
         data.putExtra(EXTRA_TAG, (Parcelable) tag.getTag());
         getActivity().setResult(RESULT_CODE_OK, data);

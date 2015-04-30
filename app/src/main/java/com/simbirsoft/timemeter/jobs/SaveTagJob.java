@@ -9,9 +9,7 @@ import com.be.android.library.worker.models.JobResultStatus;
 import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Tag;
-import com.simbirsoft.timemeter.log.LogFactory;
 
-import org.slf4j.Logger;
 import javax.inject.Inject;
 
 import nl.qbusict.cupboard.DatabaseCompartment;
@@ -19,14 +17,12 @@ import nl.qbusict.cupboard.DatabaseCompartment;
 import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 
 public class SaveTagJob extends BaseJob {
-    public static final int EVENT_CODE_TAG_ALREADY_EXISTS = 4;
     public static class SaveTagResult extends JobEvent {
         private Tag mTag;
 
-        SaveTagResult(Tag tag, int eventCode) {
+        SaveTagResult(Tag tag) {
             mTag = tag;
 
-            setEventCode(eventCode);
             setJobStatus(JobResultStatus.OK);
         }
 
@@ -35,8 +31,8 @@ public class SaveTagJob extends BaseJob {
         }
     }
 
-    private static final Logger LOG = LogFactory.getLogger(SaveTagJob.class);
-
+    public static final int EVENT_CODE_TAG_ALREADY_EXISTS = 4;
+    public static final int EVENT_CODE_TAG_NAME_IS_EMPTY = 5;
     private final DatabaseHelper mDatabaseHelper;
     private Tag mTag;
 
@@ -53,9 +49,7 @@ public class SaveTagJob extends BaseJob {
     @Override
     protected void onPreExecute() throws Exception {
         super.onPreExecute();
-
-        Preconditions.checkArgument(mTag != null);
-        Preconditions.checkArgument(!TextUtils.isEmpty(mTag.getName()));
+        Preconditions.checkArgument(mTag != null, "tag is null");
     }
 
     @Override
@@ -65,17 +59,23 @@ public class SaveTagJob extends BaseJob {
 
         try {
             db.beginTransaction();
+
+            if (TextUtils.isEmpty(mTag.getName())) {
+                return JobEvent.failure(EVENT_CODE_TAG_NAME_IS_EMPTY, "tag name is empty");
+            }
+
             Tag tag = cupboard.query(Tag.class)
                     .withSelection("UPPER(" + Tag.COLUMN_NAME + ")=?", mTag.getName().toUpperCase())
                     .query()
                     .get();
 
-            if (tag == null) {
-                cupboard.put(mTag);
-                db.setTransactionSuccessful();
-                return new SaveTagResult(mTag, SaveTagResult.EVENT_CODE_OK);
+            if (tag != null) {
+                return JobEvent.failure(EVENT_CODE_TAG_ALREADY_EXISTS, "tag already exists");
             }
-            return new SaveTagResult(mTag, EVENT_CODE_TAG_ALREADY_EXISTS);
+
+            cupboard.put(mTag);
+            db.setTransactionSuccessful();
+            return new SaveTagResult(mTag);
         } finally {
             db.endTransaction();
         }

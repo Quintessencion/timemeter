@@ -60,7 +60,6 @@
     <string name="hint_edit_task">Редактировать задачу</string>
     <string name="hint_view_task">Просмотреть задачу</string>
     <string name="hint_task_description_is_empty">Пожалуйста, введите описание задачи</string>
-    <string name="hint_tag_name_is_empty">Пожалуйста, введите название метки</string>
     <string name="hint_task_removed">Задача удалена</string>
     <string name="hint_tag_removed">Метка удалена</string>
     <string name="hint_tag_name">Название метки</string>
@@ -83,7 +82,8 @@
     <string name="error_unable_to_remove_tag">Ошибка при удалении метки</string>
     <string name="error_unable_to_backup_tag">Ошибка при восстановлении метки</string>
     <string name="error_unable_to_backup_task">Ошибка при восстановлении задачи</string>
-    <string name="error_tag_has_already_exists">Метка с таким именем уже существует</string>
+    <string name="error_tag_already_exists">Ошибка, метка с таким именем уже существует</string>
+    <string name="error_tag_name_is_empty">Ошибка, название метки не задано</string>
 
     <!-- Dialogs -->
     <string name="dialog_cancel_task_changes_warning_title">Задача не сохранена</string>
