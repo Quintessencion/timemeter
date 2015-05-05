@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -18,7 +19,6 @@ import org.slf4j.Logger;
 
 @EViewGroup(R.layout.view_tag)
 public class TagView extends FrameLayout {
-
     private static final Logger LOG = LogFactory.getLogger(TagView.class);
 
     @ViewById(R.id.viewTagTitle)
