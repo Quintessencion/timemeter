@@ -100,7 +100,7 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
             mLegend = mPieChart.getLegend();
             mLegend.setPosition(Legend.LegendPosition.BELOW_CHART_LEFT);
             mLegend.setXEntrySpace(7f);
-            mLegend.setYEntrySpace(0f);
+            mLegend.setYEntrySpace(7f);
             mLegend.setForm(Legend.LegendForm.CIRCLE);
             mLegend.setTextSize(16f);
             mLegend.setStackSpace(12f);

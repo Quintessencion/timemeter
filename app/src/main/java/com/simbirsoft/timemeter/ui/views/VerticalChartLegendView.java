@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
@@ -16,6 +17,7 @@ public class VerticalChartLegendView extends View {
     private Legend mLegend;
     private Paint mLegendLabelPaint;
     private Paint mLegendFormPaint;
+    private int mTextHeight;
 
     public VerticalChartLegendView(Context context) {
         super(context);
@@ -40,6 +42,7 @@ public class VerticalChartLegendView extends View {
 
         mLegendLabelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mLegendLabelPaint.setTextSize(Utils.convertDpToPixel(9f));
+        mLegendLabelPaint.setTextAlign(Paint.Align.LEFT);
 
         mLegendFormPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mLegendFormPaint.setStyle(Paint.Style.FILL);
@@ -53,10 +56,13 @@ public class VerticalChartLegendView extends View {
             return;
         }
 
+        mTextHeight = Utils.calcTextHeight(mLegendLabelPaint, "DEMO TEXT");
+
         final int labelCount = mLegend.getLegendLabels().length;
-        int height = (int) Math.ceil(mLegend.getFullHeight(mLegendLabelPaint))
-                + getPaddingTop()
-                + (int) (mLegend.getStackSpace() * (labelCount - 1));
+        int height = mTextHeight * labelCount + getPaddingTop();
+        if (labelCount > 0) {
+            height += (labelCount - 1) * (int) mLegend.getYEntrySpace();
+        }
 
         int width = mLegend.getMaximumEntryLength(mLegendLabelPaint);
         int desiredWidth = MeasureSpec.getSize(widthMeasureSpec);
@@ -77,36 +83,27 @@ public class VerticalChartLegendView extends View {
             return;
         }
 
-        final float stackSpace = mLegend.getStackSpace();
         final float formSize = mLegend.getFormSize();
-        final float formTextSpaceAndForm = mLegend.getFormToTextSpace() + formSize;
-        final float formDrawOffset = formSize / 4;
+        final int formTextMargin = (int) (mLegend.getFormToTextSpace() + formSize);
+        final int formYOffset = (int) ((mTextHeight / 2) + formSize / 2);
+        final int formEntrySpace = (int) mLegend.getYEntrySpace();
 
-        int x = getPaddingLeft();
-        int y = getPaddingTop();
+        canvas.translate(getPaddingLeft(), getPaddingTop() + mTextHeight);
+
         for (int i = 0; i < count; i++) {
-            String label = mLegend.getLegendLabels()[i];
+            mLegend.drawForm(canvas,
+                    0,
+                    -formYOffset,
+                    mLegendFormPaint,
+                    i);
 
-            float textSize;
-            if (label != null) {
-                textSize = Utils.calcTextHeight(mLegendLabelPaint, label);
+            mLegend.drawLabel(canvas,
+                    formTextMargin,
+                    0,
+                    mLegendLabelPaint,
+                    i);
 
-                mLegend.drawForm(canvas,
-                        x,
-                        y + (textSize / 2) - formDrawOffset,
-                        mLegendFormPaint,
-                        i);
-
-                mLegend.drawLabel(canvas,
-                        x + formTextSpaceAndForm,
-                        y + textSize,
-                        mLegendLabelPaint,
-                        i);
-            } else {
-                textSize = mLegend.getTextSize();
-            }
-
-            y += textSize + stackSpace + mLegend.getYEntrySpace();
+            canvas.translate(0, mTextHeight + formEntrySpace);
         }
     }
 

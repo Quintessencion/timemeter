@@ -481,7 +481,7 @@ public class Legend {
     }
 
     /**
-     * returns the space that is left out between stacked forms (with no label)
+     * returns the space that is left omLegend.setStackSpace(12f);ut between stacked forms (with no label)
      * 
      * @return
      */
