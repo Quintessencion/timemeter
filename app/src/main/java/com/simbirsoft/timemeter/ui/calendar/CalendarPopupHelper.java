@@ -4,20 +4,15 @@ import android.content.Context;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.util.Pair;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
-import android.view.animation.AnimationUtils;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
 import android.widget.PopupWindow;
-import android.widget.TextView;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
@@ -25,7 +20,6 @@ import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.handlers.JobEventDispatcher;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.simbirsoft.timemeter.R;
-import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTasksJob;
@@ -49,6 +43,10 @@ public class CalendarPopupHelper {
     private View mView;
     private RecyclerView mRecyclerView;
     private CalendarPopupAdapter mAdapter;
+    private ImageView mUpArrowImage;
+    private ImageView mDownArrowImage;
+    private ImageView mLeftArrowImage;
+    private ImageView mRightArrowImage;
 
     private Drawable mBackgroundDrawable = null;
     private ShowListener showListener;
@@ -70,6 +68,10 @@ public class CalendarPopupHelper {
 
         setContentView(layoutInflater.inflate(viewResource, null));
         mRecyclerView = (RecyclerView)mView.findViewById(android.R.id.list);
+        mUpArrowImage = (ImageView)mView.findViewById(R.id.upArrow);
+        mDownArrowImage = (ImageView)mView.findViewById(R.id.downArrow);
+        mLeftArrowImage = (ImageView)mView.findViewById(R.id.leftArrow);
+        mRightArrowImage = (ImageView)mView.findViewById(R.id.rightArrow);
         RecyclerView.LayoutManager layoutManager = new CalendarPopupLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
         mRecyclerView.setLayoutManager(layoutManager);
         mAdapter = new CalendarPopupAdapter();
@@ -97,10 +99,21 @@ public class CalendarPopupHelper {
         mAnchorView.getLocationOnScreen(location);
 
         mAdapter.setItems(result.getData());
-        mRecyclerView.measure(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        mUpArrowImage.setVisibility(View.VISIBLE);
+        mDownArrowImage.setVisibility(View.VISIBLE);
+        mLeftArrowImage.setVisibility(View.VISIBLE);
+        mRightArrowImage.setVisibility(View.VISIBLE);
 
-        int popupHeight = mRecyclerView.getMeasuredHeight() + mView.getPaddingTop() + mView.getPaddingBottom();
-        int popupWidth = mRecyclerView.getMeasuredWidth() + mView.getPaddingLeft() + mView.getPaddingRight();
+        int measureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+        mRecyclerView.measure(measureSpec, measureSpec);
+        mUpArrowImage.measure(measureSpec, measureSpec);
+        mLeftArrowImage.measure(measureSpec, measureSpec);
+
+        int popupHeight = mRecyclerView.getMeasuredHeight();
+        int popupWidth = mRecyclerView.getMeasuredWidth();
+
+        int arrowWidth = mLeftArrowImage.getMeasuredWidth();
+        int arrowHeight = mUpArrowImage.getMeasuredHeight();
 
         final int anchorWidth = mAnchorView.getWidth();
         final int anchorHeight = mAnchorView.getHeight();
@@ -109,13 +122,28 @@ public class CalendarPopupHelper {
         popupHeight = Math.min(popupHeight, anchorHeight - 2 * mPopupMargin);
 
         int xPos, yPos;
-        if (popupWidth <= getMaxSize(mAnchorPoint.x, anchorWidth)) {
+        if (popupWidth + arrowWidth <= getMaxSize(mAnchorPoint.x, anchorWidth)) {
+            popupWidth += arrowWidth;
             xPos = getPositionOnSide(mAnchorPoint.x, anchorWidth, popupWidth);
             yPos = getCenteredPosition(mAnchorPoint.y, anchorHeight, popupHeight);
+            mUpArrowImage.setVisibility(View.GONE);
+            mDownArrowImage.setVisibility(View.GONE);
+            if (xPos == mAnchorPoint.x) {
+                mRightArrowImage.setVisibility(View.GONE);
+            } else {
+                mLeftArrowImage.setVisibility(View.GONE);
+            }
         } else {
-            popupHeight = Math.min(popupHeight, getMaxSize(mAnchorPoint.y, anchorHeight));
+            popupHeight = Math.min(popupHeight + arrowHeight, getMaxSize(mAnchorPoint.y, anchorHeight));
             xPos = getCenteredPosition(mAnchorPoint.x, anchorWidth, popupWidth);
             yPos = getPositionOnSide(mAnchorPoint.y, anchorHeight, popupHeight);
+            mLeftArrowImage.setVisibility(View.GONE);
+            mRightArrowImage.setVisibility(View.GONE);
+            if (yPos == mAnchorPoint.y) {
+                mDownArrowImage.setVisibility(View.GONE);
+            } else {
+                mUpArrowImage.setVisibility(View.GONE);
+            }
         }
         mWindow.setWidth(popupWidth);
         mWindow.setHeight(popupHeight);
@@ -169,7 +197,6 @@ public class CalendarPopupHelper {
 
     public void setContentView(View root) {
         mView = root;
-
         mWindow.setContentView(root);
     }
 

@@ -1,13 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
              android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             android:paddingBottom="5dp"
-             android:paddingTop="5dp"
-             android:background="@drawable/popup_background">
+             android:layout_height="match_parent">
     <android.support.v7.widget.RecyclerView
         android:id="@android:id/list"
         android:scrollbars="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-</FrameLayout>
+        android:layout_height="wrap_content"
+        android:background="@drawable/popup_background"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:layout_below="@+id/upArrow"
+        android:layout_above="@+id/downArrow"
+        android:layout_toStartOf="@+id/rightArrow"
+        android:layout_toLeftOf="@+id/rightArrow"
+        android:layout_toEndOf="@+id/leftArrow"
+        android:layout_toRightOf="@+id/leftArrow"
+        android:layout_alignWithParentIfMissing="true"/>
+    <ImageView
+        android:id="@+id/upArrow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_arrow_drop_down_white_18dp"
+        android:adjustViewBounds="true"
+        android:layout_alignParentTop="true"/>
+    <ImageView
+        android:id="@+id/downArrow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_arrow_drop_down_white_18dp"
+        android:adjustViewBounds="true"
+        android:layout_alignParentBottom="true"/>
+    <ImageView
+        android:id="@+id/leftArrow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_arrow_drop_down_white_18dp"
+        android:adjustViewBounds="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"/>
+    <ImageView
+        android:id="@+id/rightArrow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_arrow_drop_down_white_18dp"
+        android:adjustViewBounds="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"/>
+</RelativeLayout>

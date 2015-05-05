@@ -48,15 +48,23 @@ public class CalendarPopupLayoutManager extends LinearLayoutManager {
         switch (widthMode) {
             case View.MeasureSpec.EXACTLY:
                 width = widthSize;
+                break;
+
             case View.MeasureSpec.AT_MOST:
             case View.MeasureSpec.UNSPECIFIED:
+                width += getPaddingLeft() + getPaddingRight();
+                break;
         }
 
         switch (heightMode) {
             case View.MeasureSpec.EXACTLY:
                 height = heightSize;
+                break;
+
             case View.MeasureSpec.AT_MOST:
             case View.MeasureSpec.UNSPECIFIED:
+                height += getPaddingTop() + getPaddingBottom();
+                break;
         }
 
         setMeasuredDimension(width, height);
