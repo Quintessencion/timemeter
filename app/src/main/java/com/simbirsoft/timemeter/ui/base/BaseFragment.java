@@ -15,6 +15,9 @@ import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.handlers.JobEventDispatcher;
 import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.util.JobSelector;
+import com.nispok.snackbar.Snackbar;
+import com.nispok.snackbar.SnackbarManager;
+import com.nispok.snackbar.enums.SnackbarType;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.ui.util.ToastUtils;
 
@@ -182,4 +185,23 @@ public class BaseFragment extends Fragment {
 
         startActivity(launchIntent);
     }
+
+    protected void showSnackBarLightRed(int titleResId) {
+        Snackbar bar = Snackbar.with(getActivity())
+                .type(SnackbarType.MULTI_LINE)
+                .text(titleResId)
+                .colorResource(R.color.lightRed)
+                .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE);
+        SnackbarManager.show(bar);
+    }
+
+    protected void showSnackBarLightRed(String titleStr) {
+        Snackbar bar = Snackbar.with(getActivity())
+                .type(SnackbarType.MULTI_LINE)
+                .text(titleStr)
+                .colorResource(R.color.lightRed)
+                .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE);
+        SnackbarManager.show(bar);
+    }
+
 }

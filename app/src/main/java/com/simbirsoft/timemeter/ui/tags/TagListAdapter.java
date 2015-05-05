@@ -23,6 +23,8 @@ import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.ui.util.TagViewUtils;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -126,6 +128,13 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
             notifyDataSetChanged();
         }
     }
+
+    private static final Comparator<Tag> tagComparator = new Comparator<Tag>() {
+        @Override
+        public int compare(Tag lhs, Tag rhs) {
+            return lhs.getName().compareTo(rhs.getName());
+        }
+    };
 
     private long mToggleActionPanelTimeMillis;
     private boolean mIsActionButtonsShown;
@@ -255,13 +264,26 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     public void removeItem(Tag item) {
         synchronized (mItemsOriginal) {
             removeItemImpl(item);
-            removeItemImpl(item);
         }
     }
 
     private void removeItemImpl(Tag item) {
         mItems.remove(item);
         mItemsOriginal.remove(item);
+        notifyDataSetChanged();
+    }
+
+    public void addItem(Tag item) {
+        synchronized (mItemsOriginal) {
+            addItemImpl(item);
+        }
+    }
+
+    private void addItemImpl(Tag item) {
+        mItems.add(item);
+        mItemsOriginal.add(item);
+        Collections.sort(mItems, tagComparator);
+        Collections.sort(mItemsOriginal, tagComparator);
         notifyDataSetChanged();
     }
 

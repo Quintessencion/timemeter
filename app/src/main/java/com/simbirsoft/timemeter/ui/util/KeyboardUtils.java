@@ -1,5 +1,6 @@
 package com.simbirsoft.timemeter.ui.util;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.IBinder;
 import android.view.inputmethod.InputMethodManager;
@@ -18,4 +19,7 @@ public final class KeyboardUtils {
         imm.hideSoftInputFromWindow(windowToken, 0);
     }
 
+    public static void hideSoftInput(Activity activity) {
+        hideSoftInput(activity, activity.getWindow().getDecorView().getWindowToken());
+    }
 }
