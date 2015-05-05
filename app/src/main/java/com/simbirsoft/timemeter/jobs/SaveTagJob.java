@@ -31,8 +31,8 @@ public class SaveTagJob extends BaseJob {
         }
     }
 
-    public static final int EVENT_CODE_TAG_ALREADY_EXISTS = 4;
-    public static final int EVENT_CODE_TAG_NAME_IS_EMPTY = 5;
+    public static final int EVENT_CODE_TAG_ALREADY_EXISTS = 1004;
+    public static final int EVENT_CODE_TAG_NAME_IS_EMPTY = 1005;
     private final DatabaseHelper mDatabaseHelper;
     private Tag mTag;
 

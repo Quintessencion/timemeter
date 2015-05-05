@@ -101,7 +101,6 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
                 Tag tag = new Tag();
                 tag.setName(mTagName.getText().toString());
                 tag.setColor(mSelectedColor);
-                tag.setId(null);
 
                 SaveTagJob job = Injection.sJobsComponent.saveTagJob();
                 job.setTag(tag);
