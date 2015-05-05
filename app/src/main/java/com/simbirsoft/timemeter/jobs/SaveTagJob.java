@@ -64,13 +64,15 @@ public class SaveTagJob extends BaseJob {
                 return JobEvent.failure(EVENT_CODE_TAG_NAME_IS_EMPTY, "tag name is empty");
             }
 
-            Tag tag = cupboard.query(Tag.class)
-                    .withSelection("UPPER(" + Tag.COLUMN_NAME + ")=?", mTag.getName().toUpperCase())
-                    .query()
-                    .get();
+            if (mTag.getId() == null) {
+                Tag tag = cupboard.query(Tag.class)
+                        .withSelection("UPPER(" + Tag.COLUMN_NAME + ")=?", mTag.getName().toUpperCase())
+                        .query()
+                        .get();
 
-            if (tag != null) {
-                return JobEvent.failure(EVENT_CODE_TAG_ALREADY_EXISTS, "tag already exists");
+                if (tag != null) {
+                    return JobEvent.failure(EVENT_CODE_TAG_ALREADY_EXISTS, "tag already exists");
+                }
             }
 
             cupboard.put(mTag);
