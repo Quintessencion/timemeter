@@ -77,7 +77,7 @@ public class CalendarPopupHelper {
         mRightArrowImage = (ImageView)mView.findViewById(R.id.rightArrow);
         RecyclerView.LayoutManager layoutManager = new CalendarPopupLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
         mRecyclerView.setLayoutManager(layoutManager);
-        mAdapter = new CalendarPopupAdapter();
+        mAdapter = new CalendarPopupAdapter(mContext);
         mRecyclerView.setAdapter(mAdapter);
 
         mAnchorPoint = new Point();

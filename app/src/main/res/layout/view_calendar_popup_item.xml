@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.andexert.library.RippleView
+<com.balysv.materialripple.MaterialRippleLayout
               xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:paddingBottom="5dp"
-              android:paddingTop="5dp"
               android:paddingLeft="12dp"
-              android:paddingRight="12dp"
-              app:rv_centered="true"
-              app:rv_alpha="250"
-              app:rv_rippleDuration="100">
-              <View
-                    android:layout_width="@dimen/task_marker_size"
-                    android:layout_height="@dimen/task_marker_size"
-                    android:id="@+id/popupMarker"
-                    android:layout_centerVertical="true"
-                    android:layout_alignParentLeft="true"
-                    android:background="@drawable/task_marker"/>
-              <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/popupTextView"
-                    android:layout_centerVertical="true"
-                    android:layout_marginLeft="10dp"
-                    android:layout_toRightOf="@+id/popupMarker"
-                    android:layout_toEndOf="@+id/popupMarker"
-                    android:includeFontPadding="false"
-                    android:textAppearance="?android:attr/textAppearanceSmallPopupMenu"/>
-</com.andexert.library.RippleView>
+              android:paddingRight="12dp">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/popupLayout">
+        <View
+            android:layout_width="@dimen/task_marker_size"
+            android:layout_height="@dimen/task_marker_size"
+            android:id="@+id/popupMarker"
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:background="@drawable/task_marker"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/popupTextView"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
+            android:layout_toRightOf="@+id/popupMarker"
+            android:layout_toEndOf="@+id/popupMarker"
+            android:includeFontPadding="false"
+            android:textAppearance="?android:attr/textAppearanceSmallPopupMenu"/>
+    </RelativeLayout>
+</com.balysv.materialripple.MaterialRippleLayout>
