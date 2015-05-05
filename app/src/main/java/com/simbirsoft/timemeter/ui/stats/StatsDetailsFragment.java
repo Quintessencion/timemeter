@@ -171,14 +171,15 @@ public class StatsDetailsFragment extends BaseFragment implements
 
     private void displayChart(StatisticsViewBinder binder) {
         View view = binder.createView(getActivity(), mContainer, true);
-        binder.bindView(view);
-        mContainer.removeAllViews();
-        mContainer.addView(view);
 
         final String chartTitle = binder.getTitle();
         if (!TextUtils.isEmpty(chartTitle)) {
             mActionBar.setTitle(chartTitle);
         }
+
+        binder.bindView(view);
+        mContainer.removeAllViews();
+        mContainer.addView(view);
 
         mProgressLayout.updateProgressView();
     }

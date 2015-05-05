@@ -2,6 +2,8 @@ package com.simbirsoft.timemeter.ui.stats.binders;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +15,7 @@ import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.interfaces.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.Legend;
+import com.github.mikephil.charting.utils.Utils;
 import com.github.mikephil.charting.utils.ValueFormatter;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
@@ -22,6 +25,7 @@ import com.simbirsoft.timemeter.model.TaskOverallActivity;
 import com.simbirsoft.timemeter.ui.stats.OverallTaskActivityChartMarkerView;
 import com.simbirsoft.timemeter.ui.stats.StatisticsViewBinder;
 import com.simbirsoft.timemeter.ui.util.ColorSets;
+import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
 import com.simbirsoft.timemeter.ui.views.VerticalChartLegendView;
 
 import org.slf4j.Logger;
@@ -39,6 +43,9 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
     @Inject
     Context mContext;
 
+    @Inject
+    Resources mResources;
+
     private ViewGroup mContentRoot;
     private PieChart mPieChart;
     private TextView mTitleView;
@@ -48,6 +55,7 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
     private TextView mEmptyIndicatorView;
     private boolean mIsDataBound;
     private boolean mIsFullScreenMode;
+    private Paint mCenterTextPaint;
 
     public OverallActivityTimePieBinder(List<TaskOverallActivity> overallActivity) {
         mOverallActivity = overallActivity;
@@ -84,6 +92,7 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
         final ArrayList<Entry> overallSpentTimeY = Lists.newArrayListWithCapacity(count);
         final ArrayList<String> titlesX = Lists.newArrayListWithCapacity(count);
         final int[] colors = ColorSets.makeColorSet(ColorSets.MIXED_COLORS, count);
+        long overallDuration = 0;
 
         for (int i = 0; i < count; i++) {
             TaskOverallActivity item = mOverallActivity.get(i);
@@ -91,6 +100,7 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
                     (float) item.getDuration(),
                     i,
                     item));
+            overallDuration += item.getDuration();
 
             titlesX.add(item.getDescription());
         }
@@ -103,6 +113,7 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
         mPieChart.setData(data);
 
         mPieChart.setMarkerView(new OverallTaskActivityChartMarkerView(mContentRoot.getContext()));
+        mPieChart.setCenterText(TimerTextFormatter.formatOverallTimePlain(mResources, overallDuration));
 
         if (mLegend == null) {
             mLegend = mPieChart.getLegend();
@@ -153,9 +164,9 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
         mPieChart.setDescription("");
         mPieChart.setDrawHoleEnabled(true);
         mPieChart.setHoleColorTransparent(true);
-        mPieChart.setHoleRadius(30f);
+        mPieChart.setHoleRadius(35f);
         mPieChart.setTransparentCircleRadius(45f);
-        mPieChart.setDrawCenterText(false);
+        mPieChart.setDrawCenterText(true);
         mPieChart.setRotationEnabled(false);
         mPieChart.setDrawXValues(false);
         mPieChart.setDrawYValues(true);
@@ -174,6 +185,12 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
                 return format.format(value) + " %";
             }
         });
+
+        mCenterTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mCenterTextPaint.setColor(mResources.getColor(R.color.darkGrey));
+        mCenterTextPaint.setTextSize(Utils.convertDpToPixel(12f));
+        mCenterTextPaint.setTextAlign(Paint.Align.CENTER);
+        mPieChart.setPaint(mCenterTextPaint, PieChart.PAINT_CENTER_TEXT);
 
         mPieChart.setOnChartValueSelectedListener(this);
 

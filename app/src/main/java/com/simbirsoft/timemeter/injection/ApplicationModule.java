@@ -1,6 +1,7 @@
 package com.simbirsoft.timemeter.injection;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.simbirsoft.timemeter.App;
@@ -34,6 +35,11 @@ public class ApplicationModule {
     @Provides
     Context provideContext() {
         return mApplication;
+    }
+
+    @Provides
+    Resources provideResources() {
+        return mApplication.getResources();
     }
 
     @Provides
