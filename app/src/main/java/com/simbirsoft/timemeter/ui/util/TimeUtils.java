@@ -6,8 +6,6 @@ import java.util.Date;
 public final class TimeUtils {
     public static final long MILLIS_IN_HOUR = 3600000;
 
-    private static final Calendar CALENDAR = Calendar.getInstance();
-
     public static long getDayStartMillis(Calendar calendar) {
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
@@ -78,25 +76,25 @@ public final class TimeUtils {
         return getDayEndMillis(c);
     }
 
-    public static boolean isCurrentYear(long millis) {
-        CALENDAR.setTimeInMillis(millis);
-        int year = CALENDAR.get(Calendar.YEAR);
-        CALENDAR.setTime(new Date());
-        return CALENDAR.get(Calendar.YEAR) == year;
+    public static boolean isCurrentYear(long millis, Calendar calendar) {
+        calendar.setTimeInMillis(millis);
+        int year = calendar.get(Calendar.YEAR);
+        calendar.setTime(new Date());
+        return calendar.get(Calendar.YEAR) == year;
     }
 
-    public static boolean isCurrentDay(long millis) {
-        CALENDAR.setTimeInMillis(millis);
-        int year = CALENDAR.get(Calendar.YEAR);
-        int dayOfYear = CALENDAR.get(Calendar.DAY_OF_YEAR);
-        CALENDAR.setTime(new Date());
-        return CALENDAR.get(Calendar.YEAR) == year && CALENDAR.get(Calendar.DAY_OF_YEAR) == dayOfYear;
+    public static boolean isCurrentDay(long millis, Calendar calendar) {
+        calendar.setTimeInMillis(millis);
+        int year = calendar.get(Calendar.YEAR);
+        int dayOfYear = calendar.get(Calendar.DAY_OF_YEAR);
+        calendar.setTime(new Date());
+        return calendar.get(Calendar.YEAR) == year && calendar.get(Calendar.DAY_OF_YEAR) == dayOfYear;
     }
 
-    public static boolean isHoliday(long millis) {
-        CALENDAR.setTimeInMillis(millis);
-        int dayOfWeek = CALENDAR.get(Calendar.DAY_OF_WEEK);
-        return dayOfWeek == CALENDAR.SATURDAY || dayOfWeek == CALENDAR.SUNDAY;
+    public static boolean isHoliday(long millis, Calendar calendar) {
+        calendar.setTimeInMillis(millis);
+        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+        return dayOfWeek == calendar.SATURDAY || dayOfWeek == calendar.SUNDAY;
     }
 
     public static long hoursToMillis(int hours) {

@@ -25,27 +25,22 @@ import javax.inject.Inject;
 public class LoadTaskActivitiesJob extends LoadJob {
 
     private final DatabaseHelper mDatabaseHelper;
-    private Long mTaskId;
+    private final LoadTaskTimespansJob mLoadSpansJob;
 
     @Inject
-    public LoadTaskActivitiesJob(DatabaseHelper databaseHelper, Context context) {
+    public LoadTaskActivitiesJob(DatabaseHelper databaseHelper, LoadTaskTimespansJob loadSpansJob) {
         mDatabaseHelper = databaseHelper;
+        mLoadSpansJob = loadSpansJob;
     }
 
     public void setTaskId(long taskId) {
-        mTaskId = taskId;
+        mLoadSpansJob.setTaskId(taskId);
     }
 
     @Override
     protected LoadJobResult<List<TaskActivityItem>> performLoad() throws Exception {
-        final LoadTaskTimespansJob loadSpansJob =
-                new LoadTaskTimespansJob(mDatabaseHelper);
-        loadSpansJob.setTaskId(mTaskId);
-        ForkJoiner joiner = buildFork(loadSpansJob)
-                .groupOn(JobManager.JOB_GROUP_UNIQUE)
-                .fork();
         List<TaskTimeSpan> spans =
-                ((LoadJobResult<List<TaskTimeSpan>>) joiner.join()).getData();
+                ((LoadJobResult<List<TaskTimeSpan>>) forkJob(mLoadSpansJob).join()).getData();
         Collections.sort(spans, new Comparator<TaskTimeSpan>() {
             @Override
             public int compare(TaskTimeSpan lhs, TaskTimeSpan rhs) {

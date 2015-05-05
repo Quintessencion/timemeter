@@ -18,6 +18,7 @@ import com.simbirsoft.timemeter.ui.model.TaskActivitySpansItem;
 import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.simbirsoft.timemeter.ui.views.TaskActivityItemsLayout;
 
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 
@@ -62,6 +63,7 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
     private int mDateColor;
     private int mCurrentDateColor;
     private int mHolidayDateColor;
+    private final Calendar mCalendar;
 
     public TaskActivitiesAdapter(Context context) {
         mContext = context;
@@ -75,6 +77,7 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         mDateColor = res.getColor(R.color.calendar_date_text);
         mCurrentDateColor = res.getColor(R.color.primary);
         mHolidayDateColor = res.getColor(R.color.accentPrimary);
+        mCalendar = Calendar.getInstance();
     }
 
     public void setItems(List<TaskActivityItem> items) {
@@ -133,9 +136,9 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         TaskActivitySpansItem item = (TaskActivitySpansItem)mItems.get(position);
         int dateColor = mDateColor;
         long millis = item.getDateMillis();
-        if (TimeUtils.isCurrentDay(millis)) {
+        if (TimeUtils.isCurrentDay(millis, mCalendar)) {
             dateColor = mCurrentDateColor;
-        } else if (TimeUtils.isHoliday(millis)) {
+        } else if (TimeUtils.isHoliday(millis, mCalendar)) {
             dateColor = mHolidayDateColor;
         }
         viewHolder.mDateTextView.setTextColor(dateColor);
