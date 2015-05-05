@@ -9,15 +9,16 @@
               android:paddingLeft="12dp"
               android:paddingRight="12dp"
               app:rv_centered="true"
-              app:rv_alpha="250">
-                <View
+              app:rv_alpha="250"
+              app:rv_rippleDuration="100">
+              <View
                     android:layout_width="@dimen/task_marker_size"
                     android:layout_height="@dimen/task_marker_size"
                     android:id="@+id/popupMarker"
                     android:layout_centerVertical="true"
                     android:layout_alignParentLeft="true"
                     android:background="@drawable/task_marker"/>
-                <TextView
+              <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/popupTextView"

@@ -168,6 +168,14 @@ public class CalendarPopupHelper {
         mWindow.setOnDismissListener(listener);
     }
 
+    public void setTaskClickListener(CalendarPopupAdapter.TaskClickListener listener) {
+        mAdapter.setTaskClickListener(listener);
+    }
+
+    public void dismiss() {
+        mWindow.dismiss();
+    }
+
     private int getMaxSize(int anchorPos, int anchorSize) {
         return Math.max(anchorPos, anchorSize - anchorPos) - mPopupMargin;
     }

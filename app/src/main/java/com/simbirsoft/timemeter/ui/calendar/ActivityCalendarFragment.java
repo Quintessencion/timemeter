@@ -1,5 +1,6 @@
 package com.simbirsoft.timemeter.ui.calendar;
 
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -20,9 +21,13 @@ import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadActivityCalendarJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
+import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
 import com.simbirsoft.timemeter.ui.model.CalendarData;
 import com.simbirsoft.timemeter.ui.model.CalendarPeriod;
+import com.simbirsoft.timemeter.ui.model.TaskBundle;
+import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
+import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
 import com.simbirsoft.timemeter.ui.views.CalendarViewPager;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.simbirsoft.timemeter.ui.views.CalendarNavigationView;
@@ -44,7 +49,10 @@ import javax.inject.Inject;
 @EFragment(R.layout.fragment_activity_calendar)
 public class ActivityCalendarFragment extends BaseFragment implements MainPagerAdapter.PageTitleProvider,
         JobLoader.JobLoaderCallbacks, CalendarNavigationView.OnCalendarNavigateListener,
-        WeekCalendarView.OnCellClickListener, PopupWindow.OnDismissListener {
+        WeekCalendarView.OnCellClickListener, PopupWindow.OnDismissListener,
+        CalendarPopupAdapter.TaskClickListener {
+
+    private static final int REQUEST_CODE_EDIT_TASK = 100;
 
     private static final Logger LOG = LogFactory.getLogger(ActivityCalendarFragment.class);
 
@@ -82,6 +90,7 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
     void bindViews() {
         mPopupHelper = new CalendarPopupHelper(getActivity());
         mPopupHelper.setOnDismissListener(this);
+        mPopupHelper.setTaskClickListener(this);
         mPagerAdapter = new CalendarPagerAdapter(getActivity(), mCalendarViewPager, this);
         mCalendarNavigationView.setOnCalendarNavigateListener(this);
         requestLoad(CALENDAR_LOADER_TAG, this);
@@ -181,5 +190,15 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
 
     public void onDismiss() {
         mPagerAdapter.deselectCurrentViewCell();
+    }
+
+    public void onTaskClicked(TaskBundle item) {
+        mPopupHelper.dismiss();
+        Bundle args = new Bundle();
+        args.putParcelable(ViewTaskFragment.EXTRA_TASK_BUNDLE, item);
+
+        Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
+                getActivity(), ViewTaskFragment_.class.getName(), args);
+        getActivity().startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TASK);
     }
 }
