@@ -15,6 +15,7 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.OnChartValueSelectedListener;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.DailyActivityDuration;
 import com.simbirsoft.timemeter.ui.stats.ActivityTimelineChartMarkerView;
@@ -26,9 +27,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
+
 public class ActivityTimelineBinder implements StatisticsViewBinder, OnChartValueSelectedListener {
 
     private static final Logger LOG = LogFactory.getLogger(ActivityTimelineBinder.class);
+
+    @Inject
+    Context mContext;
 
     private ViewGroup mContentRoot;
     private LineChart mChart;
@@ -41,6 +47,8 @@ public class ActivityTimelineBinder implements StatisticsViewBinder, OnChartValu
 
     public ActivityTimelineBinder(List<DailyActivityDuration> activityTimeline) {
         mActivityTimeline = activityTimeline;
+
+        Injection.sUiComponent.injectActivityTimelineBinder(this);
     }
 
     @Override
@@ -106,16 +114,22 @@ public class ActivityTimelineBinder implements StatisticsViewBinder, OnChartValu
         mIsDataBound = true;
     }
 
-    private void initializeChart() {
-        final Context context = mContentRoot.getContext();
+    @Override
+    public String getTitle() {
+        return mContext.getString(R.string.title_activity_timeline);
+    }
 
-        mLineColor = context.getResources().getColor(R.color.primary);
+    private void initializeChart() {
+        mLineColor = mContext.getResources().getColor(R.color.primary);
 
         mChart = (LineChart) mContentRoot.findViewById(R.id.chart);
         mEmptyIndicatorView = (TextView) mContentRoot.findViewById(android.R.id.empty);
         mEmptyIndicatorView.setVisibility(View.GONE);
         mTitleView = (TextView) mContentRoot.findViewById(android.R.id.title);
-        mTitleView.setText(context.getString(R.string.title_activity_timeline));
+        mTitleView.setText(getTitle());
+        if (mIsFullScreenMode) {
+            mTitleView.setVisibility(View.GONE);
+        }
         mChart.setDescription("");
         mChart.setDrawXLabels(true);
         mChart.setDrawYLabels(true);
@@ -130,7 +144,7 @@ public class ActivityTimelineBinder implements StatisticsViewBinder, OnChartValu
         mChart.setValueTextColor(mContentRoot.getResources().getColor(R.color.accentPrimary));
         mChart.setMarkerView(new ActivityTimelineChartMarkerView(mContentRoot.getContext()));
 
-        measureChartView(context.getResources());
+        measureChartView(mContext.getResources());
     }
 
     private void measureChartView(Resources res) {

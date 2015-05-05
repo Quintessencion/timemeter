@@ -4,6 +4,7 @@ package com.simbirsoft.timemeter.ui.stats;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -173,6 +174,12 @@ public class StatsDetailsFragment extends BaseFragment implements
         binder.bindView(view);
         mContainer.removeAllViews();
         mContainer.addView(view);
+
+        final String chartTitle = binder.getTitle();
+        if (!TextUtils.isEmpty(chartTitle)) {
+            mActionBar.setTitle(chartTitle);
+        }
+
         mProgressLayout.updateProgressView();
     }
 }

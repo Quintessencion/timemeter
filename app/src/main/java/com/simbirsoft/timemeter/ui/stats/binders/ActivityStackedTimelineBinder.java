@@ -18,6 +18,7 @@ import com.github.mikephil.charting.utils.Legend;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Task;
+import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.DailyTaskActivityDuration;
 import com.simbirsoft.timemeter.ui.stats.ActivityStackedTimelineChartMarkerView;
@@ -31,9 +32,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
+
 public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnChartValueSelectedListener {
 
     private static final Logger LOG = LogFactory.getLogger(ActivityStackedTimelineBinder.class);
+
+    @Inject
+    Context mContext;
 
     private ViewGroup mContentRoot;
     private BarChart mChart;
@@ -47,6 +53,8 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnCh
 
     public ActivityStackedTimelineBinder(List<DailyTaskActivityDuration> activityTimeline) {
         mActivityTimeline = activityTimeline;
+
+        Injection.sUiComponent.injectActivityStackedTimelineBinder(this);
     }
 
     @Override
@@ -139,16 +147,22 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnCh
         mIsDataBound = true;
     }
 
-    private void initializeChart() {
-        final Context context = mContentRoot.getContext();
+    @Override
+    public String getTitle() {
+        return mContext.getString(R.string.title_activity_stacked_timeline);
+    }
 
+    private void initializeChart() {
         mVerticalChartLegendView = (VerticalChartLegendView) mContentRoot.findViewById(R.id.legendPanel);
 
         mChart = (BarChart) mContentRoot.findViewById(R.id.chart);
         mEmptyIndicatorView = (TextView) mContentRoot.findViewById(android.R.id.empty);
         mEmptyIndicatorView.setVisibility(View.GONE);
         mTitleView = (TextView) mContentRoot.findViewById(android.R.id.title);
-        mTitleView.setText(context.getString(R.string.title_activity_stacked_timeline));
+        mTitleView.setText(getTitle());
+        if (mIsFullScreenMode) {
+            mTitleView.setVisibility(View.GONE);
+        }
         mChart.setDescription("");
         mChart.setDrawXLabels(true);
         mChart.setDrawYLabels(true);
@@ -160,10 +174,8 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnCh
         mChart.setOffsets(0f, 0f, 0f, 0f);
         mChart.setValueTextColor(mContentRoot.getResources().getColor(R.color.accentPrimary));
         mChart.setOnChartValueSelectedListener(this);
-//        mChart.setDrawMarkerViews(true);
-//        mChart.setMarkerView(new ActivityTimelineChartMarkerView(mContentRoot.getContext()));
 
-        measureChartView(context.getResources());
+        measureChartView(mContext.getResources());
     }
 
     private void measureChartView(Resources res) {

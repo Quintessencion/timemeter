@@ -16,6 +16,7 @@ import com.github.mikephil.charting.utils.Legend;
 import com.github.mikephil.charting.utils.ValueFormatter;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.model.TaskOverallActivity;
 import com.simbirsoft.timemeter.ui.stats.OverallTaskActivityChartMarkerView;
@@ -29,9 +30,14 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnChartValueSelectedListener {
 
     private static final Logger LOG = LogFactory.getLogger(OverallActivityTimePieBinder.class);
+
+    @Inject
+    Context mContext;
 
     private ViewGroup mContentRoot;
     private PieChart mPieChart;
@@ -45,6 +51,8 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
 
     public OverallActivityTimePieBinder(List<TaskOverallActivity> overallActivity) {
         mOverallActivity = overallActivity;
+
+        Injection.sUiComponent.injectOverallActivityTimePieBinder(this);
     }
 
     @Override
@@ -122,15 +130,24 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
         mIsDataBound = true;
     }
 
+    @Override
+    public String getTitle() {
+        return mContext.getString(R.string.title_overall_activity_pie_chart);
+    }
+
     private void initializePieChart() {
-        final Context context = mContentRoot.getContext();
         final DecimalFormat format = new DecimalFormat("#.#");
 
         mVerticalChartLegendView = (VerticalChartLegendView) mContentRoot.findViewById(R.id.legendPanel);
 
         mPieChart = (PieChart) mContentRoot.findViewById(R.id.chart);
         mTitleView = (TextView) mContentRoot.findViewById(android.R.id.title);
-        mTitleView.setText(context.getString(R.string.title_overall_activity_pie_chart));
+        mTitleView.setText(getTitle());
+
+        if (mIsFullScreenMode) {
+            mTitleView.setVisibility(View.GONE);
+        }
+
         mEmptyIndicatorView = (TextView) mContentRoot.findViewById(android.R.id.empty);
         mEmptyIndicatorView.setVisibility(View.GONE);
         mPieChart.setDescription("");
@@ -162,7 +179,7 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
 
         mPieChart.setDrawMarkerViews(true);
 
-        measureChartView(context.getResources());
+        measureChartView(mContext.getResources());
     }
 
     private void measureChartView(Resources res) {
