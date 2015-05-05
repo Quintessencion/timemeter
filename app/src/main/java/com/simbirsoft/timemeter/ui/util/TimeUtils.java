@@ -94,7 +94,7 @@ public final class TimeUtils {
     public static boolean isHoliday(long millis, Calendar calendar) {
         calendar.setTimeInMillis(millis);
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-        return dayOfWeek == calendar.SATURDAY || dayOfWeek == calendar.SUNDAY;
+        return dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY;
     }
 
     public static long hoursToMillis(int hours) {
