@@ -1,8 +1,6 @@
 package com.simbirsoft.timemeter.ui.views;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Toast;
@@ -12,6 +10,7 @@ import com.simbirsoft.timemeter.db.model.Tag;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EViewGroup;
+import org.androidannotations.annotations.ViewById;
 import org.apmem.tools.layouts.FlowLayout;
 
 import java.util.List;
@@ -21,7 +20,9 @@ import java.util.Stack;
 public class TagFlowView extends FlowLayout implements TagView.TagViewClickListener {
 
     private final Stack<View> mReuseTagViews = new Stack<>();
-    private FlowLayout tagContainerView;
+
+    @ViewById(R.id.tagFlowViewContainer)
+    protected FlowLayout tagContainerView;
 
     public TagFlowView(Context context) {
         super(context);
@@ -31,14 +32,12 @@ public class TagFlowView extends FlowLayout implements TagView.TagViewClickListe
         super(context, attributeSet);
     }
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public TagFlowView(Context context, AttributeSet attributeSet, int defaultStyleAttribute) {
         super(context, attributeSet, defaultStyleAttribute);
     }
 
     @AfterViews
     void initializeView() {
-        tagContainerView = (FlowLayout) findViewById(R.id.tagFlowViewContainer);
     }
 
     @Override
