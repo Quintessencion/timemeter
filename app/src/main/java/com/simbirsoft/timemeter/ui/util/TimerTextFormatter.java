@@ -81,6 +81,22 @@ public final class TimerTextFormatter {
         return sb.toString();
     }
 
+    public static String formatOverallTimePlain(Resources res, long durationMillis) {
+        SplitTime t = fetchSplitTime(durationMillis);
+
+        StringBuilder sb = new StringBuilder();
+        if (t.hours > 0) {
+            sb.append(t.hours).append(res.getString(R.string.hours_mark));
+        }
+
+        sb.append(" ")
+                .append(String.format("%02d", t.minutes))
+                .append(res.getString(R.string.minutes_mark))
+                .append(" ");
+
+        return sb.toString();
+    }
+
     private static SplitTime fetchSplitTime(long timeMillis) {
         SplitTime t = new SplitTime();
 

@@ -17,6 +17,8 @@ import com.github.mikephil.charting.interfaces.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.Legend;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.model.Task;
+import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.DailyTaskActivityDuration;
 import com.simbirsoft.timemeter.ui.stats.ActivityStackedTimelineChartMarkerView;
@@ -30,9 +32,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
+
 public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnChartValueSelectedListener {
 
     private static final Logger LOG = LogFactory.getLogger(ActivityStackedTimelineBinder.class);
+
+    @Inject
+    Context mContext;
 
     private ViewGroup mContentRoot;
     private BarChart mChart;
@@ -46,6 +53,8 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnCh
 
     public ActivityStackedTimelineBinder(List<DailyTaskActivityDuration> activityTimeline) {
         mActivityTimeline = activityTimeline;
+
+        Injection.sUiComponent.injectActivityStackedTimelineBinder(this);
     }
 
     @Override
@@ -76,10 +85,18 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnCh
         final int count = mActivityTimeline.size();
         final ArrayList<BarEntry> timelineY = Lists.newArrayListWithCapacity(count);
         final ArrayList<String> timelineX = Lists.newArrayListWithCapacity(count);
-        String[] taskLabels = null;
-        int stackCount = 0;
+        final String[] taskLabels;
+        final int stackCount;
         if (count > 0) {
-            stackCount = mActivityTimeline.get(0).tasks.length;
+            Task[] tasks = mActivityTimeline.get(0).tasks;
+            stackCount = tasks.length;
+            taskLabels = new String[stackCount];
+            for (int i = 0; i < stackCount; i++) {
+                taskLabels[i] = tasks[i].getDescription();
+            }
+        } else {
+            stackCount = 0;
+            taskLabels = new String[0];
         }
 
         for (int i = 0; i < count; i++) {
@@ -89,13 +106,6 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnCh
             for (int j = 0; j < yVals.length; j++) {
                 int minutes = (int) TimeUnit.MILLISECONDS.toMinutes(item.tasks[j].getDuration());
                 yVals[j] = minutes / 60f;
-
-                if (i == 0) {
-                    if (taskLabels == null) {
-                        taskLabels = new String[item.tasks.length];
-                    }
-                    taskLabels[j] = item.tasks[j].getDescription();
-                }
             }
 
             BarEntry barEntry = new BarEntry(yVals, i);
@@ -117,7 +127,7 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnCh
         if (mLegend == null) {
             mLegend = mChart.getLegend();
             mLegend.setXEntrySpace(7f);
-            mLegend.setYEntrySpace(0f);
+            mLegend.setYEntrySpace(7f);
             mLegend.setForm(Legend.LegendForm.CIRCLE);
             mLegend.setTextSize(16f);
             mLegend.setStackSpace(12f);
@@ -137,16 +147,22 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnCh
         mIsDataBound = true;
     }
 
-    private void initializeChart() {
-        final Context context = mContentRoot.getContext();
+    @Override
+    public String getTitle() {
+        return mContext.getString(R.string.title_activity_stacked_timeline);
+    }
 
+    private void initializeChart() {
         mVerticalChartLegendView = (VerticalChartLegendView) mContentRoot.findViewById(R.id.legendPanel);
 
         mChart = (BarChart) mContentRoot.findViewById(R.id.chart);
         mEmptyIndicatorView = (TextView) mContentRoot.findViewById(android.R.id.empty);
         mEmptyIndicatorView.setVisibility(View.GONE);
         mTitleView = (TextView) mContentRoot.findViewById(android.R.id.title);
-        mTitleView.setText(context.getString(R.string.title_activity_stacked_timeline));
+        mTitleView.setText(getTitle());
+        if (mIsFullScreenMode) {
+            mTitleView.setVisibility(View.GONE);
+        }
         mChart.setDescription("");
         mChart.setDrawXLabels(true);
         mChart.setDrawYLabels(true);
@@ -158,10 +174,8 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnCh
         mChart.setOffsets(0f, 0f, 0f, 0f);
         mChart.setValueTextColor(mContentRoot.getResources().getColor(R.color.accentPrimary));
         mChart.setOnChartValueSelectedListener(this);
-//        mChart.setDrawMarkerViews(true);
-//        mChart.setMarkerView(new ActivityTimelineChartMarkerView(mContentRoot.getContext()));
 
-        measureChartView(context.getResources());
+        measureChartView(mContext.getResources());
     }
 
     private void measureChartView(Resources res) {
