@@ -107,19 +107,13 @@ public class ActivityCalendar {
     }
 
     public int getDateLabelColor(Resources res, int dayIndex) {
-        mBufferCalendar.setTime(new Date());
-        int dayOfYear = mBufferCalendar.get(Calendar.DAY_OF_YEAR);
-        mBufferCalendar.setTime(getDay(dayIndex));
+        long date = getDay(dayIndex).getTime();
 
-        if (mBufferCalendar.get(Calendar.DAY_OF_YEAR) == dayOfYear) {
+        if (TimeUtils.isCurrentDay(date, mBufferCalendar)) {
             return res.getColor(R.color.primary);
         }
 
-        int dayOfWeek = mBufferCalendar.get(Calendar.DAY_OF_WEEK);
-
-        if (dayOfWeek == Calendar.SATURDAY
-                || dayOfWeek == Calendar.SUNDAY) {
-
+        if (TimeUtils.isHoliday(date, mBufferCalendar)) {
             return res.getColor(R.color.accentPrimary);
         }
 
