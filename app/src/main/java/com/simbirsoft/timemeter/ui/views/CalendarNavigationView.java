@@ -15,6 +15,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.andexert.library.RippleView;
+import com.balysv.materialripple.MaterialRippleLayout;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.ui.model.CalendarPeriod;
 
@@ -46,10 +47,10 @@ public class CalendarNavigationView extends RelativeLayout{
     ImageView mNextButton;
 
     @ViewById(R.id.nextButtonRipple)
-    RippleView mNextButtonBackground;
+    MaterialRippleLayout mNextButtonBackground;
 
     @ViewById(R.id.prevButtonRipple)
-    RippleView mPrevButtonBackground;
+    MaterialRippleLayout mPrevButtonBackground;
 
     private int mTextPadding;
 
@@ -93,6 +94,14 @@ public class CalendarNavigationView extends RelativeLayout{
             width = Math.max(width, paint.measureText(test));
         }
         mTextView.setMinimumWidth((int)width  + 2 * mTextPadding);
+        mPrevButtonBackground.setRippleRoundedCorners(mPrevButtonBackground.getMeasuredWidth() / 2);
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        super.onLayout(changed, l, t, r, b);
+        mPrevButtonBackground.setRippleRoundedCorners(mPrevButtonBackground.getWidth() / 2);
+        mNextButtonBackground.setRippleRoundedCorners(mNextButtonBackground.getWidth() / 2);
     }
 
     @Click(R.id.nextButton)
