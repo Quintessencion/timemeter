@@ -1,9 +1,9 @@
 package com.simbirsoft.timemeter.ui.views;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.Toast;
 
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
@@ -41,9 +41,10 @@ public class TagFlowView extends FlowLayout implements TagView.TagViewClickListe
     }
 
     @Override
-    public void onClick(Tag tag) {
-        // для отладки
-        Toast.makeText(getContext(), tag.getName(), Toast.LENGTH_SHORT).show();
+    public void onClick(TagView tagView) {
+        Tag tag = tagView.getTag();
+        tag.setColor(Color.DKGRAY);
+        tagView.setTag(tag);
     }
 
     public void bindTagViews(List<Tag> tags) {
