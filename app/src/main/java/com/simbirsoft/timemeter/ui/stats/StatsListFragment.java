@@ -23,6 +23,8 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
+import com.simbirsoft.timemeter.ui.main.MainPagerFragment;
+import com.simbirsoft.timemeter.ui.model.TaskChangedEvent;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
@@ -40,7 +42,8 @@ import javax.inject.Inject;
 public class StatsListFragment extends BaseFragment implements
         JobLoader.JobLoaderCallbacks,
         MainPagerAdapter.PageTitleProvider,
-        StatsListAdapter.ChartClickListener {
+        StatsListAdapter.ChartClickListener,
+        MainPagerFragment.PageFragment {
 
     private static final Logger LOG = LogFactory.getLogger(StatsListFragment.class);
 
@@ -57,6 +60,7 @@ public class StatsListFragment extends BaseFragment implements
 
     private StatsListAdapter mStatsListAdapter;
     private FilterView.FilterState mFilterViewState;
+    private boolean mIsContentInvalidated;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -146,5 +150,17 @@ public class StatsListFragment extends BaseFragment implements
                 getActivity(), StatsDetailsFragment_.class.getName(), args);
         getActivity().startActivityForResult(launchIntent, 1000);
 
+    }
+
+    @Subscribe
+    public void onTaskChanged(TaskChangedEvent event) {
+        mIsContentInvalidated = true;
+    }
+
+    public void onSelected() {
+        if (mIsContentInvalidated) {
+            requestLoad(STATISTICS_BINDER_LOADER_TAG, this);
+            mIsContentInvalidated = false;
+        }
     }
 }

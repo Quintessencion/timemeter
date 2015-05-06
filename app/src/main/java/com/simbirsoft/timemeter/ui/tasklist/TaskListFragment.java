@@ -44,7 +44,9 @@ import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.ContentFragmentCallbacks;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
+import com.simbirsoft.timemeter.ui.main.MainPagerFragment;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
+import com.simbirsoft.timemeter.ui.model.TaskChangedEvent;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
@@ -69,7 +71,8 @@ import javax.inject.Inject;
 public class TaskListFragment extends BaseFragment implements JobLoader.JobLoaderCallbacks,
         TaskListAdapter.TaskClickListener,
         TaskActivityTimerUpdateListener,
-        MainPagerAdapter.PageTitleProvider {
+        MainPagerAdapter.PageTitleProvider,
+        MainPagerFragment.PageFragment {
 
     private static final Logger LOG = LogFactory.getLogger(TaskListFragment.class);
 
@@ -77,6 +80,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     private static final String TASK_LIST_LOADER_TAG = "TaskListFragment_";
     private static final int REQUEST_CODE_EDIT_TASK = 100;
     private static final int COLUMN_COUNT_DEFAULT = 2;
+    private static final int EVENT_SENDER_CODE = 1;
     private int mColumnCount;
 
     @ViewById(android.R.id.list)
@@ -101,6 +105,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     private TaskListAdapter mTasksViewAdapter;
     private ITaskActivityManager mTaskActivityManager;
     private ContentFragmentCallbacks mCallbacks;
+    private boolean mIsContentInvalidated;
 
     private void onFloatingButtonClicked(View v) {
         LOG.info("floating button clicked");
@@ -257,6 +262,13 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         mTasksViewAdapter.replaceItem(task);
     }
 
+    @Subscribe
+    public void onTaskChanged(TaskChangedEvent event) {
+        if (event.getSender() != EVENT_SENDER_CODE) {
+            mIsContentInvalidated = true;
+        }
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
@@ -291,6 +303,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
                         replaceTaskInList(bundle);
                         break;
                 }
+                mBus.post(new TaskChangedEvent(resultCode, EVENT_SENDER_CODE));
                 return;
 
             default:
@@ -521,6 +534,13 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     @Override
     public String getPageTitle(Resources resources) {
         return resources.getString(R.string.title_tasks);
+    }
+
+    public void onSelected() {
+        if (mIsContentInvalidated) {
+            requestLoad(TASK_LIST_LOADER_TAG, this);
+            mIsContentInvalidated = false;
+        }
     }
 }
 

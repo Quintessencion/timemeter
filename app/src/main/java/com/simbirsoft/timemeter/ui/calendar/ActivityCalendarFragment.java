@@ -23,9 +23,11 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
+import com.simbirsoft.timemeter.ui.main.MainPagerFragment;
 import com.simbirsoft.timemeter.ui.model.CalendarData;
 import com.simbirsoft.timemeter.ui.model.CalendarPeriod;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
+import com.simbirsoft.timemeter.ui.model.TaskChangedEvent;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
@@ -51,9 +53,10 @@ import javax.inject.Inject;
 public class ActivityCalendarFragment extends BaseFragment implements MainPagerAdapter.PageTitleProvider,
         JobLoader.JobLoaderCallbacks, CalendarNavigationView.OnCalendarNavigateListener,
         WeekCalendarView.OnCellClickListener, PopupWindow.OnDismissListener,
-        CalendarPopupAdapter.TaskClickListener {
+        CalendarPopupAdapter.TaskClickListener, MainPagerFragment.PageFragment {
 
     private static final int REQUEST_CODE_EDIT_TASK = 100;
+    private static final int EVENT_SENDER_CODE = 3;
 
     private static final Logger LOG = LogFactory.getLogger(ActivityCalendarFragment.class);
 
@@ -80,6 +83,7 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
 
     private CalendarPagerAdapter mPagerAdapter;
     private CalendarPopupHelper mPopupHelper;
+    private boolean mIsContentInvalidated;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -173,22 +177,29 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
         requestLoad(newStartDate, newEndDate);
     }
 
+    @Subscribe
+    public void onTaskChanged(TaskChangedEvent event) {
+        if (event.getSender() != EVENT_SENDER_CODE
+                && event.getResultCode() == EditTaskFragment.RESULT_CODE_TASK_REMOVED) {
+            mIsContentInvalidated = true;
+        }
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case REQUEST_CODE_EDIT_TASK:
-                switch (resultCode) {
-                    case EditTaskFragment.RESULT_CODE_TASK_RECREATED:
-                        LOG.debug("result: task recreated");
-                        requestLoad(CALENDAR_LOADER_TAG, this);
-                        break;
-
-                    case EditTaskFragment.RESULT_CODE_TASK_REMOVED:
-                        LOG.debug("result: task removed");
-                        final long taskId = data.getLongExtra(EditTaskFragment.EXTRA_TASK_ID, -1);
-                        mPagerAdapter.removeSpansFromCurrentView(taskId);
-                        break;
+                if (resultCode == EditTaskFragment.RESULT_CODE_CANCELLED) {
+                    LOG.debug("result: task edit cancelled");
+                    return;
                 }
+                if (resultCode == EditTaskFragment.RESULT_CODE_TASK_REMOVED) {
+                    LOG.debug("result: task removed");
+                    final long taskId = data.getLongExtra(EditTaskFragment.EXTRA_TASK_ID, -1);
+                    mPagerAdapter.removeSpansFromCurrentView(taskId);
+                }
+                mBus.post(new TaskChangedEvent(resultCode, EVENT_SENDER_CODE));
+                return;
 
             default:
                 break;
@@ -224,5 +235,12 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), ViewTaskFragment_.class.getName(), args);
         getActivity().startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TASK);
+    }
+
+    public void onSelected() {
+        if (mIsContentInvalidated) {
+            requestLoad(CALENDAR_LOADER_TAG, this);
+            mIsContentInvalidated = false;
+        }
     }
 }
