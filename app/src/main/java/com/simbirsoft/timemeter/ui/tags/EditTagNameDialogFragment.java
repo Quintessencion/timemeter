@@ -30,9 +30,12 @@ import com.simbirsoft.timemeter.jobs.SaveTagJob;
 import com.simbirsoft.timemeter.ui.base.BaseDialogFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerCallbacks;
 
+import java.util.ArrayList;
+
 public class EditTagNameDialogFragment extends BaseDialogFragment {
 
     public static final String EXTRA_TAG = "extra_tag";
+    public static final String TAG_NAMES = "tag_names";
 
     private static final String STATE_ENTERED_TEXT = "entered_text";
 
@@ -44,6 +47,7 @@ public class EditTagNameDialogFragment extends BaseDialogFragment {
     private FragmentContainerCallbacks mContainerCallbacks;
     private MaterialDialog mDialog;
     private final String mSaveJobTag = "save_tag_name";
+    private ArrayList<String> mTagNames;
 
     private final TextView.OnEditorActionListener mOnEditorActionListener =
             (textView, actionId, keyEvent) -> {
@@ -63,7 +67,14 @@ public class EditTagNameDialogFragment extends BaseDialogFragment {
         @Override
         public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             mEnteredText = charSequence.toString().trim();
-            mPositiveButton.setEnabled(!TextUtils.isEmpty(mEnteredText));
+            if (mTagNames.contains(mEnteredText)) {
+                //mEditNameView.setError("Метка " + mEnteredText + " уже существует");
+                mEditNameView.setError(getResources().getString(R.string.error_tag_name_repeat, mEnteredText));
+                mPositiveButton.setEnabled(false);
+            }
+            else {
+                mPositiveButton.setEnabled(true);
+            }
         }
 
         @Override
@@ -85,6 +96,7 @@ public class EditTagNameDialogFragment extends BaseDialogFragment {
         super.onCreate(savedInstanceState);
 
         mTag = getArguments().getParcelable(EXTRA_TAG);
+        mTagNames = getArguments().getStringArrayList(TAG_NAMES);
         Preconditions.checkArgument(mTag != null);
 
         if (savedInstanceState != null) {

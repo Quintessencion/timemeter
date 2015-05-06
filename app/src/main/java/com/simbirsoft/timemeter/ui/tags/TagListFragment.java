@@ -56,6 +56,7 @@ import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @EFragment(R.layout.fragment_tag_list)
@@ -267,6 +268,8 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
     public void onItemEditClicked(Tag item) {
         Bundle args = new Bundle();
         args.putParcelable(EditTagNameDialogFragment.EXTRA_TAG, item);
+        ArrayList<String> names = mTagListAdapter.getAllItemsNames();
+        args.putStringArrayList(EditTagNameDialogFragment.TAG_NAMES, names);
         Intent launchIntent = DialogContainerActivity.prepareDialogLaunchIntent(
                 getActivity(), EditTagNameDialogFragment.class.getName(), args);
         startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TAG_NAME);
