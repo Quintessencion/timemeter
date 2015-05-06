@@ -65,10 +65,8 @@ public class TagFlowView extends FlowLayout {
 
         if (tagCount > 0) {
             for (int i = 0; i < tagCount; i++) {
-                Tag tag = tags.get(i);
                 TagView_ tagView = (TagView_) reuseViews[i];
-                tagView.setTagText(tag.getName());
-                tagView.setTagColor(tag.getColor());
+                tagView.setTag(tags.get(i));
             }
             tagContainerView.setVisibility(View.VISIBLE);
         } else {

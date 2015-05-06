@@ -36,7 +36,6 @@ public class TagAutoCompleteTextView extends TokenCompleteTextView {
                 (ViewGroup) getParent(),
                 tag.getColor());
         view.setText(tag.getName());
-
         return view;
     }
 

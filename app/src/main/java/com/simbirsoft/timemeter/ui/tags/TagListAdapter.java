@@ -376,16 +376,13 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Tag item = getItem(position);
-
         bindViewHolderImpl(holder, item);
     }
 
     private void bindViewHolderImpl(ViewHolder vh, Tag item) {
         final int toggleDelta = (int) (System.currentTimeMillis() - mToggleActionPanelTimeMillis);
 
-        vh.tagView.setTagText(item.getName());
-        vh.tagView.setTagColor(item.getColor());
-
+        vh.tagView.setTag(item);
         vh.editButtonView.setTag(item);
         vh.editColorButtonView.setTag(item);
         vh.removeButtonView.setTag(item);

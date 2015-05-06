@@ -10,7 +10,9 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.main.SectionFragmentContainer;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EViewGroup;
@@ -22,7 +24,13 @@ public class TagView extends FrameLayout {
     private static final Logger LOG = LogFactory.getLogger(TagView.class);
 
     @ViewById(R.id.viewTagTitle)
-    protected TextView tagView;
+    protected TextView textView;
+
+    private Tag mTag;
+
+    public interface TagViewClickListener {
+        public void onClick(Tag tag);
+    }
 
     public TagView(Context context) {
         super(context);
@@ -44,18 +52,33 @@ public class TagView extends FrameLayout {
 
     @AfterViews
     void initializeView() {
+        textView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+            }
+        });
     }
 
+    public void setTag(Tag tag) {
+        if (tag != null) {
+            mTag = tag;
+            GradientDrawable bg = (GradientDrawable) textView.getBackground();
+            bg.setColor(tag.getColor());
+            textView.setText(tag.getName());
+        }
+    }
+/*
     public void setTagColor(int tagColor) {
-        if (tagView != null) {
-            GradientDrawable bg = (GradientDrawable) tagView.getBackground();
+        if (textView != null) {
+            GradientDrawable bg = (GradientDrawable) textView.getBackground();
             bg.setColor(tagColor);
         }
     }
 
     public void setTagText(String tagText) {
-        if (tagView != null) {
-            tagView.setText(tagText);
+        if (textView != null) {
+            textView.setText(tagText);
         }
     }
+    */
 }
