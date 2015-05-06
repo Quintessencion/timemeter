@@ -90,6 +90,14 @@ public class CalendarPagerAdapter extends PagerAdapter {
         mViewPager.setCurrentItem(mViewPager.getCurrentItem() - 1, true);
     }
 
+    public void removeSpansFromCurrentView(long taskId) {
+        WeekCalendarView view = getView(mViewPager.getCurrentItem());
+        if (view != null) {
+            view.getActivityCalendar().removeSpans(taskId);
+            view.invalidate();
+        }
+    }
+
     private void setDates(WeekCalendarView view, Date startDate, Date endDate) {
         ActivityCalendar ac = view.getActivityCalendar();
         if (startDate.compareTo(ac.getStartDate()) == 0 && endDate.compareTo(ac.getEndDate()) == 0) return;

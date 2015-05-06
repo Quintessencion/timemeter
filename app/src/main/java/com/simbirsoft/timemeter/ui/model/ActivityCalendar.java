@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -245,5 +246,19 @@ public class ActivityCalendar {
             }
         }
         return result;
+    }
+
+    public void removeSpans(long taskId) {
+        int count = mDailyActivity.size();
+        for (int i = 0; i < count; i++) {
+            Collection<TaskTimeSpan> spans = mDailyActivity.get(i);
+            Iterator<TaskTimeSpan> iterator = spans.iterator();
+            while (iterator.hasNext()) {
+                TaskTimeSpan span = iterator.next();
+                if (span.getTaskId() == taskId) {
+                    iterator.remove();
+                }
+            }
+        }
     }
 }

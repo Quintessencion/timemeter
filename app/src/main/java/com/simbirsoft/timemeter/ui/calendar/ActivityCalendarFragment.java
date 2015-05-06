@@ -26,6 +26,7 @@ import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
 import com.simbirsoft.timemeter.ui.model.CalendarData;
 import com.simbirsoft.timemeter.ui.model.CalendarPeriod;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
+import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
 import com.simbirsoft.timemeter.ui.views.CalendarViewPager;
@@ -170,6 +171,29 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
     public void onMovedPrev(Date newStartDate, Date newEndDate) {
         mPagerAdapter.movePrev(newStartDate, newEndDate);
         requestLoad(newStartDate, newEndDate);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_CODE_EDIT_TASK:
+                switch (resultCode) {
+                    case EditTaskFragment.RESULT_CODE_TASK_RECREATED:
+                        LOG.debug("result: task recreated");
+                        requestLoad(CALENDAR_LOADER_TAG, this);
+                        break;
+
+                    case EditTaskFragment.RESULT_CODE_TASK_REMOVED:
+                        LOG.debug("result: task removed");
+                        final long taskId = data.getLongExtra(EditTaskFragment.EXTRA_TASK_ID, -1);
+                        mPagerAdapter.removeSpansFromCurrentView(taskId);
+                        break;
+                }
+
+            default:
+                break;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     private void requestLoad(Date newStartDate, Date newEndDate) {
