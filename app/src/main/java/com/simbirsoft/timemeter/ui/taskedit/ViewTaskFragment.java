@@ -15,6 +15,8 @@ import android.widget.TextView;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment;
+import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment_;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
@@ -36,6 +38,7 @@ public class ViewTaskFragment extends BaseFragment {
     private static final Logger LOG = LogFactory.getLogger(ViewTaskFragment.class);
 
     private static final int REQUEST_CODE_EDIT_TASK = 100;
+    private static final int REQUEST_CODE_VIEW_ACTIVITIES = 101;
 
     @FragmentArg(EXTRA_TASK_BUNDLE)
     TaskBundle mExtraTaskBundle;
@@ -111,12 +114,30 @@ public class ViewTaskFragment extends BaseFragment {
         getActivity().startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TASK);
     }
 
+    private void goToActivities() {
+        Bundle args = new Bundle();
+        String title = mExtraTaskBundle.getTask().getDescription();
+        if(title != null) {
+            args.putString(TaskActivitiesFragment.EXTRA_TITLE, title);
+        }
+        args.putLong(TaskActivitiesFragment.EXTRA_TASK_ID, mExtraTaskBundle.getTask().getId());
+
+        Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
+                getActivity(), TaskActivitiesFragment_.class.getName(), args);
+        getActivity().startActivityForResult(launchIntent, REQUEST_CODE_VIEW_ACTIVITIES);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.edit:
                 LOG.debug("task edit clicked");
                 goToEditTask();
+                return true;
+
+            case R.id.activities:
+                LOG.debug("task view activities clicked");
+                goToActivities();
                 return true;
 
             case android.R.id.home:

@@ -8,6 +8,7 @@
     <string name="title_activity_calendar">Календарь</string>
     <string name="title_begin_new_task">Начать новую задачу</string>
     <string name="title_edit_task">Редактировать задачу</string>
+    <string name="title_create_tag">Новая метка</string>
     <string name="title_view_task">Просмотреть задачу</string>
     <string name="title_view_params">ФИЛЬТР</string>
     <string name="title_view_date">ДАТА:</string>
@@ -28,6 +29,7 @@
     <string name="caption_empty_chart">Нет данных</string>
     <string name="content_empty">Нет данных</string>
     <string name="caption_progress">Загрузка&#8230;</string>
+    <string name="label_color">Цвет</string>
 
     <!-- Actions -->
     <string name="action_search">Поиск</string>
@@ -48,6 +50,7 @@
     <string name="ime_action_next">Далее</string>
     <string name="action_edit">Редактировать</string>
     <string name="action_create_tag">Создать метку</string>
+    <string name="action_view_activities">Показать активности</string>
 
     <!-- Hints -->
     <string name="hint_new_task">Начать новую задачу</string>
@@ -80,6 +83,8 @@
     <string name="error_unable_to_remove_tag">Ошибка при удалении метки</string>
     <string name="error_unable_to_backup_tag">Ошибка при восстановлении метки</string>
     <string name="error_unable_to_backup_task">Ошибка при восстановлении задачи</string>
+    <string name="error_tag_already_exists">Ошибка, метка с таким именем уже существует</string>
+    <string name="error_tag_name_is_empty">Ошибка, название метки не задано</string>
 
     <!-- Dialogs -->
     <string name="dialog_cancel_task_changes_warning_title">Задача не сохранена</string>
@@ -88,6 +93,8 @@
     <string name="dialog_remove_task_warning_message">Удалить задачу?</string>
     <string name="dialog_edit_tag_name_title">Введите название метки</string>
     <string name="dialog_edit_tag_color_title">Выберите цвет</string>
+    <string name="dialog_cancel_tag_changes_warning_title">Метка не сохранена</string>
+    <string name="dialog_cancel_tag_changes_warning_message">Завершить редактирование без сохранения?</string>
 
     <string-array name="period_array">
         <item>День</item>

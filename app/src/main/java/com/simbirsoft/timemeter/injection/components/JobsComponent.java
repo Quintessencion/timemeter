@@ -10,6 +10,7 @@ import com.simbirsoft.timemeter.jobs.LoadPeriodActivityTimelineJob;
 import com.simbirsoft.timemeter.jobs.LoadPeriodSplitActivityTimelineJob;
 import com.simbirsoft.timemeter.jobs.LoadStatisticsViewBinders;
 import com.simbirsoft.timemeter.jobs.LoadTagListJob;
+import com.simbirsoft.timemeter.jobs.LoadTaskActivitiesJob;
 import com.simbirsoft.timemeter.jobs.LoadTaskBundleJob;
 import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
 import com.simbirsoft.timemeter.jobs.LoadTaskTagsJob;
@@ -39,5 +40,6 @@ public interface JobsComponent {
     public LoadPeriodActivitySplitTimeSumJob loadPeriodActivitySplitTimeSumJob();
     public LoadPeriodSplitActivityTimelineJob loadPeriodSplitActivityTimelineJob();
     public LoadActivityCalendarJob loadActivityCalendarJob();
+    public LoadTaskActivitiesJob loadTaskActivitiesJob();
     public LoadTasksJob loadTasksJob();
 }
