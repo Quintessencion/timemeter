@@ -91,7 +91,7 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
             if (pageFragment == null) continue;
             MainPageFragment mainPageFragment = (MainPageFragment)pageFragment;
             if (mainPageFragment.isSelected()) {
-                mainPageFragment.onDeselect();
+                mainPageFragment.onPageDeselected();
                 break;
             }
         }

@@ -411,6 +411,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     private void onPageChanged(int position) {
         mPagerAdapter.deselectCurrentPage();
         MainPageFragment currentFragment = (MainPageFragment)mPagerAdapter.getItem(position);
-        currentFragment.onSelect();
+        currentFragment.onPageSelected();
     }
 }
