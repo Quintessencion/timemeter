@@ -13,7 +13,7 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
-import com.simbirsoft.timemeter.ui.views.TagFlowView_;
+import com.simbirsoft.timemeter.ui.views.TagFlowView;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
@@ -29,10 +29,8 @@ public class ViewTaskFragment extends BaseFragment {
 
     private static final int REQUEST_CODE_EDIT_TASK = 100;
 
-    // почему то потом при генерации кода в классе ViewTaskFragment_ не подключается импорт TagFlowView_
-    // поэтому пока сделал так tagFlowView = (TagFlowView_) getView().findViewById(R.id.tagFlowView)
-    //@ViewById(R.id.tagFlowView)
-    protected TagFlowView_ tagFlowView;
+    @ViewById(R.id.tagFlowView)
+    protected TagFlowView tagFlowView;
 
     @FragmentArg(EXTRA_TASK_BUNDLE)
     TaskBundle mExtraTaskBundle;
@@ -63,7 +61,6 @@ public class ViewTaskFragment extends BaseFragment {
 
     @AfterViews
     void bindViews() {
-        tagFlowView = (TagFlowView_) getView().findViewById(R.id.tagFlowView);
         setActionBarTitleAndHome(mExtraTaskBundle.getTask().getDescription());
         tagFlowView.bindTagViews(mExtraTaskBundle.getTags());
     }

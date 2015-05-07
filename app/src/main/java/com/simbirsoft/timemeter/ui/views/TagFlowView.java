@@ -1,23 +1,26 @@
 package com.simbirsoft.timemeter.ui.views;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.View;
 
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
+import com.simbirsoft.timemeter.log.LogFactory;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EViewGroup;
 import org.androidannotations.annotations.ViewById;
 import org.apmem.tools.layouts.FlowLayout;
+import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Stack;
 
 @EViewGroup(R.layout.view_tag_flow)
 public class TagFlowView extends FlowLayout implements TagView.TagViewClickListener {
+
+    private static final Logger LOG = LogFactory.getLogger(TagFlowView.class);
 
     private final Stack<View> mReuseTagViews = new Stack<>();
 
@@ -42,9 +45,7 @@ public class TagFlowView extends FlowLayout implements TagView.TagViewClickListe
 
     @Override
     public void onClick(TagView tagView) {
-        Tag tag = tagView.getTag();
-        tag.setColor(Color.DKGRAY);
-        tagView.setTag(tag);
+        LOG.debug("Tag <" + tagView.getTag().getName() + "> clicked!");
     }
 
     public void bindTagViews(List<Tag> tags) {
