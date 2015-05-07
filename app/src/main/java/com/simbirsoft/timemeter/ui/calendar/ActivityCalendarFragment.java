@@ -22,6 +22,7 @@ import com.simbirsoft.timemeter.jobs.LoadActivityCalendarJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
+import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
 import com.simbirsoft.timemeter.ui.main.MainPagerFragment;
 import com.simbirsoft.timemeter.ui.model.CalendarData;
@@ -50,13 +51,12 @@ import java.util.List;
 import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_activity_calendar)
-public class ActivityCalendarFragment extends BaseFragment implements MainPagerAdapter.PageTitleProvider,
+public class ActivityCalendarFragment extends MainPageFragment implements MainPagerAdapter.PageTitleProvider,
         JobLoader.JobLoaderCallbacks, CalendarNavigationView.OnCalendarNavigateListener,
         WeekCalendarView.OnCellClickListener, PopupWindow.OnDismissListener,
-        CalendarPopupAdapter.TaskClickListener, MainPagerFragment.PageFragment {
+        CalendarPopupAdapter.TaskClickListener {
 
     private static final int REQUEST_CODE_EDIT_TASK = 100;
-    private static final int EVENT_SENDER_CODE = 3;
 
     private static final Logger LOG = LogFactory.getLogger(ActivityCalendarFragment.class);
 
@@ -78,12 +78,9 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
     @InstanceState
     CalendarPeriod mCalendarPeriod;
 
-    @Inject
-    Bus mBus;
 
     private CalendarPagerAdapter mPagerAdapter;
     private CalendarPopupHelper mPopupHelper;
-    private boolean mIsContentInvalidated;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -99,13 +96,13 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
         mPagerAdapter = new CalendarPagerAdapter(getActivity(), mCalendarViewPager, this);
         mCalendarNavigationView.setOnCalendarNavigateListener(this);
         requestLoad(CALENDAR_LOADER_TAG, this);
-        mBus.register(this);
+        getBus().register(this);
     }
 
     @Override
     public void onDestroyView() {
         mPopupHelper.unregister();
-        mBus.unregister(this);
+        getBus().unregister(this);
         super.onDestroyView();
     }
 
@@ -177,14 +174,6 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
         requestLoad(newStartDate, newEndDate);
     }
 
-    @Subscribe
-    public void onTaskChanged(TaskChangedEvent event) {
-        if (event.getSender() != EVENT_SENDER_CODE
-                && event.getResultCode() == EditTaskFragment.RESULT_CODE_TASK_REMOVED) {
-            mIsContentInvalidated = true;
-        }
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
@@ -195,10 +184,12 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
                 }
                 if (resultCode == EditTaskFragment.RESULT_CODE_TASK_REMOVED) {
                     LOG.debug("result: task removed");
-                    final long taskId = data.getLongExtra(EditTaskFragment.EXTRA_TASK_ID, -1);
-                    mPagerAdapter.removeSpansFromCurrentView(taskId);
+                    mPagerAdapter.removeSpansFromCurrentView(data.getLongExtra(
+                            EditTaskFragment.EXTRA_TASK_ID, -1));
+                    showTaskRemoveUndoBar(data.getParcelableExtra(
+                            EditTaskFragment.EXTRA_TASK_BUNDLE));
                 }
-                mBus.post(new TaskChangedEvent(resultCode, EVENT_SENDER_CODE));
+                sendTaskChangedEvent(resultCode);
                 return;
 
             default:
@@ -237,10 +228,13 @@ public class ActivityCalendarFragment extends BaseFragment implements MainPagerA
         getActivity().startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TASK);
     }
 
-    public void onSelected() {
-        if (mIsContentInvalidated) {
-            requestLoad(CALENDAR_LOADER_TAG, this);
-            mIsContentInvalidated = false;
-        }
+    @Override
+    protected boolean needUpdateAfterTaskChanged(int resultCode) {
+        return resultCode == EditTaskFragment.RESULT_CODE_TASK_REMOVED;
+    }
+
+    @Override
+    protected void reloadContent() {
+        requestReload(CALENDAR_LOADER_TAG, this);
     }
 }

@@ -56,10 +56,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         List<String> getPageNames(int sectionId);
     }
 
-    public interface PageFragment {
-        void onSelected();
-    }
-
     private static final Logger LOG = LogFactory.getLogger(MainPagerFragment.class);
     private static final String TAG_DATE_PICKER_FRAGMENT = "main_date_picker_fragment_tag";
 
@@ -178,13 +174,13 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
             // Hide custom elevation on Lollipop
             mContainerHeader.findViewById(R.id.shadowDown).setVisibility(View.GONE);
         }
-        mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+        mTabs.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
-                PageFragment currentFragment = (PageFragment)mPagerAdapter.getItem(mViewPager.getCurrentItem());
-                currentFragment.onSelected();
+                onPageChanged(position);
             }
         });
+        onPageChanged(mViewPager.getCurrentItem());
     }
 
     @Override
@@ -410,5 +406,11 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     @Override
     public void onTokenRemoved(Object o) {
         mViewPager.post(this::updateFilterViewSize);
+    }
+
+    private void onPageChanged(int position) {
+        mPagerAdapter.deselectCurrentPage();
+        MainPageFragment currentFragment = (MainPageFragment)mPagerAdapter.getItem(position);
+        currentFragment.onSelect();
     }
 }

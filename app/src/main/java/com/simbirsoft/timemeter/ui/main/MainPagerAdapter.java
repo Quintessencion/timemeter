@@ -5,11 +5,9 @@ import android.content.res.Resources;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.view.ViewGroup;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import com.simbirsoft.timemeter.R;
 
 import java.util.Collection;
 import java.util.List;
@@ -85,5 +83,17 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
 
     private String getPageFragmentTag(int position) {
         return "android:switcher:" + String.valueOf(mPagerViewId) + ":" + String.valueOf(position);
+    }
+
+    public void deselectCurrentPage() {
+        for (PageItem item : mPages) {
+            Fragment pageFragment = item.getFragment();
+            if (pageFragment == null) continue;
+            MainPageFragment mainPageFragment = (MainPageFragment)pageFragment;
+            if (mainPageFragment.isSelected()) {
+                mainPageFragment.onDeselect();
+                break;
+            }
+        }
     }
 }
