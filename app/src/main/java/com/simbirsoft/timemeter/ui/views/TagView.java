@@ -27,7 +27,7 @@ public class TagView extends FrameLayout {
     @ViewById(R.id.viewTagTitle)
     protected TextView textView;
 
-    private TagViewClickListener mTagViewClickListener = null;
+    private TagViewClickListener mTagViewClickListener;
     private Tag mTag;
 
     public TagView(Context context) {
