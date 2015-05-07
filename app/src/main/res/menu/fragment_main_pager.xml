@@ -14,5 +14,5 @@
         android:id="@+id/actionToggleFilter"
         app:showAsAction="always"
         android:title="@string/action_toggle_filter_on"
-        android:icon="@drawable/ic_filter_white_18dp" />
+        android:icon="@drawable/ic_filter_white_24dp" />
 </menu>
