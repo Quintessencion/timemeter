@@ -143,7 +143,6 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     private final List<Tag> mItems;
     private ItemClickListener mItemClickListener;
     private TagFilter mFilter;
-    private ArrayList<String> mItemsOriginalNames;
 
     @Override
     public TagFilter getFilter() {
@@ -218,7 +217,6 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     public TagListAdapter() {
         mItems = Lists.newArrayList();
         mItemsOriginal = Lists.newArrayList();
-        mItemsOriginalNames = Lists.newArrayList();
         setHasStableIds(true);
     }
 
@@ -232,12 +230,7 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
 
     public ArrayList<String> getAllItemsNames()
     {
-        mItemsOriginalNames.clear();
-        for(Tag item : mItemsOriginal)
-        {
-            mItemsOriginalNames.add(item.getName());
-        }
-        return mItemsOriginalNames;
+        return Lists.newArrayList(Iterables.transform(mItemsOriginal, Tag::getName));
     }
 
     public Tag findItemWithName(String tagName) {

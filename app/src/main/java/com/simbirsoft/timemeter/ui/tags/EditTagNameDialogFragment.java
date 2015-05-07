@@ -23,6 +23,7 @@ import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
 import com.be.android.library.worker.util.JobSelector;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.injection.Injection;
@@ -67,10 +68,12 @@ public class EditTagNameDialogFragment extends BaseDialogFragment {
         @Override
         public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             mEnteredText = charSequence.toString().trim();
-            if (mTagNames.contains(mEnteredText)) {
-                //mEditNameView.setError("Метка " + mEnteredText + " уже существует");
-                mEditNameView.setError(getResources().getString(R.string.error_tag_name_repeat, mEnteredText));
-                mPositiveButton.setEnabled(false);
+            if (!mTag.getName().equalsIgnoreCase(mEnteredText) &&
+                    Iterables.indexOf(mTagNames, (tag) -> tag.equalsIgnoreCase(mEnteredText)) != -1) {
+                setError(getString(R.string.error_tag_name_repeat, mEnteredText));
+            }
+            else if (TextUtils.isEmpty(mEnteredText)) {
+                setError(getString(R.string.error_tag_name_is_empty));
             }
             else {
                 mPositiveButton.setEnabled(true);
@@ -81,6 +84,11 @@ public class EditTagNameDialogFragment extends BaseDialogFragment {
         public void afterTextChanged(Editable editable) {
         }
     };
+
+    private void setError(String errorText) {
+        mEditNameView.setError(errorText);
+        mPositiveButton.setEnabled(false);
+    }
 
     @Override
     public void onAttach(Activity activity) {
