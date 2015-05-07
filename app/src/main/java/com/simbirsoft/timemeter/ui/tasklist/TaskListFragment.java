@@ -257,6 +257,17 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         mTasksViewAdapter.replaceItem(task);
     }
 
+    private void showTaskAddedBar(TaskBundle bundle) {
+        String message = getString(R.string.action_task_added);
+        Snackbar bar = Snackbar.with(getActivity())
+                .text(String.format(message, bundle.getTask().getDescription()))
+                .colorResource(R.color.blue)
+                .attachToRecyclerView(mRecyclerView)
+                .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE);
+        bar.setTag(SNACKBAR_TAG);
+        SnackbarManager.show(bar);
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
@@ -273,6 +284,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
                     case EditTaskFragment.RESULT_CODE_TASK_CREATED:
                         LOG.debug("result: task created");
                         addTaskToList(bundle);
+                        showTaskAddedBar(bundle);
                         break;
 
                     case EditTaskFragment.RESULT_CODE_TASK_RECREATED:
