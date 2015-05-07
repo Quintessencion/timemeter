@@ -7,8 +7,10 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -258,12 +260,13 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     }
 
     private void showTaskAddedBar(TaskBundle bundle) {
-        String message = getString(R.string.action_task_added);
+        final String message = String.format(getString(R.string.action_task_added),
+                                             "<i>" + bundle.getTask().getDescription() + "</i>");
+        final Spanned messageSpanned = Html.fromHtml(message);
         Snackbar bar = Snackbar.with(getActivity())
-                .text(String.format(message, bundle.getTask().getDescription()))
+                .text(messageSpanned)
                 .colorResource(R.color.blue)
-                .attachToRecyclerView(mRecyclerView)
-                .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE);
+                .attachToRecyclerView(mRecyclerView);
         bar.setTag(SNACKBAR_TAG);
         SnackbarManager.show(bar);
     }
