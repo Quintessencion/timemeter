@@ -7,14 +7,10 @@ import android.graphics.Paint;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.andexert.library.RippleView;
 import com.balysv.materialripple.MaterialRippleLayout;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.ui.model.CalendarPeriod;

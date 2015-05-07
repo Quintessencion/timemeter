@@ -3,7 +3,6 @@ package com.simbirsoft.timemeter.ui.calendar;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.GradientDrawable;
-import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,11 +10,8 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.andexert.library.RippleView;
-import com.balysv.materialripple.MaterialRippleLayout;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
-import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.util.ColorSets;
 
