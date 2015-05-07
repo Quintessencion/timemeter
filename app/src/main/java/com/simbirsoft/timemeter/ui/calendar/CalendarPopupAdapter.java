@@ -36,7 +36,6 @@ public class CalendarPopupAdapter extends RecyclerView.Adapter<CalendarPopupAdap
         }
     }
 
-    private final Context mContext;
     private final List<TaskBundle> mItems;
     private TaskClickListener mTaskClickListener;
     private int mMiddleItemPadding;
@@ -44,10 +43,9 @@ public class CalendarPopupAdapter extends RecyclerView.Adapter<CalendarPopupAdap
     private int mLastItemPadding;
 
     public CalendarPopupAdapter(Context context) {
-        mContext = context;
         mItems = Lists.newArrayList();
         setHasStableIds(true);
-        final Resources res = mContext.getResources();
+        final Resources res = context.getResources();
         mMiddleItemPadding = res.getDimensionPixelSize(R.dimen.calendar_popup_middle_item_padding);
         mFirstItemPadding = res.getDimensionPixelSize(R.dimen.calendar_popup_first_item_padding);
         mLastItemPadding = res.getDimensionPixelSize(R.dimen.calendar_popup_last_item_padding);
@@ -74,7 +72,7 @@ public class CalendarPopupAdapter extends RecyclerView.Adapter<CalendarPopupAdap
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-        View view = LayoutInflater.from(mContext)
+        View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.view_calendar_popup_item, viewGroup, false);
         view.setOnClickListener(this);
         return new ViewHolder(view);

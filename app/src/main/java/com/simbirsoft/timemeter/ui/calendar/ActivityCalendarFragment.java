@@ -20,23 +20,19 @@ import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadActivityCalendarJob;
 import com.simbirsoft.timemeter.log.LogFactory;
-import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
-import com.simbirsoft.timemeter.ui.main.MainPagerFragment;
 import com.simbirsoft.timemeter.ui.model.CalendarData;
 import com.simbirsoft.timemeter.ui.model.CalendarPeriod;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
-import com.simbirsoft.timemeter.ui.model.TaskChangedEvent;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
+import com.simbirsoft.timemeter.ui.views.CalendarNavigationView;
 import com.simbirsoft.timemeter.ui.views.CalendarViewPager;
 import com.simbirsoft.timemeter.ui.views.FilterView;
-import com.simbirsoft.timemeter.ui.views.CalendarNavigationView;
 import com.simbirsoft.timemeter.ui.views.WeekCalendarView;
-import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
 import org.androidannotations.annotations.AfterViews;
@@ -47,8 +43,6 @@ import org.slf4j.Logger;
 
 import java.util.Date;
 import java.util.List;
-
-import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_activity_calendar)
 public class ActivityCalendarFragment extends MainPageFragment implements MainPagerAdapter.PageTitleProvider,
@@ -135,8 +129,7 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
 
     @OnJobFailure(LoadActivityCalendarJob.class)
     public void onCalendarActivityLoadFailed() {
-        // TODO: display error explanation message
-        LOG.error("failed to load activity calendar");
+       showToast(R.string.error_unable_to_load_calendar_data);
     }
 
     @Override
@@ -209,17 +202,19 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
         requestLoad(loaderTag, this);
     }
 
+    @Override
     public void onCellClicked(Point point, List<TaskTimeSpan> spans) {
         point.offset(0, -mCalendarScrollView.getScrollY());
         mPopupHelper.show(mCalendarScrollView, point, spans);
     }
 
+    @Override
     public void onDismiss() {
         mPagerAdapter.deselectCurrentViewCell();
     }
 
+    @Override
     public void onTaskClicked(TaskBundle item) {
-        mPopupHelper.dismiss();
         Bundle args = new Bundle();
         args.putParcelable(ViewTaskFragment.EXTRA_TASK_BUNDLE, item);
 

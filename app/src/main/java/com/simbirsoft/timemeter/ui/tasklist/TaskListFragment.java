@@ -3,13 +3,9 @@ package com.simbirsoft.timemeter.ui.tasklist;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
-import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,23 +32,18 @@ import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
-import com.simbirsoft.timemeter.jobs.SaveTaskBundleJob;
 import com.simbirsoft.timemeter.log.LogFactory;
-import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.ContentFragmentCallbacks;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
-import com.simbirsoft.timemeter.ui.main.MainPagerFragment;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
-import com.simbirsoft.timemeter.ui.model.TaskChangedEvent;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
 import com.simbirsoft.timemeter.ui.util.TaskFilterPredicate;
 import com.simbirsoft.timemeter.ui.views.FilterView;
-import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
 import org.androidannotations.annotations.AfterViews;
@@ -62,9 +53,6 @@ import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-
-import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_task_list)
 public class TaskListFragment extends MainPageFragment implements JobLoader.JobLoaderCallbacks,
@@ -412,19 +400,6 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     public String getPageTitle(Resources resources) {
         return resources.getString(R.string.title_tasks);
     }
-
-    /*@Override
-    public void onSelect() {
-        super.onSelect();
-        if (mFloatingActionButton == null) return;
-        Snackbar current = SnackbarManager.getCurrentSnackbar();
-        if (current != null && !current.isDismissed()) {
-            mFloatingActionButton.hide(false);
-        } else {
-            mFloatingActionButton.attachToRecyclerView(mRecyclerView);
-            mFloatingActionButton.show(true);
-        }
-    }*/
 
     @Subscribe
     public void onSnackbarVisibilityChanged(SnackbarShowEvent event) {

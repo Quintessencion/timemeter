@@ -2,7 +2,6 @@ package com.simbirsoft.timemeter.ui.calendar;
 
 import android.content.Context;
 import android.graphics.Point;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -10,9 +9,9 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
+import android.widget.Toast;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
@@ -22,31 +21,21 @@ import com.be.android.library.worker.models.LoadJobResult;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.injection.Injection;
-import com.simbirsoft.timemeter.jobs.LoadTasksJob;
-import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.jobs.LoadTasksForTimespansJob;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
-
-import org.slf4j.Logger;
+import com.simbirsoft.timemeter.ui.views.CalendarPopupView;
 
 import java.util.List;
 
 public class CalendarPopupHelper {
-    private static final Logger LOG = LogFactory.getLogger(CalendarPopupHelper.class);
     private static final String LOADER_TAG = "CalendarPopup_loader";
     private static final int POPUP_MARGIN_DEFAULT_DIP = 2;
 
-    private WindowManager mWindowManager;
-
-    private Context mContext;
     private PopupWindow mWindow;
 
-    private View mView;
-    private RecyclerView mRecyclerView;
+    private Context mContext;
+    private CalendarPopupView mView;
     private CalendarPopupAdapter mAdapter;
-    private ImageView mUpArrowImage;
-    private ImageView mDownArrowImage;
-    private ImageView mLeftArrowImage;
-    private ImageView mRightArrowImage;
 
     private JobEventDispatcher mJobEventDispatcher;
     private View mAnchorView;
@@ -61,27 +50,18 @@ public class CalendarPopupHelper {
         mWindow.setOutsideTouchable(true);
         mWindow.setBackgroundDrawable(new ColorDrawable(android.R.color.transparent));
 
-        mWindowManager = (WindowManager) context
-                .getSystemService(Context.WINDOW_SERVICE);
-
-
-        LayoutInflater layoutInflater = (LayoutInflater) context
+        LayoutInflater layoutInflater = (LayoutInflater) mContext
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        mView = layoutInflater.inflate(viewResource, null);
+        mView = (CalendarPopupView)layoutInflater.inflate(R.layout.view_calendar_popup_layout, null);
         mWindow.setContentView(mView);
-        mRecyclerView = (RecyclerView)mView.findViewById(android.R.id.list);
-        mUpArrowImage = (ImageView)mView.findViewById(R.id.upArrow);
-        mDownArrowImage = (ImageView)mView.findViewById(R.id.downArrow);
-        mLeftArrowImage = (ImageView)mView.findViewById(R.id.leftArrow);
-        mRightArrowImage = (ImageView)mView.findViewById(R.id.rightArrow);
-        RecyclerView.LayoutManager layoutManager = new CalendarPopupLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
-        mRecyclerView.setLayoutManager(layoutManager);
-        mAdapter = new CalendarPopupAdapter(mContext);
-        mRecyclerView.setAdapter(mAdapter);
+        RecyclerView.LayoutManager layoutManager = new CalendarPopupLayoutManager(context, LinearLayoutManager.VERTICAL, false);
+        mView.getRecyclerView().setLayoutManager(layoutManager);
+        mAdapter = new CalendarPopupAdapter(context);
+        mView.getRecyclerView().setAdapter(mAdapter);
 
         mAnchorPoint = new Point();
-        mPopupMargin =  (int) (context.getResources().getDisplayMetrics().density * POPUP_MARGIN_DEFAULT_DIP);
+        mPopupMargin =  (int) (mContext.getResources().getDisplayMetrics().density * POPUP_MARGIN_DEFAULT_DIP);
 
         mJobEventDispatcher = new JobEventDispatcher(mContext);
         mJobEventDispatcher.register(this);
@@ -96,7 +76,7 @@ public class CalendarPopupHelper {
         mJobEventDispatcher.unregister(this);
     }
 
-    @OnJobSuccess(LoadTasksJob.class)
+    @OnJobSuccess(LoadTasksForTimespansJob.class)
     public void onTaskLoaded(LoadJobResult<List<TaskBundle>> result) {
         int[] location = new int[2];
         mAnchorView.getLocationOnScreen(location);
@@ -104,17 +84,17 @@ public class CalendarPopupHelper {
         mAdapter.setItems(result.getData());
 
         int measureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-        mRecyclerView.measure(measureSpec, measureSpec);
-        mUpArrowImage.measure(measureSpec, measureSpec);
-        mLeftArrowImage.measure(measureSpec, measureSpec);
+        mView.getRecyclerView().measure(measureSpec, measureSpec);
+        mView.getUpArrowImage().measure(measureSpec, measureSpec);
+        mView.getLeftArrowImage().measure(measureSpec, measureSpec);
 
-        int popupHeight = mRecyclerView.getMeasuredHeight();
-        int popupWidth = mRecyclerView.getMeasuredWidth();
+        int popupHeight = mView.getRecyclerView().getMeasuredHeight();
+        int popupWidth = mView.getRecyclerView().getMeasuredWidth();
 
-        int hArrowWidth = mLeftArrowImage.getMeasuredWidth();
-        int hArrowHeight = mLeftArrowImage.getMeasuredHeight();
-        int vArrowHeight = mUpArrowImage.getMeasuredHeight();
-        int vArrowWidth = mUpArrowImage.getMeasuredWidth();
+        int hArrowWidth = mView.getLeftArrowImage().getMeasuredWidth();
+        int hArrowHeight = mView.getLeftArrowImage().getMeasuredHeight();
+        int vArrowHeight = mView.getUpArrowImage().getMeasuredHeight();
+        int vArrowWidth = mView.getUpArrowImage().getMeasuredWidth();
 
         final int anchorWidth = mAnchorView.getWidth();
         final int anchorHeight = mAnchorView.getHeight();
@@ -127,7 +107,7 @@ public class CalendarPopupHelper {
             popupWidth += hArrowWidth;
             xPos = getPositionOnSide(mAnchorPoint.x, anchorWidth, popupWidth);
             yPos = getCenteredPosition(mAnchorPoint.y, anchorHeight, popupHeight);
-            ImageView arrowImage = (xPos == mAnchorPoint.x) ? mLeftArrowImage : mRightArrowImage;
+            ImageView arrowImage = (xPos == mAnchorPoint.x) ? mView.getLeftArrowImage() : mView.getRightArrowImage();
             showArrow(arrowImage);
             ViewGroup.MarginLayoutParams param = (ViewGroup.MarginLayoutParams) arrowImage
                     .getLayoutParams();
@@ -136,7 +116,7 @@ public class CalendarPopupHelper {
             popupHeight = Math.min(popupHeight + vArrowHeight, getMaxSize(mAnchorPoint.y, anchorHeight));
             xPos = getCenteredPosition(mAnchorPoint.x, anchorWidth, popupWidth);
             yPos = getPositionOnSide(mAnchorPoint.y, anchorHeight, popupHeight);
-            ImageView arrowImage = (yPos == mAnchorPoint.y) ? mUpArrowImage : mDownArrowImage;
+            ImageView arrowImage = (yPos == mAnchorPoint.y) ? mView.getUpArrowImage() : mView.getDownArrowImage();
             showArrow(arrowImage);
             ViewGroup.MarginLayoutParams param = (ViewGroup.MarginLayoutParams) arrowImage
                     .getLayoutParams();
@@ -147,17 +127,16 @@ public class CalendarPopupHelper {
         mWindow.showAtLocation(mAnchorView, Gravity.NO_GRAVITY, xPos + location[0], yPos + location[1]);
     }
 
-    @OnJobFailure(LoadTasksJob.class)
+    @OnJobFailure(LoadTasksForTimespansJob.class)
     public void onTaskLoadFailed() {
-        // TODO: display error explanation message
-        LOG.error("failed to load tasks");
+        Toast.makeText(mContext, R.string.error_unable_to_load_task_list, Toast.LENGTH_LONG).show();
     }
 
     public void show(View anchor, Point anchorPoint, List<TaskTimeSpan> spans) {
         mAnchorView = anchor;
         mAnchorPoint.x = Math.min(mAnchorView.getWidth() - mPopupMargin, Math.max(mPopupMargin, anchorPoint.x));
         mAnchorPoint.y = Math.min(mAnchorView.getHeight() - mPopupMargin, Math.max(mPopupMargin, anchorPoint.y));
-        LoadTasksJob job = Injection.sJobsComponent.loadTasksJob();
+        LoadTasksForTimespansJob job = Injection.sJobsComponent.loadTasksJob();
         job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
         job.addTag(LOADER_TAG);
         job.setSpans(spans);
@@ -195,10 +174,7 @@ public class CalendarPopupHelper {
     }
 
     private void showArrow(ImageView arrowImage) {
-        mUpArrowImage.setVisibility(View.GONE);
-        mDownArrowImage.setVisibility(View.GONE);
-        mLeftArrowImage.setVisibility(View.GONE);
-        mRightArrowImage.setVisibility(View.GONE);
+        mView.hideAllArrows();
         arrowImage.setVisibility(View.VISIBLE);
     }
 

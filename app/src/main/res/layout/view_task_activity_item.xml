@@ -6,6 +6,7 @@
     android:layout_height="wrap_content"
     android:paddingTop="@dimen/task_activity_span_item_padding"
     android:paddingBottom="@dimen/task_activity_span_item_padding"
+    app:mrl_rippleHover="true"
     app:mrl_rippleInAdapter="false"
     app:mrl_rippleColor="@color/white"
     app:mrl_rippleAlpha="1">

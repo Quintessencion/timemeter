@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 public class CalendarPopupLayoutManager extends LinearLayoutManager {
+    private int[] mMeasuredDimension = new int[2];
+
     public CalendarPopupLayoutManager(Context context, int orientation, boolean reverseLayout) {
         super(context, orientation, reverseLayout);
     }
@@ -15,7 +17,6 @@ public class CalendarPopupLayoutManager extends LinearLayoutManager {
         super(context);
     }
 
-    private int[] mMeasuredDimension = new int[2];
     @Override
     public void onMeasure(RecyclerView.Recycler recycler, RecyclerView.State state,
                           int widthSpec, int heightSpec) {
