@@ -26,6 +26,7 @@ import com.astuetz.PagerSlidingTabStrip;
 import com.fourmob.datetimepicker.date.DatePickerDialog;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.log.LogFactory;
@@ -77,6 +78,9 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     @InstanceState
     FilterView.FilterState mFilterState;
 
+    @Inject
+    Preferences mPrefs;
+
     private PagerSlidingTabStrip mTabs;
     private FilterView mFilterView;
     private MainPagerAdapter mPagerAdapter;
@@ -126,6 +130,10 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         }
 
         mBus.register(this);
+
+        if (mFilterState == null) {
+            mFilterState = mPrefs.getFilterState();
+        }
     }
 
     @Override
@@ -263,6 +271,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         }
 
         mFilterState = event.getFilterState().copy();
+        mPrefs.setFilterState(mFilterState);
     }
 
     private void showFilterView(boolean animate) {
