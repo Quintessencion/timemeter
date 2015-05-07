@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 
 public class CalendarPopupLayoutManager extends LinearLayoutManager {
     private int[] mMeasuredDimension = new int[2];
+    private int mMaxWidth;
 
     public CalendarPopupLayoutManager(Context context, int orientation, boolean reverseLayout) {
         super(context, orientation, reverseLayout);
@@ -15,6 +16,10 @@ public class CalendarPopupLayoutManager extends LinearLayoutManager {
 
     public CalendarPopupLayoutManager(Context context) {
         super(context);
+    }
+
+    public void setMaxWidth(int width) {
+        mMaxWidth = width;
     }
 
     @Override
@@ -42,6 +47,12 @@ public class CalendarPopupLayoutManager extends LinearLayoutManager {
                         widthSpec,
                         View.MeasureSpec.makeMeasureSpec(i, View.MeasureSpec.UNSPECIFIED),
                         mMeasuredDimension);
+                if (mMeasuredDimension[0] + getPaddingLeft() + getPaddingRight() > mMaxWidth) {
+                    measureScrapChild(recycler, i,
+                            View.MeasureSpec.makeMeasureSpec(mMaxWidth, View.MeasureSpec.EXACTLY),
+                            View.MeasureSpec.makeMeasureSpec(i, View.MeasureSpec.UNSPECIFIED),
+                            mMeasuredDimension);
+                }
                 height = height + mMeasuredDimension[1];
                 width = Math.max(width, mMeasuredDimension[0]);
             }

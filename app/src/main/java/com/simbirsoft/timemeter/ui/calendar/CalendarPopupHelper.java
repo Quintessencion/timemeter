@@ -31,6 +31,8 @@ public class CalendarPopupHelper {
     private static final String LOADER_TAG = "CalendarPopup_loader";
     private static final int POPUP_MARGIN_DEFAULT_DIP = 2;
 
+    private int[] mPopupCoords = new int[2];
+    private int[] mPopupDimensions = new int[2];
     private PopupWindow mWindow;
 
     private Context mContext;
@@ -42,7 +44,7 @@ public class CalendarPopupHelper {
     private Point mAnchorPoint;
     private int mPopupMargin;
 
-    public CalendarPopupHelper(Context context, int viewResource) {
+    public CalendarPopupHelper(Context context) {
         mContext = context;
         mWindow = new PopupWindow(context);
         mWindow.setTouchable(true);
@@ -67,64 +69,17 @@ public class CalendarPopupHelper {
         mJobEventDispatcher.register(this);
     }
 
-
-    public CalendarPopupHelper(Context context) {
-        this(context, R.layout.view_calendar_popup);
-    }
-
     public void unregister() {
         mJobEventDispatcher.unregister(this);
     }
 
     @OnJobSuccess(LoadTasksForTimespansJob.class)
     public void onTaskLoaded(LoadJobResult<List<TaskBundle>> result) {
-        int[] location = new int[2];
-        mAnchorView.getLocationOnScreen(location);
-
         mAdapter.setItems(result.getData());
-
-        int measureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-        mView.getRecyclerView().measure(measureSpec, measureSpec);
-        mView.getUpArrowImage().measure(measureSpec, measureSpec);
-        mView.getLeftArrowImage().measure(measureSpec, measureSpec);
-
-        int popupHeight = mView.getRecyclerView().getMeasuredHeight();
-        int popupWidth = mView.getRecyclerView().getMeasuredWidth();
-
-        int hArrowWidth = mView.getLeftArrowImage().getMeasuredWidth();
-        int hArrowHeight = mView.getLeftArrowImage().getMeasuredHeight();
-        int vArrowHeight = mView.getUpArrowImage().getMeasuredHeight();
-        int vArrowWidth = mView.getUpArrowImage().getMeasuredWidth();
-
-        final int anchorWidth = mAnchorView.getWidth();
-        final int anchorHeight = mAnchorView.getHeight();
-
-        popupWidth = Math.min(popupWidth, anchorWidth - 2 * mPopupMargin);
-        popupHeight = Math.min(popupHeight, anchorHeight - 2 * mPopupMargin);
-
-        int xPos, yPos;
-        if (popupWidth + hArrowWidth <= getMaxSize(mAnchorPoint.x, anchorWidth)) {
-            popupWidth += hArrowWidth;
-            xPos = getPositionOnSide(mAnchorPoint.x, anchorWidth, popupWidth);
-            yPos = getCenteredPosition(mAnchorPoint.y, anchorHeight, popupHeight);
-            ImageView arrowImage = (xPos == mAnchorPoint.x) ? mView.getLeftArrowImage() : mView.getRightArrowImage();
-            showArrow(arrowImage);
-            ViewGroup.MarginLayoutParams param = (ViewGroup.MarginLayoutParams) arrowImage
-                    .getLayoutParams();
-            param.topMargin = getArrowMargin(hArrowHeight, mAnchorPoint.y, yPos);
-        } else {
-            popupHeight = Math.min(popupHeight + vArrowHeight, getMaxSize(mAnchorPoint.y, anchorHeight));
-            xPos = getCenteredPosition(mAnchorPoint.x, anchorWidth, popupWidth);
-            yPos = getPositionOnSide(mAnchorPoint.y, anchorHeight, popupHeight);
-            ImageView arrowImage = (yPos == mAnchorPoint.y) ? mView.getUpArrowImage() : mView.getDownArrowImage();
-            showArrow(arrowImage);
-            ViewGroup.MarginLayoutParams param = (ViewGroup.MarginLayoutParams) arrowImage
-                    .getLayoutParams();
-            param.leftMargin = getArrowMargin(vArrowWidth, mAnchorPoint.x, xPos);
-        }
-        mWindow.setWidth(popupWidth);
-        mWindow.setHeight(popupHeight);
-        mWindow.showAtLocation(mAnchorView, Gravity.NO_GRAVITY, xPos + location[0], yPos + location[1]);
+        calculatePopupPositionAndSize(mPopupCoords, mPopupDimensions);
+        mWindow.setWidth(mPopupDimensions[0]);
+        mWindow.setHeight(mPopupDimensions[1]);
+        mWindow.showAtLocation(mAnchorView, Gravity.NO_GRAVITY, mPopupCoords[0], mPopupCoords[1]);
     }
 
     @OnJobFailure(LoadTasksForTimespansJob.class)
@@ -154,6 +109,62 @@ public class CalendarPopupHelper {
     public void dismiss() {
         mWindow.dismiss();
     }
+
+    public boolean isVisible() {
+        return mWindow.isShowing();
+    }
+
+    public void updateTask(TaskBundle bundle) {
+        mAdapter.replaceItem(bundle);
+        calculatePopupPositionAndSize(mPopupCoords, mPopupDimensions);
+        mWindow.update(mPopupCoords[0], mPopupCoords[1], mPopupDimensions[0], mPopupDimensions[1]);
+    }
+
+    private void calculatePopupPositionAndSize(int[] coords, int[] dimensions) {
+        mAnchorView.getLocationOnScreen(coords);
+        final int anchorWidth = mAnchorView.getWidth();
+        final int anchorHeight = mAnchorView.getHeight();
+
+        int measureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+        ((CalendarPopupLayoutManager)mView.getRecyclerView().getLayoutManager()).setMaxWidth(anchorWidth - 2 * mPopupMargin);
+        mView.getRecyclerView().measure(measureSpec, measureSpec);
+        mView.getUpArrowImage().measure(measureSpec, measureSpec);
+        mView.getLeftArrowImage().measure(measureSpec, measureSpec);
+
+        int popupHeight =  Math.min(mView.getRecyclerView().getMeasuredHeight(), anchorHeight - 2 * mPopupMargin);
+        int popupWidth = mView.getRecyclerView().getMeasuredWidth();
+
+        int hArrowWidth = mView.getLeftArrowImage().getMeasuredWidth();
+        int hArrowHeight = mView.getLeftArrowImage().getMeasuredHeight();
+        int vArrowHeight = mView.getUpArrowImage().getMeasuredHeight();
+        int vArrowWidth = mView.getUpArrowImage().getMeasuredWidth();
+
+        int xPos, yPos;
+        if (popupWidth + hArrowWidth <= getMaxSize(mAnchorPoint.x, anchorWidth)) {
+            popupWidth += hArrowWidth;
+            xPos = getPositionOnSide(mAnchorPoint.x, anchorWidth, popupWidth);
+            yPos = getCenteredPosition(mAnchorPoint.y, anchorHeight, popupHeight);
+            ImageView arrowImage = (xPos == mAnchorPoint.x) ? mView.getLeftArrowImage() : mView.getRightArrowImage();
+            showArrow(arrowImage);
+            ViewGroup.MarginLayoutParams param = (ViewGroup.MarginLayoutParams) arrowImage
+                    .getLayoutParams();
+            param.topMargin = getArrowMargin(hArrowHeight, mAnchorPoint.y, yPos);
+        } else {
+            popupHeight = Math.min(popupHeight + vArrowHeight, getMaxSize(mAnchorPoint.y, anchorHeight));
+            xPos = getCenteredPosition(mAnchorPoint.x, anchorWidth, popupWidth);
+            yPos = getPositionOnSide(mAnchorPoint.y, anchorHeight, popupHeight);
+            ImageView arrowImage = (yPos == mAnchorPoint.y) ? mView.getUpArrowImage() : mView.getDownArrowImage();
+            showArrow(arrowImage);
+            ViewGroup.MarginLayoutParams param = (ViewGroup.MarginLayoutParams) arrowImage
+                    .getLayoutParams();
+            param.leftMargin = getArrowMargin(vArrowWidth, mAnchorPoint.x, xPos);
+        }
+        coords[0] += xPos;
+        coords[1] += yPos;
+        dimensions[0] = popupWidth;
+        dimensions[1] = popupHeight;
+    }
+
 
     private int getMaxSize(int anchorPos, int anchorSize) {
         return Math.max(anchorPos, anchorSize - anchorPos) - mPopupMargin;
