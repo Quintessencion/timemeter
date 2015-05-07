@@ -241,7 +241,7 @@ public class ActivityCalendar {
         mBufferCalendar.add(Calendar.HOUR_OF_DAY, 1);
         long cellEnd = mBufferCalendar.getTimeInMillis();
         for (TaskTimeSpan span : spans) {
-            if (span.getStartTimeMillis() < cellEnd && span.getEndTimeMillis() >= cellStart) {
+            if (span.getStartTimeMillis() < cellEnd && span.getEndTimeMillis() > cellStart) {
                 result.add(span);
             }
         }
