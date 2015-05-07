@@ -6,11 +6,12 @@
 
     <include layout="@layout/view_task_activity_spans_item_date"/>
 
-    <com.simbirsoft.timemeter.ui.views.TaskActivityItemsLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:id="@+id/taskActivityItemsLayout"
+        android:id="@+id/taskActivityEmpty"
+        android:text="нет активности"
         android:layout_alignParentTop="true"
         android:layout_toEndOf="@+id/textLayout"
         android:layout_toRightOf="@+id/textLayout"/>
