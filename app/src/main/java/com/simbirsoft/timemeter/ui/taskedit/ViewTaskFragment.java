@@ -14,6 +14,7 @@ import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.views.TagFlowView;
+import com.simbirsoft.timemeter.ui.views.TagView;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
@@ -34,6 +35,13 @@ public class ViewTaskFragment extends BaseFragment {
 
     @FragmentArg(EXTRA_TASK_BUNDLE)
     TaskBundle mExtraTaskBundle;
+
+    private final TagView.TagViewClickListener mTagViewClickListener = new TagView.TagViewClickListener() {
+        @Override
+        public void onClick(TagView tagView) {
+            LOG.debug("Tag <" + tagView.getTag().getName() + "> clicked!");
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -62,7 +70,7 @@ public class ViewTaskFragment extends BaseFragment {
     @AfterViews
     void bindViews() {
         setActionBarTitleAndHome(mExtraTaskBundle.getTask().getDescription());
-        tagFlowView.bindTagViews(mExtraTaskBundle.getTags());
+        tagFlowView.bindTagViews(mExtraTaskBundle.getTags(), mTagViewClickListener);
     }
 
     private void goToEditTask() {
@@ -112,7 +120,7 @@ public class ViewTaskFragment extends BaseFragment {
 
                     case EditTaskFragment.RESULT_CODE_TASK_UPDATED:
                         LOG.debug("result: task updated");
-                        tagFlowView.bindTagViews(bundle.getTags());
+                        tagFlowView.bindTagViews(bundle.getTags(), mTagViewClickListener);
                         setActionBarTitleAndHome(bundle.getTask().getDescription());
                         break;
                 }

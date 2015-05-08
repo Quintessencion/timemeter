@@ -14,9 +14,13 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.db.model.Task;
+import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
 import com.simbirsoft.timemeter.ui.views.TagFlowView_;
+import com.simbirsoft.timemeter.ui.views.TagView;
+
+import org.slf4j.Logger;
 
 import java.util.Collections;
 import java.util.List;
@@ -41,6 +45,8 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         TextView timerView;
         TagFlowView_ tagFlowView;
     }
+
+    private static final Logger LOG = LogFactory.getLogger(TaskListAdapter.class);
 
     private final List<TaskBundle> mItems;
     private final ITaskActivityManager mTaskActivityManager;
@@ -69,6 +75,13 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
                 return false;
             };
+
+    private final TagView.TagViewClickListener mTagViewClickListener = new TagView.TagViewClickListener() {
+        @Override
+        public void onClick(TagView tagView) {
+            LOG.debug("Tag <" + tagView.getTag().getName() + "> clicked!");
+        }
+    };
 
     public TaskListAdapter(ITaskActivityManager taskActivityManager) {
         mTaskActivityManager = taskActivityManager;
@@ -166,7 +179,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         holder.itemView.setTag(item);
         holder.itemEditView.setTag(item);
 
-        holder.tagFlowView.bindTagViews(item.getTags());
+        holder.tagFlowView.bindTagViews(item.getTags(), mTagViewClickListener);
 
         if (mTaskActivityManager.isTaskActive(task)) {
             ActiveTaskInfo taskInfo = mTaskActivityManager.getActiveTaskInfo();
