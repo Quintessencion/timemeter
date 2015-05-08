@@ -31,6 +31,6 @@ public class LoadTaskActivitiesJob extends LoadJob {
     protected LoadJobResult<List<TaskActivityItem>> performLoad() throws Exception {
         List<TaskTimeSpan> spans =
                 ((LoadJobResult<List<TaskTimeSpan>>) forkJob(mLoadSpansJob).join()).getData();
-        return new LoadJobResult<>(TimeSpanDaysSplitter.convertToTaskActivityItems(spans, true, false));
+        return new LoadJobResult<>(TimeSpanDaysSplitter.convertToTaskActivityItems(spans));
     }
 }

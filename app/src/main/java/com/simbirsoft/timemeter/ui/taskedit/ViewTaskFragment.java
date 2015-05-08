@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -12,19 +14,33 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.be.android.library.worker.annotations.OnJobFailure;
+import com.be.android.library.worker.annotations.OnJobSuccess;
+import com.be.android.library.worker.controllers.JobLoader;
+import com.be.android.library.worker.controllers.JobManager;
+import com.be.android.library.worker.interfaces.Job;
+import com.be.android.library.worker.models.LoadJobResult;
+import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
+import com.simbirsoft.timemeter.injection.Injection;
+import com.simbirsoft.timemeter.jobs.LoadTaskRecentActivitiesJob;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.activities.TaskActivitiesAdapter;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment_;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
+import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.util.TagViewUtils;
+import com.simbirsoft.timemeter.ui.views.ProgressLayout;
 
 import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
+import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.apmem.tools.layouts.FlowLayout;
 import org.slf4j.Logger;
@@ -32,8 +48,11 @@ import org.slf4j.Logger;
 import java.util.List;
 
 @EFragment(R.layout.fragment_view_task)
-public class ViewTaskFragment extends BaseFragment {
+public class ViewTaskFragment extends BaseFragment
+        implements JobLoader.JobLoaderCallbacks{
     public static final String EXTRA_TASK_BUNDLE = "extra_task_bundle";
+
+    private static final String LOADER_TAG = "ViewTaskFragment";
 
     private static final Logger LOG = LogFactory.getLogger(ViewTaskFragment.class);
 
@@ -46,11 +65,20 @@ public class ViewTaskFragment extends BaseFragment {
     @ViewById(R.id.tagViewContainer)
     FlowLayout tagViewContainer;
 
+    @ViewById(android.R.id.list)
+    RecyclerView mRecyclerView;
+
+    @ViewById(R.id.progressLayout)
+    ProgressLayout mProgressLayout;
+
+    @InstanceState
+    int mListPosition;
+
+    private TaskActivitiesAdapter mAdapter;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        setShouldSubscribeForJobEvents(false);
         super.onCreate(savedInstanceState);
-
         setHasOptionsMenu(true);
     }
 
@@ -59,6 +87,16 @@ public class ViewTaskFragment extends BaseFragment {
         super.onCreateOptionsMenu(menu, inflater);
 
         inflater.inflate(R.menu.fragment_view_task, menu);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if (mAdapter.getItemCount() > 0) {
+            mListPosition = ((LinearLayoutManager)
+                    mRecyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+        }
     }
 
     public void bindTagViews(ViewGroup tagLayout, List<Tag> tags) {
@@ -102,6 +140,25 @@ public class ViewTaskFragment extends BaseFragment {
     void bindViews() {
         setActionBarTitleAndHome(mExtraTaskBundle.getTask().getDescription());
         bindTagViews(tagViewContainer, mExtraTaskBundle.getTags());
+
+        mRecyclerView.setHasFixedSize(false);
+        final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        mRecyclerView.setLayoutManager(layoutManager);
+
+        mAdapter = new TaskActivitiesAdapter(getActivity());
+        mRecyclerView.setAdapter(mAdapter);
+        mProgressLayout.setShouldDisplayEmptyIndicatorMessage(true);
+        mProgressLayout.setProgressLayoutCallbacks(
+                new ProgressLayout.JobProgressLayoutCallbacks(JobSelector.forJobTags(LOADER_TAG)) {
+                    @Override
+                    public boolean hasContent() {
+                        return mAdapter.getItemCount() > 0;
+                    }
+
+                });
+        requestLoad(LOADER_TAG, this);
+        mProgressLayout.updateProgressView();
     }
 
     private void goToEditTask() {
@@ -179,5 +236,34 @@ public class ViewTaskFragment extends BaseFragment {
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @OnJobSuccess(LoadTaskRecentActivitiesJob.class)
+    public void onLoadSuccess(LoadJobResult<List<TaskActivityItem>> result) {
+        mAdapter.setItems(result.getData());
+        mProgressLayout.updateProgressView();
+        if (mListPosition != 0) {
+            mRecyclerView.getLayoutManager().scrollToPosition(mListPosition);
+            mListPosition = 0;
+        }
+    }
+
+    @OnJobFailure(LoadTaskRecentActivitiesJob.class)
+    public void onLoadFailed() {
+        showToast(R.string.error_unable_to_load_task_activities);
+    }
+
+    @Override
+    public Job onCreateJob(String s) {
+        LoadTaskRecentActivitiesJob job = Injection.sJobsComponent.loadTaskRecentActivitiesJob();
+        job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
+        job.setTaskId(mExtraTaskBundle.getTask().getId());
+        job.addTag(LOADER_TAG);
+        return job;
+    }
+
+    @Click(R.id.activitiesTitleContainer)
+    void activitiesTitleClicked() {
+        goToActivities();
     }
 }
