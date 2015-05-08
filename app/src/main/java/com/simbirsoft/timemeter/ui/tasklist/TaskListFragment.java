@@ -3,7 +3,6 @@ package com.simbirsoft.timemeter.ui.tasklist;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -12,6 +11,7 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.StyleSpan;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,8 +28,6 @@ import com.be.android.library.worker.util.JobSelector;
 import com.melnykov.fab.FloatingActionButton;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
-import com.nispok.snackbar.enums.SnackbarType;
-import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
@@ -40,11 +38,10 @@ import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
-import com.simbirsoft.timemeter.jobs.SaveTaskBundleJob;
 import com.simbirsoft.timemeter.log.LogFactory;
-import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.ContentFragmentCallbacks;
+import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
@@ -53,7 +50,6 @@ import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
 import com.simbirsoft.timemeter.ui.util.TaskFilterPredicate;
 import com.simbirsoft.timemeter.ui.views.FilterView;
-import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
 import org.androidannotations.annotations.AfterViews;
@@ -63,12 +59,9 @@ import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-
-import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_task_list)
-public class TaskListFragment extends BaseFragment implements JobLoader.JobLoaderCallbacks,
+public class TaskListFragment extends MainPageFragment implements JobLoader.JobLoaderCallbacks,
         TaskListAdapter.TaskClickListener,
         TaskActivityTimerUpdateListener,
         MainPagerAdapter.PageTitleProvider {
@@ -89,9 +82,6 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
 
     @ViewById(android.R.id.empty)
     TextView mEmptyListIndicator;
-
-    @Inject
-    Bus mBus;
 
     @InstanceState
     int[] mTaskListPosition;
@@ -167,7 +157,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     @Override
     public void onDestroyView() {
         RelativeLayout containerRoot = mCallbacks.getContainerUnderlayView();
-        containerRoot.removeView((View)mFloatingActionButton.getParent());
+        containerRoot.removeView((View) mFloatingActionButton.getParent());
 
         super.onDestroyView();
     }
@@ -192,12 +182,12 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
         Injection.sUiComponent.injectTaskListFragment(this);
 
         mTaskActivityManager = Injection.sTaskManager.taskActivityManager();
-        mBus.register(this);
+        getBus().register(this);
     }
 
     @Override
     public void onDestroy() {
-        mBus.unregister(this);
+        getBus().unregister(this);
 
         if (mTasksViewAdapter != null) {
             mTasksViewAdapter.setTaskClickListener(null);
@@ -306,6 +296,7 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
                         replaceTaskInList(bundle);
                         break;
                 }
+                sendTaskChangedEvent(resultCode);
                 return;
 
             default:
@@ -395,32 +386,6 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     public void onTaskViewLongClicked(TaskBundle item, View itemView) {
         showToastWithAnchor(R.string.hint_view_task, itemView);
     }
-
-    private void backupRemovedTask(TaskBundle taskBundle, Snackbar snackbar) {
-        long delay = 0;
-        if (snackbar != null) {
-            delay = Consts.DISMISS_DELAY_MILLIS;
-            snackbar.dismiss();
-        }
-
-        final AsyncTask unmarshallTask = new AsyncTask<Void, Void, TaskBundle>() {
-            @Override
-            protected TaskBundle doInBackground(Void... voids) {
-                return taskBundle.createOriginalBundle();
-            }
-        }.execute();
-
-        mRecyclerView.postDelayed(() -> {
-            try {
-                SaveTaskBundleJob job = Injection.sJobsComponent.saveTaskBundleJob();
-                job.setTaskBundle((TaskBundle) unmarshallTask.get());
-                submitJob(job);
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
-        }, delay);
-    }
-
     @Subscribe
     public void onFilterViewStateChanged(FilterViewStateChangeEvent ev) {
         if (!isAdded()) {
@@ -435,88 +400,6 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
                 + String.valueOf(mFilterViewState.hashCode());
 
         requestLoad(loaderTag, this);
-    }
-
-    @OnJobSuccess(SaveTaskBundleJob.class)
-    public void onTaskSaved() {
-        requestReload(TASK_LIST_LOADER_TAG, this);
-    }
-
-    @OnJobFailure(SaveTaskBundleJob.class)
-    public void onTaskSaveFailed() {
-        Snackbar bar = Snackbar.with(getActivity())
-                .text(R.string.error_unable_to_backup_task)
-                .colorResource(R.color.lightRed)
-                .attachToRecyclerView(mRecyclerView)
-                .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE);
-        bar.setTag(SNACKBAR_TAG);
-        SnackbarManager.show(bar);
-    }
-
-    private void showTaskRemoveUndoBar(TaskBundle bundle) {
-        // Hide floating action button
-        mFloatingActionButton.hide(false);
-
-        final Snackbar bar = Snackbar.with(getActivity())
-                .type(SnackbarType.MULTI_LINE)
-                .actionLabel(R.string.action_undo_remove)
-                .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE)
-                .attachToRecyclerView(mRecyclerView)
-                .color(getResources().getColor(R.color.primaryDark))
-                .actionListener((snackbar) -> backupRemovedTask(bundle, snackbar))
-                .animation(true)
-                .eventListener(new EventListener() {
-                    @Override
-                    public void onShow(Snackbar snackbar) {
-                    }
-
-                    @Override
-                    public void onShown(Snackbar snackbar) {
-                    }
-
-                    @Override
-                    public void onDismiss(Snackbar snackbar) {
-                    }
-
-                    @Override
-                    public void onDismissed(Snackbar snackbar) {
-                        // Reattach floating action button
-                        mFloatingActionButton.attachToRecyclerView(mRecyclerView);
-                        mFloatingActionButton.show(true);
-                    }
-                });
-
-        new AsyncTask<Void, Void, String>() {
-            @Override
-            protected String doInBackground(Void... voids) {
-                final String description;
-
-                if (bundle.hasPersistedState()) {
-                    description = bundle.createOriginalBundle().getTask().getDescription();
-                } else {
-                    description = bundle.getTask().getDescription();
-                }
-
-                final String undoMessage = getString(R.string.hint_task_removed)
-                        + "\n"
-                        + description;
-
-                final SpannableStringBuilder sb = new SpannableStringBuilder(undoMessage);
-                final StyleSpan iss = new StyleSpan(android.graphics.Typeface.ITALIC);
-                sb.setSpan(iss, undoMessage.length() - description.length(),
-                        undoMessage.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-
-                return sb.toString();
-            }
-
-            @Override
-            protected void onPostExecute(String text) {
-                if (isAdded() && !getActivity().isFinishing()) {
-                    bar.text(text);
-                    SnackbarManager.show(bar);
-                }
-            }
-        }.execute();
     }
 
     @Override
@@ -536,6 +419,27 @@ public class TaskListFragment extends BaseFragment implements JobLoader.JobLoade
     @Override
     public String getPageTitle(Resources resources) {
         return resources.getString(R.string.title_tasks);
+    }
+
+    @Subscribe
+    public void onSnackbarVisibilityChanged(SnackbarShowEvent event) {
+        if (mFloatingActionButton == null) return;
+        if (event.isVisible()) {
+            mFloatingActionButton.hide(false);
+        } else {
+            mFloatingActionButton.attachToRecyclerView(mRecyclerView);
+            mFloatingActionButton.show(true);
+        }
+    }
+
+    @Override
+    protected RecyclerView getRecyclerView() {
+        return mRecyclerView;
+    }
+
+    @Override
+    protected void reloadContent() {
+        requestReload(TASK_LIST_LOADER_TAG, this);
     }
 }
 
