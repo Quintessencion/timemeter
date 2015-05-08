@@ -22,7 +22,10 @@ import com.simbirsoft.timemeter.jobs.LoadStatisticsViewBinders;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
+import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
+import com.simbirsoft.timemeter.ui.main.MainPagerFragment;
+import com.simbirsoft.timemeter.ui.model.TaskChangedEvent;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
@@ -37,7 +40,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_stats_list)
-public class StatsListFragment extends BaseFragment implements
+public class StatsListFragment extends MainPageFragment implements
         JobLoader.JobLoaderCallbacks,
         MainPagerAdapter.PageTitleProvider,
         StatsListAdapter.ChartClickListener {
@@ -52,8 +55,6 @@ public class StatsListFragment extends BaseFragment implements
     @ViewById(android.R.id.empty)
     TextView mEmptyStatusMessageView;
 
-    @Inject
-    Bus mBus;
 
     private StatsListAdapter mStatsListAdapter;
     private FilterView.FilterState mFilterViewState;
@@ -80,12 +81,12 @@ public class StatsListFragment extends BaseFragment implements
         mRecyclerView.setAdapter(mStatsListAdapter);
 
         requestLoad(STATISTICS_BINDER_LOADER_TAG, this);
-        mBus.register(this);
+        getBus().register(this);
     }
 
     @Override
     public void onDestroyView() {
-        mBus.unregister(this);
+        getBus().unregister(this);
 
         super.onDestroyView();
     }
@@ -146,5 +147,10 @@ public class StatsListFragment extends BaseFragment implements
                 getActivity(), StatsDetailsFragment_.class.getName(), args);
         getActivity().startActivityForResult(launchIntent, 1000);
 
+    }
+
+    @Override
+    protected void reloadContent() {
+        requestReload(STATISTICS_BINDER_LOADER_TAG, this);
     }
 }
