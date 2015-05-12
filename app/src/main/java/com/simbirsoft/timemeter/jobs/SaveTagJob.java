@@ -80,23 +80,21 @@ public class SaveTagJob extends BaseJob {
 
     private boolean checkTagExists() {
         final String query = Phrase.from(
-                "SELECT COUNT(*) FROM {table_tag} " +
-                        "WHERE {table_tag}.{table_tag__id} != ? " +
-                        "AND UPPER({table_tag}.{table_tag__name}) = ? " +
-                        "LIMIT 1")
+                "SELECT {table_tag}.{table_tag__id}, {table_tag}.{table_tag__name} FROM {table_tag}")
                 .put("table_tag", Tag.TABLE_NAME)
                 .put("table_tag__id", Tag.COLUMN_ID)
                 .put("table_tag__name", Tag.COLUMN_NAME)
                 .format()
                 .toString();
-        final String[] args = new String[] {
-                String.valueOf(mTag.getId()),
-                mTag.getName().toUpperCase()
-        };
-        final Cursor c = mDatabaseHelper.getReadableDatabase().rawQuery(query, args);
+        final Cursor c = mDatabaseHelper.getReadableDatabase().rawQuery(query, null);
         try {
-            c.moveToFirst();
-            return c.getInt(0) > 0;
+            boolean tagExists = false;
+            while (c.moveToNext()) {
+                if(!mTag.getId().equals(c.getLong(0)) && c.getString(1).toUpperCase().equals(mTag.getName().toUpperCase())) {
+                    tagExists = true;
+                }
+            }
+            return tagExists;
         } finally {
             c.close();
         }
