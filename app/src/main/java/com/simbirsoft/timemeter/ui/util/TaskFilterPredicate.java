@@ -24,6 +24,10 @@ public class TaskFilterPredicate implements Predicate<TaskBundle> {
         if (mTaskFilterState.tags != null &&
                 !mTaskFilterState.tags.isEmpty()) {
 
+            if (input.getTags() != null && input.getTags().isEmpty()) {
+                return false;
+            }
+
             if (!mTaskFilterState.tags.containsAll(input.getTags())) {
                 return false;
             }
