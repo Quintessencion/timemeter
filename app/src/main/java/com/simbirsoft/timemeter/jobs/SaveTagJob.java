@@ -1,5 +1,6 @@
 package com.simbirsoft.timemeter.jobs;
 
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
@@ -65,22 +66,7 @@ public class SaveTagJob extends BaseJob {
                 return JobEvent.failure(EVENT_CODE_TAG_NAME_IS_EMPTY, "tag name is empty");
             }
 
-            final String selection = Phrase.from("{table_tag}.{table_tag__id} != {id} " +
-                    "AND UPPER({table_tag}.{table_tag__name}) = '{name}'")
-                    .put("table_tag", Tag.TABLE_NAME)
-                    .put("table_tag__id", Tag.COLUMN_ID)
-                    .put("id", mTag.getId().toString())
-                    .put("table_tag__name", Tag.COLUMN_NAME)
-                    .put("name", mTag.getName().toUpperCase())
-                    .format()
-                    .toString();
-
-            Tag tag = cupboard.query(Tag.class)
-                    .withSelection(selection)
-                    .query()
-                    .get();
-
-            if (tag != null) {
+            if (checkTagExists()) {
                 return JobEvent.failure(EVENT_CODE_TAG_ALREADY_EXISTS, "tag already exists");
             }
 
@@ -89,6 +75,29 @@ public class SaveTagJob extends BaseJob {
             return new SaveTagResult(mTag);
         } finally {
             db.endTransaction();
+        }
+    }
+
+    private boolean checkTagExists() {
+        final String query = Phrase.from(
+                "SELECT 1 FROM {table_tag} " +
+                        "WHERE {table_tag}.{table_tag__id} != ? " +
+                        "AND UPPER({table_tag}.{table_tag__name}) = ? " +
+                        "LIMIT 1")
+                .put("table_tag", Tag.TABLE_NAME)
+                .put("table_tag__id", Tag.COLUMN_ID)
+                .put("table_tag__name", Tag.COLUMN_NAME)
+                .format()
+                .toString();
+        final String[] args = new String[] {
+                String.valueOf(mTag.getId()),
+                mTag.getName().toUpperCase()
+        };
+        final Cursor c = mDatabaseHelper.getReadableDatabase().rawQuery(query, args);
+        try {
+            return c.getCount() > 0;
+        } finally {
+            c.close();
         }
     }
 }
