@@ -75,6 +75,7 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
 
     private CalendarPagerAdapter mPagerAdapter;
     private CalendarPopupHelper mPopupHelper;
+    private long mScrollViewMillisOffset = -1;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -113,7 +114,7 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
         mFilterViewState = ev.getFilterState();
 
         JobManager.getInstance().cancelAll(JobSelector.forJobTags(CALENDAR_LOADER_TAG));
-
+        saveScrollViewOffset();
         String loaderTag = CALENDAR_LOADER_TAG
                 + "filter:"
                 + String.valueOf(mFilterViewState.hashCode());
@@ -125,6 +126,7 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
         mCalendarPeriod = result.getData().getCalendarPeriod();
         mCalendarNavigationView.setCalendarPeriod(mCalendarPeriod);
         mPagerAdapter.setCurrentViewActivityCalendar(result.getData().getActivityCalendar());
+        adjustScrollViewOffset();
     }
 
     @OnJobFailure(LoadActivityCalendarJob.class)
@@ -157,12 +159,14 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
 
     @Override
     public void onMovedNext(Date newStartDate, Date newEndDate) {
+        saveScrollViewOffset();
         mPagerAdapter.moveNext(newStartDate, newEndDate);
         requestLoad(newStartDate, newEndDate);
     }
 
     @Override
     public void onMovedPrev(Date newStartDate, Date newEndDate) {
+        saveScrollViewOffset();
         mPagerAdapter.movePrev(newStartDate, newEndDate);
         requestLoad(newStartDate, newEndDate);
     }
@@ -202,6 +206,27 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void saveScrollViewOffset() {
+        WeekCalendarView v = mPagerAdapter.getCurrentView();
+        mScrollViewMillisOffset = (v != null) ? v.getMillisOffset(mCalendarScrollView.getScrollY()) : -1;
+    }
+
+    private void adjustScrollViewOffset() {
+        WeekCalendarView v = mPagerAdapter.getCurrentView();
+        if (mScrollViewMillisOffset < 0 || v == null) {
+            return;
+        }
+        int offset = v.getPixelOffset(mScrollViewMillisOffset);
+        if (mCalendarScrollView.getScrollY() != offset) {
+            mCalendarScrollView.post(new Runnable() {
+                @Override
+                public void run() {
+                    mCalendarScrollView.scrollTo(0, offset);
+                }
+            });
+        }
     }
 
     private void requestLoad(Date newStartDate, Date newEndDate) {
