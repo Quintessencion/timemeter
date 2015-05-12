@@ -80,7 +80,7 @@ public class SaveTagJob extends BaseJob {
 
     private boolean checkTagExists() {
         final String query = Phrase.from(
-                "SELECT 1 FROM {table_tag} " +
+                "SELECT COUNT(*) FROM {table_tag} " +
                         "WHERE {table_tag}.{table_tag__id} != ? " +
                         "AND UPPER({table_tag}.{table_tag__name}) = ? " +
                         "LIMIT 1")
@@ -95,7 +95,8 @@ public class SaveTagJob extends BaseJob {
         };
         final Cursor c = mDatabaseHelper.getReadableDatabase().rawQuery(query, args);
         try {
-            return c.getCount() > 0;
+            c.moveToFirst();
+            return c.getInt(0) > 0;
         } finally {
             c.close();
         }
