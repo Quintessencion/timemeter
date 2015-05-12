@@ -16,19 +16,12 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
-import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadStatisticsViewBinders;
 import com.simbirsoft.timemeter.log.LogFactory;
-import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
-import com.simbirsoft.timemeter.ui.main.MainPagerFragment;
-import com.simbirsoft.timemeter.ui.model.TaskChangedEvent;
-import com.simbirsoft.timemeter.ui.views.FilterView;
-import com.squareup.otto.Bus;
-import com.squareup.otto.Subscribe;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
@@ -36,8 +29,6 @@ import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
 import java.util.List;
-
-import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_stats_list)
 public class StatsListFragment extends MainPageFragment implements
@@ -55,9 +46,7 @@ public class StatsListFragment extends MainPageFragment implements
     @ViewById(android.R.id.empty)
     TextView mEmptyStatusMessageView;
 
-
     private StatsListAdapter mStatsListAdapter;
-    private FilterView.FilterState mFilterViewState;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -91,15 +80,11 @@ public class StatsListFragment extends MainPageFragment implements
         super.onDestroyView();
     }
 
-    @Subscribe
-    public void onFilterViewStateChanged(FilterViewStateChangeEvent ev) {
-        mFilterViewState = ev.getFilterState();
-
+    @Override
+    protected void onFilterViewStateChanged() {
         JobManager.getInstance().cancelAll(JobSelector.forJobTags(STATISTICS_BINDER_LOADER_TAG));
 
-        String loaderTag = STATISTICS_BINDER_LOADER_TAG
-                + "_filter:"
-                + String.valueOf(mFilterViewState.hashCode());
+        String loaderTag = getFilterLoaderTag(STATISTICS_BINDER_LOADER_TAG);
         requestLoad(loaderTag, this);
     }
 
@@ -118,16 +103,8 @@ public class StatsListFragment extends MainPageFragment implements
         LoadStatisticsViewBinders job = Injection.sJobsComponent.loadStatisticsViewBinders();
         job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
 
-        if (mFilterViewState != null) {
-            job.getTaskLoadFilter()
-                    .tags(mFilterViewState.tags)
-                    .dateMillis(mFilterViewState.dateMillis)
-                    .period(mFilterViewState.period)
-                    .searchText(mFilterViewState.searchText);
-        }
-
+        fillTaskLoadFilter(job.getTaskLoadFilter());
         job.addTag(STATISTICS_BINDER_LOADER_TAG);
-
         return job;
     }
 
@@ -139,8 +116,8 @@ public class StatsListFragment extends MainPageFragment implements
     @Override
     public void onChartClicked(int viewType) {
         Bundle args = new Bundle();
-        if (mFilterViewState != null) {
-            args.putParcelable(StatsDetailsFragment.EXTRA_TASK_FILTER, mFilterViewState);
+        if (hasFilter()) {
+            args.putParcelable(StatsDetailsFragment.EXTRA_TASK_FILTER, getFilterViewState());
         }
         args.putInt(StatsDetailsFragment.EXTRA_CHART_VIEW_TYPE, viewType);
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
