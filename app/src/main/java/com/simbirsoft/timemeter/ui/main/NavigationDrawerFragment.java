@@ -1,5 +1,6 @@
 package com.simbirsoft.timemeter.ui.main;
 
+import android.content.Context;
 import android.support.v7.app.ActionBarActivity;
 import android.app.Activity;
 import android.support.v7.app.ActionBar;
@@ -60,6 +61,7 @@ public class NavigationDrawerFragment extends Fragment {
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
     private NavigationDrawerListAdapter mAdapter;
+    private SharedPreferences sp;
 
     public NavigationDrawerFragment() {
     }
@@ -67,19 +69,42 @@ public class NavigationDrawerFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Read in the flag indicating whether or not the user has demonstrated awareness of the
-        // drawer. See PREF_USER_LEARNED_DRAWER for details.
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        mUserLearnedDrawer = sp.getBoolean(PREF_USER_LEARNED_DRAWER, false);
-
+        loadUserLearnedDrawer();
+        loadCurrentSelectedPosition();
         if (savedInstanceState != null) {
-            mCurrentSelectedPosition = savedInstanceState.getInt(STATE_SELECTED_POSITION);
             mFromSavedInstanceState = true;
         }
+    }
 
-        // Select either the default item (0) or the last selected item.
+    @Override
+    public void onDestroy() {
+        saveCurrentSelectedPosition();
+        super.onDestroy();
+    }
+
+    private void saveCurrentSelectedPosition() {
+        sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        SharedPreferences.Editor ed = sp.edit();
+        ed.putInt(STATE_SELECTED_POSITION, mCurrentSelectedPosition);
+        ed.commit();
+    }
+
+    private void loadCurrentSelectedPosition() {
+        sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        mCurrentSelectedPosition = sp.getInt(STATE_SELECTED_POSITION, 0);
         selectItem(mCurrentSelectedPosition);
+    }
+
+    private void loadUserLearnedDrawer() {
+        sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        mUserLearnedDrawer = sp.getBoolean(PREF_USER_LEARNED_DRAWER, false);
+    }
+
+    private void saveUserLearnedDrawer() {
+        sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        SharedPreferences.Editor ed = sp.edit();
+        ed.putBoolean(PREF_USER_LEARNED_DRAWER, mUserLearnedDrawer);
+        ed.commit();
     }
 
     @Override
@@ -157,12 +182,8 @@ public class NavigationDrawerFragment extends Fragment {
                 }
 
                 if (!mUserLearnedDrawer) {
-                    // The user manually opened the drawer; store this flag to prevent auto-showing
-                    // the navigation drawer automatically in the future.
                     mUserLearnedDrawer = true;
-                    SharedPreferences sp = PreferenceManager
-                            .getDefaultSharedPreferences(getActivity());
-                    sp.edit().putBoolean(PREF_USER_LEARNED_DRAWER, true).apply();
+                    saveUserLearnedDrawer();
                 }
 
                 getActivity().supportInvalidateOptionsMenu(); // calls onPrepareOptionsMenu()
@@ -227,7 +248,6 @@ public class NavigationDrawerFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt(STATE_SELECTED_POSITION, mCurrentSelectedPosition);
     }
 
     @Override
