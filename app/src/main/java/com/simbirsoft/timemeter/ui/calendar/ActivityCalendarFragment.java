@@ -175,12 +175,25 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
                     LOG.debug("result: task edit cancelled");
                     return;
                 }
-                if (resultCode == EditTaskFragment.RESULT_CODE_TASK_REMOVED) {
-                    LOG.debug("result: task removed");
-                    mPagerAdapter.removeSpansFromCurrentView(data.getLongExtra(
-                            EditTaskFragment.EXTRA_TASK_ID, -1));
-                    showTaskRemoveUndoBar(data.getParcelableExtra(
-                            EditTaskFragment.EXTRA_TASK_BUNDLE));
+                switch (resultCode) {
+                    case EditTaskFragment.RESULT_CODE_TASK_REMOVED:
+                        LOG.debug("result: task removed");
+                        if (mPopupHelper.isVisible()) {
+                            mPopupHelper.dismiss();
+                        }
+                        mPagerAdapter.removeSpansFromCurrentView(data.getLongExtra(
+                                EditTaskFragment.EXTRA_TASK_ID, -1));
+                        showTaskRemoveUndoBar(data.getParcelableExtra(
+                                EditTaskFragment.EXTRA_TASK_BUNDLE));
+                        break;
+
+                    case EditTaskFragment.RESULT_CODE_TASK_UPDATED:
+                        LOG.debug("result: task updated");
+                        if (mPopupHelper.isVisible()) {
+                            mPopupHelper.updateTask(data.getParcelableExtra(
+                                    EditTaskFragment.EXTRA_TASK_BUNDLE));
+                        }
+                        break;
                 }
                 sendTaskChangedEvent(resultCode);
                 return;

@@ -10,11 +10,15 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.util.ColorSets;
 
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 public class CalendarPopupAdapter extends RecyclerView.Adapter<CalendarPopupAdapter.ViewHolder>
@@ -63,6 +67,19 @@ public class CalendarPopupAdapter extends RecyclerView.Adapter<CalendarPopupAdap
 
     public TaskClickListener getTaskClickListener() {
         return mTaskClickListener;
+    }
+
+    public void replaceItem(TaskBundle item) {
+        int index = Iterables.indexOf(mItems, (input) ->
+                Objects.equal(input.getTask().getId(), item.getTask().getId()));
+
+        if (index < 0) {
+            mItems.add(item);
+        } else {
+            mItems.set(index, item);
+        }
+
+        notifyDataSetChanged();
     }
 
     @Override

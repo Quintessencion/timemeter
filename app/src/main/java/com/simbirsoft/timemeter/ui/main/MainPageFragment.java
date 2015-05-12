@@ -1,6 +1,8 @@
 package com.simbirsoft.timemeter.ui.main;
 
 import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -14,6 +16,7 @@ import com.nispok.snackbar.enums.SnackbarType;
 import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.injection.ApplicationModule;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.SaveTaskBundleJob;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
@@ -26,9 +29,10 @@ import com.squareup.otto.Subscribe;
 import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 public class MainPageFragment extends BaseFragment {
-    public class SnackbarShowEvent {
+    public static class SnackbarShowEvent {
         private boolean mVisible;
 
         public SnackbarShowEvent(boolean visible) {
@@ -48,11 +52,21 @@ public class MainPageFragment extends BaseFragment {
     @Inject
     Bus mBus;
 
+    @Inject
+    @Named(ApplicationModule.HANDLER_MAIN)
+    Handler mHandler;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Injection.sUiComponent.injectMainPageFragment(this);
+    }
+
     protected Bus getBus() {
         return mBus;
     }
 
-    public void onSelect() {
+    public void onPageSelected() {
         mIsSelected = true;
         if (mIsContentInvalidated) {
             mIsContentInvalidated = false;
@@ -60,7 +74,7 @@ public class MainPageFragment extends BaseFragment {
         }
     }
 
-    public void onDeselect() {
+    public void onPageDeselected() {
         mIsSelected = false;
     }
 
@@ -187,7 +201,7 @@ public class MainPageFragment extends BaseFragment {
             }
         }.execute();
 
-        getView().postDelayed(() -> {
+        mHandler.postDelayed(() -> {
             try {
                 SaveTaskBundleJob job = Injection.sJobsComponent.saveTaskBundleJob();
                 job.setTaskBundle((TaskBundle) unmarshallTask.get());

@@ -13,6 +13,10 @@ import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
+import android.os.Handler;
+import java.util.logging.LogRecord;
+
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -21,10 +25,20 @@ import dagger.Provides;
 @Module
 public class ApplicationModule {
 
-    private App mApplication;
+    public static final String HANDLER_MAIN = "main";
+
+    private final App mApplication;
+    private final Handler mHandler;
 
     public ApplicationModule(App application) {
-        this.mApplication = application;
+        mApplication = application;
+        mHandler = new Handler();
+    }
+
+    @Provides
+    @Named(HANDLER_MAIN)
+    Handler provideMainHandler() {
+        return mHandler;
     }
 
     @Provides
