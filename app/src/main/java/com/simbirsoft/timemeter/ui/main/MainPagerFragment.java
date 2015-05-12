@@ -1,7 +1,9 @@
 package com.simbirsoft.timemeter.ui.main;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -58,6 +60,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
     private static final Logger LOG = LogFactory.getLogger(MainPagerFragment.class);
     private static final String TAG_DATE_PICKER_FRAGMENT = "main_date_picker_fragment_tag";
+    private static final String TAG_PAGE_POSITION = "page_position_tag";
 
     @ViewById(R.id.pager)
     ViewPager mViewPager;
@@ -87,6 +90,23 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     private Menu mOptionsMenu;
     private ContentFragmentCallbacks mContainerCallbacks;
     private List<String> mPageNames;
+    private SharedPreferences sPref;
+    private int mPagePosition;
+
+    private final ViewPager.OnPageChangeListener mOnPageChangeListener = new ViewPager.OnPageChangeListener() {
+        @Override
+        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+        }
+
+        @Override
+        public void onPageSelected(int position) {
+            mPagePosition = position;
+        }
+
+        @Override
+        public void onPageScrollStateChanged(int state) {
+        }
+    };
 
     @Override
     public void onAttach(Activity activity) {
@@ -131,6 +151,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     @Override
     public void onDestroy() {
         mBus.unregister(this);
+        savePagePosition();
         super.onDestroy();
     }
 
@@ -169,6 +190,8 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mTabs = (PagerSlidingTabStrip) mContainerHeader.findViewById(R.id.tabs);
         mTabs.setTextColor(mColorWhite);
         mTabs.setViewPager(mViewPager);
+        mTabs.setOnPageChangeListener(mOnPageChangeListener);
+        loadPagePosition();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Hide custom elevation on Lollipop
@@ -399,5 +422,18 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     @Override
     public void onTokenRemoved(Object o) {
         mViewPager.post(this::updateFilterViewSize);
+    }
+
+    private void savePagePosition() {
+        sPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor ed = sPref.edit();
+        ed.putInt(TAG_PAGE_POSITION, mPagePosition);
+        ed.commit();
+    }
+
+    private void loadPagePosition() {
+        sPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        mPagePosition = sPref.getInt(TAG_PAGE_POSITION, 0);
+        mViewPager.setCurrentItem(mPagePosition);
     }
 }
