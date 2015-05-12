@@ -4,6 +4,7 @@ import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
 
 import com.google.common.io.Closeables;
 import com.simbirsoft.timemeter.R;
@@ -21,8 +22,11 @@ import com.simbirsoft.timemeter.persist.XmlTaskListReader;
 import org.slf4j.Logger;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.FileChannel;
 import java.util.Date;
 import java.util.List;
 
@@ -107,6 +111,33 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         } finally {
             Closeables.closeQuietly(in);
+        }
+    }
+
+    public static void backupDatabase(Context context) {
+        try {
+            File externalStorage = Environment.getExternalStorageDirectory();
+            if (externalStorage.canWrite()) {
+                File currentDB = context.getDatabasePath(DATABASE_NAME);
+                File backupDB = new File(externalStorage, DATABASE_NAME);
+
+                if (currentDB.exists()) {
+                    FileChannel src = new FileInputStream(currentDB).getChannel();
+                    FileChannel dst = new FileOutputStream(backupDB).getChannel();
+                    dst.transferFrom(src, 0, src.size());
+                    src.close();
+                    dst.close();
+
+                    LOG.debug("backed up database to '{}'", backupDB);
+                } else {
+                    LOG.error("unable to backup database: database is not exists");
+                }
+
+            } else {
+                LOG.error("unable to backup database: external storage is not writable");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
