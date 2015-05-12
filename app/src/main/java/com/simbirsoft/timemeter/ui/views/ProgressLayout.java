@@ -137,4 +137,12 @@ public class ProgressLayout extends RelativeLayout {
     public void setProgressLayoutCallbacks(ProgressLayoutCallbacks progressLayoutCallbacks) {
         mProgressLayoutCallbacks = progressLayoutCallbacks;
     }
+
+    public void setEmptyIndicatorMessage(String message) {
+        mEmptyIndicatorView.setText(message);
+    }
+
+    public void setEmptyIndicatorStyle(int style) {
+        mEmptyIndicatorView.setTypeface(null, style);
+    }
 }

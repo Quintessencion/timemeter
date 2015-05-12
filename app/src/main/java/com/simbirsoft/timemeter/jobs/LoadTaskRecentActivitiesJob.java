@@ -1,14 +1,14 @@
 package com.simbirsoft.timemeter.jobs;
 
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 
 import com.be.android.library.worker.jobs.LoadJob;
-import com.be.android.library.worker.models.JobResultStatus;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
-import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
+import com.simbirsoft.timemeter.ui.model.TaskRecentActivity;
 import com.simbirsoft.timemeter.ui.util.TimeSpanDaysSplitter;
 import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.squareup.phrase.Phrase;
@@ -43,7 +43,18 @@ public class LoadTaskRecentActivitiesJob extends LoadJob{
     }
 
     @Override
-    protected LoadJobResult<List<TaskActivityItem>> performLoad() throws Exception {
+    protected LoadJobResult<TaskRecentActivity> performLoad() throws Exception {
+        TaskRecentActivity recentActivity = new TaskRecentActivity();
+        List<TaskTimeSpan> spans = getSpans();
+        if (!spans.isEmpty()) {
+            recentActivity.setList(TimeSpanDaysSplitter.convertToTaskRecentActivityItems(spans));
+        } else {
+            recentActivity.setRecentActivityTime(getRecentActivityTime());
+        }
+        return new LoadJobResult<>(recentActivity);
+    }
+
+    private List<TaskTimeSpan> getSpans() {
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());
         cal.setTimeInMillis(TimeUtils.getDayStartMillis(cal));
@@ -51,7 +62,7 @@ public class LoadTaskRecentActivitiesJob extends LoadJob{
         List<TaskTimeSpan> spans = cupboard().withDatabase(mDatabaseHelper.getReadableDatabase())
                 .query(TaskTimeSpan.class)
                 .withSelection(Phrase.from("{table_tts}.{table_tts_column_task_id} = {task_id} " +
-                        "and {table_tts}.{table_tts_column_start_time} > {start_time}")
+                        "AND {table_tts}.{table_tts_column_start_time} > {start_time}")
                         .put("table_tts", TaskTimeSpan.TABLE_NAME)
                         .put("table_tts_column_task_id", TaskTimeSpan.COLUMN_TASK_ID)
                         .put("table_tts_column_start_time", TaskTimeSpan.COLUMN_START_TIME)
@@ -60,6 +71,25 @@ public class LoadTaskRecentActivitiesJob extends LoadJob{
                         .format()
                         .toString())
                 .list();
-        return new LoadJobResult<>(TimeSpanDaysSplitter.convertToTaskRecentActivityItems(spans));
+        return spans;
+    }
+
+    private long getRecentActivityTime() throws Exception {
+        Phrase queryPhrase = Phrase.from(
+                "SELECT max({table_tts_column_end_time}) " +
+                        "FROM {table_tts}  " +
+                        "WHERE {table_tts_column_task_id} = {task_id}")
+                .put("table_tts", TaskTimeSpan.TABLE_NAME)
+                .put("table_tts_column_task_id", TaskTimeSpan.COLUMN_TASK_ID)
+                .put("table_tts_column_end_time", TaskTimeSpan.COLUMN_END_TIME)
+                .put("task_id", mTaskId.toString());
+        SQLiteDatabase db = mDatabaseHelper.getReadableDatabase();
+        Cursor c = db.rawQuery(queryPhrase.format().toString(), null);
+        try {
+            c.moveToFirst();
+            return c.getLong(0);
+        } finally {
+            c.close();
+        }
     }
 }

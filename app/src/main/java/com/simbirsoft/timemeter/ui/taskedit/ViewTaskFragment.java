@@ -1,6 +1,7 @@
 package com.simbirsoft.timemeter.ui.taskedit;
 
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
@@ -31,8 +32,8 @@ import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment_;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
-import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
+import com.simbirsoft.timemeter.ui.model.TaskRecentActivity;
 import com.simbirsoft.timemeter.ui.util.TagViewUtils;
 import com.simbirsoft.timemeter.ui.views.ProgressLayout;
 
@@ -149,6 +150,7 @@ public class ViewTaskFragment extends BaseFragment
         mAdapter = new TaskActivitiesAdapter(getActivity());
         mRecyclerView.setAdapter(mAdapter);
         mProgressLayout.setShouldDisplayEmptyIndicatorMessage(true);
+        mProgressLayout.setEmptyIndicatorStyle(Typeface.ITALIC);
         mProgressLayout.setProgressLayoutCallbacks(
                 new ProgressLayout.JobProgressLayoutCallbacks(JobSelector.forJobTags(LOADER_TAG)) {
                     @Override
@@ -239,8 +241,12 @@ public class ViewTaskFragment extends BaseFragment
     }
 
     @OnJobSuccess(LoadTaskRecentActivitiesJob.class)
-    public void onLoadSuccess(LoadJobResult<List<TaskActivityItem>> result) {
-        mAdapter.setItems(result.getData());
+    public void onLoadSuccess(LoadJobResult<TaskRecentActivity> result) {
+        TaskRecentActivity recentActivity = result.getData();
+        mAdapter.setItems(recentActivity.getList());
+        if (mAdapter.getItemCount() == 0) {
+            mProgressLayout.setEmptyIndicatorMessage(recentActivity.getEmptyIndicatorMessage(getResources()));
+        }
         mProgressLayout.updateProgressView();
         if (mListPosition != 0) {
             mRecyclerView.getLayoutManager().scrollToPosition(mListPosition);
