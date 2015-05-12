@@ -9,6 +9,7 @@ import com.be.android.library.worker.models.JobResultStatus;
 import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Tag;
+import com.squareup.phrase.Phrase;
 
 import javax.inject.Inject;
 
@@ -64,15 +65,23 @@ public class SaveTagJob extends BaseJob {
                 return JobEvent.failure(EVENT_CODE_TAG_NAME_IS_EMPTY, "tag name is empty");
             }
 
-            if (mTag.getId() == null) {
-                Tag tag = cupboard.query(Tag.class)
-                        .withSelection("UPPER(" + Tag.COLUMN_NAME + ")=?", mTag.getName().toUpperCase())
-                        .query()
-                        .get();
+            final String selection = Phrase.from("{table_tag}.{table_tag__id} != {id} " +
+                    "AND UPPER({table_tag}.{table_tag__name}) = '{name}'")
+                    .put("table_tag", Tag.TABLE_NAME)
+                    .put("table_tag__id", Tag.COLUMN_ID)
+                    .put("id", mTag.getId().toString())
+                    .put("table_tag__name", Tag.COLUMN_NAME)
+                    .put("name", mTag.getName().toUpperCase())
+                    .format()
+                    .toString();
 
-                if (tag != null) {
-                    return JobEvent.failure(EVENT_CODE_TAG_ALREADY_EXISTS, "tag already exists");
-                }
+            Tag tag = cupboard.query(Tag.class)
+                    .withSelection(selection)
+                    .query()
+                    .get();
+
+            if (tag != null) {
+                return JobEvent.failure(EVENT_CODE_TAG_ALREADY_EXISTS, "tag already exists");
             }
 
             cupboard.put(mTag);

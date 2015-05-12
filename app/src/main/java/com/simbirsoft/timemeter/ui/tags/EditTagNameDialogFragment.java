@@ -10,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -21,24 +22,39 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
+import com.be.android.library.worker.base.JobEvent;
+import com.be.android.library.worker.controllers.JobLoader;
+import com.be.android.library.worker.interfaces.Job;
+import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.injection.Injection;
+import com.simbirsoft.timemeter.jobs.LoadTagNamesJob;
 import com.simbirsoft.timemeter.jobs.SaveTagJob;
+import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseDialogFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerCallbacks;
 
-import java.util.ArrayList;
+import org.slf4j.Logger;
 
-public class EditTagNameDialogFragment extends BaseDialogFragment {
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+
+public class EditTagNameDialogFragment extends BaseDialogFragment implements JobLoader.JobLoaderCallbacks {
 
     public static final String EXTRA_TAG = "extra_tag";
-    public static final String TAG_NAMES = "tag_names";
+    public static final String LOAD_TAG_NAMES_JOB = "load_tag_names_job";
 
     private static final String STATE_ENTERED_TEXT = "entered_text";
+    private static final Logger LOG = LogFactory.getLogger(EditTagNameDialogFragment.class);
+
+    @Inject
+    LoadTagNamesJob mLoadTagNamesJob;
 
     private EditText mEditNameView;
     private Tag mTag;
@@ -48,7 +64,7 @@ public class EditTagNameDialogFragment extends BaseDialogFragment {
     private FragmentContainerCallbacks mContainerCallbacks;
     private MaterialDialog mDialog;
     private final String mSaveJobTag = "save_tag_name";
-    private ArrayList<String> mTagNames;
+    private List<String> mTagNames;
 
     private final TextView.OnEditorActionListener mOnEditorActionListener =
             (textView, actionId, keyEvent) -> {
@@ -68,22 +84,27 @@ public class EditTagNameDialogFragment extends BaseDialogFragment {
         @Override
         public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             mEnteredText = charSequence.toString().trim();
-            if (!mTag.getName().equalsIgnoreCase(mEnteredText) &&
-                    Iterables.indexOf(mTagNames, (tag) -> tag.equalsIgnoreCase(mEnteredText)) != -1) {
-                setError(getString(R.string.error_tag_name_repeat, mEnteredText));
-            }
-            else if (TextUtils.isEmpty(mEnteredText)) {
-                setError(getString(R.string.error_tag_name_is_empty));
-            }
-            else {
-                mPositiveButton.setEnabled(true);
-            }
+            checkInput();
         }
 
         @Override
         public void afterTextChanged(Editable editable) {
         }
     };
+
+    private void checkInput() {
+        if (TextUtils.isEmpty(mEnteredText)) {
+            setError(getString(R.string.error_tag_name_is_empty));
+        }
+        else if (mTagNames != null
+                && !mTag.getName().equalsIgnoreCase(mEnteredText)
+                && Iterables.indexOf(mTagNames, (tag) -> tag.equalsIgnoreCase(mEnteredText)) != -1) {
+            setError(getString(R.string.error_tag_name_repeat, mEnteredText));
+        }
+        else {
+            mPositiveButton.setEnabled(true);
+        }
+    }
 
     private void setError(String errorText) {
         mEditNameView.setError(errorText);
@@ -103,13 +124,16 @@ public class EditTagNameDialogFragment extends BaseDialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Injection.sUiComponent.injectEditTagNameDialogFragment(this);
+
         mTag = getArguments().getParcelable(EXTRA_TAG);
-        mTagNames = getArguments().getStringArrayList(TAG_NAMES);
         Preconditions.checkArgument(mTag != null);
 
         if (savedInstanceState != null) {
             mEnteredText = savedInstanceState.getString(STATE_ENTERED_TEXT);
         }
+
+        requestLoad(LOAD_TAG_NAMES_JOB, this);
     }
 
     @Override
@@ -133,8 +157,11 @@ public class EditTagNameDialogFragment extends BaseDialogFragment {
     }
 
     @OnJobFailure(SaveTagJob.class)
-    public void onTagSaveFailed() {
+    public void onTagSaveFailed(JobEvent event) {
         enableViews();
+        if (event.getEventCode() == SaveTagJob.EVENT_CODE_TAG_ALREADY_EXISTS) {
+            setError(getString(R.string.error_tag_already_exists));
+        }
     }
 
     private void disableViews() {
@@ -143,6 +170,17 @@ public class EditTagNameDialogFragment extends BaseDialogFragment {
         mEditNameView.setEnabled(false);
         mDialog.setCancelable(false);
         mDialog.setCanceledOnTouchOutside(false);
+    }
+
+    @OnJobSuccess(LoadTagNamesJob.class)
+    public void onTagNamesLoad(LoadJobResult<List<String>> result) {
+        mTagNames = result.getData();
+        checkInput();
+    }
+
+    @OnJobFailure(LoadTagNamesJob.class)
+    public void onTagNamesLoadFailed() {
+        LOG.error("Unable to load tag names");
     }
 
     private void enableViews() {
@@ -214,5 +252,16 @@ public class EditTagNameDialogFragment extends BaseDialogFragment {
         }
 
         return mDialog;
+    }
+
+    @Override
+    public Job onCreateJob(String tag) {
+        switch (tag) {
+            case LOAD_TAG_NAMES_JOB:
+                return mLoadTagNamesJob;
+            default:
+                break;
+        }
+        throw new IllegalArgumentException("undefined tag");
     }
 }

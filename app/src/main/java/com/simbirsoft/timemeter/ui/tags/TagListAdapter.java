@@ -22,7 +22,6 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.ui.util.TagViewUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -226,11 +225,6 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
         }
 
         return findItemWithName(tagName) != null;
-    }
-
-    public ArrayList<String> getAllItemsNames()
-    {
-        return Lists.newArrayList(Iterables.transform(mItemsOriginal, Tag::getName));
     }
 
     public Tag findItemWithName(String tagName) {
