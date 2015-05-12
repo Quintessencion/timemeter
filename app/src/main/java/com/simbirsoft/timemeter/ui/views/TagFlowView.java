@@ -19,7 +19,7 @@ import java.util.Stack;
 @EViewGroup(R.layout.view_tag_flow)
 public class TagFlowView extends FlowLayout {
 
-    private static final Stack<View> mReuseTagViews = new Stack<>();
+    private final Stack<View> mReuseTagViews = new Stack<>();
     private final ArrayList<TagView> mTagViews = new ArrayList<>();
 
     @ViewById(R.id.tagFlowViewContainer)
