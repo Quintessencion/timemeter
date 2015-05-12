@@ -22,6 +22,7 @@ import com.simbirsoft.timemeter.ui.views.TagView;
 
 import org.slf4j.Logger;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -179,7 +180,12 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         holder.itemView.setTag(item);
         holder.itemEditView.setTag(item);
 
-        holder.tagFlowView.bindTagViews(item.getTags(), mTagViewClickListener);
+        holder.tagFlowView.bindTagViews(item.getTags());
+        ArrayList<TagView> tagViews = holder.tagFlowView.getTagViews();
+        for (TagView tagView : tagViews) {
+            tagView.setTagViewClickListener(mTagViewClickListener);
+        }
+        //holder.tagFlowView.setTagViewsClickListener(mTagViewClickListener);
 
         if (mTaskActivityManager.isTaskActive(task)) {
             ActiveTaskInfo taskInfo = mTaskActivityManager.getActiveTaskInfo();

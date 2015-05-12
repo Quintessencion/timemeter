@@ -12,13 +12,15 @@ import org.androidannotations.annotations.EViewGroup;
 import org.androidannotations.annotations.ViewById;
 import org.apmem.tools.layouts.FlowLayout;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
 @EViewGroup(R.layout.view_tag_flow)
 public class TagFlowView extends FlowLayout {
 
-    private final Stack<View> mReuseTagViews = new Stack<>();
+    private static final Stack<View> mReuseTagViews = new Stack<>();
+    private final ArrayList<TagView> mTagViews = new ArrayList<>();
 
     @ViewById(R.id.tagFlowViewContainer)
     protected FlowLayout tagContainerView;
@@ -39,9 +41,8 @@ public class TagFlowView extends FlowLayout {
     void initializeView() {
     }
 
-    public void bindTagViews(List<Tag> tags, TagView.TagViewClickListener tagViewClickListener) {
+    public void bindTagViews(List<Tag> tags) {
         final int tagCount = tags.size();
-        final View[] reuseViews = new View[tagCount];
 
         final int reuseViewCount = tagContainerView.getChildCount();
         for (int i = 0; i < reuseViewCount; i++) {
@@ -51,23 +52,32 @@ public class TagFlowView extends FlowLayout {
 
         for (int i = 0; i < tagCount; i++) {
             if (mReuseTagViews.isEmpty()) {
-                reuseViews[i] = TagView_.build(tagContainerView.getContext());
+                mTagViews.add(i, TagView_.build(tagContainerView.getContext()));
             } else {
-                reuseViews[i] = mReuseTagViews.pop();
+                mTagViews.add(i, (TagView) mReuseTagViews.pop());
             }
 
-            tagContainerView.addView(reuseViews[i]);
+            tagContainerView.addView(mTagViews.get(i));
         }
 
         if (tagCount > 0) {
             for (int i = 0; i < tagCount; i++) {
-                TagView_ tagView = (TagView_) reuseViews[i];
+                TagView tagView = mTagViews.get(i);
                 tagView.setTag(tags.get(i));
-                tagView.setTagViewClickListener(tagViewClickListener);
             }
             tagContainerView.setVisibility(View.VISIBLE);
         } else {
             tagContainerView.setVisibility(View.GONE);
+        }
+    }
+
+    public ArrayList<TagView> getTagViews() {
+        return mTagViews;
+    }
+
+    public void setTagViewsClickListener(TagView.TagViewClickListener tagViewClickListener) {
+        for (TagView tagView : mTagViews) {
+            tagView.setTagViewClickListener(tagViewClickListener);
         }
     }
 }
