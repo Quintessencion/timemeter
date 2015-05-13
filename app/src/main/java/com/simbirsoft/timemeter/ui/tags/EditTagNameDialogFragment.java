@@ -84,11 +84,11 @@ public class EditTagNameDialogFragment extends BaseDialogFragment implements Job
         @Override
         public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             mEnteredText = charSequence.toString().trim();
-            checkInput();
         }
 
         @Override
         public void afterTextChanged(Editable editable) {
+            checkInput();
         }
     };
 
