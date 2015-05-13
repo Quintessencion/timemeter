@@ -32,4 +32,8 @@ public class WeekCalendarCell {
         this.dayIndex = dayIndex;
         this.hourIndex = hourIndex;
     }
+
+    public boolean equals(WeekCalendarCell cell) {
+        return dayIndex == cell.dayIndex && hourIndex == cell.hourIndex;
+    }
 }

@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -107,19 +108,13 @@ public class ActivityCalendar {
     }
 
     public int getDateLabelColor(Resources res, int dayIndex) {
-        mBufferCalendar.setTime(new Date());
-        int dayOfYear = mBufferCalendar.get(Calendar.DAY_OF_YEAR);
-        mBufferCalendar.setTime(getDay(dayIndex));
+        long date = getDay(dayIndex).getTime();
 
-        if (mBufferCalendar.get(Calendar.DAY_OF_YEAR) == dayOfYear) {
+        if (TimeUtils.isCurrentDay(date, mBufferCalendar)) {
             return res.getColor(R.color.primary);
         }
 
-        int dayOfWeek = mBufferCalendar.get(Calendar.DAY_OF_WEEK);
-
-        if (dayOfWeek == Calendar.SATURDAY
-                || dayOfWeek == Calendar.SUNDAY) {
-
+        if (TimeUtils.isHoliday(date, mBufferCalendar)) {
             return res.getColor(R.color.accentPrimary);
         }
 
@@ -246,10 +241,24 @@ public class ActivityCalendar {
         mBufferCalendar.add(Calendar.HOUR_OF_DAY, 1);
         long cellEnd = mBufferCalendar.getTimeInMillis();
         for (TaskTimeSpan span : spans) {
-            if (span.getStartTimeMillis() < cellEnd && span.getEndTimeMillis() >= cellStart) {
+            if (span.getStartTimeMillis() < cellEnd && span.getEndTimeMillis() > cellStart) {
                 result.add(span);
             }
         }
         return result;
+    }
+
+    public void removeSpans(long taskId) {
+        int count = mDailyActivity.size();
+        for (int i = 0; i < count; i++) {
+            Collection<TaskTimeSpan> spans = mDailyActivity.get(i);
+            Iterator<TaskTimeSpan> iterator = spans.iterator();
+            while (iterator.hasNext()) {
+                TaskTimeSpan span = iterator.next();
+                if (span.getTaskId() == taskId) {
+                    iterator.remove();
+                }
+            }
+        }
     }
 }

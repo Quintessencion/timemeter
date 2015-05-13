@@ -6,6 +6,7 @@ import com.simbirsoft.timemeter.receiver.NotificationUpdateReceiver;
 import com.simbirsoft.timemeter.receiver.ScreenLockReceiver;
 import com.simbirsoft.timemeter.receiver.StopTaskActivityReceiver;
 import com.simbirsoft.timemeter.ui.calendar.ActivityCalendarFragment;
+import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerFragment;
 import com.simbirsoft.timemeter.ui.stats.StatisticsViewBinder;
 import com.simbirsoft.timemeter.ui.stats.StatsDetailsFragment;
@@ -34,5 +35,5 @@ public interface UiComponent {
     public void injectActivityTimelineBinder(ActivityTimelineBinder activityTimelineBinder);
     public void injectActivityStackedTimelineBinder(ActivityStackedTimelineBinder activityStackedTimelineBinder);
     public void injectEditTagNameDialogFragment(EditTagNameDialogFragment editTagNameDialogFragment);
-
+    public void injectMainPageFragment(MainPageFragment fragment);
 }

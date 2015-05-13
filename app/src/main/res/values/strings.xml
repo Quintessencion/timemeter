@@ -86,7 +86,8 @@
     <string name="error_tag_already_exists">Такая метка уже существует</string>
     <string name="error_tag_name_is_empty">Название метки не задано</string>
     <string name="error_tag_name_repeat">Метка %1$s уже существует</string>
-
+    <string name="error_unable_to_load_task_activities">Ошибка при загрузке списка активностей</string>
+    <string name="error_unable_to_load_calendar_data">Ошибка при загрузке данных для календаря</string>
 
     <!-- Dialogs -->
     <string name="dialog_cancel_task_changes_warning_title">Задача не сохранена</string>

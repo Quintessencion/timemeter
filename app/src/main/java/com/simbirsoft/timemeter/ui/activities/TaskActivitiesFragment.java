@@ -16,7 +16,6 @@ import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskActivitiesJob;
-import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
 import com.simbirsoft.timemeter.ui.views.ProgressLayout;
@@ -27,7 +26,6 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
-import org.slf4j.Logger;
 
 import java.util.List;
 
@@ -40,8 +38,6 @@ public class TaskActivitiesFragment extends BaseFragment implements
     public static final String EXTRA_TITLE = "extra_title";
 
     private static final String LOADER_TAG = "TaskActivitiesFragment_";
-
-    private static final Logger LOG = LogFactory.getLogger(TaskActivitiesFragment.class);
 
     @ViewById(android.R.id.list)
     RecyclerView mRecyclerView;
@@ -127,7 +123,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
 
     @OnJobFailure(LoadTaskActivitiesJob.class)
     public void onLoadFailed() {
-        LOG.error("LoadTaskActivitiesJob failed");
+        showToast(R.string.error_unable_to_load_task_activities);
     }
 
     @Override
