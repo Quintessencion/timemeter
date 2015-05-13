@@ -36,11 +36,7 @@ public class LoadTagNamesJob extends LoadJob {
             while (c.moveToNext()) {
                 result.add(c.getString(0));
             }
-            Thread.sleep(5000);
             return new LoadJobResult<>(result);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            return null;
         } finally {
             c.close();
         }
