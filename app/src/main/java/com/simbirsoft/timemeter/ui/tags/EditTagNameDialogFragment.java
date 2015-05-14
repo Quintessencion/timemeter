@@ -10,13 +10,11 @@ import android.support.annotation.NonNull;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -40,7 +38,6 @@ import com.simbirsoft.timemeter.ui.base.FragmentContainerCallbacks;
 
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -69,7 +66,7 @@ public class EditTagNameDialogFragment extends BaseDialogFragment implements Job
     private final TextView.OnEditorActionListener mOnEditorActionListener =
             (textView, actionId, keyEvent) -> {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    Toast.makeText(getActivity(), "DONE", Toast.LENGTH_SHORT).show();
+                    mPositiveButton.performClick();
                     return true;
                 }
 
@@ -160,7 +157,7 @@ public class EditTagNameDialogFragment extends BaseDialogFragment implements Job
     public void onTagSaveFailed(JobEvent event) {
         enableViews();
         if (event.getEventCode() == SaveTagJob.EVENT_CODE_TAG_ALREADY_EXISTS) {
-            setError(getString(R.string.error_tag_already_exists));
+            setError(getString(R.string.error_tag_name_repeat, mEnteredText));
         }
     }
 

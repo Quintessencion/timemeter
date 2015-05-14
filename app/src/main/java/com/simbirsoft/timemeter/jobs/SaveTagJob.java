@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import com.be.android.library.worker.base.BaseJob;
 import com.be.android.library.worker.base.JobEvent;
 import com.be.android.library.worker.models.JobResultStatus;
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Tag;
@@ -88,13 +89,13 @@ public class SaveTagJob extends BaseJob {
                 .toString();
         final Cursor c = mDatabaseHelper.getReadableDatabase().rawQuery(query, null);
         try {
-            boolean tagExists = false;
             while (c.moveToNext()) {
-                if(!mTag.getId().equals(c.getLong(0)) && c.getString(1).toUpperCase().equals(mTag.getName().toUpperCase())) {
-                    tagExists = true;
+                if(!Objects.equal(mTag.getId(), c.getLong(0))
+                        && Objects.equal(c.getString(1).toUpperCase(),mTag.getName().toUpperCase())) {
+                    return true;
                 }
             }
-            return tagExists;
+            return false;
         } finally {
             c.close();
         }
