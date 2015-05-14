@@ -3,7 +3,6 @@ package com.simbirsoft.timemeter.ui.util;
 
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
-import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.TaskActivityDateItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivityEmptyItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
@@ -62,7 +61,7 @@ public class TimeSpanDaysSplitter {
     }
 
     public static List<TaskActivityItem> convertToTaskActivityItems(List<TaskTimeSpan> spans) {
-        sortSpans(spans);
+        sortSpansDesc(spans);
         List<TaskActivityItem> items = Lists.newArrayList();
         Calendar currentMonth = Calendar.getInstance();
         Calendar currentDay = Calendar.getInstance();
@@ -97,7 +96,7 @@ public class TimeSpanDaysSplitter {
     public static List<TaskActivityItem> convertToTaskRecentActivityItems(List<TaskTimeSpan> spans) {
         List<TaskActivityItem> items = Lists.newArrayList();
         if (spans.isEmpty()) return items;
-        sortSpans(spans);
+        sortSpansDesc(spans);
         Calendar currentDay = Calendar.getInstance();
         currentDay.setTimeInMillis(0);
 
@@ -125,7 +124,11 @@ public class TimeSpanDaysSplitter {
         return items;
     }
 
-    private static void sortSpans(List<TaskTimeSpan> spans) {
+    /*
+     * Sort list of TaskTimeSpan by start time in descending order
+     * @param spans - list of TaskTimeSpan to sort
+     * */
+    private static void sortSpansDesc(List<TaskTimeSpan> spans) {
         Collections.sort(spans, new Comparator<TaskTimeSpan>() {
             @Override
             public int compare(TaskTimeSpan lhs, TaskTimeSpan rhs) {
@@ -169,6 +172,17 @@ public class TimeSpanDaysSplitter {
                 monthCalendar.get(Calendar.MONTH) == calendar.get(Calendar.MONTH));
     }
 
+    /*
+    * Add date (TaskActivityDateItem) and empty (TaskActivityEmpty) items between two span items
+    * or before the first span item.
+    * @param items - result list of activity items
+    * @param date1 - if items is empty then this is current time in millis,
+    * otherwise this is the start time of previously processing TaskTimeSpan that has been added to items
+    * @param date2 - the start time of currently processing TaskTimeSpan that should be added to items next
+    * @param cal1, cal2 - Calendar instances
+    * @param includeDateItems - if value is true then date items should be included to result,
+    * otherwise date items should be skipped
+    */
     private static void addItemsBetweenSpans(List<TaskActivityItem> items, long date1, long date2,
                                       Calendar cal1, Calendar cal2, boolean includeDateItems) {
         Calendar currentMonth = Calendar.getInstance();

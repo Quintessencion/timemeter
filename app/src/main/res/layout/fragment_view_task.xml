@@ -39,7 +39,7 @@
         android:id="@+id/activitiesTitleContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="24dp"
         android:layout_below="@+id/tagViewContainer">
         <TextView
             android:layout_width="wrap_content"
@@ -47,8 +47,8 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_marginLeft="@dimen/task_view_title_left_margin"
             android:layout_marginRight="@dimen/task_view_margin"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
             android:text="@string/recent_activity"/>
     </com.balysv.materialripple.MaterialRippleLayout>
     <View

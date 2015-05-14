@@ -4,19 +4,29 @@ import android.content.res.Resources;
 
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.injection.ApplicationModule;
+import com.simbirsoft.timemeter.injection.Injection;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 public class TaskRecentActivity {
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yy");
+
+    @Inject
+    @Named(ApplicationModule.DATE_FORMAT)
+    DateFormat mDateFormat;
 
     private List<TaskActivityItem> mList;
     private final Calendar mRecentActivityTime;
 
     public TaskRecentActivity() {
         mRecentActivityTime = Calendar.getInstance();
+        Injection.sUiComponent.injectTaskRecentActivity(this);
     }
 
     public List<TaskActivityItem> getList() {
@@ -40,7 +50,7 @@ public class TaskRecentActivity {
             return res.getString(R.string.no_activity);
         }
         StringBuilder builder = new StringBuilder(res.getString(R.string.recent_activity).toLowerCase());
-        builder.append(" ").append(DATE_FORMAT.format(mRecentActivityTime.getTime()));
+        builder.append(" ").append(mDateFormat.format(mRecentActivityTime.getTime()));
         return builder.toString();
     }
 }

@@ -29,7 +29,7 @@ public class LoadTaskRecentActivitiesJob extends LoadJob{
 
     @Inject
     public LoadTaskRecentActivitiesJob(DatabaseHelper databaseHelper) {
-        mDatabaseHelper = databaseHelper;;
+        mDatabaseHelper = databaseHelper;
     }
 
     public void setTaskId(long taskId) {
@@ -76,7 +76,7 @@ public class LoadTaskRecentActivitiesJob extends LoadJob{
 
     private long getRecentActivityTime() throws Exception {
         Phrase queryPhrase = Phrase.from(
-                "SELECT max({table_tts_column_end_time}) " +
+                "SELECT IFNULL(max({table_tts_column_end_time}),0) " +
                         "FROM {table_tts}  " +
                         "WHERE {table_tts_column_task_id} = {task_id}")
                 .put("table_tts", TaskTimeSpan.TABLE_NAME)

@@ -14,12 +14,10 @@ import javax.inject.Inject;
 
 public class LoadTaskActivitiesJob extends LoadJob {
 
-    private final DatabaseHelper mDatabaseHelper;
     private final LoadTaskTimespansJob mLoadSpansJob;
 
     @Inject
-    public LoadTaskActivitiesJob(DatabaseHelper databaseHelper, LoadTaskTimespansJob loadSpansJob) {
-        mDatabaseHelper = databaseHelper;
+    public LoadTaskActivitiesJob(LoadTaskTimespansJob loadSpansJob) {
         mLoadSpansJob = loadSpansJob;
     }
 

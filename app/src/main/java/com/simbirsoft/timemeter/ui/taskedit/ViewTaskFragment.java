@@ -1,18 +1,21 @@
 package com.simbirsoft.timemeter.ui.taskedit;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.widget.TextView;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
@@ -151,6 +154,9 @@ public class ViewTaskFragment extends BaseFragment
         mRecyclerView.setAdapter(mAdapter);
         mProgressLayout.setShouldDisplayEmptyIndicatorMessage(true);
         mProgressLayout.setEmptyIndicatorStyle(Typeface.ITALIC);
+        final Resources res = getResources();
+        mProgressLayout.setEmptyIndicatorTextSize(TypedValue.COMPLEX_UNIT_PX, res.getDimension(R.dimen.empty_indicator_text_size));
+        mProgressLayout.setEmptyIndicatorTextColor(res.getColor(R.color.empty_indicator));
         mProgressLayout.setProgressLayoutCallbacks(
                 new ProgressLayout.JobProgressLayoutCallbacks(JobSelector.forJobTags(LOADER_TAG)) {
                     @Override
@@ -244,13 +250,17 @@ public class ViewTaskFragment extends BaseFragment
     public void onLoadSuccess(LoadJobResult<TaskRecentActivity> result) {
         TaskRecentActivity recentActivity = result.getData();
         mAdapter.setItems(recentActivity.getList());
-        if (mAdapter.getItemCount() == 0) {
-            mProgressLayout.setEmptyIndicatorMessage(recentActivity.getEmptyIndicatorMessage(getResources()));
-        }
-        mProgressLayout.updateProgressView();
         if (mListPosition != 0) {
             mRecyclerView.getLayoutManager().scrollToPosition(mListPosition);
             mListPosition = 0;
+        }
+        mProgressLayout.updateProgressView();
+        if (mAdapter.getItemCount() == 0) {
+            mProgressLayout.setEmptyIndicatorMessage(recentActivity.getEmptyIndicatorMessage(getResources()));
+        } else {
+            AlphaAnimation animation = new AlphaAnimation(0, 1);
+            animation.setDuration(140);
+            mRecyclerView.setAnimation(animation);
         }
     }
 
