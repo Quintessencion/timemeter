@@ -15,6 +15,7 @@ import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment;
 import com.simbirsoft.timemeter.ui.stats.binders.ActivityStackedTimelineBinder;
 import com.simbirsoft.timemeter.ui.stats.binders.ActivityTimelineBinder;
 import com.simbirsoft.timemeter.ui.stats.binders.OverallActivityTimePieBinder;
+import com.simbirsoft.timemeter.ui.tags.EditTagNameDialogFragment;
 import com.simbirsoft.timemeter.ui.tasklist.TaskListFragment;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 
@@ -33,5 +34,6 @@ public interface UiComponent {
     public void injectOverallActivityTimePieBinder(OverallActivityTimePieBinder binder);
     public void injectActivityTimelineBinder(ActivityTimelineBinder activityTimelineBinder);
     public void injectActivityStackedTimelineBinder(ActivityStackedTimelineBinder activityStackedTimelineBinder);
+    public void injectEditTagNameDialogFragment(EditTagNameDialogFragment editTagNameDialogFragment);
     public void injectMainPageFragment(MainPageFragment fragment);
 }

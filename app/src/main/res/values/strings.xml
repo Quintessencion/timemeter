@@ -83,8 +83,8 @@
     <string name="error_unable_to_remove_tag">Ошибка при удалении метки</string>
     <string name="error_unable_to_backup_tag">Ошибка при восстановлении метки</string>
     <string name="error_unable_to_backup_task">Ошибка при восстановлении задачи</string>
-    <string name="error_tag_already_exists">Ошибка, метка с таким именем уже существует</string>
-    <string name="error_tag_name_is_empty">Ошибка, название метки не задано</string>
+    <string name="error_tag_already_exists">Такая метка уже существует</string>
+    <string name="error_tag_name_is_empty">Название метки не задано</string>
     <string name="error_unable_to_load_task_activities">Ошибка при загрузке списка активностей</string>
     <string name="error_unable_to_load_calendar_data">Ошибка при загрузке данных для календаря</string>
 

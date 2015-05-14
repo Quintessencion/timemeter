@@ -1,14 +1,17 @@
 package com.simbirsoft.timemeter.jobs;
 
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
 import com.be.android.library.worker.base.BaseJob;
 import com.be.android.library.worker.base.JobEvent;
 import com.be.android.library.worker.models.JobResultStatus;
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Tag;
+import com.squareup.phrase.Phrase;
 
 import javax.inject.Inject;
 
@@ -64,15 +67,8 @@ public class SaveTagJob extends BaseJob {
                 return JobEvent.failure(EVENT_CODE_TAG_NAME_IS_EMPTY, "tag name is empty");
             }
 
-            if (mTag.getId() == null) {
-                Tag tag = cupboard.query(Tag.class)
-                        .withSelection("UPPER(" + Tag.COLUMN_NAME + ")=?", mTag.getName().toUpperCase())
-                        .query()
-                        .get();
-
-                if (tag != null) {
-                    return JobEvent.failure(EVENT_CODE_TAG_ALREADY_EXISTS, "tag already exists");
-                }
+            if (checkTagExists()) {
+                return JobEvent.failure(EVENT_CODE_TAG_ALREADY_EXISTS, "tag already exists");
             }
 
             cupboard.put(mTag);
@@ -80,6 +76,28 @@ public class SaveTagJob extends BaseJob {
             return new SaveTagResult(mTag);
         } finally {
             db.endTransaction();
+        }
+    }
+
+    private boolean checkTagExists() {
+        final String query = Phrase.from(
+                "SELECT {table_tag}.{table_tag__id}, {table_tag}.{table_tag__name} FROM {table_tag}")
+                .put("table_tag", Tag.TABLE_NAME)
+                .put("table_tag__id", Tag.COLUMN_ID)
+                .put("table_tag__name", Tag.COLUMN_NAME)
+                .format()
+                .toString();
+        final Cursor c = mDatabaseHelper.getReadableDatabase().rawQuery(query, null);
+        try {
+            while (c.moveToNext()) {
+                if(!Objects.equal(mTag.getId(), c.getLong(0))
+                        && Objects.equal(c.getString(1).toUpperCase(),mTag.getName().toUpperCase())) {
+                    return true;
+                }
+            }
+            return false;
+        } finally {
+            c.close();
         }
     }
 }
