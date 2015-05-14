@@ -25,6 +25,10 @@
             android:text="@android:string/untitled"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="@android:color/white"/>
+        <!--<com.simbirsoft.timemeter.ui.views.TagView_-->
+            <!--android:id="@android:id/title"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"/>-->
     </FrameLayout>
 
     <View

@@ -14,12 +14,10 @@ import org.apmem.tools.layouts.FlowLayout;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 @EViewGroup(R.layout.view_tag_flow)
 public class TagFlowView extends FlowLayout {
 
-    private final Stack<View> mReuseTagViews = new Stack<>();
     private final ArrayList<TagView> mTagViews = new ArrayList<>();
 
     @ViewById(R.id.tagFlowViewContainer)
@@ -42,28 +40,24 @@ public class TagFlowView extends FlowLayout {
     }
 
     public void bindTagViews(List<Tag> tags) {
-        final int tagCount = tags.size();
+        final int newTagCount = tags.size();
+        final int oldTagCount = tagContainerView.getChildCount();
+        final int diffCount = oldTagCount - newTagCount;
 
-        final int reuseViewCount = tagContainerView.getChildCount();
-        for (int i = 0; i < reuseViewCount; i++) {
-            mReuseTagViews.add(tagContainerView.getChildAt(i));
-        }
-        tagContainerView.removeAllViewsInLayout();
-
-        for (int i = 0; i < tagCount; i++) {
-            if (mReuseTagViews.isEmpty()) {
-                mTagViews.add(i, TagView_.build(tagContainerView.getContext()));
-            } else {
-                mTagViews.add(i, (TagView) mReuseTagViews.pop());
+        if (diffCount > 0) {
+            tagContainerView.removeViews(0, diffCount);
+        } else {
+            for(int i = diffCount; i < 0; i++) {
+                tagContainerView.addView(TagView_.build(tagContainerView.getContext()));
             }
-
-            tagContainerView.addView(mTagViews.get(i));
         }
 
-        if (tagCount > 0) {
-            for (int i = 0; i < tagCount; i++) {
-                TagView tagView = mTagViews.get(i);
+        mTagViews.clear();
+        if (newTagCount > 0) {
+            for (int i = 0; i < newTagCount; i++) {
+                TagView tagView = (TagView) tagContainerView.getChildAt(i);
                 tagView.setTag(tags.get(i));
+                mTagViews.add(tagView);
             }
             tagContainerView.setVisibility(View.VISIBLE);
         } else {

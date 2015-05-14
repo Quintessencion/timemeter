@@ -22,7 +22,6 @@ import com.simbirsoft.timemeter.ui.views.TagView;
 
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -53,29 +52,25 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     private final ITaskActivityManager mTaskActivityManager;
     private TaskClickListener mTaskClickListener;
 
-    private final View.OnClickListener mCardClickListener =
-            view -> {
-                if (mTaskClickListener != null) {
-                    mTaskClickListener.onTaskCardClicked((TaskBundle) view.getTag());
-                }
-            };
+    private final View.OnClickListener mCardClickListener = (view) -> {
+        if (mTaskClickListener != null) {
+            mTaskClickListener.onTaskCardClicked((TaskBundle) view.getTag());
+        }
+    };
 
-    private final View.OnClickListener mViewClickListener =
-            view -> {
-                if (mTaskClickListener != null) {
-                    mTaskClickListener.onTaskViewClicked((TaskBundle) view.getTag());
-                }
-            };
+    private final View.OnClickListener mViewClickListener = (view) -> {
+        if (mTaskClickListener != null) {
+            mTaskClickListener.onTaskViewClicked((TaskBundle) view.getTag());
+        }
+    };
 
-    private final View.OnLongClickListener mViewLongClickListener =
-            view -> {
-                if (mTaskClickListener != null) {
-                    mTaskClickListener.onTaskViewLongClicked((TaskBundle) view.getTag(), view);
-                    return true;
-                }
-
-                return false;
-            };
+    private final View.OnLongClickListener mViewLongClickListener = (view) -> {
+        if (mTaskClickListener != null) {
+            mTaskClickListener.onTaskViewLongClicked((TaskBundle) view.getTag(), view);
+            return true;
+        }
+        return false;
+    };
 
     private final TagView.TagViewClickListener mTagViewClickListener = new TagView.TagViewClickListener() {
         @Override
@@ -181,11 +176,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         holder.itemEditView.setTag(item);
 
         holder.tagFlowView.bindTagViews(item.getTags());
-        ArrayList<TagView> tagViews = holder.tagFlowView.getTagViews();
-        for (TagView tagView : tagViews) {
-            tagView.setTagViewClickListener(mTagViewClickListener);
-        }
-        //holder.tagFlowView.setTagViewsClickListener(mTagViewClickListener);
+        holder.tagFlowView.setTagViewsClickListener(mTagViewClickListener);
 
         if (mTaskActivityManager.isTaskActive(task)) {
             ActiveTaskInfo taskInfo = mTaskActivityManager.getActiveTaskInfo();

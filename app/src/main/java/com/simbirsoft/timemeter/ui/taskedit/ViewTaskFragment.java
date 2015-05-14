@@ -22,8 +22,6 @@ import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-
 @EFragment(R.layout.fragment_view_task)
 public class ViewTaskFragment extends BaseFragment {
     public static final String EXTRA_TASK_BUNDLE = "extra_task_bundle";
@@ -38,11 +36,8 @@ public class ViewTaskFragment extends BaseFragment {
     @FragmentArg(EXTRA_TASK_BUNDLE)
     TaskBundle mExtraTaskBundle;
 
-    private final TagView.TagViewClickListener mTagViewClickListener = new TagView.TagViewClickListener() {
-        @Override
-        public void onClick(TagView tagView) {
-            LOG.debug("Tag <" + tagView.getTag().getName() + "> clicked!");
-        }
+    private final TagView.TagViewClickListener mTagViewClickListener = (tagView) -> {
+        LOG.debug("Tag <" + tagView.getTag().getName() + "> clicked!");
     };
 
     @Override
@@ -73,10 +68,6 @@ public class ViewTaskFragment extends BaseFragment {
     void bindViews() {
         setActionBarTitleAndHome(mExtraTaskBundle.getTask().getDescription());
         tagFlowView.bindTagViews(mExtraTaskBundle.getTags());
-//        ArrayList<TagView> tagViews = tagFlowView.getTagViews();
-//        for (TagView tagView : tagViews) {
-//            tagView.setTagViewClickListener(mTagViewClickListener);
-//        }
         tagFlowView.setTagViewsClickListener(mTagViewClickListener);
     }
 

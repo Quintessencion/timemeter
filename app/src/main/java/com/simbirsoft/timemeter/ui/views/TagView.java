@@ -6,7 +6,6 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
-import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -49,14 +48,6 @@ public class TagView extends FrameLayout {
 
     @AfterViews
     void initializeView() {
-        textView.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mTagViewClickListener != null) {
-                    mTagViewClickListener.onClick(TagView.this);
-                }
-            }
-        });
     }
 
     public void setTag(@NonNull Tag tag) {
@@ -72,5 +63,14 @@ public class TagView extends FrameLayout {
 
     public void setTagViewClickListener(TagViewClickListener tagViewClickListener) {
         mTagViewClickListener = tagViewClickListener;
+        if (mTagViewClickListener != null) {
+            textView.setOnClickListener( (v) -> {
+                if (mTagViewClickListener != null) {
+                    mTagViewClickListener.onClick(TagView.this);
+                }
+            });
+        } else {
+            textView.setOnClickListener(null);
+        }
     }
 }

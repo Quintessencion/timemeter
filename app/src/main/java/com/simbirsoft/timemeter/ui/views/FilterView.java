@@ -515,7 +515,6 @@ public class FilterView extends FrameLayout implements
 
                 TagViewUtils.updateTagViewColor(vh.tagView, item.getColor());
                 vh.tagView.setText(item.getName());
-
                 return vh.itemView;
             }
         };
