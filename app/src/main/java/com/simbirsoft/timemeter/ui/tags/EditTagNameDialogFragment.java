@@ -96,7 +96,7 @@ public class EditTagNameDialogFragment extends BaseDialogFragment implements Job
         else if (mTagNames != null
                 && !mTag.getName().equalsIgnoreCase(mEnteredText)
                 && Iterables.indexOf(mTagNames, (tag) -> tag.equalsIgnoreCase(mEnteredText)) != -1) {
-            setError(getString(R.string.error_tag_name_repeat, mEnteredText));
+            setError(getString(R.string.error_tag_already_exists));
         }
         else {
             mPositiveButton.setEnabled(true);
@@ -157,7 +157,7 @@ public class EditTagNameDialogFragment extends BaseDialogFragment implements Job
     public void onTagSaveFailed(JobEvent event) {
         enableViews();
         if (event.getEventCode() == SaveTagJob.EVENT_CODE_TAG_ALREADY_EXISTS) {
-            setError(getString(R.string.error_tag_name_repeat, mEnteredText));
+            setError(getString(R.string.error_tag_already_exists));
         }
     }
 
