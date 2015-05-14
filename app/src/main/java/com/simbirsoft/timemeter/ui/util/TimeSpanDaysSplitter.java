@@ -124,7 +124,7 @@ public class TimeSpanDaysSplitter {
         return items;
     }
 
-    /*
+    /**
      * Sort list of TaskTimeSpan by start time in descending order
      * @param spans - list of TaskTimeSpan to sort
      * */
@@ -172,7 +172,7 @@ public class TimeSpanDaysSplitter {
                 monthCalendar.get(Calendar.MONTH) == calendar.get(Calendar.MONTH));
     }
 
-    /*
+    /**
     * Add date (TaskActivityDateItem) and empty (TaskActivityEmpty) items between two span items
     * or before the first span item.
     * @param items - result list of activity items
