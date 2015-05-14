@@ -16,13 +16,16 @@ import com.nispok.snackbar.enums.SnackbarType;
 import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.injection.ApplicationModule;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.SaveTaskBundleJob;
+import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.model.TaskChangedEvent;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
+import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
@@ -30,6 +33,7 @@ import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
 
 public class MainPageFragment extends BaseFragment {
     public static class SnackbarShowEvent {
@@ -45,6 +49,7 @@ public class MainPageFragment extends BaseFragment {
     }
 
     private static final String SNACKBAR_TAG = "main_page_snackbar";
+    private static final String FILTER_STATE = "filter_state";
 
     private boolean mIsContentInvalidated;
     private boolean mIsSelected;
@@ -56,14 +61,42 @@ public class MainPageFragment extends BaseFragment {
     @Named(ApplicationModule.HANDLER_MAIN)
     Handler mHandler;
 
+    FilterView.FilterState mFilterViewState;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Injection.sUiComponent.injectMainPageFragment(this);
+        restoreInstanceState(savedInstanceState);
     }
 
     protected Bus getBus() {
         return mBus;
+    }
+
+    protected FilterView.FilterState getFilterViewState() {
+        return mFilterViewState;
+    }
+
+    protected boolean hasFilter() {
+        return mFilterViewState != null;
+    }
+
+    protected boolean filterIsEmpty() {
+        return  mFilterViewState == null || mFilterViewState.isEmpty();
+    }
+
+    protected void fillTaskLoadFilter(TaskLoadFilter filter) {
+        if (mFilterViewState != null) {
+            filter.tags(mFilterViewState.tags)
+                    .dateMillis(mFilterViewState.dateMillis)
+                    .period(mFilterViewState.period)
+                    .searchText(mFilterViewState.searchText);
+        }
+    }
+
+    protected String getFilterLoaderTag(String tag) {
+        return tag + "filter:" + String.valueOf(mFilterViewState.hashCode());
     }
 
     public void onPageSelected() {
@@ -98,6 +131,19 @@ public class MainPageFragment extends BaseFragment {
         }
     }
 
+    @Subscribe
+    public void onFilterViewStateChanged(FilterViewStateChangeEvent ev) {
+        if (!isAdded()) {
+            return;
+        }
+        mFilterViewState = ev.getFilterState();
+        onFilterViewStateChanged();
+    }
+
+    protected void onFilterViewStateChanged() {
+
+    }
+
     protected boolean needUpdateAfterTaskChanged(int resultCode) {
         return true;
     }
@@ -121,6 +167,20 @@ public class MainPageFragment extends BaseFragment {
         }
         bar.setTag(SNACKBAR_TAG);
         SnackbarManager.show(bar);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle bundle) {
+        super.onSaveInstanceState(bundle);
+        if (mFilterViewState != null) {
+            bundle.putParcelable(FILTER_STATE, mFilterViewState);
+        }
+    }
+
+    private void restoreInstanceState(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            mFilterViewState = savedInstanceState.getParcelable(FILTER_STATE);
+        }
     }
 
     protected void showTaskRemoveUndoBar(TaskBundle bundle) {

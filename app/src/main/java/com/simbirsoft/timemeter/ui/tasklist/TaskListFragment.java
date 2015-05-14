@@ -28,7 +28,6 @@ import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.controller.TaskActivityTimerUpdateListener;
 import com.simbirsoft.timemeter.db.model.Task;
-import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
@@ -43,7 +42,6 @@ import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
 import com.simbirsoft.timemeter.ui.util.TaskFilterPredicate;
-import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.squareup.otto.Subscribe;
 
 import org.androidannotations.annotations.AfterViews;
@@ -79,8 +77,6 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     @InstanceState
     int[] mTaskListPosition;
 
-    @InstanceState
-    FilterView.FilterState mFilterViewState;
 
     private FloatingActionButton mFloatingActionButton;
     private TaskListAdapter mTasksViewAdapter;
@@ -225,8 +221,8 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     private void addTaskToList(TaskBundle task) {
         if (mTasksViewAdapter == null) return;
 
-        if (mFilterViewState != null) {
-            TaskFilterPredicate predicate = new TaskFilterPredicate(mFilterViewState);
+        if (hasFilter()) {
+            TaskFilterPredicate predicate = new TaskFilterPredicate(getFilterViewState());
             if (!predicate.apply(task)) {
                 LOG.debug("created task isn't match current filter");
                 return;
@@ -295,9 +291,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
             mTaskListPosition = null;
         }
 
-        if ((mFilterViewState == null || mFilterViewState.isEmpty())
-                && mTasksViewAdapter.getItemCount() == 0) {
-
+        if (filterIsEmpty() && mTasksViewAdapter.getItemCount() == 0) {
             mEmptyListIndicator.setVisibility(View.VISIBLE);
         } else {
             mEmptyListIndicator.setVisibility(View.GONE);
@@ -314,13 +308,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         LoadTaskListJob job = Injection.sJobsComponent.loadTaskListJob();
         job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
 
-        if (mFilterViewState != null) {
-            job.getTaskLoadFilter()
-                    .tags(mFilterViewState.tags)
-                    .dateMillis(mFilterViewState.dateMillis)
-                    .period(mFilterViewState.period)
-                    .searchText(mFilterViewState.searchText);
-        }
+        fillTaskLoadFilter(job.getTaskLoadFilter());
         job.addTag(TASK_LIST_LOADER_TAG);
 
         return job;
@@ -366,19 +354,12 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     public void onTaskViewLongClicked(TaskBundle item, View itemView) {
         showToastWithAnchor(R.string.hint_view_task, itemView);
     }
-    @Subscribe
-    public void onFilterViewStateChanged(FilterViewStateChangeEvent ev) {
-        if (!isAdded()) {
-            return;
-        }
-        mFilterViewState = ev.getFilterState();
 
+    @Override
+    protected void onFilterViewStateChanged() {
         JobManager.getInstance().cancelAll(JobSelector.forJobTags(TASK_LIST_LOADER_TAG));
 
-        String loaderTag = TASK_LIST_LOADER_TAG
-                + "filter:"
-                + String.valueOf(mFilterViewState.hashCode());
-
+        String loaderTag = getFilterLoaderTag(TASK_LIST_LOADER_TAG);
         requestLoad(loaderTag, this);
     }
 
