@@ -22,9 +22,10 @@ public class TaskFilterPredicate implements Predicate<TaskBundle> {
     @Override
     public boolean apply(TaskBundle input) {
         if (mTaskFilterState.tags != null &&
-                !mTaskFilterState.tags.isEmpty()) {
+            !mTaskFilterState.tags.isEmpty()) {
 
-            if (input.getTags() != null && input.getTags().isEmpty()) {
+            if (input.getTags() == null ||
+                input.getTags().isEmpty()) {
                 return false;
             }
 
@@ -33,10 +34,16 @@ public class TaskFilterPredicate implements Predicate<TaskBundle> {
             }
         }
 
+        if (input.getTask() == null ||
+            input.getTask().getDescription().compareTo(mTaskFilterState.searchText) != 0) {
+            return false;
+        }
+
         if (mTaskFilterState.dateMillis != 0) {
             long periodEnd = 0;
             if (mTaskFilterState.period != null) {
-                periodEnd = Period.getPeriodEnd(mTaskFilterState.period, mTaskFilterState.dateMillis);
+                periodEnd = Period.getPeriodEnd(mTaskFilterState.period,
+                                                mTaskFilterState.dateMillis);
             }
 
             final Task task = input.getTask();
