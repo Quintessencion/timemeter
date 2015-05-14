@@ -106,6 +106,6 @@
         <item>Все время</item>
     </string-array>
 
-
-
+    <string name="no_activity">нет активности</string>
+    <string name="recent_activity">Последняя активность</string>
 </resources>
