@@ -9,12 +9,13 @@ import java.util.Calendar;
 import java.util.Date;
 
 public abstract class TaskActivityItem {
-    @IntDef({DATE_ITEM_TYPE, SPANS_ITEM_TYPE})
+    @IntDef({DATE_ITEM_TYPE, SPANS_ITEM_TYPE, EMPTY_ITEM_TYPE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ItemType {}
     
     public static final int DATE_ITEM_TYPE = 0;
     public static final int SPANS_ITEM_TYPE = 1;
+    public static final int EMPTY_ITEM_TYPE = 2;
 
     private final Calendar mDate;
 
