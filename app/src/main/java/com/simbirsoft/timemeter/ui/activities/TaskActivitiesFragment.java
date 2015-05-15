@@ -83,6 +83,9 @@ public class TaskActivitiesFragment extends BaseFragment implements
     @InstanceState
     boolean mIsFilterPanelShown;
 
+    @InstanceState
+    TaskActivitiesFilterView.FilterState mFilterState;
+
     @Inject
     Bus mBus;
 
@@ -137,6 +140,10 @@ public class TaskActivitiesFragment extends BaseFragment implements
             showFilterView(false);
         } else {
             hideFilterView(false);
+        }
+
+        if (mFilterView != null && mFilterState != null) {
+            mFilterView.setFilterState(mFilterState);
         }
 
         mProgressLayout.setShouldDisplayEmptyIndicatorMessage(true);

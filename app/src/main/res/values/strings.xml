@@ -13,6 +13,7 @@
     <string name="title_view_params">ФИЛЬТР</string>
     <string name="title_view_date">ДАТА:</string>
     <string name="title_view_tags">МЕТКИ:</string>
+    <string name="title_view_period">ПЕРИОД:</string>
     <string name="title_overall_activity_pie_chart">Распределение активности</string>
     <string name="title_activity_timeline">Суммарная активность по дням</string>
     <string name="title_activity_stacked_timeline">Позадачная активность по дням</string>
@@ -72,6 +73,7 @@
     <string name="hint_choose_date">не выбрана</string>
     <string name="hint_reset_filter">Сбросить фильтр</string>
     <string name="hint_choose_filter_period">Выбрать период</string>
+    <string name="hint_choose_period">не задан</string>
 
     <!-- Errors -->
     <string name="error_loading_data">Ошибка при загрузке данных</string>

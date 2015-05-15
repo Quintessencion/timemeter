@@ -51,7 +51,7 @@
                 style="?android:attr/textAppearanceSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/title_view_date"
+                android:text="@string/title_view_period"
                 android:textColor="@android:color/white"
                 android:layout_marginRight="18dp" />
             <FrameLayout
@@ -66,7 +66,7 @@
                     style="?android:attr/textAppearanceSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/hint_choose_date"
+                    android:text="@string/hint_choose_period"
                     android:textColor="@color/secondary_text_default_material_dark"/>
             </FrameLayout>
         </LinearLayout>
