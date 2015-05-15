@@ -13,6 +13,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.ui.model.TaskActivityDateItem;
+import com.simbirsoft.timemeter.ui.model.TaskActivityEmptyItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivitySpansItem;
 import com.simbirsoft.timemeter.ui.util.TimeUtils;
@@ -39,17 +40,24 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         }
     }
 
-    static class SpansItemViewHolder extends ViewHolder {
-        TextView mWeekDayTextView;
-        TextView mDateTextView;
+    static class SpansItemViewHolder extends EmptyItemViewHolder {
         TaskActivityItemsLayout mActivitiesLayout;
 
         public SpansItemViewHolder(View itemView, TaskActivityItemsLayout.TaskActivityItemsAdapter adapter) {
             super(itemView);
-            mWeekDayTextView = (TextView)itemView.findViewById(R.id.weekDayTextView);
-            mDateTextView = (TextView)itemView.findViewById(R.id.dateTextView);
             mActivitiesLayout = (TaskActivityItemsLayout)itemView.findViewById(R.id.taskActivityItemsLayout);
             mActivitiesLayout.setAdapter(adapter);
+        }
+    }
+
+    static class EmptyItemViewHolder extends ViewHolder {
+        TextView mWeekDayTextView;
+        TextView mDateTextView;
+
+        public EmptyItemViewHolder(View itemView) {
+            super(itemView);
+            mWeekDayTextView = (TextView)itemView.findViewById(R.id.weekDayTextView);
+            mDateTextView = (TextView)itemView.findViewById(R.id.dateTextView);
         }
     }
 
@@ -92,18 +100,34 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-       return (getItemViewType(i) == TaskActivityItem.DATE_ITEM_TYPE)
-               ? createDateItemViewHolder(viewGroup)
-               : createSpansItemViewHolder(viewGroup);
+    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+        switch (viewType) {
+            case TaskActivityItem.DATE_ITEM_TYPE:
+                return createDateItemViewHolder(viewGroup);
+
+            case TaskActivityItem.SPANS_ITEM_TYPE:
+                return createSpansItemViewHolder(viewGroup);
+
+            case TaskActivityItem.EMPTY_ITEM_TYPE:
+                return createEmptyItemViewHolder(viewGroup);
+        }
+        return null;
     }
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
-        if (getItemViewType(position) == TaskActivityItem.DATE_ITEM_TYPE) {
-            bindDateItemViewHolder((DateItemViewHolder)viewHolder, position);
-        } else {
-            bindSpansItemViewHolder((SpansItemViewHolder) viewHolder, position);
+        switch (getItemViewType(position)) {
+            case TaskActivityItem.DATE_ITEM_TYPE:
+                bindDateItemViewHolder((DateItemViewHolder)viewHolder, position);
+                break;
+
+            case TaskActivityItem.SPANS_ITEM_TYPE:
+                bindSpansItemViewHolder((SpansItemViewHolder)viewHolder, position);
+                break;
+
+            case TaskActivityItem.EMPTY_ITEM_TYPE:
+                bindEmptyItemViewHolder((EmptyItemViewHolder)viewHolder, position);
+                break;
         }
     }
 
@@ -127,13 +151,26 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         return new SpansItemViewHolder(view, this);
     }
 
+    private ViewHolder createEmptyItemViewHolder(ViewGroup viewGroup) {
+        View view = LayoutInflater.from(mContext)
+                .inflate(R.layout.view_task_activity_empty_item, viewGroup, false);
+
+        return new EmptyItemViewHolder(view);
+    }
+
     private void bindDateItemViewHolder(DateItemViewHolder viewHolder, int position) {
         TaskActivityDateItem item = (TaskActivityDateItem)mItems.get(position);
         viewHolder.mTextView.setText(item.getDateString());
     }
 
     private void bindSpansItemViewHolder(SpansItemViewHolder viewHolder, int position) {
+        bindEmptyItemViewHolder(viewHolder, position);
         TaskActivitySpansItem item = (TaskActivitySpansItem)mItems.get(position);
+        viewHolder.mActivitiesLayout.setTaskActivitySpansItem(item);
+    }
+
+    private void bindEmptyItemViewHolder(EmptyItemViewHolder viewHolder, int position) {
+        TaskActivityEmptyItem item = (TaskActivityEmptyItem)mItems.get(position);
         int dateColor = mDateColor;
         long millis = item.getDateMillis();
         if (TimeUtils.isCurrentDay(millis, mCalendar)) {
@@ -145,7 +182,6 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         viewHolder.mWeekDayTextView.setTextColor(dateColor);
         viewHolder.mDateTextView.setText(item.getDateString());
         viewHolder.mWeekDayTextView.setText(item.getWeekDayString());
-        viewHolder.mActivitiesLayout.setTaskActivitySpansItem(item);
         int topPadding = (isFirstItem(position)) ? mFirstItemPaddingTop : mMiddleItemPaddingTop;
         int bottomPadding = (isLastItem(position)) ? mLastItemPaddingBottom : mMiddleItemPaddingBottom;
         viewHolder.itemView.setPadding(0, topPadding, 0, bottomPadding);

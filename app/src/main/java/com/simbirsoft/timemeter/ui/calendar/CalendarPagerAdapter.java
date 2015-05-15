@@ -21,10 +21,12 @@ public class CalendarPagerAdapter extends PagerAdapter {
     private CalendarViewPager mViewPager;
     private HashMap<Integer, WeekCalendarView> mViews = Maps.newHashMap();
     private ArrayList<WeekCalendarView> mCachedViews = Lists.newArrayList();
+    private WeekCalendarView.OnCellClickListener mListener;
 
-    public CalendarPagerAdapter(Context context, CalendarViewPager viewPager) {
+    public CalendarPagerAdapter(Context context, CalendarViewPager viewPager, WeekCalendarView.OnCellClickListener listener) {
         mContext = context;
         mViewPager = viewPager;
+        mListener = listener;
         mViewPager.setAdapter(this);
         mViewPager.setCurrentItem(Integer.MAX_VALUE / 2, false);
     }
@@ -62,10 +64,21 @@ public class CalendarPagerAdapter extends PagerAdapter {
         return view == object;
     }
 
+    public WeekCalendarView getCurrentView() {
+        return getView(mViewPager.getCurrentItem());
+    }
+
     public void setCurrentViewActivityCalendar(ActivityCalendar activityCalendar) {
-        WeekCalendarView v = getView(mViewPager.getCurrentItem());
+        WeekCalendarView v = getCurrentView();
         if (v != null) {
             v.setActivityCalendar(activityCalendar);
+        }
+    }
+
+    public void deselectCurrentViewCell() {
+        WeekCalendarView v = getCurrentView();
+        if (v != null) {
+            v.deselectCell();
         }
     }
 
@@ -79,6 +92,14 @@ public class CalendarPagerAdapter extends PagerAdapter {
         WeekCalendarView v = dequeueView(mViewPager.getCurrentItem() - 1);
         setDates(v, startDate, endDate);
         mViewPager.setCurrentItem(mViewPager.getCurrentItem() - 1, true);
+    }
+
+    public void removeSpansFromCurrentView(long taskId) {
+        WeekCalendarView view = getView(mViewPager.getCurrentItem());
+        if (view != null) {
+            view.getActivityCalendar().removeSpans(taskId);
+            view.invalidate();
+        }
     }
 
     private void setDates(WeekCalendarView view, Date startDate, Date endDate) {
@@ -106,6 +127,7 @@ public class CalendarPagerAdapter extends PagerAdapter {
                 mCachedViews.remove(v);
             } else {
                 v = new WeekCalendarView(mContext);
+                v.setOnCellClickListener(mListener);
             }
             mViews.put(position, v);
         }

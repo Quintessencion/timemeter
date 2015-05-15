@@ -1,12 +1,12 @@
 package com.simbirsoft.timemeter.ui.views;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.os.Build;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+
+import com.simbirsoft.timemeter.ui.calendar.CalendarPagerAdapter;
 
 public class CalendarViewPager extends ViewPager {
     public CalendarViewPager(Context context) {
@@ -39,7 +39,7 @@ public class CalendarViewPager extends ViewPager {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         // find the first child view
-        View view = getChildAt(0);
+        View view = ((CalendarPagerAdapter)getAdapter()).getCurrentView();
         if (view != null) {
             // measure the first child view with the specified measure spec
             view.measure(widthMeasureSpec, heightMeasureSpec);
