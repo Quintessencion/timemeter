@@ -53,9 +53,6 @@ public class ActivityCalendar {
         mStartDate = Calendar.getInstance();
         mEndDate = Calendar.getInstance();
         mBufferCalendar = Calendar.getInstance();
-        Preferences prefs = Injection.sDatabaseComponent.preferences();
-        mStartHour = prefs.getDayStartHour();
-        mEndHour = prefs.getDayEndHour();
         setDayDefaultBounds();
     }
 
