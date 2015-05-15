@@ -14,6 +14,7 @@ import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
 import android.os.Handler;
+import java.text.DateFormat;
 import java.util.logging.LogRecord;
 
 import javax.inject.Named;
@@ -26,6 +27,7 @@ import dagger.Provides;
 public class ApplicationModule {
 
     public static final String HANDLER_MAIN = "main";
+    public static final String DATE_FORMAT = "date_format";
 
     private final App mApplication;
     private final Handler mHandler;
@@ -54,6 +56,13 @@ public class ApplicationModule {
     @Provides
     Resources provideResources() {
         return mApplication.getResources();
+    }
+
+
+    @Provides
+    @Named(DATE_FORMAT)
+    DateFormat provideDateFormat() {
+        return android.text.format.DateFormat.getDateFormat(mApplication);
     }
 
     @Provides

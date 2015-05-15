@@ -137,4 +137,20 @@ public class ProgressLayout extends RelativeLayout {
     public void setProgressLayoutCallbacks(ProgressLayoutCallbacks progressLayoutCallbacks) {
         mProgressLayoutCallbacks = progressLayoutCallbacks;
     }
+
+    public void setEmptyIndicatorMessage(String message) {
+        mEmptyIndicatorView.setText(message);
+    }
+
+    public void setEmptyIndicatorStyle(int style) {
+        mEmptyIndicatorView.setTypeface(null, style);
+    }
+
+    public void setEmptyIndicatorTextSize(int unit, float size) {
+        mEmptyIndicatorView.setTextSize(unit, size);
+    }
+
+    public void setEmptyIndicatorTextColor(int color) {
+        mEmptyIndicatorView.setTextColor(color);
+    }
 }

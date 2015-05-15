@@ -139,6 +139,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
             hideFilterView(false);
         }
 
+        mProgressLayout.setShouldDisplayEmptyIndicatorMessage(true);
         mProgressLayout.setProgressLayoutCallbacks(
                 new ProgressLayout.JobProgressLayoutCallbacks(JobSelector.forJobTags(LOADER_TAG)) {
                     @Override

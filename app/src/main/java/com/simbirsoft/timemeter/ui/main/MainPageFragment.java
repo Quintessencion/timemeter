@@ -214,9 +214,9 @@ public class MainPageFragment extends BaseFragment {
             bar.attachToRecyclerView(getRecyclerView());
         }
 
-        new AsyncTask<Void, Void, String>() {
+        new AsyncTask<Void, Void, CharSequence>() {
             @Override
-            protected String doInBackground(Void... voids) {
+            protected CharSequence doInBackground(Void... voids) {
                 final String description;
 
                 if (bundle.hasPersistedState()) {
@@ -234,11 +234,11 @@ public class MainPageFragment extends BaseFragment {
                 sb.setSpan(iss, undoMessage.length() - description.length(),
                         undoMessage.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
 
-                return sb.toString();
+                return sb;
             }
 
             @Override
-            protected void onPostExecute(String text) {
+            protected void onPostExecute(CharSequence text) {
                 if (isAdded() && !getActivity().isFinishing()) {
                     bar.text(text);
                     SnackbarManager.show(bar);
