@@ -95,7 +95,7 @@ public class ProgressLayout extends RelativeLayout {
 
         if (getVisibility() == View.GONE) {
             setAlpha(0f);
-            animate().alpha(1).setDuration(120).start();
+            animate().alpha(1).setDuration(320).start();
             setVisibility(View.VISIBLE);
         }
 
@@ -122,6 +122,14 @@ public class ProgressLayout extends RelativeLayout {
         mProgressTitleView.setText(text);
     }
 
+    public void setProgressTitleVisible(boolean isVisible) {
+        if (isVisible) {
+            mProgressTitleView.setVisibility(View.VISIBLE);
+        } else {
+            mProgressTitleView.setVisibility(View.GONE);
+        }
+    }
+
     public boolean shouldDisplayEmptyIndicatorMessage() {
         return mDisplayEmptyIndicatorMessage;
     }
@@ -136,5 +144,21 @@ public class ProgressLayout extends RelativeLayout {
 
     public void setProgressLayoutCallbacks(ProgressLayoutCallbacks progressLayoutCallbacks) {
         mProgressLayoutCallbacks = progressLayoutCallbacks;
+    }
+
+    public void setEmptyIndicatorMessage(String message) {
+        mEmptyIndicatorView.setText(message);
+    }
+
+    public void setEmptyIndicatorStyle(int style) {
+        mEmptyIndicatorView.setTypeface(null, style);
+    }
+
+    public void setEmptyIndicatorTextSize(int unit, float size) {
+        mEmptyIndicatorView.setTextSize(unit, size);
+    }
+
+    public void setEmptyIndicatorTextColor(int color) {
+        mEmptyIndicatorView.setTextColor(color);
     }
 }

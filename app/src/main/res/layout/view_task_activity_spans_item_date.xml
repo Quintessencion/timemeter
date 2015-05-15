@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:id="@+id/textLayout"
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_marginLeft="@dimen/task_activity_date_text_margin"
+              android:layout_marginRight="@dimen/task_activity_date_text_margin"
+              android:layout_marginTop="@dimen/task_activity_span_item_padding"
+              android:orientation="vertical"
+              android:layout_alignParentStart="true"
+              android:layout_alignParentLeft="true"
+              android:layout_alignParentTop="true">
+
+    <TextView
+        android:id="@+id/dateTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:includeFontPadding="false"
+        android:textColor="@color/calendar_date_text"
+        android:textSize="@dimen/task_activity_date_text_size"/>
+
+    <TextView
+        android:id="@+id/weekDayTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:includeFontPadding="false"
+        android:textColor="@color/calendar_date_text"
+        android:textSize="@dimen/task_activity_weekday_text_size"/>
+
+</LinearLayout>

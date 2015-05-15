@@ -16,39 +16,45 @@
         android:layout_centerInParent="true"
         android:gravity="center"/>
 
-    <com.andexert.library.RippleView
+    <com.balysv.materialripple.MaterialRippleLayout
         android:id="@+id/prevButtonRipple"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toStartOf="@+id/periodTextView"
         android:layout_toLeftOf="@+id/periodTextView"
-        app:rv_centered="true"
-        app:rv_alpha="250">
+        app:mrl_rippleOverlay="true"
+        app:mrl_rippleHover="true"
+        app:mrl_rippleInAdapter="false"
+        app:mrl_rippleDuration="250"
+        app:mrl_rippleColor="@color/white"
+        app:mrl_rippleAlpha="0.3">
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/prevButton"
-            android:layout_centerInParent="true"
             android:padding="10dp"
             android:src="@drawable/ic_keyboard_arrow_left"/>
-        </com.andexert.library.RippleView>
+        </com.balysv.materialripple.MaterialRippleLayout>
 
-    <com.andexert.library.RippleView
+    <com.balysv.materialripple.MaterialRippleLayout
         android:id="@+id/nextButtonRipple"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toEndOf="@+id/periodTextView"
         android:layout_toRightOf="@+id/periodTextView"
-        app:rv_centered="true"
-        app:rv_alpha="250">
+        app:mrl_rippleOverlay="true"
+        app:mrl_rippleHover="true"
+        app:mrl_rippleInAdapter="false"
+        app:mrl_rippleDuration="250"
+        app:mrl_rippleColor="@color/white"
+        app:mrl_rippleAlpha="0.3">
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/nextButton"
-            android:layout_centerInParent="true"
             android:padding="10dp"
             android:src="@drawable/ic_keyboard_arrow_right"/>
-    </com.andexert.library.RippleView>
+    </com.balysv.materialripple.MaterialRippleLayout>
 </RelativeLayout>

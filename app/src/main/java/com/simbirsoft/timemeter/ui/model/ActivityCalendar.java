@@ -10,9 +10,12 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
+import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.util.ColorSets;
+import com.simbirsoft.timemeter.ui.util.TimeSpanDaysSplitter;
 import com.simbirsoft.timemeter.ui.util.TimeUtils;
 
 import org.slf4j.Logger;
@@ -25,6 +28,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -35,14 +39,11 @@ public class ActivityCalendar {
     private static final SimpleDateFormat WEEK_DAY_FORMAT = new SimpleDateFormat("EE");
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("d");
 
-    private static final int START_HOUR_DEFAULT = 0;
-    private static final int END_HOUR_DEFAULT = 24;
-
     private final Calendar mStartDate;
     private final Calendar mEndDate;
     private final Calendar mBufferCalendar;
-    private int mStartHour = START_HOUR_DEFAULT;
-    private int mEndHour = END_HOUR_DEFAULT;
+    private int mStartHour;
+    private int mEndHour;
     private final List<Date> mDays;
     private final Multimap<Integer, TaskTimeSpan> mDailyActivity;
 
@@ -52,6 +53,7 @@ public class ActivityCalendar {
         mStartDate = Calendar.getInstance();
         mEndDate = Calendar.getInstance();
         mBufferCalendar = Calendar.getInstance();
+        setDayDefaultBounds();
     }
 
 
@@ -64,7 +66,7 @@ public class ActivityCalendar {
         final List<TaskTimeSpan> splitSpans = Lists.newArrayList();
 
         for (TaskTimeSpan span : input) {
-            splitTimeSpanByDays(cal1, cal2, span, splitSpans);
+            TimeSpanDaysSplitter.splitTimeSpanByDays(cal1, cal2, span, splitSpans);
             result.addAll(splitSpans);
             splitSpans.clear();
         }
@@ -106,19 +108,13 @@ public class ActivityCalendar {
     }
 
     public int getDateLabelColor(Resources res, int dayIndex) {
-        mBufferCalendar.setTime(new Date());
-        int dayOfYear = mBufferCalendar.get(Calendar.DAY_OF_YEAR);
-        mBufferCalendar.setTime(getDay(dayIndex));
+        long date = getDay(dayIndex).getTime();
 
-        if (mBufferCalendar.get(Calendar.DAY_OF_YEAR) == dayOfYear) {
+        if (TimeUtils.isCurrentDay(date, mBufferCalendar)) {
             return res.getColor(R.color.primary);
         }
 
-        int dayOfWeek = mBufferCalendar.get(Calendar.DAY_OF_WEEK);
-
-        if (dayOfWeek == Calendar.SATURDAY
-                || dayOfWeek == Calendar.SUNDAY) {
-
+        if (TimeUtils.isHoliday(date, mBufferCalendar)) {
             return res.getColor(R.color.accentPrimary);
         }
 
@@ -161,9 +157,8 @@ public class ActivityCalendar {
         Collections.sort(spans, (item1, item2) ->
                 (int) (item1.getStartTimeMillis() - item2.getStartTimeMillis()));
 
+        setDayDefaultBounds();
         if (spans.isEmpty()) {
-            mStartHour = START_HOUR_DEFAULT;
-            mEndHour = END_HOUR_DEFAULT;
             return;
         }
 
@@ -171,6 +166,7 @@ public class ActivityCalendar {
         Calendar calendar = Calendar.getInstance();
         for (TaskTimeSpan span : splitSpans) {
             calendar.setTimeInMillis(span.getStartTimeMillis());
+            int spanStartHour = calendar.get(Calendar.HOUR_OF_DAY);
             long dayStartMillis = TimeUtils.getDayStartMillis(calendar);
             int dayIndex = getDayIndex(dayStartMillis);
 
@@ -180,6 +176,7 @@ public class ActivityCalendar {
             }
 
             mDailyActivity.put(dayIndex, span);
+            mStartHour = Math.min(mStartHour, spanStartHour);
             LOG.debug("activity added to calendar day '{}'; duration: '{}'", dayIndex, span.getDuration());
         }
     }
@@ -245,53 +242,30 @@ public class ActivityCalendar {
         mBufferCalendar.add(Calendar.HOUR_OF_DAY, 1);
         long cellEnd = mBufferCalendar.getTimeInMillis();
         for (TaskTimeSpan span : spans) {
-            if (span.getStartTimeMillis() < cellEnd && span.getEndTimeMillis() >= cellStart) {
+            if (span.getStartTimeMillis() < cellEnd && span.getEndTimeMillis() > cellStart) {
                 result.add(span);
             }
         }
         return result;
     }
 
-    private static void splitTimeSpanByDays(Calendar calendar1, Calendar calendar2,
-                                            TaskTimeSpan span, List<TaskTimeSpan> container) {
-
-        final long spanEndTimeMillis = span.getEndTimeMillis();
-
-        calendar1.setTimeInMillis(span.getStartTimeMillis());
-        calendar2.setTimeInMillis(span.getEndTimeMillis());
-
-        int yearStart = calendar1.get(Calendar.YEAR);
-        int dayStart = calendar1.get(Calendar.DAY_OF_YEAR);
-        final int yearEnd = calendar2.get(Calendar.YEAR);
-        final int dayEnd = calendar2.get(Calendar.DAY_OF_YEAR);
-
-        if (yearStart == yearEnd && dayStart == dayEnd) {
-            // Span covers single day
-            container.add(span);
-            return;
-        }
-
-        long currentTimeMillis = span.getStartTimeMillis();
-
-        while (yearStart < yearEnd || (yearStart == yearEnd && dayStart <= dayEnd)) {
-            TaskTimeSpan newSpan = new TaskTimeSpan();
-            newSpan.setId(span.getId());
-            newSpan.setDescription(span.getDescription());
-            newSpan.setStartTimeMillis(currentTimeMillis);
-            newSpan.setTaskId(span.getTaskId());
-
-            calendar1.add(Calendar.DAY_OF_YEAR, 1);
-
-            currentTimeMillis = TimeUtils.getDayStartMillis(calendar1);
-            long newSpanEndTime = currentTimeMillis - 1;
-            if (newSpanEndTime > spanEndTimeMillis) {
-                newSpanEndTime = spanEndTimeMillis;
+    public void removeSpans(long taskId) {
+        int count = mDailyActivity.size();
+        for (int i = 0; i < count; i++) {
+            Collection<TaskTimeSpan> spans = mDailyActivity.get(i);
+            Iterator<TaskTimeSpan> iterator = spans.iterator();
+            while (iterator.hasNext()) {
+                TaskTimeSpan span = iterator.next();
+                if (span.getTaskId() == taskId) {
+                    iterator.remove();
+                }
             }
-            calendar1.setTimeInMillis(currentTimeMillis);
-            newSpan.setEndTimeMillis(newSpanEndTime);
-            container.add(newSpan);
-            yearStart = calendar1.get(Calendar.YEAR);
-            dayStart = calendar1.get(Calendar.DAY_OF_YEAR);
         }
+    }
+
+    private void setDayDefaultBounds() {
+        Preferences prefs = Injection.sDatabaseComponent.preferences();
+        mStartHour = prefs.getDayStartHour();
+        mEndHour = prefs.getDayEndHour();
     }
 }

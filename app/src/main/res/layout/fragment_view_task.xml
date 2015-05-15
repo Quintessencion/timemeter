@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="12dp">
+    android:paddingTop="12dp">
 
     <TextView
         android:id="@+id/title"
@@ -11,7 +12,8 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:layout_marginTop="4dp"
-        android:layout_marginLeft="4dp"
+        android:layout_marginLeft="@dimen/task_view_title_left_margin"
+        android:layout_marginRight="@dimen/task_view_margin"
         android:text="@string/hint_task_tags"/>
 
     <View
@@ -20,6 +22,8 @@
         android:layout_height="1dp"
         android:background="@android:color/darker_gray"
         android:layout_marginTop="4dp"
+        android:layout_marginLeft="@dimen/task_view_margin"
+        android:layout_marginRight="@dimen/task_view_margin"
         android:layout_below="@+id/title"/>
 
     <com.simbirsoft.timemeter.ui.views.TagFlowView_
@@ -28,5 +32,42 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_marginTop="8dp"
+        android:layout_marginLeft="@dimen/task_view_margin"
+        android:layout_marginRight="@dimen/task_view_margin"
         android:layout_below="@+id/separatorLine"/>
+    <com.balysv.materialripple.MaterialRippleLayout
+        android:id="@+id/activitiesTitleContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_below="@+id/tagViewContainer">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_marginLeft="@dimen/task_view_title_left_margin"
+            android:layout_marginRight="@dimen/task_view_margin"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:text="@string/recent_activity"/>
+    </com.balysv.materialripple.MaterialRippleLayout>
+    <View
+        android:id="@+id/activitiesSeparatorLine"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginLeft="@dimen/task_view_margin"
+        android:layout_marginRight="@dimen/task_view_margin"
+        android:background="@android:color/darker_gray"
+        android:layout_below="@+id/activitiesTitleContainer"/>
+    <android.support.v7.widget.RecyclerView
+        android:id="@android:id/list"
+        android:scrollbars="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/activitiesSeparatorLine"/>
+    <com.simbirsoft.timemeter.ui.views.ProgressLayout_
+        android:id="@+id/progressLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/activitiesSeparatorLine"/>
 </RelativeLayout>

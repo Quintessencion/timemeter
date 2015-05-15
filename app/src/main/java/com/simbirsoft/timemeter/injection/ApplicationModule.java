@@ -1,6 +1,7 @@
 package com.simbirsoft.timemeter.injection;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.simbirsoft.timemeter.App;
@@ -12,6 +13,11 @@ import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
+import android.os.Handler;
+import java.text.DateFormat;
+import java.util.logging.LogRecord;
+
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -20,10 +26,21 @@ import dagger.Provides;
 @Module
 public class ApplicationModule {
 
-    private App mApplication;
+    public static final String HANDLER_MAIN = "main";
+    public static final String DATE_FORMAT = "date_format";
+
+    private final App mApplication;
+    private final Handler mHandler;
 
     public ApplicationModule(App application) {
-        this.mApplication = application;
+        mApplication = application;
+        mHandler = new Handler();
+    }
+
+    @Provides
+    @Named(HANDLER_MAIN)
+    Handler provideMainHandler() {
+        return mHandler;
     }
 
     @Provides
@@ -34,6 +51,18 @@ public class ApplicationModule {
     @Provides
     Context provideContext() {
         return mApplication;
+    }
+
+    @Provides
+    Resources provideResources() {
+        return mApplication.getResources();
+    }
+
+
+    @Provides
+    @Named(DATE_FORMAT)
+    DateFormat provideDateFormat() {
+        return android.text.format.DateFormat.getDateFormat(mApplication);
     }
 
     @Provides
