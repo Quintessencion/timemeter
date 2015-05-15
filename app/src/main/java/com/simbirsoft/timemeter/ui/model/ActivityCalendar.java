@@ -2,13 +2,11 @@ package com.simbirsoft.timemeter.ui.model;
 
 import android.content.res.Resources;
 
-import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
@@ -26,11 +24,8 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
 public class ActivityCalendar {
 
