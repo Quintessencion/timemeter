@@ -5,17 +5,13 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
-import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.model.Period;
 
 import org.androidannotations.annotations.AfterViews;
@@ -25,7 +21,6 @@ import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
 
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 @EViewGroup(R.layout.view_task_activities_filter)
@@ -52,7 +47,6 @@ public class TaskActivitiesFilterView extends FrameLayout implements
 
         public SavedState(Parcel source) {
             super(source);
-
             mFilterState = source.readParcelable(SavedState.class.getClassLoader());
         }
 
@@ -168,7 +162,6 @@ public class TaskActivitiesFilterView extends FrameLayout implements
 
     private DatePeriodView mDatePeriodView;
     private OnSelectDateClickListener mOnSelectDateClickListener;
-    private FilterState mState;
     private boolean mIsSilentUpdate;
 
     public TaskActivitiesFilterView(Context context, AttributeSet attrs) {
@@ -195,18 +188,13 @@ public class TaskActivitiesFilterView extends FrameLayout implements
             mShadowDown.setVisibility(View.GONE);
             mShadowUp.setVisibility(View.GONE);
         }
-
-        if (mState == null) {
-            mState = new FilterState();
-        }
     }
 
     @Override
     protected Parcelable onSaveInstanceState() {
         Parcelable superState = super.onSaveInstanceState();
         SavedState ss = new SavedState(superState);
-        ss.mFilterState = mState;
-
+        ss.mFilterState = getFilterState();
         return ss;
     }
 
@@ -220,10 +208,10 @@ public class TaskActivitiesFilterView extends FrameLayout implements
         SavedState ss = (SavedState) state;
         super.onRestoreInstanceState(ss.getSuperState());
 
-        mState = ss.mFilterState;
+        FilterState filterState = ss.mFilterState;
 
-        if (mState.startDateMillis != 0) {
-            displayDatePeriod();
+        if (filterState.startDateMillis != 0) {
+           displayDatePeriod(filterState.startDateMillis, filterState.endDateMillis, filterState.period);
         }
     }
 
@@ -239,7 +227,6 @@ public class TaskActivitiesFilterView extends FrameLayout implements
 
     @Override
     public void onPeriodSelected(Period period) {
-        mState.period = period;
         postFilterUpdate();
     }
 
@@ -253,34 +240,15 @@ public class TaskActivitiesFilterView extends FrameLayout implements
     }
 
     public void setDate(long dateMillis) {
-        mState.startDateMillis = dateMillis;
-
-        boolean needPostUpdate = mDatePeriodView != null;
-        displayDatePeriod();
-        if (needPostUpdate) {
-            postFilterUpdate();
-        }
-    }
-
-    public void setFilterState(FilterState state) {
-        mState = state.copy();
-
-        mIsSilentUpdate = true;
-
-        if (mState.startDateMillis == 0) {
-            hideDatePeriod();
+        if (mDatePeriodView == null) {
+            displayDatePeriod(dateMillis, 0, Period.ALL);
         } else {
-            displayDatePeriod();
+            mDatePeriodView.setSelectedDateMillis(dateMillis);
         }
-
-        if (mDatePeriodView != null && mState.period != null) {
-            mDatePeriodView.setPeriod(mState.period);
-        }
-
-        mIsSilentUpdate = false;
+        postFilterUpdate();
     }
 
-    private void displayDatePeriod() {
+    private void displayDatePeriod(long startDateMillis, long endDateMillis, Period period) {
         if (mDatePeriodView == null) {
             mDatePeriodView = (DatePeriodView) LayoutInflater.from(getContext())
                     .inflate(R.layout.view_activities_date_period_composed, mDatePanel, false);
@@ -289,7 +257,9 @@ public class TaskActivitiesFilterView extends FrameLayout implements
             mDatePanel.addView(mDatePeriodView);
         }
 
-        mDatePeriodView.setDateMillis(mState.startDateMillis);
+        mDatePeriodView.setStartDateMillis(startDateMillis);
+        //mDatePeriodView.setEndDateMillis(endDateMillis);
+        mDatePeriodView.setPeriod(Period.MONTH);
         mDatePeriodView.setDatePeriodViewListener(this);
     }
 
@@ -306,10 +276,25 @@ public class TaskActivitiesFilterView extends FrameLayout implements
 
     }
 
+    private FilterState getFilterState() {
+        FilterState state = new FilterState();
+        if (mDatePeriodView != null) {
+            state.startDateMillis = mDatePeriodView.getStartDateMillis();
+            state.endDateMillis = mDatePeriodView.getEndDateMillis();
+            state.period = mDatePeriodView.getPeriod();
+        } else {
+            state.startDateMillis = 0;
+            state.endDateMillis =0;
+            state.period = null;
+        }
+        return state;
+    }
+
     private void sendSelectDateClickEvent() {
         if (mOnSelectDateClickListener != null) {
             Calendar cal = Calendar.getInstance();
-            cal.setTimeInMillis(mState.startDateMillis == 0 ? System.currentTimeMillis() : mState.startDateMillis);
+            long millis = (mDatePeriodView != null) ? mDatePeriodView.getSelectedDateMillis() : 0;
+            cal.setTimeInMillis(millis == 0 ? System.currentTimeMillis() : millis);
             mOnSelectDateClickListener.onSelectDateClicked(cal);
         }
     }

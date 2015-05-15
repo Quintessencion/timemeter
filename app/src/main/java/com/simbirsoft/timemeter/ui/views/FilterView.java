@@ -378,7 +378,7 @@ public class FilterView extends FrameLayout implements
             mDatePanel.addView(mDatePeriodView);
         }
 
-        mDatePeriodView.setDateMillis(mState.dateMillis);
+        mDatePeriodView.setStartDateMillis(mState.dateMillis);
         mDatePeriodView.setDatePeriodViewListener(this);
     }
 
@@ -613,7 +613,7 @@ public class FilterView extends FrameLayout implements
                 Iterables.transform(mTagsView.getObjects(), input -> (Tag) input));
         if (mDatePeriodView != null) {
             mState.period = mDatePeriodView.getPeriod();
-            mState.dateMillis = mDatePeriodView.getDateMillis();
+            mState.dateMillis = mDatePeriodView.getStartDateMillis();
         } else {
             mState.period = null;
             mState.dateMillis = 0;
