@@ -2,6 +2,8 @@ package com.simbirsoft.timemeter.ui.views;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -60,7 +62,10 @@ public class DatePeriodView extends FrameLayout {
             Period.WEEK,
             Period.MONTH,
             Period.YEAR,
-            Period.ALL);
+            Period.ALL,
+            Period.OTHER);
+
+    private static final int DEFAULT_ITEM_SRC = R.array.period_array;
 
     @ViewById(R.id.taggedPanel)
     ViewGroup mTaggedPanel;
@@ -71,9 +76,6 @@ public class DatePeriodView extends FrameLayout {
     @ViewById(R.id.periodSpinner)
     Spinner mPeriodSpinner;
 
-    @StringArrayRes(R.array.period_array)
-    String[] mPeriods;
-
     @StringRes(R.string.hint_choose_filter_period)
     String mHintChooseFilterPeriod;
 
@@ -81,6 +83,7 @@ public class DatePeriodView extends FrameLayout {
     private long mDateMillis;
     private DatePeriodViewListener mDatePeriodViewListener;
     private List<String> mPeriodList;
+    private int mItemsSrc;
 
     @LongClick(R.id.periodSpinner)
     void onPeriodSpinnerLongClicked(View v) {
@@ -117,19 +120,23 @@ public class DatePeriodView extends FrameLayout {
 
     public DatePeriodView(Context context) {
         super(context);
+        mItemsSrc = DEFAULT_ITEM_SRC;
     }
 
     public DatePeriodView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        initCustomAttributes(context, attrs);
     }
 
     public DatePeriodView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        initCustomAttributes(context, attrs);
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public DatePeriodView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
+        initCustomAttributes(context, attrs);
     }
 
     public DatePeriodViewListener getDatePeriodViewListener() {
@@ -142,13 +149,14 @@ public class DatePeriodView extends FrameLayout {
 
     @AfterViews
     void initializeView() {
-        mPeriodList = Arrays.asList(mPeriods);
+        Resources res = getContext().getResources();
+        mPeriodList = Arrays.asList(res.getStringArray(mItemsSrc));
         mAdapter = ArrayAdapter.createFromResource(getContext(),
-                R.array.period_array, android.R.layout.simple_spinner_item);
+                mItemsSrc, android.R.layout.simple_spinner_item);
         mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         mPeriodSpinner.setAdapter(mAdapter);
-        int tagColor = getContext().getResources().getColor(R.color.taggedColor);
+        int tagColor = res.getColor(R.color.taggedColor);
         TagViewUtils.updateTagViewColor(mTaggedPanel, tagColor);
         printDate();
     }
@@ -174,7 +182,7 @@ public class DatePeriodView extends FrameLayout {
 
     @Override
     protected void onRestoreInstanceState(Parcelable state) {
-        super.onRestoreInstanceState(((Bundle)state).getParcelable(EXTRA_SUPER_STATE));
+        super.onRestoreInstanceState(((Bundle) state).getParcelable(EXTRA_SUPER_STATE));
 
         mDateMillis = ((Bundle) state).getLong(EXTRA_DATE_MILLIS);
     }
@@ -219,6 +227,19 @@ public class DatePeriodView extends FrameLayout {
 
         } else {
             mDateText.setText(DateFormat.format("dd MMM yyyy", mDateMillis));
+        }
+    }
+
+    private void initCustomAttributes(Context context, AttributeSet attrs) {
+        TypedArray a = context.getTheme().obtainStyledAttributes(
+                attrs,
+                R.styleable.DatePeriodView,
+                0, 0);
+
+        try {
+            mItemsSrc = a.getResourceId(R.styleable.DatePeriodView_itemsSrc, DEFAULT_ITEM_SRC);
+        } finally {
+            a.recycle();
         }
     }
 }

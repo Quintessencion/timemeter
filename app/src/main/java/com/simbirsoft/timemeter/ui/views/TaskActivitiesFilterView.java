@@ -111,7 +111,7 @@ public class TaskActivitiesFilterView extends FrameLayout implements
     private void displayDatePeriod() {
         if (mDatePeriodView == null) {
             mDatePeriodView = (DatePeriodView) LayoutInflater.from(getContext())
-                    .inflate(R.layout.view_date_period_composed, mDatePanel, false);
+                    .inflate(R.layout.view_activities_date_period_composed, mDatePanel, false);
 
             mDatePanel.removeView(mChooseDateView);
             mDatePanel.addView(mDatePeriodView);

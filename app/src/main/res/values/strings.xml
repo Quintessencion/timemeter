@@ -98,14 +98,28 @@
     <string name="dialog_cancel_tag_changes_warning_title">Метка не сохранена</string>
     <string name="dialog_cancel_tag_changes_warning_message">Завершить редактирование без сохранения?</string>
 
+    <string name="day">День</string>
+    <string name="week">Неделя</string>
+    <string name="month">Месяц</string>
+    <string name="year">Год</string>
+    <string name="all_time">Все время</string>
+    <string name="another">Другое</string>
+
     <string-array name="period_array">
-        <item>День</item>
-        <item>Неделя</item>
-        <item>Месяц</item>
-        <item>Год</item>
-        <item>Все время</item>
+        <item>@string/day</item>
+        <item>@string/week</item>
+        <item>@string/month</item>
+        <item>@string/year</item>
+        <item>@string/all_time</item>
     </string-array>
 
-
+    <string-array name="activities_period_array">
+        <item>@string/day</item>
+        <item>@string/week</item>
+        <item>@string/month</item>
+        <item>@string/year</item>
+        <item>@string/all_time</item>
+        <item>@string/another</item>
+    </string-array>
 
 </resources>
