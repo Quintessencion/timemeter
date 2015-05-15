@@ -27,12 +27,12 @@ public class TagView extends FrameLayout {
     }
 
     @ViewById(R.id.tagTitle)
-    protected TextView tagTitle;
+    protected TextView mTagTitle;
 
     @ViewById(R.id.tagPanel)
-    protected LinearLayout tagPanel;
+    protected LinearLayout mTagPanel;
 
-    private View vsTagImage;
+    private View mVsTagImage;
 
     private TagViewClickListener mTagViewClickListener;
     private Tag mTag;
@@ -60,9 +60,9 @@ public class TagView extends FrameLayout {
 
     public void setTag(@NonNull Tag tag) {
         mTag = tag;
-        GradientDrawable bg = (GradientDrawable) tagPanel.getBackground();
+        GradientDrawable bg = (GradientDrawable) mTagPanel.getBackground();
         bg.setColor(tag.getColor());
-        tagTitle.setText(tag.getName());
+        mTagTitle.setText(tag.getName());
     }
 
     public Tag getTag() {
@@ -72,27 +72,27 @@ public class TagView extends FrameLayout {
     public void setTagViewClickListener(TagViewClickListener tagViewClickListener) {
         mTagViewClickListener = tagViewClickListener;
         if (mTagViewClickListener != null) {
-            tagTitle.setOnClickListener( (v) -> {
+            mTagTitle.setOnClickListener( (v) -> {
                 if (mTagViewClickListener != null) {
                     mTagViewClickListener.onClick(TagView.this);
                 }
             });
         } else {
-            tagTitle.setOnClickListener(null);
+            mTagTitle.setOnClickListener(null);
         }
     }
 
     public void enableTagImage() {
-        if (vsTagImage == null) {
-            vsTagImage = ((ViewStub) findViewById(R.id.vsTagImage)).inflate();
+        if (mVsTagImage == null) {
+            mVsTagImage = ((ViewStub) findViewById(R.id.vsTagImage)).inflate();
         } else {
-            vsTagImage.setVisibility(View.VISIBLE);
+            mVsTagImage.setVisibility(View.VISIBLE);
         }
     }
 
     public void disableTagImage() {
-        if (vsTagImage != null) {
-            vsTagImage.setVisibility(View.GONE);
+        if (mVsTagImage != null) {
+            mVsTagImage.setVisibility(View.GONE);
         }
     }
 }
