@@ -141,7 +141,6 @@ public class TimeSpanDaysSplitter {
 
     private static void createListItem(List<TaskActivityItem> items, List<TaskTimeSpan> dailySpans, Calendar currentDay) {
         if (!dailySpans.isEmpty()) {
-            Collections.reverse(dailySpans);
             TaskActivitySpansItem item = new TaskActivitySpansItem();
             item.setDate(currentDay.getTime());
             item.setList(Lists.newArrayList(dailySpans));
