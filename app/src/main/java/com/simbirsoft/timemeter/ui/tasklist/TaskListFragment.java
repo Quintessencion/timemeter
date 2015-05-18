@@ -140,7 +140,9 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         mTasksViewAdapter.setTaskClickListener(this);
         mRecyclerView.setAdapter(mTasksViewAdapter);
 
-        requestLoad(TASK_LIST_LOADER_TAG, this);
+        // Workaround: FilterView через шину дает сигнал о изменении фильтра при инициализации -
+        // это и спровоцирует запуск задачи.
+        //requestLoad(TASK_LIST_LOADER_TAG, this);
     }
 
     @Override
