@@ -49,10 +49,12 @@ public class TaskActivitiesFilterView extends FrameLayout implements
                 };
 
         FilterState mFilterState;
+        int mSelectedDatePanel;
 
         public SavedState(Parcel source) {
             super(source);
             mFilterState = source.readParcelable(SavedState.class.getClassLoader());
+            mSelectedDatePanel = source.readInt();
         }
 
         public SavedState(Parcelable superState) {
@@ -64,6 +66,7 @@ public class TaskActivitiesFilterView extends FrameLayout implements
             super.writeToParcel(dest, flags);
 
             dest.writeParcelable(mFilterState, 0);
+            dest.writeInt(mSelectedDatePanel);
         }
     }
 
@@ -201,6 +204,7 @@ public class TaskActivitiesFilterView extends FrameLayout implements
         Parcelable superState = super.onSaveInstanceState();
         SavedState ss = new SavedState(superState);
         ss.mFilterState = mFilterState;
+        ss.mSelectedDatePanel = (mDatePeriodView != null) ? mDatePeriodView.getSelectedDatePanel() : DatePeriodView.DATE_PANEL_NONE;
         return ss;
     }
 
@@ -218,6 +222,7 @@ public class TaskActivitiesFilterView extends FrameLayout implements
 
         if (mFilterState.startDateMillis != 0) {
             displayDatePeriod(mFilterState.startDateMillis, mFilterState.endDateMillis, mFilterState.period);
+            mDatePeriodView.setSelectedDatePanel(ss.mSelectedDatePanel);
             postFilterUpdate();
         }
     }

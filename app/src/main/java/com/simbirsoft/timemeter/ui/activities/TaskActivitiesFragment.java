@@ -3,6 +3,7 @@ package com.simbirsoft.timemeter.ui.activities;
 import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -157,6 +158,10 @@ public class TaskActivitiesFragment extends BaseFragment implements
                 });
         requestLoad(LOADER_TAG, this);
         mProgressLayout.updateProgressView();
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(TAG_DATE_PICKER_FRAGMENT);
+        if (fragment != null) {
+            ((DatePickerDialog)fragment).setOnDateSetListener(this);
+        }
     }
 
     @Override
