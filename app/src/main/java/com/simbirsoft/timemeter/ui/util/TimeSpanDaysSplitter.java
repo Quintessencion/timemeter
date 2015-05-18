@@ -219,7 +219,7 @@ public class TimeSpanDaysSplitter {
     }
 
     private static boolean spanIsInBounds(TaskTimeSpan span, long startDateMillis, long endDateMillis) {
-        return ((startDateMillis > 0) ? span.getStartTimeMillis() >= startDateMillis: true)
+        return ((startDateMillis > 0) ? span.getStartTimeMillis() >= startDateMillis : true)
                 && ((endDateMillis > 0) ? span.getStartTimeMillis() < endDateMillis : true);
     }
 }
