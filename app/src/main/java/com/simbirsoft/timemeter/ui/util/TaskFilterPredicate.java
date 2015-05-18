@@ -34,9 +34,12 @@ public class TaskFilterPredicate implements Predicate<TaskBundle> {
             }
         }
 
-        if (input.getTask() == null ||
-            input.getTask().getDescription().toUpperCase().indexOf(mTaskFilterState.searchText.toUpperCase()) == -1) {
-            return false;
+        if ((mTaskFilterState.searchText != null) &&
+            (!mTaskFilterState.searchText.isEmpty())) {
+            if ((input.getTask() == null) ||
+                (!(input.getTask().getDescription().toUpperCase().contains(mTaskFilterState.searchText.toUpperCase())))) {
+                return false;
+            }
         }
 
         if (mTaskFilterState.dateMillis != 0) {
