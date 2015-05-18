@@ -16,7 +16,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
@@ -27,7 +26,6 @@ import com.simbirsoft.timemeter.ui.util.ToastUtils;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EViewGroup;
-import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ItemSelect;
 import org.androidannotations.annotations.LongClick;
 import org.androidannotations.annotations.ViewById;
@@ -38,8 +36,6 @@ import org.slf4j.Logger;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 @EViewGroup(R.layout.view_date_period)
 public class DatePeriodView extends FrameLayout {

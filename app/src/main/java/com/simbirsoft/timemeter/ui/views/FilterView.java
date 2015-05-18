@@ -218,11 +218,11 @@ public class FilterView extends FrameLayout implements
 
     private static class TagViewHolder {
         ViewGroup itemView;
-        TextView tagView;
+        TagView tagView;
 
         TagViewHolder(ViewGroup itemView) {
             this.itemView = itemView;
-            tagView = (TextView) itemView.findViewById(android.R.id.title);
+            tagView = (TagView) itemView.findViewById(android.R.id.title);
         }
     }
 
@@ -513,9 +513,7 @@ public class FilterView extends FrameLayout implements
                     vh = (TagViewHolder) convertView.getTag();
                 }
 
-                TagViewUtils.updateTagViewColor(vh.tagView, item.getColor());
-                vh.tagView.setText(item.getName());
-
+                vh.tagView.setTag(item);
                 return vh.itemView;
             }
         };

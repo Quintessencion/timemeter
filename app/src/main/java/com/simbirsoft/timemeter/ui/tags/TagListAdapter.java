@@ -3,7 +3,6 @@ package com.simbirsoft.timemeter.ui.tags;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.transitions.everywhere.utils.Objects;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,8 +10,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.FrameLayout;
-import android.widget.TextView;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
@@ -20,7 +17,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
-import com.simbirsoft.timemeter.ui.util.TagViewUtils;
+import com.simbirsoft.timemeter.ui.views.TagView_;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -79,9 +76,8 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
             super(itemView);
         }
 
-        FrameLayout tagViewContainer;
         ViewGroup actionPanel;
-        TextView tagView;
+        TagView_ tagView;
         View editButtonView;
         View editColorButtonView;
         View removeButtonView;
@@ -350,19 +346,8 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.view_tag_list_item, parent, false);
 
-        int tagColor = view.getResources().getColor(R.color.primaryDark);
-
         ViewHolder vh = new ViewHolder(view);
-
-        vh.tagViewContainer = (FrameLayout) view.findViewById(R.id.tagViewContainer);
-        vh.tagView = TagViewUtils.inflateTagView(inflater, vh.tagViewContainer, tagColor);
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT);
-        params.gravity = Gravity.START | Gravity.CENTER_VERTICAL;
-        vh.tagView.setLayoutParams(params);
-        vh.tagViewContainer.addView(vh.tagView);
-
+        vh.tagView = (TagView_) view.findViewById(R.id.tagView);
         vh.actionPanel = (ViewGroup) view.findViewById(R.id.actionPanel);
 
         if (mIsActionButtonsShown) {
@@ -391,20 +376,17 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Tag item = getItem(position);
-
         bindViewHolderImpl(holder, item);
     }
 
     private void bindViewHolderImpl(ViewHolder vh, Tag item) {
         final int toggleDelta = (int) (System.currentTimeMillis() - mToggleActionPanelTimeMillis);
 
-        vh.tagView.setText(item.getName());
+        vh.tagView.setTag(item);
         vh.editButtonView.setTag(item);
         vh.editColorButtonView.setTag(item);
         vh.removeButtonView.setTag(item);
         vh.itemView.setTag(item);
-
-        TagViewUtils.updateTagViewColor(vh.tagView, item.getColor());
 
         if (mIsActionButtonsShown) {
             if (vh.actionPanel.getVisibility() != View.VISIBLE) {

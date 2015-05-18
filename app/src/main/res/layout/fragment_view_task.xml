@@ -26,8 +26,8 @@
         android:layout_marginRight="@dimen/task_view_margin"
         android:layout_below="@+id/title"/>
 
-    <org.apmem.tools.layouts.FlowLayout
-        android:id="@+id/tagViewContainer"
+    <com.simbirsoft.timemeter.ui.views.TagFlowView_
+        android:id="@+id/tagFlowView"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
