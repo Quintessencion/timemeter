@@ -14,23 +14,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
-import com.be.android.library.worker.base.ForkJoinJob;
 import com.be.android.library.worker.base.JobEvent;
 import com.be.android.library.worker.base.ThrottleJob;
 import com.be.android.library.worker.controllers.JobManager;
-import com.be.android.library.worker.exceptions.JobExecutionException;
 import com.be.android.library.worker.handlers.JobEventDispatcher;
 import com.be.android.library.worker.jobs.CallableForkJoinJob;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
@@ -55,9 +53,8 @@ import org.slf4j.Logger;
 
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -261,6 +258,15 @@ public class FilterView extends FrameLayout implements
     private SearchView mSearchView;
     private ThrottleJob mThrottleJob;
 
+    /**
+     * Used to ignore {@link #onTokenAdded(Object)} events when view state is being restored
+     * to prevent emit of multiple filter state change events
+     */
+    private Set<Tag> mIgnoredEventTokens;
+
+    {
+        mIgnoredEventTokens = Sets.newHashSet();
+    }
 
     public FilterView(Context context) {
         super(context);
@@ -546,24 +552,48 @@ public class FilterView extends FrameLayout implements
 
     @Override
     public void onTokenAdded(Object o) {
-        if (mAdapter != null && mAdapter.getPosition((Tag) o) < 0) {
-            mTagsView.removeObject(o);
+        final Tag tag = (Tag) o;
+        if (mAdapter != null && mAdapter.getPosition(tag) < 0) {
+            mTagsView.removeObject(tag);
 
-        } else if (mTokenListener != null) {
-            mTokenListener.onTokenAdded(o);
+            return;
+        }
+
+        if (!mState.tags.contains(tag)) {
+            mState.tags.add(tag);
+        }
+
+        if (mTokenListener != null) {
+            mTokenListener.onTokenAdded(tag);
+        }
+
+        if (mIgnoredEventTokens.contains(tag)) {
+            mIgnoredEventTokens.remove(tag);
+        } else {
             postFilterUpdate();
         }
     }
 
     @Override
     public void onTokenRemoved(Object o) {
+        final Tag tag = (Tag) o;
+
+        if (mState.tags.contains(tag)) {
+            mState.tags.remove(tag);
+        }
+
+        if (mIgnoredEventTokens.contains(o)) {
+            mIgnoredEventTokens.remove(o);
+        } else {
+            postFilterUpdate();
+        }
+
         if (mTokenListener == null) {
             return;
         }
 
-        if (mAdapter != null && mAdapter.getPosition((Tag) o) > -1) {
-            mTokenListener.onTokenRemoved(o);
-            postFilterUpdate();
+        if (mAdapter != null && mAdapter.getPosition(tag) > -1) {
+            mTokenListener.onTokenRemoved(tag);
         }
     }
 
@@ -573,10 +603,12 @@ public class FilterView extends FrameLayout implements
         mIsSilentUpdate = true;
         if (state.tags != null && !state.tags.isEmpty()) {
             for (Tag tag : state.tags) {
+                mIgnoredEventTokens.add(tag);
                 mTagsView.addObject(tag);
             }
         } else {
             mTagsView.clear();
+            mIgnoredEventTokens.clear();
         }
 
         if (mState.dateMillis == 0) {
@@ -609,8 +641,6 @@ public class FilterView extends FrameLayout implements
     }
 
     private void updateFilterState() {
-        mState.tags = Lists.newArrayList(
-                Iterables.transform(mTagsView.getObjects(), input -> (Tag) input));
         if (mDatePeriodView != null) {
             mState.period = mDatePeriodView.getPeriod();
             mState.dateMillis = mDatePeriodView.getDateMillis();

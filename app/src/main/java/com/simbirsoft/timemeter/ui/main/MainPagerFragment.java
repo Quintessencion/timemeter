@@ -285,6 +285,8 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
     @Subscribe
     public void onFitlerViewStateChanged(FilterViewStateChangeEvent event) {
+        mFilterState = event.getFilterState();
+
         if (event.isReset()) {
             hideFilterView();
             updateOptionsMenu();

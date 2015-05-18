@@ -16,7 +16,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
@@ -27,7 +26,6 @@ import com.simbirsoft.timemeter.ui.util.ToastUtils;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EViewGroup;
-import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ItemSelect;
 import org.androidannotations.annotations.LongClick;
 import org.androidannotations.annotations.ViewById;
@@ -38,8 +36,6 @@ import org.slf4j.Logger;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 @EViewGroup(R.layout.view_date_period)
 public class DatePeriodView extends FrameLayout {
@@ -81,6 +77,8 @@ public class DatePeriodView extends FrameLayout {
     private long mDateMillis;
     private DatePeriodViewListener mDatePeriodViewListener;
     private List<String> mPeriodList;
+    private boolean mShouldSkipPeriodSelectedEvent;
+    private Period mSelectedPeriod;
 
     @LongClick(R.id.periodSpinner)
     void onPeriodSpinnerLongClicked(View v) {
@@ -109,8 +107,19 @@ public class DatePeriodView extends FrameLayout {
     void onPeriodSelected(boolean selected, CharSequence selectedPeriod) {
         if (selected) {
             LOG.info("selected period: {}", selectedPeriod);
+            if (Objects.equal(mSelectedPeriod, getPeriod())) {
+                return;
+            }
+
+            mSelectedPeriod = getPeriod();
+
+            if (mShouldSkipPeriodSelectedEvent) {
+                mShouldSkipPeriodSelectedEvent = false;
+                return;
+            }
+
             if (mDatePeriodViewListener != null) {
-                mDatePeriodViewListener.onPeriodSelected(getPeriod());
+                mDatePeriodViewListener.onPeriodSelected(mSelectedPeriod);
             }
         }
     }
@@ -188,12 +197,16 @@ public class DatePeriodView extends FrameLayout {
 
         printDate();
     }
+
     public void setPeriod(Period period) {
         int index = Iterables.indexOf(mPeriodsDefinition, input -> input == period);
 
         if (index < 0) {
             throw new IllegalArgumentException(String.format("period '%s' is not defined", period));
         }
+
+        // Should not fire event callback when period set programmatically
+        mShouldSkipPeriodSelectedEvent = true;
 
         mPeriodSpinner.setSelection(index);
     }
