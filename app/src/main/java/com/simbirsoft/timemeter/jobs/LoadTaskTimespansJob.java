@@ -26,13 +26,13 @@ public class LoadTaskTimespansJob extends LoadJob {
     @Inject
     public LoadTaskTimespansJob(DatabaseHelper databaseHelper) {
         mDatabaseHelper = databaseHelper;
+        mFilter = new TaskTimespansLoadFilter();
     }
 
     public void setTaskId(long taskId) {
         Preconditions.checkArgument(mTaskId == null, "task id is already set");
 
         mTaskId = taskId;
-        mFilter = new TaskTimespansLoadFilter();
     }
 
     @Override
