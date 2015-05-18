@@ -333,11 +333,8 @@ public class FilterView extends FrameLayout implements
     public void setDate(long dateMillis) {
         mState.dateMillis = dateMillis;
 
-        boolean needPostUpdate = mDatePeriodView != null;
         displayDatePeriod();
-        if (needPostUpdate) {
-            postFilterUpdate();
-        }
+        postFilterUpdate();
     }
 
     public SearchView getSearchView() {
