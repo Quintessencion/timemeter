@@ -17,7 +17,7 @@ import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
-import com.simbirsoft.timemeter.ui.views.TagFlowView_;
+import com.simbirsoft.timemeter.ui.views.TagFlowView;
 import com.simbirsoft.timemeter.ui.views.TagView;
 
 import org.slf4j.Logger;
@@ -43,7 +43,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         TextView titleView;
         TaskBundle item;
         TextView timerView;
-        TagFlowView_ tagFlowView;
+        TagFlowView tagFlowView;
     }
 
     private static final Logger LOG = LogFactory.getLogger(TaskListAdapter.class);
@@ -72,11 +72,8 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         return false;
     };
 
-    private final TagView.TagViewClickListener mTagViewClickListener = new TagView.TagViewClickListener() {
-        @Override
-        public void onClick(TagView tagView) {
-            LOG.debug("Tag <" + tagView.getTag().getName() + "> clicked!");
-        }
+    private final TagView.TagViewClickListener mTagViewClickListener = tagView -> {
+        LOG.debug("Tag <" + tagView.getTag().getName() + "> clicked!");
     };
 
     public TaskListAdapter(ITaskActivityManager taskActivityManager) {
@@ -151,7 +148,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
         holder.titleView = (TextView) view.findViewById(android.R.id.title);
         holder.timerView = (TextView) view.findViewById(R.id.timerText);
-        holder.tagFlowView = (TagFlowView_) view.findViewById(R.id.tagFlowView);
+        holder.tagFlowView = (TagFlowView) view.findViewById(R.id.tagFlowView);
 
         holder.itemEditView = view.findViewById(R.id.edit_or_view);
         holder.itemEditView.setOnClickListener(mViewClickListener);
