@@ -197,6 +197,13 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
             // Hide custom elevation on Lollipop
             mContainerHeader.findViewById(R.id.shadowDown).setVisibility(View.GONE);
         }
+        mTabs.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageSelected(int position) {
+                onPageChanged(position);
+            }
+        });
+        onPageChanged(mViewPager.getCurrentItem());
     }
 
     @Override
@@ -373,10 +380,10 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         }
 
         if (isFilterPanelVisible()) {
-            item.setIcon(R.drawable.ic_visibility_off_white_24dp);
+            item.setIcon(R.drawable.ic_filter_remove_white_24dp);
             item.setTitle(R.string.action_toggle_filter_off);
         } else {
-            item.setIcon(R.drawable.ic_visibility_white_24dp);
+            item.setIcon(R.drawable.ic_filter_white_24dp);
             item.setTitle(R.string.action_toggle_filter_on);
         }
     }
@@ -431,5 +438,11 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     private void loadPagePosition() {
         mPagePosition = mPreferences.getPreferenceTagPagePosition(0);
         mViewPager.setCurrentItem(mPagePosition);
+    }
+
+    private void onPageChanged(int position) {
+        mPagerAdapter.deselectCurrentPage();
+        MainPageFragment currentFragment = (MainPageFragment)mPagerAdapter.getItem(position);
+        currentFragment.onPageSelected();
     }
 }
