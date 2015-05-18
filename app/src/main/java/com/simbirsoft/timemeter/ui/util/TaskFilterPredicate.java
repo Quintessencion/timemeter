@@ -1,6 +1,7 @@
 package com.simbirsoft.timemeter.ui.util;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.model.Period;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
@@ -34,10 +35,12 @@ public class TaskFilterPredicate implements Predicate<TaskBundle> {
             }
         }
 
-        if ((mTaskFilterState.searchText != null) &&
-            (!mTaskFilterState.searchText.isEmpty())) {
-            if ((input.getTask() == null) ||
-                (!(input.getTask().getDescription().toUpperCase().contains(mTaskFilterState.searchText.toUpperCase())))) {
+        if (!Strings.isNullOrEmpty(mTaskFilterState.searchText)) {
+            final String description = input.getTask() != null
+                    ? input.getTask().getDescription()
+                    : "";
+
+            if (!description.toUpperCase().contains(mTaskFilterState.searchText.toUpperCase())) {
                 return false;
             }
         }
