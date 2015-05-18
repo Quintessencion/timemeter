@@ -17,6 +17,7 @@ import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
+import com.simbirsoft.timemeter.events.ScheduledTaskUpdateTabContentEvent;
 import com.simbirsoft.timemeter.injection.ApplicationModule;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.SaveTaskBundleJob;
@@ -63,11 +64,25 @@ public class MainPageFragment extends BaseFragment {
 
     FilterView.FilterState mFilterViewState;
 
+    boolean mContentAutoupdateEnabled = false;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Injection.sUiComponent.injectMainPageFragment(this);
         restoreInstanceState(savedInstanceState);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mContentAutoupdateEnabled = true;
+    }
+
+    @Override
+    public void onStop() {
+        mContentAutoupdateEnabled = false;
+        super.onStop();
     }
 
     protected Bus getBus() {
@@ -142,6 +157,12 @@ public class MainPageFragment extends BaseFragment {
 
     protected void onFilterViewStateChanged() {
 
+    }
+
+    @Subscribe
+    public void onUpdateTabContent(ScheduledTaskUpdateTabContentEvent ev) {
+        if (mContentAutoupdateEnabled && isSelected())
+            reloadContent();
     }
 
     protected boolean needUpdateAfterTaskChanged(int resultCode) {
