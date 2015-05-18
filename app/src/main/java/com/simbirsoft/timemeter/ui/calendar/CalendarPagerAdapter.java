@@ -64,15 +64,19 @@ public class CalendarPagerAdapter extends PagerAdapter {
         return view == object;
     }
 
+    public WeekCalendarView getCurrentView() {
+        return getView(mViewPager.getCurrentItem());
+    }
+
     public void setCurrentViewActivityCalendar(ActivityCalendar activityCalendar) {
-        WeekCalendarView v = getView(mViewPager.getCurrentItem());
+        WeekCalendarView v = getCurrentView();
         if (v != null) {
             v.setActivityCalendar(activityCalendar);
         }
     }
 
     public void deselectCurrentViewCell() {
-        WeekCalendarView v = getView(mViewPager.getCurrentItem());
+        WeekCalendarView v = getCurrentView();
         if (v != null) {
             v.deselectCell();
         }

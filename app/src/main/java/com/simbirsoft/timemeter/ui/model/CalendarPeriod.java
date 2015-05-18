@@ -1,9 +1,9 @@
 package com.simbirsoft.timemeter.ui.model;
 
 
-import android.content.Context;
-import android.os.Parcelable;
 import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.common.collect.Lists;
 
 import java.text.SimpleDateFormat;
@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class CalendarPeriod implements Parcelable {
 

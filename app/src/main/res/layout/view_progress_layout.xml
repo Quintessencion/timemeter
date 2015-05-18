@@ -32,6 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:textAppearance="?android:attr/textAppearanceMedium"
+            android:visibility="gone"
             android:text="@string/caption_progress" />
     </LinearLayout>
 

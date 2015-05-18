@@ -2,15 +2,15 @@ package com.simbirsoft.timemeter.ui.model;
 
 import android.content.res.Resources;
 
-import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
+import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.util.ColorSets;
 import com.simbirsoft.timemeter.ui.util.TimeSpanDaysSplitter;
@@ -24,11 +24,8 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
 public class ActivityCalendar {
 
@@ -37,14 +34,11 @@ public class ActivityCalendar {
     private static final SimpleDateFormat WEEK_DAY_FORMAT = new SimpleDateFormat("EE");
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("d");
 
-    private static final int START_HOUR_DEFAULT = 0;
-    private static final int END_HOUR_DEFAULT = 24;
-
     private final Calendar mStartDate;
     private final Calendar mEndDate;
     private final Calendar mBufferCalendar;
-    private int mStartHour = START_HOUR_DEFAULT;
-    private int mEndHour = END_HOUR_DEFAULT;
+    private int mStartHour;
+    private int mEndHour;
     private final List<Date> mDays;
     private final Multimap<Integer, TaskTimeSpan> mDailyActivity;
 
@@ -54,6 +48,7 @@ public class ActivityCalendar {
         mStartDate = Calendar.getInstance();
         mEndDate = Calendar.getInstance();
         mBufferCalendar = Calendar.getInstance();
+        setDayDefaultBounds();
     }
 
 
@@ -157,9 +152,8 @@ public class ActivityCalendar {
         Collections.sort(spans, (item1, item2) ->
                 (int) (item1.getStartTimeMillis() - item2.getStartTimeMillis()));
 
+        setDayDefaultBounds();
         if (spans.isEmpty()) {
-            mStartHour = START_HOUR_DEFAULT;
-            mEndHour = END_HOUR_DEFAULT;
             return;
         }
 
@@ -167,6 +161,7 @@ public class ActivityCalendar {
         Calendar calendar = Calendar.getInstance();
         for (TaskTimeSpan span : splitSpans) {
             calendar.setTimeInMillis(span.getStartTimeMillis());
+            int spanStartHour = calendar.get(Calendar.HOUR_OF_DAY);
             long dayStartMillis = TimeUtils.getDayStartMillis(calendar);
             int dayIndex = getDayIndex(dayStartMillis);
 
@@ -176,6 +171,7 @@ public class ActivityCalendar {
             }
 
             mDailyActivity.put(dayIndex, span);
+            mStartHour = Math.min(mStartHour, spanStartHour);
             LOG.debug("activity added to calendar day '{}'; duration: '{}'", dayIndex, span.getDuration());
         }
     }
@@ -260,5 +256,11 @@ public class ActivityCalendar {
                 }
             }
         }
+    }
+
+    private void setDayDefaultBounds() {
+        Preferences prefs = Injection.sDatabaseComponent.preferences();
+        mStartHour = prefs.getDayStartHour();
+        mEndHour = prefs.getDayEndHour();
     }
 }

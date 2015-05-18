@@ -95,7 +95,7 @@ public class ProgressLayout extends RelativeLayout {
 
         if (getVisibility() == View.GONE) {
             setAlpha(0f);
-            animate().alpha(1).setDuration(120).start();
+            animate().alpha(1).setDuration(320).start();
             setVisibility(View.VISIBLE);
         }
 
@@ -120,6 +120,14 @@ public class ProgressLayout extends RelativeLayout {
 
     public void setProgressTitle(String text) {
         mProgressTitleView.setText(text);
+    }
+
+    public void setProgressTitleVisible(boolean isVisible) {
+        if (isVisible) {
+            mProgressTitleView.setVisibility(View.VISIBLE);
+        } else {
+            mProgressTitleView.setVisibility(View.GONE);
+        }
     }
 
     public boolean shouldDisplayEmptyIndicatorMessage() {

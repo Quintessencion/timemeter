@@ -361,8 +361,27 @@ public class WeekCalendarView extends View implements GestureDetector.OnGestureL
     private WeekCalendarCell getCell(MotionEvent e) {
         int x = (int)e.getX() - mHourWidth;
         int y = (int)e.getY() - mDateHeight;
-        if (x < 0 || y < 0 || mDateWidth == 0 || mHourHeight == 0) return null;
+        if (x < 0 || y < 0 || mDateWidth == 0 || mHourHeight == 0) {
+            return null;
+        }
         return new WeekCalendarCell(x / mDateWidth, y / mHourHeight);
+    }
+
+    public long getMillisOffset(int pixelOffset) {
+        int y = pixelOffset - mDateHeight;
+        if (y < 0) {
+            return -1;
+        }
+        return TimeUtils.hoursToMillis(mActivityCalendar.getHour(0)) + (y * TimeUtils.MILLIS_IN_HOUR) / mHourHeight;
+    }
+
+    public int getPixelOffset(long millisOffset) {
+        if (millisOffset < 0) {
+            return 0;
+        }
+        long offset = millisOffset - TimeUtils.hoursToMillis(mActivityCalendar.getHour(0));
+        int pixelOffset = (int)(mDateHeight + (offset * mHourHeight) / TimeUtils.MILLIS_IN_HOUR);
+        return (pixelOffset >= 0) ? pixelOffset : 0;
     }
 
     public boolean onSingleTapUp(MotionEvent e) {
