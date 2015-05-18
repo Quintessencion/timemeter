@@ -1,5 +1,7 @@
 package com.simbirsoft.timemeter.ui.activities;
 
+import android.content.res.Resources;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
@@ -9,6 +11,7 @@ import android.transitions.everywhere.ChangeBounds;
 import android.transitions.everywhere.Fade;
 import android.transitions.everywhere.TransitionManager;
 import android.transitions.everywhere.TransitionSet;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -48,7 +51,7 @@ import javax.inject.Inject;
 @EFragment(R.layout.fragment_task_activities)
 public class TaskActivitiesFragment extends BaseFragment implements
         JobLoader.JobLoaderCallbacks,
-        TaskActivitiesFilterView.OnSelectDateClickListener,
+        TaskActivitiesFilterView.OnTaskActivitiesFilterListener,
         DatePickerDialog.OnDateSetListener {
     public static final String EXTRA_TASK_ID = "extra_task_id";
     public static final String EXTRA_TITLE = "extra_title";
@@ -82,9 +85,6 @@ public class TaskActivitiesFragment extends BaseFragment implements
 
     @InstanceState
     boolean mIsFilterPanelShown;
-
-    @InstanceState
-    TaskActivitiesFilterView.FilterState mFilterState;
 
     @Inject
     Bus mBus;
@@ -135,7 +135,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
         mRecyclerView.setAdapter(mAdapter);
 
         mFilterView.setVisibility(View.GONE);
-        mFilterView.setOnSelectDateClickListener(this);
+        mFilterView.setOnFilterListener(this);
         if (mIsFilterPanelShown) {
             showFilterView(false);
         } else {
@@ -143,11 +143,15 @@ public class TaskActivitiesFragment extends BaseFragment implements
         }
 
         mProgressLayout.setShouldDisplayEmptyIndicatorMessage(true);
+        mProgressLayout.setEmptyIndicatorStyle(Typeface.ITALIC);
+        final Resources res = getResources();
+        mProgressLayout.setEmptyIndicatorTextSize(TypedValue.COMPLEX_UNIT_PX, res.getDimension(R.dimen.empty_indicator_text_size));
+        mProgressLayout.setEmptyIndicatorTextColor(res.getColor(R.color.empty_indicator));
         mProgressLayout.setProgressLayoutCallbacks(
                 new ProgressLayout.JobProgressLayoutCallbacks(JobSelector.forJobTags(LOADER_TAG)) {
                     @Override
                     public boolean hasContent() {
-                        return mAdapter.getItemCount() > 0;
+                        return mAdapter.getItemCount() > 0 || !mFilterView.getFilterState().isEmpty();
                     }
 
                 });
@@ -200,6 +204,12 @@ public class TaskActivitiesFragment extends BaseFragment implements
         job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
         job.setTaskId(mExtraTaskId);
         job.addTag(LOADER_TAG);
+        TaskActivitiesFilterView.FilterState filterState = mFilterView.getFilterState();
+        if (filterState != null) {
+            job.getFilter().startDateMillis(filterState.startDateMillis)
+                    .endDateMillis(filterState.endDateMillis)
+                    .period(filterState.period);
+        }
         return job;
     }
 
@@ -212,6 +222,20 @@ public class TaskActivitiesFragment extends BaseFragment implements
                 selectedDate.get(Calendar.DAY_OF_MONTH),
                 false);
         dialog.show(getChildFragmentManager(), TAG_DATE_PICKER_FRAGMENT);
+    }
+
+    @Override
+    public void onFilterChanged(TaskActivitiesFilterView.FilterState filterState) {
+        JobManager.getInstance().cancelAll(JobSelector.forJobTags(LOADER_TAG));
+        String loaderTag = LOADER_TAG + "filter:" + filterState.hashCode();
+        requestLoad(loaderTag, this);
+    }
+
+    @Override
+    public void onFilterReset() {
+        hideFilterView(true);
+        updateOptionsMenu();
+        requestLoad(LOADER_TAG, this);
     }
 
     @Override
@@ -282,7 +306,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
     }
 
     private boolean isFilterPanelVisible() {
-        return mFilterView != null && mFilterView.getVisibility() == View.VISIBLE;
+        return mFilterView.getVisibility() == View.VISIBLE;
     }
 
     private void toggleFilterView() {

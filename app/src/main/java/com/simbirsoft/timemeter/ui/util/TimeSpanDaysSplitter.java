@@ -60,7 +60,7 @@ public class TimeSpanDaysSplitter {
         }
     }
 
-    public static List<TaskActivityItem> convertToTaskActivityItems(List<TaskTimeSpan> spans) {
+    public static List<TaskActivityItem> convertToTaskActivityItems(List<TaskTimeSpan> spans, long startDateMillis, long endDateMillis) {
         sortSpansDesc(spans);
         List<TaskActivityItem> items = Lists.newArrayList();
         Calendar currentMonth = Calendar.getInstance();
@@ -77,6 +77,7 @@ public class TimeSpanDaysSplitter {
             TimeSpanDaysSplitter.splitTimeSpanByDays(cal1, cal2, span, splitSpans);
             Collections.reverse(splitSpans);
             for (TaskTimeSpan span1 : splitSpans) {
+                if (!spanIsInBounds(span1, startDateMillis, endDateMillis)) continue;
                 if (!isInDay(currentDay, cal1, span1)) {
                     createListItem(items, dailySpans, currentDay);
                     currentDay.setTimeInMillis(span1.getStartTimeMillis());
@@ -215,5 +216,10 @@ public class TimeSpanDaysSplitter {
             yearStart = cal1.get(Calendar.YEAR);
             dayStart = cal1.get(Calendar.DAY_OF_YEAR);
         }
+    }
+
+    private static boolean spanIsInBounds(TaskTimeSpan span, long startDateMillis, long endDateMillis) {
+        return ((startDateMillis > 0) ? span.getStartTimeMillis() >= startDateMillis: true)
+                && ((endDateMillis > 0) ? span.getStartTimeMillis() < endDateMillis : true);
     }
 }
