@@ -1,4 +1,4 @@
-package com.simbirsoft.timemeter.ui.util;
+package com.simbirsoft.timemeter.util;
 
 import android.os.Parcel;
 import android.os.Parcelable;
