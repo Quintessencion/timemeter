@@ -1,9 +1,7 @@
 package com.simbirsoft.timemeter.ui.main;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -28,6 +26,7 @@ import com.astuetz.PagerSlidingTabStrip;
 import com.fourmob.datetimepicker.date.DatePickerDialog;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.log.LogFactory;
@@ -60,7 +59,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
     private static final Logger LOG = LogFactory.getLogger(MainPagerFragment.class);
     private static final String TAG_DATE_PICKER_FRAGMENT = "main_date_picker_fragment_tag";
-    private static final String TAG_PAGE_POSITION = "page_position_tag";
 
     @ViewById(R.id.pager)
     ViewPager mViewPager;
@@ -90,8 +88,10 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     private Menu mOptionsMenu;
     private ContentFragmentCallbacks mContainerCallbacks;
     private List<String> mPageNames;
-    private SharedPreferences sPref;
     private int mPagePosition;
+
+    @Inject
+    Preferences mPreferences;
 
     private final ViewPager.OnPageChangeListener mOnPageChangeListener = new ViewPager.OnPageChangeListener() {
         @Override
@@ -425,15 +425,11 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     }
 
     private void savePagePosition() {
-        sPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor ed = sPref.edit();
-        ed.putInt(TAG_PAGE_POSITION, mPagePosition);
-        ed.commit();
+        mPreferences.setPreferenceTagPagePosition(mPagePosition);
     }
 
     private void loadPagePosition() {
-        sPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        mPagePosition = sPref.getInt(TAG_PAGE_POSITION, 0);
+        mPagePosition = mPreferences.getPreferenceTagPagePosition(0);
         mViewPager.setCurrentItem(mPagePosition);
     }
 }
