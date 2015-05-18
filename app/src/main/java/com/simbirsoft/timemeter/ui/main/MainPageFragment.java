@@ -66,7 +66,6 @@ public class MainPageFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Injection.sUiComponent.injectMainPageFragment(this);
-        restoreInstanceState(savedInstanceState);
     }
 
     protected Bus getBus() {
@@ -173,10 +172,6 @@ public class MainPageFragment extends BaseFragment {
         }
         bar.setTag(SNACKBAR_TAG);
         SnackbarManager.show(bar);
-    }
-
-    private void restoreInstanceState(Bundle savedInstanceState) {
-        // for future use
     }
 
     protected void showTaskRemoveUndoBar(TaskBundle bundle) {
