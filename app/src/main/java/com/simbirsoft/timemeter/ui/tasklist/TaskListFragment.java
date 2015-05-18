@@ -6,6 +6,12 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.StyleSpan;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,6 +66,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
     private static final Logger LOG = LogFactory.getLogger(TaskListFragment.class);
 
+    private static final String SNACKBAR_TAG = "task_list_snackbar";
     private static final String TASK_LIST_LOADER_TAG = "TaskListFragment_";
     private static final int REQUEST_CODE_EDIT_TASK = 100;
     private static final int COLUMN_COUNT_DEFAULT = 2;
@@ -238,6 +245,18 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         mTasksViewAdapter.replaceItem(task);
     }
 
+    private void showTaskAddedBar(TaskBundle bundle) {
+        final String message = String.format(getString(R.string.action_task_added),
+                                             "<i>" + bundle.getTask().getDescription() + "</i>");
+        final Spanned messageSpanned = Html.fromHtml(message);
+        Snackbar bar = Snackbar.with(getActivity())
+                .text(messageSpanned)
+                .colorResource(R.color.blue)
+                .attachToRecyclerView(mRecyclerView);
+        bar.setTag(SNACKBAR_TAG);
+        SnackbarManager.show(bar);
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
@@ -254,6 +273,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
                     case EditTaskFragment.RESULT_CODE_TASK_CREATED:
                         LOG.debug("result: task created");
                         addTaskToList(bundle);
+                        showTaskAddedBar(bundle);
                         break;
 
                     case EditTaskFragment.RESULT_CODE_TASK_RECREATED:
