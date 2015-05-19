@@ -48,7 +48,7 @@ public final class Preferences {
     }
 
     public void setPreferenceStateSelectedPosition(int stateSelectedPosition) {
-        mPrefs.edit().putInt(PREFERENCE_STATE_SELECTED_POSITION, stateSelectedPosition);
+        mPrefs.edit().putInt(PREFERENCE_STATE_SELECTED_POSITION, stateSelectedPosition).apply();
     }
 
     public int getPreferenceStateSelectedPosition(int defaultValue) {
