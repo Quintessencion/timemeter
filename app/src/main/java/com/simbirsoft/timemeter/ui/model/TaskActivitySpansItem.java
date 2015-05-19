@@ -8,18 +8,22 @@ import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
 public class TaskActivitySpansItem extends TaskActivityEmptyItem {
+    public interface OnTaskActivityChangedListener {
+        public void onTaskActivityChanged(int index);
+    }
+
     private static final char EM_DASH = 0x2014;
     private static final String TIME_TEST_STRING = String.format("00:00 %c 00:00", EM_DASH);
     private static final long DURATION_TEST_VALUE = (20 * 3600 + 20 * 60 + 20) * 1000;
 
     private List<TaskTimeSpan> mList;
     private final Calendar mCalendar;
+    private OnTaskActivityChangedListener mOnChangedListener;
 
     public TaskActivitySpansItem() {
         mCalendar = Calendar.getInstance();
@@ -62,6 +66,18 @@ public class TaskActivitySpansItem extends TaskActivityEmptyItem {
 
     public int getSpansCount() {
         return (mList == null) ? 0 : mList.size();
+    }
+
+    public void updateSpanEndTime(int index, long endTime) {
+        Preconditions.checkElementIndex(index, mList.size(), "index is out of items range");
+        mList.get(index).setEndTimeMillis(endTime);
+        if (mOnChangedListener != null) {
+            mOnChangedListener.onTaskActivityChanged(index);
+        }
+    }
+
+    public void setOnChangedListener(OnTaskActivityChangedListener onChangedListener) {
+        mOnChangedListener = onChangedListener;
     }
 
     private String getHourLabel(long millis) {
