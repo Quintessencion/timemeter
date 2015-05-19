@@ -43,6 +43,7 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
+import org.androidannotations.annotations.res.StringRes;
 
 import java.util.Calendar;
 import java.util.List;
@@ -90,6 +91,12 @@ public class TaskActivitiesFragment extends BaseFragment implements
     @Inject
     Bus mBus;
 
+    @StringRes(R.string.no_activity)
+    String mNoActivityMessage;
+
+    @StringRes(R.string.no_filtered_activity)
+    String mNoFilteredActivityMessage;
+
     private ActionBar mActionBar;
     private TaskActivitiesAdapter mAdapter;
     private Menu mOptionsMenu;
@@ -135,7 +142,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
         mAdapter = new TaskActivitiesAdapter(getActivity());
         mRecyclerView.setAdapter(mAdapter);
 
-        mFilterView.setVisibility(View.GONE);
+        mFilterView.setVisibility(View.INVISIBLE);
         mFilterView.setOnFilterListener(this);
         if (mIsFilterPanelShown) {
             showFilterView(false);
@@ -152,15 +159,16 @@ public class TaskActivitiesFragment extends BaseFragment implements
                 new ProgressLayout.JobProgressLayoutCallbacks(JobSelector.forJobTags(LOADER_TAG)) {
                     @Override
                     public boolean hasContent() {
-                        return mAdapter.getItemCount() > 0 || !mFilterView.getFilterState().isEmpty();
+                        return mAdapter.getItemCount() > 0;
                     }
 
                 });
         requestLoad(LOADER_TAG, this);
         mProgressLayout.updateProgressView();
-        Fragment fragment = getChildFragmentManager().findFragmentByTag(TAG_DATE_PICKER_FRAGMENT);
-        if (fragment != null) {
-            ((DatePickerDialog)fragment).setOnDateSetListener(this);
+        DatePickerDialog dialog = (DatePickerDialog)
+                getChildFragmentManager().findFragmentByTag(TAG_DATE_PICKER_FRAGMENT);
+        if (dialog != null) {
+            dialog.setOnDateSetListener(this);
         }
     }
 
@@ -195,6 +203,10 @@ public class TaskActivitiesFragment extends BaseFragment implements
         if (mListPosition != 0) {
             mRecyclerView.getLayoutManager().scrollToPosition(mListPosition);
             mListPosition = 0;
+        }
+        if (mAdapter.getItemCount() == 0) {
+            mProgressLayout.setEmptyIndicatorMessage(mFilterView.getFilterState().isEmpty()
+                                                     ? mNoActivityMessage : mNoFilteredActivityMessage);
         }
     }
 
@@ -288,6 +300,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
             set.excludeTarget(R.id.floatingButton, true);
             TransitionManager.beginDelayedTransition(mContentRootView, set);
         }
+        updateFilterViewSize();
         mFilterView.setVisibility(View.VISIBLE);
     }
 
@@ -307,8 +320,30 @@ public class TaskActivitiesFragment extends BaseFragment implements
             set.excludeTarget(R.id.floatingButton, true);
             TransitionManager.beginDelayedTransition(mContentRootView, set);
         }
-        mFilterView.setVisibility(View.GONE);
+        updateFilterViewSize();
+        mFilterView.setVisibility(View.INVISIBLE);
     }
+
+    private void updateFilterViewSize() {
+        RelativeLayout.LayoutParams containerLayoutParams =
+                (RelativeLayout.LayoutParams) mContainerView.getLayoutParams();
+
+        int measuredHeight;
+        if (mIsFilterPanelShown) {
+            measuredHeight = mFilterView.getMeasuredHeight();
+            if (measuredHeight < 1) {
+                int maxHeight = getResources().getDisplayMetrics().heightPixels;
+                int spec = View.MeasureSpec.makeMeasureSpec(maxHeight, View.MeasureSpec.AT_MOST);
+                mFilterView.measure(spec, spec);
+                measuredHeight = mFilterView.getMeasuredHeight();
+            }
+        } else {
+            measuredHeight = 0;
+        }
+        containerLayoutParams.topMargin = measuredHeight;
+        mContainerView.setLayoutParams(containerLayoutParams);
+    }
+
 
     private boolean isFilterPanelVisible() {
         return mFilterView.getVisibility() == View.VISIBLE;

@@ -106,7 +106,7 @@
     <string name="month">Месяц</string>
     <string name="year">Год</string>
     <string name="all_time">Все время</string>
-    <string name="another">Другое</string>
+    <string name="another">Другой</string>
 
     <string-array name="period_array">
         <item>@string/day</item>
@@ -127,4 +127,5 @@
 
     <string name="no_activity">нет активности</string>
     <string name="recent_activity">Последняя активность</string>
+    <string name="no_filtered_activity">не найдено активности по заданным критериям</string>
 </resources>
