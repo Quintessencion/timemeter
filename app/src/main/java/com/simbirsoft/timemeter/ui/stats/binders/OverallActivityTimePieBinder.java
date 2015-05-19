@@ -91,7 +91,7 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
         final int count = mOverallActivity.size();
         final ArrayList<Entry> overallSpentTimeY = Lists.newArrayListWithCapacity(count);
         final ArrayList<String> titlesX = Lists.newArrayListWithCapacity(count);
-        final int[] colors = ColorSets.makeColorSet(ColorSets.MIXED_COLORS, count);
+        final int[] colors = new int[count];
         long overallDuration = 0;
 
         for (int i = 0; i < count; i++) {
@@ -103,6 +103,9 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
             overallDuration += item.getDuration();
 
             titlesX.add(item.getDescription());
+
+            Long taskId = item.getId();
+            colors[i] = (taskId != null) ? ColorSets.getTaskColor(taskId) : ColorSets.getOtherTaskColor();
         }
 
         PieDataSet pieDataSet = new PieDataSet(overallSpentTimeY, "");
