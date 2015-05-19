@@ -3,6 +3,7 @@ package com.simbirsoft.timemeter.receiver;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.SystemClock;
 
 import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.events.ScheduledTaskActivityNotificationUpdateEvent;
@@ -41,7 +42,7 @@ public class NotificationUpdateReceiver extends BroadcastReceiver {
         LOG.trace("requested notification update via broadcast");
         mBus.post(new ScheduledTaskActivityNotificationUpdateEvent());
 
-        long currentTime = System.currentTimeMillis();
+        long currentTime = SystemClock.elapsedRealtime();
         if ((currentTime - mUpdateTabContentTimestamp) >= Preferences.UPDATE_TAB_CONTENT_INTERVAL) {
             mUpdateTabContentTimestamp = currentTime;
             mBus.post(new ScheduledTaskUpdateTabContentEvent());

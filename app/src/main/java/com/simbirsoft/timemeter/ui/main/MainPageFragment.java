@@ -64,7 +64,7 @@ public class MainPageFragment extends BaseFragment {
 
     FilterView.FilterState mFilterViewState;
 
-    boolean mContentAutoupdateEnabled = false;
+    private boolean mContentAutoupdateEnabled = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -161,8 +161,9 @@ public class MainPageFragment extends BaseFragment {
 
     @Subscribe
     public void onUpdateTabContent(ScheduledTaskUpdateTabContentEvent ev) {
-        if (mContentAutoupdateEnabled && isSelected())
+        if (mContentAutoupdateEnabled && isSelected()) {
             reloadContent();
+        }
     }
 
     protected boolean needUpdateAfterTaskChanged(int resultCode) {
