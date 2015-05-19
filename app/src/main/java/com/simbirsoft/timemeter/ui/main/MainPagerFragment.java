@@ -432,11 +432,11 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     }
 
     private void savePagePosition() {
-        mPreferences.setPreferenceTagPagePosition(mPagePosition);
+        mPreferences.setSelectedTaskTabPosition(mPagePosition);
     }
 
     private void loadPagePosition() {
-        mPagePosition = mPreferences.getPreferenceTagPagePosition(0);
+        mPagePosition = mPreferences.getSelectedTaskTabPosition(0);
         mViewPager.setCurrentItem(mPagePosition);
     }
 
