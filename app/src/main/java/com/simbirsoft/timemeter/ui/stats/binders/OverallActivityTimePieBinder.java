@@ -104,8 +104,7 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
 
             titlesX.add(item.getDescription());
 
-            Long taskId = item.getId();
-            colors[i] = (taskId != null) ? ColorSets.getTaskColor(taskId) : ColorSets.getOtherTaskColor();
+            colors[i] = ColorSets.getTaskColor(item.getId());
         }
 
         PieDataSet pieDataSet = new PieDataSet(overallSpentTimeY, "");
