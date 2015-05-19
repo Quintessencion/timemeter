@@ -86,8 +86,8 @@ public class DatePeriodView extends FrameLayout {
     private ArrayAdapter<CharSequence> mAdapter;
     private DatePeriodViewListener mDatePeriodViewListener;
     private List<String> mPeriodList;
+    private Period mSelectedPeriod;
     private int mItemsSrc;
-    private Period mPeriod;
     private final Calendar mCalendar = Calendar.getInstance();
     @DatePanelType
     private int mSelectedDatePanel;
@@ -100,17 +100,20 @@ public class DatePeriodView extends FrameLayout {
 
     @ItemSelect(R.id.periodSpinner)
     void onPeriodSelected(boolean selected, CharSequence selectedPeriod) {
-        Period period = getPeriod();
-        if (period == mPeriod || !selected) {
-            return;
-        }
-        LOG.info("selected period: {}", selectedPeriod);
-        if (period == Period.OTHER) {
-            sendOnDateClicked(DATE_PANEL_END);
-            setPeriod(mPeriod);
-        } else {
-            mPeriod = period;
-            sendOnPeriodSelected();
+        if (selected) {
+            LOG.info("selected period: {}", selectedPeriod);
+			Period period = getPeriod();
+            if (Objects.equal(mSelectedPeriod, period)) {
+                return;
+            }
+
+            if (period == Period.OTHER) {
+            	sendOnDateClicked(DATE_PANEL_END);
+            	setPeriod(mSelectedPeriod);
+        	} else {
+            	mSelectedPeriod = period;
+            	sendOnPeriodSelected();
+        	}
         }
     }
 
@@ -155,7 +158,7 @@ public class DatePeriodView extends FrameLayout {
         int tagColor = res.getColor(R.color.taggedColor);
         TagViewUtils.updateTagViewColor(mPeriodStartPanel, tagColor);
         TagViewUtils.updateTagViewColor(mPeriodEndPanel, tagColor);
-        mPeriod = getPeriod();
+        mSelectedPeriod = getPeriod();
 
         mPeriodStartPanel.setDatePanelViewListener(new DatePanelView.DatePanelViewListener() {
             @Override
@@ -224,7 +227,7 @@ public class DatePeriodView extends FrameLayout {
 
     public void setStartDateMillis(long dateMillis) {
         mPeriodStartPanel.setDateMillis(dateMillis);
-        if (mPeriod == Period.OTHER && !datesIsNormal()) {
+        if (mSelectedPeriod == Period.OTHER && !datesIsNormal()) {
             resetEndDate();
         }
     }
@@ -232,12 +235,12 @@ public class DatePeriodView extends FrameLayout {
     public void setEndDateMillis(long dateMillis) {
         mPeriodEndPanel.setDateMillis(dateMillis);
         if (!datesIsNormal()) {
-            if (mPeriod == Period.OTHER) {
+            if (mSelectedPeriod == Period.OTHER) {
                 resetEndDate();
             } else {
                 mPeriodEndPanel.setDateMillis(0);
             }
-        } else if (mPeriod != Period.OTHER) {
+        } else if (mSelectedPeriod != Period.OTHER) {
             setPeriod(Period.OTHER);
         }
     }
@@ -281,7 +284,8 @@ public class DatePeriodView extends FrameLayout {
         if (index < 0) {
             throw new IllegalArgumentException(String.format("period '%s' is not defined", period));
         }
-        mPeriod = period;
+
+        mSelectedPeriod = period;
         mPeriodSpinner.setSelection(index);
         if (period == Period.OTHER) {
             mPeriodSpinner.setVisibility(GONE);
