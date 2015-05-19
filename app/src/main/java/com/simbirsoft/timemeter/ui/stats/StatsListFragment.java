@@ -128,6 +128,7 @@ public class StatsListFragment extends MainPageFragment implements
 
     @Override
     protected void reloadContent() {
+        super.reloadContent();
         requestReload(STATISTICS_BINDER_LOADER_TAG, this);
     }
 }

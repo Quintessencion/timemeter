@@ -85,6 +85,15 @@ public class MainPageFragment extends BaseFragment {
         super.onStop();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (mIsContentInvalidated) {
+            reloadContent();
+        }
+    }
+
     protected Bus getBus() {
         return mBus;
     }
@@ -117,7 +126,6 @@ public class MainPageFragment extends BaseFragment {
     public void onPageSelected() {
         mIsSelected = true;
         if (mIsContentInvalidated) {
-            mIsContentInvalidated = false;
             reloadContent();
         }
     }
@@ -161,6 +169,8 @@ public class MainPageFragment extends BaseFragment {
 
     @Subscribe
     public void onUpdateTabContent(ScheduledTaskUpdateTabContentEvent ev) {
+        mIsContentInvalidated = true;
+
         if (mContentAutoupdateEnabled && isSelected()) {
             reloadContent();
         }
@@ -300,6 +310,6 @@ public class MainPageFragment extends BaseFragment {
     }
 
     protected void reloadContent() {
-
+        mIsContentInvalidated = false;
     }
 }

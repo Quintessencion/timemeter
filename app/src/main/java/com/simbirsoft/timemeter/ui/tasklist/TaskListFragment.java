@@ -400,6 +400,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
     @Override
     protected void reloadContent() {
+        super.reloadContent();
         requestReload(TASK_LIST_LOADER_TAG, this);
     }
 }

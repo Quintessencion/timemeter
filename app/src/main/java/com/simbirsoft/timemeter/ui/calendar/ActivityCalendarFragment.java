@@ -248,6 +248,7 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
 
     @Override
     protected void reloadContent() {
+        super.reloadContent();
         requestReload(CALENDAR_LOADER_TAG, this);
     }
 }
