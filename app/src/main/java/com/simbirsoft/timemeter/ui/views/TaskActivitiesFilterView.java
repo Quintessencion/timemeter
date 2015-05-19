@@ -72,8 +72,6 @@ public class TaskActivitiesFilterView extends FrameLayout implements
 
     public static class FilterState implements Parcelable {
 
-        public static final long PERIOD_MILLIS_DEFAULT = TimeUnit.DAYS.toMillis(1);
-
         public static final Creator<FilterState> CREATOR =
                 new Creator<FilterState>() {
                     @Override
@@ -204,7 +202,9 @@ public class TaskActivitiesFilterView extends FrameLayout implements
         Parcelable superState = super.onSaveInstanceState();
         SavedState ss = new SavedState(superState);
         ss.mFilterState = mFilterState;
-        ss.mSelectedDatePanel = (mDatePeriodView != null) ? mDatePeriodView.getSelectedDatePanel() : DatePeriodView.DATE_PANEL_NONE;
+        ss.mSelectedDatePanel = mDatePeriodView != null
+                ? mDatePeriodView.getSelectedDatePanel()
+                : DatePeriodView.DATE_PANEL_NONE;
         return ss;
     }
 

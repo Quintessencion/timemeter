@@ -49,7 +49,7 @@ public class DatePeriodView extends FrameLayout {
 
     @IntDef({DATE_PANEL_NONE, DATE_PANEL_START, DATE_PANEL_END})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface DatePanel {}
+    public @interface DatePanelType {}
 
     public static final int DATE_PANEL_NONE = 0;
     public static final int DATE_PANEL_START = 1;
@@ -89,7 +89,7 @@ public class DatePeriodView extends FrameLayout {
     private int mItemsSrc;
     private Period mPeriod;
     private final Calendar mCalendar = Calendar.getInstance();
-    @DatePanel
+    @DatePanelType
     private int mSelectedDatePanel;
 
     @LongClick(R.id.periodSpinner)
@@ -266,12 +266,12 @@ public class DatePeriodView extends FrameLayout {
         return 0;
     }
 
-    @DatePanel
+    @DatePanelType
     public int getSelectedDatePanel() {
         return mSelectedDatePanel;
     }
 
-    public void setSelectedDatePanel(@DatePanel int panel) {
+    public void setSelectedDatePanel(@DatePanelType int panel) {
         mSelectedDatePanel = panel;
     }
 
@@ -310,7 +310,7 @@ public class DatePeriodView extends FrameLayout {
         return TimeUtils.getDayStartMillis(mCalendar) >= startDate;
     }
 
-    private void sendOnDateClicked(@DatePanel int panel) {
+    private void sendOnDateClicked(@DatePanelType int panel) {
         mSelectedDatePanel = panel;
         if (mDatePeriodViewListener != null) {
             mDatePeriodViewListener.onDateTextClicked();
