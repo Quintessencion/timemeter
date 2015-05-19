@@ -93,21 +93,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     @Inject
     Preferences mPreferences;
 
-    private final ViewPager.OnPageChangeListener mOnPageChangeListener = new ViewPager.OnPageChangeListener() {
-        @Override
-        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-        }
-
-        @Override
-        public void onPageSelected(int position) {
-            mPagePosition = position;
-        }
-
-        @Override
-        public void onPageScrollStateChanged(int state) {
-        }
-    };
-
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -190,7 +175,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mTabs = (PagerSlidingTabStrip) mContainerHeader.findViewById(R.id.tabs);
         mTabs.setTextColor(mColorWhite);
         mTabs.setViewPager(mViewPager);
-        mTabs.setOnPageChangeListener(mOnPageChangeListener);
         loadPagePosition();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -441,6 +425,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     }
 
     private void onPageChanged(int position) {
+        mPagePosition = position;
         mPagerAdapter.deselectCurrentPage();
         MainPageFragment currentFragment = (MainPageFragment)mPagerAdapter.getItem(position);
         currentFragment.onPageSelected();
