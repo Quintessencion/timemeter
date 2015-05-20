@@ -1,5 +1,6 @@
 package com.simbirsoft.timemeter.ui.activities;
 
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -33,7 +34,12 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskActivitiesJob;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
+import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
+import com.simbirsoft.timemeter.ui.stats.StatisticsViewBinder;
+import com.simbirsoft.timemeter.ui.stats.StatsDetailsFragment;
+import com.simbirsoft.timemeter.ui.stats.StatsDetailsFragment_;
+import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.simbirsoft.timemeter.ui.views.ProgressLayout;
 import com.simbirsoft.timemeter.ui.views.TaskActivitiesFilterView;
 import com.squareup.otto.Bus;
@@ -181,7 +187,9 @@ public class TaskActivitiesFragment extends BaseFragment implements
                 toggleFilterView();
                 updateOptionsMenu();
                 return true;
-
+            case R.id.actionShowTaskActivity:
+                showTaskActivity();
+                return true;
             default:
                 break;
         }
@@ -320,5 +328,13 @@ public class TaskActivitiesFragment extends BaseFragment implements
         } else {
             showFilterView(true);
         }
+    }
+
+    private void showTaskActivity() {
+        Bundle args = new Bundle();
+        args.putInt(StatsDetailsFragment.EXTRA_CHART_VIEW_TYPE, StatisticsViewBinder.VIEW_TYPE_ACTIVITY_TIMELINE);
+        Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
+                getActivity(), StatsDetailsFragment_.class.getName(), args);
+        getActivity().startActivityForResult(launchIntent, 1000);
     }
 }

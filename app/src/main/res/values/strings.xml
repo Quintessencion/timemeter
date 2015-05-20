@@ -52,6 +52,7 @@
     <string name="action_edit">Редактировать</string>
     <string name="action_create_tag">Создать метку</string>
     <string name="action_view_activities">Показать активности</string>
+    <string name="action_show_task_activities">Показать активность по дням</string>
 
     <!-- Hints -->
     <string name="hint_new_task">Начать новую задачу</string>
