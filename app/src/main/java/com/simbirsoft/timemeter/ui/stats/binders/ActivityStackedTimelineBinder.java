@@ -86,17 +86,21 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnCh
         final ArrayList<BarEntry> timelineY = Lists.newArrayListWithCapacity(count);
         final ArrayList<String> timelineX = Lists.newArrayListWithCapacity(count);
         final String[] taskLabels;
+        final int[] taskColors;
         final int stackCount;
         if (count > 0) {
             Task[] tasks = mActivityTimeline.get(0).tasks;
             stackCount = tasks.length;
             taskLabels = new String[stackCount];
+            taskColors = new int[stackCount];
             for (int i = 0; i < stackCount; i++) {
                 taskLabels[i] = tasks[i].getDescription();
+                taskColors[i] = ColorSets.getTaskColor(tasks[i].getId());
             }
         } else {
             stackCount = 0;
             taskLabels = new String[0];
+            taskColors = new int[0];
         }
 
         for (int i = 0; i < count; i++) {
@@ -115,7 +119,7 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder, OnCh
         }
 
         BarDataSet dataSet = new BarDataSet(timelineY, "");
-        dataSet.setColors(ColorSets.makeColorSet(ColorSets.MIXED_COLORS, stackCount));
+        dataSet.setColors(taskColors);
         dataSet.setStackLabels(taskLabels);
 
         mChart.setData(new BarData(timelineX, dataSet));
