@@ -399,9 +399,19 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     }
 
     @Override
+    protected boolean inactiveTabNeedToInvalidateContentAfterTaskChanged(int resultCode) {
+        return resultCode == EditTaskFragment.RESULT_CODE_TASK_REMOVED;
+    }
+
+    @Override
     protected void reloadContent() {
         super.reloadContent();
         requestReload(TASK_LIST_LOADER_TAG, this);
+    }
+
+    @Override
+    protected boolean isSupportAutoupdate() {
+        return false;
     }
 }
 

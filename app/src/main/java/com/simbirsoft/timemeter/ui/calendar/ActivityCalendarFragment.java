@@ -242,7 +242,7 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
     }
 
     @Override
-    protected boolean needUpdateAfterTaskChanged(int resultCode) {
+    protected boolean inactiveTabNeedToInvalidateContentAfterTaskChanged(int resultCode) {
         return resultCode == EditTaskFragment.RESULT_CODE_TASK_REMOVED;
     }
 

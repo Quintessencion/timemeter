@@ -76,20 +76,30 @@ public class MainPageFragment extends BaseFragment {
     @Override
     public void onStart() {
         super.onStart();
-        mContentAutoupdateEnabled = true;
+        setContentAutoupdateEnabled(true);
     }
 
     @Override
     public void onStop() {
-        mContentAutoupdateEnabled = false;
+        setContentAutoupdateEnabled(false);
         super.onStop();
+    }
+
+    private void setContentAutoupdateEnabled(boolean value) {
+        if (isSupportAutoupdate()) {
+            mContentAutoupdateEnabled = value;
+        }
+    }
+
+    protected boolean isSupportAutoupdate() {
+        return true;
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        if (mIsContentInvalidated) {
+        if (isSelected() && mIsContentInvalidated) {
             reloadContent();
         }
     }
@@ -144,12 +154,16 @@ public class MainPageFragment extends BaseFragment {
 
     @Subscribe
     public void onTaskChanged(TaskChangedEvent event) {
-        if (mIsSelected && event.getResultCode() == EditTaskFragment.RESULT_CODE_TASK_RECREATED) {
+        // Сигнал RESULT_CODE_TASK_RECREATED может идти, как от вкладки, так и от Snackbar.
+        // Оба случая сходятся здесь.
+        boolean taskRecreated = event.getResultCode() == EditTaskFragment.RESULT_CODE_TASK_RECREATED;
+        if (mIsSelected && taskRecreated) {
             reloadContent();
-            return;
         }
-        if (!mIsSelected && (event.getResultCode() == EditTaskFragment.RESULT_CODE_TASK_RECREATED
-                                ||needUpdateAfterTaskChanged(event.getResultCode()))) {
+
+        // Активная вкладка обновляет себя сразу, а неактивные, для определенных событий,
+        // могут сделать это потом.
+        if (!mIsSelected && isBackgroundInvalidationNeeded(event.getResultCode())) {
             mIsContentInvalidated = true;
         }
     }
@@ -169,22 +183,28 @@ public class MainPageFragment extends BaseFragment {
 
     @Subscribe
     public void onUpdateTabContent(ScheduledTaskUpdateTabContentEvent ev) {
-        mIsContentInvalidated = true;
+        if (mContentAutoupdateEnabled) {
+            mIsContentInvalidated = true;
 
-        if (mContentAutoupdateEnabled && isSelected()) {
-            reloadContent();
+            if (isSelected()) {
+                reloadContent();
+            }
         }
     }
 
-    protected boolean needUpdateAfterTaskChanged(int resultCode) {
+    private boolean isBackgroundInvalidationNeeded(int resultCode) {
+        boolean result = resultCode == EditTaskFragment.RESULT_CODE_TASK_RECREATED;
+        return result || inactiveTabNeedToInvalidateContentAfterTaskChanged(resultCode);
+    }
+
+    // В ответ на эти события содержимое неактивной вкладки будет считаться устаревшим.
+    // RESULT_CODE_TASK_RECREATED всегда приводит к устареванию содержимого.
+    protected boolean inactiveTabNeedToInvalidateContentAfterTaskChanged(int resultCode) {
         return true;
     }
 
     @OnJobSuccess(SaveTaskBundleJob.class)
     public void onTaskSaved() {
-        if (mIsSelected) {
-            reloadContent();
-        }
         mBus.post(new TaskChangedEvent(EditTaskFragment.RESULT_CODE_TASK_RECREATED));
     }
 
