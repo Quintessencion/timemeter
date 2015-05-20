@@ -1,9 +1,10 @@
 package com.simbirsoft.timemeter.ui.activities;
 
+import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -29,11 +30,18 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.fourmob.datetimepicker.date.DatePickerDialog;
+import com.nispok.snackbar.Snackbar;
+import com.nispok.snackbar.SnackbarManager;
+import com.nispok.snackbar.enums.SnackbarType;
+import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.injection.ApplicationModule;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskActivitiesJob;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
+import com.simbirsoft.timemeter.ui.util.DeviceUtils;
+import com.simbirsoft.timemeter.ui.views.DatePeriodView;
 import com.simbirsoft.timemeter.ui.views.ProgressLayout;
 import com.simbirsoft.timemeter.ui.views.TaskActivitiesFilterView;
 import com.squareup.otto.Bus;
@@ -49,6 +57,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 @EFragment(R.layout.fragment_task_activities)
 public class TaskActivitiesFragment extends BaseFragment implements
@@ -60,6 +69,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
 
     private static final String LOADER_TAG = "TaskActivitiesFragment_";
     private static final String TAG_DATE_PICKER_FRAGMENT = "activities_date_picker_fragment_tag";
+    private static final String SNACKBAR_TAG = "task_activities_snackbar";
 
     @ViewById(android.R.id.list)
     RecyclerView mRecyclerView;
@@ -90,6 +100,10 @@ public class TaskActivitiesFragment extends BaseFragment implements
 
     @Inject
     Bus mBus;
+
+    @Inject
+    @Named(ApplicationModule.HANDLER_MAIN)
+    Handler mHandler;
 
     @StringRes(R.string.no_activity)
     String mNoActivityMessage;
@@ -232,17 +246,22 @@ public class TaskActivitiesFragment extends BaseFragment implements
 
     @Override
     public void onSelectDateClicked(Calendar selectedDate) {
-        DatePickerDialog dialog = DatePickerDialog.newInstance(
-                this,
-                selectedDate.get(Calendar.YEAR),
-                selectedDate.get(Calendar.MONTH),
-                selectedDate.get(Calendar.DAY_OF_MONTH),
-                false);
-        dialog.show(getChildFragmentManager(), TAG_DATE_PICKER_FRAGMENT);
+        Snackbar snackbar = SnackbarManager.getCurrentSnackbar();
+        if (snackbar != null && snackbar.isShowing()) {
+            snackbar.dismiss();
+            mHandler.postDelayed(() -> {
+                if (isAdded()) {
+                    showDatePickerDialog(selectedDate);
+                }
+            }, Consts.DISMISS_DELAY_MILLIS);
+        } else {
+            showDatePickerDialog(selectedDate);
+        }
     }
 
     @Override
     public void onFilterChanged(TaskActivitiesFilterView.FilterState filterState) {
+        dismissSnackbar();
         JobManager.getInstance().cancelAll(JobSelector.forJobTags(LOADER_TAG));
         String loaderTag = LOADER_TAG + "filter:" + filterState.hashCode();
         requestLoad(loaderTag, this);
@@ -250,9 +269,37 @@ public class TaskActivitiesFragment extends BaseFragment implements
 
     @Override
     public void onFilterReset() {
+        dismissSnackbar();
         hideFilterView(true);
         updateOptionsMenu();
         requestLoad(LOADER_TAG, this);
+    }
+
+    @Override
+    public void onIncorrectDateSet(int datePanelType) {
+        if (datePanelType == DatePeriodView.DATE_PANEL_NONE) return;
+        int textRes;
+        final Activity activity = getActivity();
+        if (DeviceUtils.isTabletDevice(activity) || DeviceUtils.isLandscapeOrientation(activity)) {
+            textRes = (datePanelType == DatePeriodView.DATE_PANEL_START)
+                    ? R.string.incorrect_filter_start_date
+                    : R.string.incorrect_filter_end_date;
+        } else {
+            textRes = (datePanelType == DatePeriodView.DATE_PANEL_START)
+                    ? R.string.incorrect_filter_start_date_short
+                    : R.string.incorrect_filter_end_date_short;
+        }
+        Snackbar bar = Snackbar.with(getActivity())
+                .text(textRes)
+                .actionLabel(R.string.button_choose)
+                .colorResource(R.color.lightRed)
+                .duration(Snackbar.SnackbarDuration.LENGTH_LONG)
+                .type(SnackbarType.MULTI_LINE)
+                .actionListener((snackbar) -> onChooseDateButtonClicked())
+                .animation(true);
+
+        bar.setTag(SNACKBAR_TAG);
+        SnackbarManager.show(bar);
     }
 
     @Override
@@ -351,9 +398,33 @@ public class TaskActivitiesFragment extends BaseFragment implements
 
     private void toggleFilterView() {
         if (isFilterPanelVisible()) {
+            dismissSnackbar();
             hideFilterView(true);
         } else {
             showFilterView(true);
+        }
+    }
+
+    private void onChooseDateButtonClicked() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(mFilterView.getSelectedDateInitialValue());
+        onSelectDateClicked(calendar);
+    }
+
+    private void showDatePickerDialog(Calendar selectedDate) {
+        DatePickerDialog dialog = DatePickerDialog.newInstance(
+                this,
+                selectedDate.get(Calendar.YEAR),
+                selectedDate.get(Calendar.MONTH),
+                selectedDate.get(Calendar.DAY_OF_MONTH),
+                false);
+        dialog.show(getChildFragmentManager(), TAG_DATE_PICKER_FRAGMENT);
+    }
+
+    private void dismissSnackbar() {
+        Snackbar snackbar = SnackbarManager.getCurrentSnackbar();
+        if (snackbar != null && snackbar.isShowing()) {
+            snackbar.dismiss();
         }
     }
 }

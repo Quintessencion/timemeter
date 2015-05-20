@@ -34,6 +34,7 @@ public class TaskActivitiesFilterView extends FrameLayout implements
         void onSelectDateClicked(Calendar selectedDate);
         void onFilterChanged(FilterState filterState);
         void onFilterReset();
+        void onIncorrectDateSet(int datePanelType);
     }
 
     private static class SavedState extends BaseSavedState {
@@ -274,10 +275,19 @@ public class TaskActivitiesFilterView extends FrameLayout implements
     public void setDate(long dateMillis) {
         if (mDatePeriodView == null) {
             displayDatePeriod(dateMillis, 0, Period.ALL);
-        } else {
+        } else if (mDatePeriodView.checkSelectedDateNewValue(dateMillis)) {
             mDatePeriodView.setSelectedDateMillis(dateMillis);
+        } else {
+            if (mOnFilterListener != null) {
+                mOnFilterListener.onIncorrectDateSet(mDatePeriodView.getSelectedDatePanel());
+            }
+            return;
         }
         postFilterUpdate();
+    }
+
+    public long getSelectedDateInitialValue() {
+        return (mDatePeriodView != null) ? mDatePeriodView.getInitialValueForSelectedDate() : 0;
     }
 
     private void displayDatePeriod(long startDateMillis, long endDateMillis, Period period) {

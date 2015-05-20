@@ -128,4 +128,9 @@
     <string name="no_activity">нет активности</string>
     <string name="recent_activity">Последняя активность</string>
     <string name="no_filtered_activity">не найдено активности по заданным критериям</string>
+    <string name="incorrect_filter_end_date_short">Дата окончания меньше даты начала</string>
+    <string name="incorrect_filter_start_date_short">Дата начала больше даты окончания</string>
+    <string name="incorrect_filter_end_date">Дата окончания не может быть меньше даты начала</string>
+    <string name="incorrect_filter_start_date">Дата начала не может быть больше даты окончания</string>
+    <string name="button_choose">Выбрать</string>
 </resources>

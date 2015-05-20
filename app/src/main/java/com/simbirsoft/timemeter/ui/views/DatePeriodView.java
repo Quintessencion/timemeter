@@ -58,7 +58,8 @@ public class DatePeriodView extends FrameLayout {
     private static final Logger LOG = LogFactory.getLogger(DatePeriodView.class);
 
     private static final String EXTRA_SUPER_STATE = "super_state";
-    private static final String EXTRA_DATE_MILLIS = "date_millis";
+    private static final String EXTRA_START_DATE_MILLIS = "start_date_millis";
+    private static final String EXTRA_END_DATE_MILLIS = "end_date_millis";
 
     private static final List<Period> mPeriodsDefinition = Arrays.asList(
             Period.DAY,
@@ -206,15 +207,16 @@ public class DatePeriodView extends FrameLayout {
         Bundle state = new Bundle();
 
         state.putParcelable(EXTRA_SUPER_STATE, superState);
-        state.putLong(EXTRA_DATE_MILLIS, mPeriodStartPanel.getDateMillis());
-
+        state.putLong(EXTRA_START_DATE_MILLIS, mPeriodStartPanel.getDateMillis());
+        state.putLong(EXTRA_END_DATE_MILLIS, mPeriodEndPanel.getDateMillis());
         return state;
     }
 
     @Override
     protected void onRestoreInstanceState(Parcelable state) {
         super.onRestoreInstanceState(((Bundle) state).getParcelable(EXTRA_SUPER_STATE));
-        mPeriodStartPanel.setDateMillis(((Bundle) state).getLong(EXTRA_DATE_MILLIS));
+        mPeriodStartPanel.setDateMillis(((Bundle) state).getLong(EXTRA_START_DATE_MILLIS));
+        mPeriodEndPanel.setDateMillis(((Bundle) state).getLong(EXTRA_END_DATE_MILLIS));
     }
 
     public long getStartDateMillis() {
@@ -227,20 +229,11 @@ public class DatePeriodView extends FrameLayout {
 
     public void setStartDateMillis(long dateMillis) {
         mPeriodStartPanel.setDateMillis(dateMillis);
-        if (mSelectedPeriod == Period.OTHER && !datesIsNormal()) {
-            resetEndDate();
-        }
     }
 
     public void setEndDateMillis(long dateMillis) {
         mPeriodEndPanel.setDateMillis(dateMillis);
-        if (!datesIsNormal()) {
-            if (mSelectedPeriod == Period.OTHER) {
-                resetEndDate();
-            } else {
-                mPeriodEndPanel.setDateMillis(0);
-            }
-        } else if (mSelectedPeriod != Period.OTHER) {
+        if (mSelectedPeriod != Period.OTHER) {
             setPeriod(Period.OTHER);
         }
     }
@@ -267,6 +260,27 @@ public class DatePeriodView extends FrameLayout {
                 return (mPeriodEndPanel.getDateMillis() != 0) ? mPeriodEndPanel.getDateMillis() : mPeriodStartPanel.getDateMillis();
         }
         return 0;
+    }
+
+    public boolean checkStartDateNewValue(long dateMillis) {
+        return (mSelectedPeriod == Period.OTHER)
+                ? datesIsNormal(dateMillis, mPeriodEndPanel.getDateMillis())
+                : true;
+    }
+
+    public boolean checkEndDateNewValue(long dateMillis) {
+        return datesIsNormal(mPeriodStartPanel.getDateMillis(), dateMillis);
+    }
+
+    public boolean checkSelectedDateNewValue(long dateMillis) {
+        switch (mSelectedDatePanel) {
+            case DATE_PANEL_START:
+                return checkStartDateNewValue(dateMillis);
+
+            case DATE_PANEL_END:
+                return checkEndDateNewValue(dateMillis);
+        }
+        return false;
     }
 
     @DatePanelType
@@ -307,11 +321,11 @@ public class DatePeriodView extends FrameLayout {
         setPeriod(Period.ALL);
     }
 
-    private boolean datesIsNormal() {
-        mCalendar.setTimeInMillis(mPeriodStartPanel.getDateMillis());
-        long startDate = TimeUtils.getDayStartMillis(mCalendar);
-        mCalendar.setTimeInMillis(mPeriodEndPanel.getDateMillis());
-        return TimeUtils.getDayStartMillis(mCalendar) >= startDate;
+    private boolean datesIsNormal(long startDateMillis, long endDateMillis) {
+        mCalendar.setTimeInMillis(startDateMillis);
+        long dateMillis = TimeUtils.getDayStartMillis(mCalendar);
+        mCalendar.setTimeInMillis(endDateMillis);
+        return TimeUtils.getDayStartMillis(mCalendar) >= dateMillis;
     }
 
     private void sendOnDateClicked(@DatePanelType int panel) {
