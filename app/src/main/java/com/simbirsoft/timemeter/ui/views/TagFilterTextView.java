@@ -34,4 +34,9 @@ public class TagFilterTextView extends TokenCompleteTextView {
         tag.setName(s);
         return tag;
     }
+
+    @Override
+    public boolean enoughToFilter() {
+        return true;
+    }
 }

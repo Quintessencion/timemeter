@@ -7,12 +7,15 @@ import android.os.Handler;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v7.widget.SearchView;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Filter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -28,6 +31,8 @@ import com.be.android.library.worker.exceptions.JobExecutionException;
 import com.be.android.library.worker.handlers.JobEventDispatcher;
 import com.be.android.library.worker.jobs.CallableForkJoinJob;
 import com.be.android.library.worker.models.LoadJobResult;
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -444,6 +449,7 @@ public class FilterView extends FrameLayout implements
         mTagsView.setImeOptions(EditorInfo.IME_ACTION_DONE);
         mTagsView.setTokenClickStyle(TokenCompleteTextView.TokenClickStyle.Delete);
         mTagsView.setTokenListener(this);
+        mTagsView.setOnClickListener((v) -> mTagsView.showDropDown());
         mJobEventDispatcher.submitJob(Injection.sJobsComponent.loadTagListJob());
     }
 
@@ -492,6 +498,15 @@ public class FilterView extends FrameLayout implements
             protected boolean keepObject(Tag tag, String s) {
                 final String name = s.trim();
 
+                if (Iterables.indexOf(
+                        mTagsView.getObjects(),
+                        (token) -> ((Tag) token).getName().equalsIgnoreCase(tag.getName())) > -1) {
+
+                    return false;
+                } else if ("&".equals(s)) {
+                    return true;
+                }
+
                 if (TextUtils.isEmpty(name)) {
                     return false;
                 }
@@ -515,6 +530,11 @@ public class FilterView extends FrameLayout implements
 
                 vh.tagView.setTag(item);
                 return vh.itemView;
+            }
+
+            @Override
+            public Filter getFilter() {
+                return super.getFilter();
             }
         };
 
@@ -542,8 +562,14 @@ public class FilterView extends FrameLayout implements
         super.onDetachedFromWindow();
     }
 
+
+
     @Override
     public void onTokenAdded(Object o) {
+        if (mAdapter != null) {
+            mAdapter.getFilter().filter("&");
+        }
+
         if (mAdapter != null && mAdapter.getPosition((Tag) o) < 0) {
             mTagsView.removeObject(o);
 
@@ -555,6 +581,10 @@ public class FilterView extends FrameLayout implements
 
     @Override
     public void onTokenRemoved(Object o) {
+        if (mAdapter != null) {
+            mAdapter.getFilter().filter("&");
+        }
+
         if (mTokenListener == null) {
             return;
         }
