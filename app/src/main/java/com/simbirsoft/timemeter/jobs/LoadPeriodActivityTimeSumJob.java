@@ -113,17 +113,7 @@ public class LoadPeriodActivityTimeSumJob extends LoadJob implements FilterableJ
         }
 
         if (taskIds != null && taskIds.size() > 0) {
-            StringBuilder taskIdSBuilder = new StringBuilder();
-            taskIdSBuilder.append(" AND " + Task.TABLE_NAME + "." + Task.COLUMN_ID + " IN (");
-
-            for (Long taskId: taskIds) {
-                taskIdSBuilder.append(taskId + ",");
-            }
-
-            taskIdSBuilder.deleteCharAt(taskIdSBuilder.length() - 1);
-            taskIdSBuilder.append(")");
-
-            join = sTaskJoin + taskIdSBuilder.toString();
+            join = sTaskJoin + QueryUtils.createTaskIdsRestrictionStatement(taskIds);
         }
 
         if (!filterTags.isEmpty()) {

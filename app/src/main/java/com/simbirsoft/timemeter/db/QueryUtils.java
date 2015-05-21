@@ -63,7 +63,7 @@ public final class QueryUtils {
         where += beginTimeColumnName + " >= " + String.valueOf(dateMillis);
 
         if (periodEnd > 0) {
-            where += " AND " + beginTimeColumnName + " < " + String.valueOf(periodEnd);
+            where += " AND " + beginTimeColumnName + " <= " + String.valueOf(periodEnd);
         }
 
         return where;
@@ -86,6 +86,17 @@ public final class QueryUtils {
                 .put("tag_ids", tagIds)
                 .put("tag_count", tags.size())
                 .format();
+    }
+
+    public static CharSequence createTaskIdsRestrictionStatement(Collection<Long> taskIds) {
+        final String taskIdsCommaSeparated = Joiner.on(",").join(Iterables.transform(taskIds, taskId -> taskId));
+
+        StringBuilder taskIdSBuilder = new StringBuilder();
+        taskIdSBuilder.append(" AND " + Task.TABLE_NAME + "." + Task.COLUMN_ID + " IN (");
+        taskIdSBuilder.append(taskIdsCommaSeparated);
+        taskIdSBuilder.append(")");
+
+        return taskIdSBuilder.toString();
     }
 
 }
