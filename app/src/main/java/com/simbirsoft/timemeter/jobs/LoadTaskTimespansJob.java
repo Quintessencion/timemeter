@@ -6,9 +6,7 @@ import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
-import com.simbirsoft.timemeter.model.Period;
-import com.simbirsoft.timemeter.model.TaskTimespansLoadFilter;
-import com.simbirsoft.timemeter.ui.util.TimeUtils;
+import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.squareup.phrase.Phrase;
 
 import java.util.List;
@@ -21,12 +19,12 @@ public class LoadTaskTimespansJob extends LoadJob {
 
     private final DatabaseHelper mDatabaseHelper;
     private Long mTaskId;
-    private TaskTimespansLoadFilter mFilter;
+    private TaskLoadFilter mFilter;
 
     @Inject
     public LoadTaskTimespansJob(DatabaseHelper databaseHelper) {
         mDatabaseHelper = databaseHelper;
-        mFilter = new TaskTimespansLoadFilter();
+        mFilter = new TaskLoadFilter();
     }
 
     public void setTaskId(long taskId) {
@@ -50,7 +48,7 @@ public class LoadTaskTimespansJob extends LoadJob {
         mFilter.clear();
     }
 
-    public TaskTimespansLoadFilter getFilter() {
+    public TaskLoadFilter getFilter() {
         return mFilter;
     }
 

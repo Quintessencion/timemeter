@@ -4,7 +4,7 @@ package com.simbirsoft.timemeter.jobs;
 import com.be.android.library.worker.jobs.LoadJob;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
-import com.simbirsoft.timemeter.model.TaskTimespansLoadFilter;
+import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
 import com.simbirsoft.timemeter.ui.util.TimeSpanDaysSplitter;
 
@@ -25,7 +25,7 @@ public class LoadTaskActivitiesJob extends LoadJob {
         mLoadSpansJob.setTaskId(taskId);
     }
 
-    public TaskTimespansLoadFilter getFilter() {
+    public TaskLoadFilter getFilter() {
         return mLoadSpansJob.getFilter();
     }
 

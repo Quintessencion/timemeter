@@ -71,7 +71,7 @@ public class LoadPeriodActivityTimeSumJob extends LoadJob implements FilterableJ
 
     @Override
     protected LoadJobResult<Integer> performLoad() throws Exception {
-        final long filterDateMillis = mLoadFilter.getDateMillis();
+        final long filterDateMillis = mLoadFilter.getStartDateMillis();
         final Period filterPeriod = mLoadFilter.getPeriod();
         final Collection<Tag> filterTags = mLoadFilter.getFilterTags();
         final List<Long> taskIds = mLoadFilter.getTaskIds();

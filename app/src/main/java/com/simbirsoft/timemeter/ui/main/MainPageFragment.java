@@ -96,7 +96,7 @@ public class MainPageFragment extends BaseFragment {
         FilterView.FilterState filterState = getFilterViewState();
         if (filterState != null) {
             filter.tags(filterState.tags)
-                    .dateMillis(filterState.dateMillis)
+                    .startDateMillis(filterState.dateMillis)
                     .period(filterState.period)
                     .searchText(filterState.searchText);
         }

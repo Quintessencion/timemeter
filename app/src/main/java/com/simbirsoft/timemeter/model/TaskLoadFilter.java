@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.db.model.Tag;
+import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.simbirsoft.timemeter.ui.views.TaskActivitiesFilterView;
 
@@ -29,7 +30,8 @@ public class TaskLoadFilter implements Parcelable {
             };
 
     private final Set<Tag> mFilterTags;
-    private long mDateMillis;
+    private long mStartDateMillis;
+    private long mEndDateMillis;
     private Period mPeriod;
     private String mSearchText;
     private List<Long> mTaskIds;
@@ -51,8 +53,14 @@ public class TaskLoadFilter implements Parcelable {
         return this;
     }
 
-    public TaskLoadFilter dateMillis(long dateMillis) {
-        mDateMillis = dateMillis;
+    public TaskLoadFilter startDateMillis(long startDateMillis) {
+        mStartDateMillis = startDateMillis;
+
+        return this;
+    }
+
+    public TaskLoadFilter endDateMillis(long endDateMillis) {
+        mEndDateMillis = endDateMillis;
 
         return this;
     }
@@ -77,14 +85,15 @@ public class TaskLoadFilter implements Parcelable {
 
     public static TaskLoadFilter fromTaskActivitiesFilter(TaskActivitiesFilterView.FilterState filterState) {
         return new TaskLoadFilter()
-                .dateMillis(filterState.startDateMillis)
+                .startDateMillis(filterState.startDateMillis)
+                .endDateMillis(filterState.endDateMillis)
                 .period(filterState.period);
 
     }
 
     public static TaskLoadFilter fromTaskFilter(FilterView.FilterState filterState) {
         return new TaskLoadFilter()
-                .dateMillis(filterState.dateMillis)
+                .startDateMillis(filterState.dateMillis)
                 .period(filterState.period)
                 .tags(filterState.tags)
                 .searchText(filterState.searchText);
@@ -98,8 +107,12 @@ public class TaskLoadFilter implements Parcelable {
         return Collections.unmodifiableSet(mFilterTags);
     }
 
-    public long getDateMillis() {
-        return mDateMillis;
+    public long getStartDateMillis() {
+        return mStartDateMillis;
+    }
+
+    public long getEndDateMillis() {
+        return mEndDateMillis;
     }
 
     public Period getPeriod() {
@@ -110,8 +123,25 @@ public class TaskLoadFilter implements Parcelable {
 
     public void clear() {
         mPeriod = null;
-        mDateMillis = 0;
+        mStartDateMillis = 0;
+        mEndDateMillis = 0;
         mFilterTags.clear();
+    }
+
+    public void getDateBounds(long[] bounds) {
+        bounds[0] = 0;
+        bounds[1] = 0;
+        if (mStartDateMillis > 0) {
+            bounds[0] = TimeUtils.getDayStartMillis(mStartDateMillis);
+        }
+        if (mPeriod == null || mPeriod == Period.ALL) {
+            return;
+        }
+        if (mPeriod == Period.OTHER) {
+            bounds[1] = TimeUtils.getDayEndMillis(mEndDateMillis);
+        } else {
+            bounds[1] = Period.getPeriodEnd(mPeriod, bounds[0]);
+        }
     }
 
     @Override
@@ -125,7 +155,8 @@ public class TaskLoadFilter implements Parcelable {
         tags.addAll(mFilterTags);
         parcel.writeTypedList(tags);
 
-        parcel.writeLong(mDateMillis);
+        parcel.writeLong(mStartDateMillis);
+        parcel.writeLong(mEndDateMillis);
         parcel.writeSerializable(mPeriod);
         parcel.writeString(mSearchText);
 
@@ -138,7 +169,8 @@ public class TaskLoadFilter implements Parcelable {
         ArrayList<Tag> tags = new ArrayList<>();
         parcel.readTypedList(tags, Tag.CREATOR);
         mFilterTags.addAll(tags);
-        mDateMillis = parcel.readLong();
+        mStartDateMillis= parcel.readLong();
+        mEndDateMillis = parcel.readLong();
         mPeriod = (Period)parcel.readSerializable();
         mSearchText = parcel.readString();
         mTaskIds = new ArrayList<>();
