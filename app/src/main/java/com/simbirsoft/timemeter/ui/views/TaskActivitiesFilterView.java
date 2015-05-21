@@ -34,6 +34,7 @@ public class TaskActivitiesFilterView extends FrameLayout implements
         void onSelectDateClicked(Calendar selectedDate);
         void onFilterChanged(FilterState filterState);
         void onFilterReset();
+        void onIncorrectDateSet(int datePanelType);
     }
 
     private static class SavedState extends BaseSavedState {
@@ -71,8 +72,6 @@ public class TaskActivitiesFilterView extends FrameLayout implements
     }
 
     public static class FilterState implements Parcelable {
-
-        public static final long PERIOD_MILLIS_DEFAULT = TimeUnit.DAYS.toMillis(1);
 
         public static final Creator<FilterState> CREATOR =
                 new Creator<FilterState>() {
@@ -204,7 +203,9 @@ public class TaskActivitiesFilterView extends FrameLayout implements
         Parcelable superState = super.onSaveInstanceState();
         SavedState ss = new SavedState(superState);
         ss.mFilterState = mFilterState;
-        ss.mSelectedDatePanel = (mDatePeriodView != null) ? mDatePeriodView.getSelectedDatePanel() : DatePeriodView.DATE_PANEL_NONE;
+        ss.mSelectedDatePanel = mDatePeriodView != null
+                ? mDatePeriodView.getSelectedDatePanel()
+                : DatePeriodView.DATE_PANEL_NONE;
         return ss;
     }
 
@@ -274,10 +275,19 @@ public class TaskActivitiesFilterView extends FrameLayout implements
     public void setDate(long dateMillis) {
         if (mDatePeriodView == null) {
             displayDatePeriod(dateMillis, 0, Period.ALL);
-        } else {
+        } else if (mDatePeriodView.checkSelectedDateNewValue(dateMillis)) {
             mDatePeriodView.setSelectedDateMillis(dateMillis);
+        } else {
+            if (mOnFilterListener != null) {
+                mOnFilterListener.onIncorrectDateSet(mDatePeriodView.getSelectedDatePanel());
+            }
+            return;
         }
         postFilterUpdate();
+    }
+
+    public long getSelectedDateInitialValue() {
+        return (mDatePeriodView != null) ? mDatePeriodView.getInitialValueForSelectedDate() : 0;
     }
 
     private void displayDatePeriod(long startDateMillis, long endDateMillis, Period period) {

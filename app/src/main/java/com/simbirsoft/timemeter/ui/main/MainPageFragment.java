@@ -49,7 +49,6 @@ public class MainPageFragment extends BaseFragment {
     }
 
     private static final String SNACKBAR_TAG = "main_page_snackbar";
-    private static final String FILTER_STATE = "filter_state";
 
     private boolean mIsContentInvalidated;
     private boolean mIsSelected;
@@ -61,13 +60,12 @@ public class MainPageFragment extends BaseFragment {
     @Named(ApplicationModule.HANDLER_MAIN)
     Handler mHandler;
 
-    FilterView.FilterState mFilterViewState;
+    FilterViewProvider mFilterViewProvider;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Injection.sUiComponent.injectMainPageFragment(this);
-        restoreInstanceState(savedInstanceState);
     }
 
     protected Bus getBus() {
@@ -75,28 +73,37 @@ public class MainPageFragment extends BaseFragment {
     }
 
     protected FilterView.FilterState getFilterViewState() {
-        return mFilterViewState;
+        if (mFilterViewProvider == null)
+            return null;
+
+        FilterView filterView = mFilterViewProvider.getFilterView();
+        if (filterView == null)
+            return null;
+
+        return filterView.getViewFilterState();
     }
 
     protected boolean hasFilter() {
-        return mFilterViewState != null;
+        return getFilterViewState() != null;
     }
 
     protected boolean filterIsEmpty() {
-        return  mFilterViewState == null || mFilterViewState.isEmpty();
+        FilterView.FilterState filterState = getFilterViewState();
+        return  filterState == null || filterState.isEmpty();
     }
 
     protected void fillTaskLoadFilter(TaskLoadFilter filter) {
-        if (mFilterViewState != null) {
-            filter.tags(mFilterViewState.tags)
-                    .dateMillis(mFilterViewState.dateMillis)
-                    .period(mFilterViewState.period)
-                    .searchText(mFilterViewState.searchText);
+        FilterView.FilterState filterState = getFilterViewState();
+        if (filterState != null) {
+            filter.tags(filterState.tags)
+                    .dateMillis(filterState.dateMillis)
+                    .period(filterState.period)
+                    .searchText(filterState.searchText);
         }
     }
 
     protected String getFilterLoaderTag(String tag) {
-        return tag + "filter:" + String.valueOf(mFilterViewState.hashCode());
+        return tag + "filter:" + String.valueOf(getFilterViewState().hashCode());
     }
 
     public void onPageSelected() {
@@ -133,11 +140,9 @@ public class MainPageFragment extends BaseFragment {
 
     @Subscribe
     public void onFilterViewStateChanged(FilterViewStateChangeEvent ev) {
-        if (!isAdded()) {
-            return;
+        if (isAdded()) {
+            onFilterViewStateChanged();
         }
-        mFilterViewState = ev.getFilterState();
-        onFilterViewStateChanged();
     }
 
     protected void onFilterViewStateChanged() {
@@ -167,20 +172,6 @@ public class MainPageFragment extends BaseFragment {
         }
         bar.setTag(SNACKBAR_TAG);
         SnackbarManager.show(bar);
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle bundle) {
-        super.onSaveInstanceState(bundle);
-        if (mFilterViewState != null) {
-            bundle.putParcelable(FILTER_STATE, mFilterViewState);
-        }
-    }
-
-    private void restoreInstanceState(Bundle savedInstanceState) {
-        if (savedInstanceState != null) {
-            mFilterViewState = savedInstanceState.getParcelable(FILTER_STATE);
-        }
     }
 
     protected void showTaskRemoveUndoBar(TaskBundle bundle) {
@@ -279,5 +270,9 @@ public class MainPageFragment extends BaseFragment {
 
     protected void reloadContent() {
 
+    }
+
+    public void setFilterViewProvider(FilterViewProvider provider) {
+        mFilterViewProvider = provider;
     }
 }
