@@ -123,7 +123,7 @@ public class TaskLoadFilter implements Parcelable {
     public void writeToParcel(Parcel parcel, int flags) {
         ArrayList<Tag> tags = new ArrayList<>();
         tags.addAll(mFilterTags);
-        parcel.writeList(tags);
+        parcel.writeTypedList(tags);
 
         parcel.writeLong(mDateMillis);
         parcel.writeSerializable(mPeriod);
