@@ -36,10 +36,12 @@ public class TaskLoadFilter implements Parcelable {
 
     public TaskLoadFilter() {
         mFilterTags = Sets.newHashSet();
+        mTaskIds = Collections.emptyList();
     }
 
     public TaskLoadFilter(Parcel parcel) {
         mFilterTags = Sets.newHashSet();
+        mTaskIds = Collections.emptyList();
         readParcel(parcel);
     }
 
