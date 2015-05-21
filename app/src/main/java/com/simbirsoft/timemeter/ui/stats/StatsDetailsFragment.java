@@ -18,25 +18,20 @@ import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.R;
-import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.FilterableJob;
 import com.simbirsoft.timemeter.jobs.LoadOverallTaskActivityTimeJob;
 import com.simbirsoft.timemeter.jobs.LoadPeriodActivityTimelineJob;
 import com.simbirsoft.timemeter.jobs.LoadPeriodSplitActivityTimelineJob;
-import com.simbirsoft.timemeter.jobs.LoadTaskActivitiesJob;
-import com.simbirsoft.timemeter.jobs.LoadTaskTimespansJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.model.TaskOverallActivity;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.model.DailyActivityDuration;
 import com.simbirsoft.timemeter.ui.model.DailyTaskActivityDuration;
-import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
 import com.simbirsoft.timemeter.ui.stats.binders.ActivityStackedTimelineBinder;
 import com.simbirsoft.timemeter.ui.stats.binders.ActivityTimelineBinder;
 import com.simbirsoft.timemeter.ui.stats.binders.OverallActivityTimePieBinder;
-import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.simbirsoft.timemeter.ui.views.ProgressLayout;
 import com.squareup.otto.Bus;
 
@@ -74,7 +69,7 @@ public class StatsDetailsFragment extends BaseFragment implements
     ProgressLayout mProgressLayout;
 
     @FragmentArg(EXTRA_TASK_FILTER)
-    FilterView.FilterState mExtraTaskFilter;
+    TaskLoadFilter mExtraTaskFilter;
 
     @FragmentArg(EXTRA_CHART_VIEW_TYPE)
     int mChartViewType;
@@ -149,10 +144,11 @@ public class StatsDetailsFragment extends BaseFragment implements
 
         if (mExtraTaskFilter != null) {
             ((FilterableJob) job).getTaskLoadFilter()
-                    .tags((mExtraTaskFilter.tags != null) ? mExtraTaskFilter.tags : Sets.newHashSet())
-                    .dateMillis(mExtraTaskFilter.dateMillis)
-                    .period(mExtraTaskFilter.period)
-                    .searchText(mExtraTaskFilter.searchText);
+                    .tags((mExtraTaskFilter.getFilterTags() != null) ? mExtraTaskFilter.getFilterTags() : Sets.newHashSet())
+                    .dateMillis(mExtraTaskFilter.getDateMillis())
+                    .period(mExtraTaskFilter.getPeriod())
+                    .searchText(mExtraTaskFilter.getSearchText())
+                    .taskIds(mExtraTaskFilter.getTaskIds());
         }
 
         job.addTag(STATS_LOADER_TAG);

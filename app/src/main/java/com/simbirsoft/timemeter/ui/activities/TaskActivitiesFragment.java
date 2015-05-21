@@ -33,13 +33,13 @@ import com.fourmob.datetimepicker.date.DatePickerDialog;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskActivitiesJob;
+import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
 import com.simbirsoft.timemeter.ui.stats.StatisticsViewBinder;
 import com.simbirsoft.timemeter.ui.stats.StatsDetailsFragment;
 import com.simbirsoft.timemeter.ui.stats.StatsDetailsFragment_;
-import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.simbirsoft.timemeter.ui.views.ProgressLayout;
 import com.simbirsoft.timemeter.ui.views.TaskActivitiesFilterView;
 import com.squareup.otto.Bus;
@@ -50,6 +50,7 @@ import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -332,6 +333,14 @@ public class TaskActivitiesFragment extends BaseFragment implements
 
     private void showTaskActivity() {
         Bundle args = new Bundle();
+        if (mFilterView != null && mFilterView.getFilterState() != null) {
+            List<Long> taskId = new ArrayList<>();
+            taskId.add(mExtraTaskId);
+            args.putParcelable(StatsDetailsFragment.EXTRA_TASK_FILTER, TaskLoadFilter.fromTaskActivitiesFilter(mFilterView
+                    .getFilterState())
+                    .taskIds(taskId));
+        }
+
         args.putInt(StatsDetailsFragment.EXTRA_CHART_VIEW_TYPE, StatisticsViewBinder.VIEW_TYPE_ACTIVITY_TIMELINE);
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), StatsDetailsFragment_.class.getName(), args);

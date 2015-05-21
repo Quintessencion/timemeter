@@ -124,7 +124,8 @@ public class LoadPeriodActivityTimelineJob extends LoadJob implements Filterable
                 .dateMillis(dayStartMillis)
                 .period(Period.DAY)
                 .tags(mLoadFilter.getFilterTags())
-                .searchText(mLoadFilter.getSearchText());
+                .searchText(mLoadFilter.getSearchText())
+                .taskIds(mLoadFilter.getTaskIds());
 
         JobEvent result = forkJob(mLoadActivitySumJob).join();
 

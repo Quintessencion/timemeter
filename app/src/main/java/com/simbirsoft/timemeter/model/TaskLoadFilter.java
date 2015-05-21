@@ -127,20 +127,19 @@ public class TaskLoadFilter implements Parcelable {
         parcel.writeSerializable(mPeriod);
         parcel.writeString(mSearchText);
 
-        //long[] ids = mTaskIds.toArray(new long[mTaskIds.size()]);
-        //parcel.writeList(mTaskIds.toArray());
+        ArrayList<Long> taskIds = new ArrayList<>();
+        taskIds.addAll(mTaskIds);
+        parcel.writeList(taskIds);
     }
 
     private void readParcel(Parcel parcel) {
         ArrayList<Tag> tags = new ArrayList<>();
         parcel.readTypedList(tags, Tag.CREATOR);
         mFilterTags.addAll(tags);
-
         mDateMillis = parcel.readLong();
         mPeriod = (Period)parcel.readSerializable();
         mSearchText = parcel.readString();
-        mTaskIds = new ArrayList<Long>();
-        //parcel.readTypedList(mTaskIds);
-        //parcel.readLongLi
+        mTaskIds = new ArrayList<>();
+        parcel.readList(mTaskIds, Long.class.getClassLoader());
     }
 }
