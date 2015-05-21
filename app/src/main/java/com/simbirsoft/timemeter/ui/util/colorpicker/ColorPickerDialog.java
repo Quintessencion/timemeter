@@ -39,7 +39,7 @@ public class ColorPickerDialog extends DialogFragment implements ColorPickerSwat
     public static final int SIZE_LARGE = 1;
     public static final int SIZE_SMALL = 2;
 
-    protected AlertDialog mAlertDialog;
+    protected MaterialDialog mAlertDialog;
 
     protected static final String KEY_TITLE_ID = "title_id";
     protected static final String KEY_COLORS = "colors";
