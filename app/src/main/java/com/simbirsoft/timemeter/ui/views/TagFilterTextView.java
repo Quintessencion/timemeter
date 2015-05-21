@@ -1,12 +1,31 @@
 package com.simbirsoft.timemeter.ui.views;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.Filter;
+
+import com.google.common.base.Strings;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.tokenautocomplete.TokenCompleteTextView;
 
 public class TagFilterTextView extends TokenCompleteTextView {
+
+    public interface VisibilityStateCallback {
+        boolean isTagViewVisible();
+    }
+
+    /**
+     * Special filter string used to retain all tags in the tags
+     * view adapter except already selected tags
+     *
+     * No actual filtering is performed for empty filter strings,
+     * so we need a special non-empty string
+     */
+    public static final String COMPLETION_TEXT_ALLOW_ANY = "*";
+
+    private VisibilityStateCallback mVisibilityStateCallback;
 
     public TagFilterTextView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -24,7 +43,7 @@ public class TagFilterTextView extends TokenCompleteTextView {
     protected View getViewForObject(Object o) {
         TagView tagView = TagView_.build(getContext());
         tagView.enableTagImage();
-        tagView.setTag((Tag)o);
+        tagView.setTag((Tag) o);
         return tagView;
     }
 
@@ -37,6 +56,45 @@ public class TagFilterTextView extends TokenCompleteTextView {
 
     @Override
     public boolean enoughToFilter() {
+        if (mVisibilityStateCallback != null
+                && !mVisibilityStateCallback.isTagViewVisible()) {
+
+            return false;
+        }
+
+        // always return true to trigger suggestions immediately
         return true;
+    }
+
+    @Override
+    protected void performFiltering(@NonNull CharSequence text, int start, int end, int keyCode) {
+        String input = text.subSequence(start, end).toString();
+        if (Strings.isNullOrEmpty(input)) {
+            input = COMPLETION_TEXT_ALLOW_ANY;
+        }
+
+        Filter filter = getFilter();
+        if (filter != null) {
+            filter.filter(input, this);
+        }
+    }
+
+    @Override
+    protected String currentCompletionText() {
+        final String current = super.currentCompletionText();
+
+        return Strings.isNullOrEmpty(current) ? COMPLETION_TEXT_ALLOW_ANY : current;
+    }
+
+    public String getCurrentCompletionText() {
+        return currentCompletionText();
+    }
+
+    public VisibilityStateCallback getVisibilityStateCallback() {
+        return mVisibilityStateCallback;
+    }
+
+    public void setVisibilityStateCallback(VisibilityStateCallback visibilityStateCallback) {
+        mVisibilityStateCallback = visibilityStateCallback;
     }
 }

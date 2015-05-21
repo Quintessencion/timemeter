@@ -7,32 +7,23 @@ import android.os.Handler;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v7.widget.SearchView;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.widget.Filter;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
-import com.be.android.library.worker.base.ForkJoinJob;
 import com.be.android.library.worker.base.JobEvent;
 import com.be.android.library.worker.base.ThrottleJob;
 import com.be.android.library.worker.controllers.JobManager;
-import com.be.android.library.worker.exceptions.JobExecutionException;
 import com.be.android.library.worker.handlers.JobEventDispatcher;
 import com.be.android.library.worker.jobs.CallableForkJoinJob;
 import com.be.android.library.worker.models.LoadJobResult;
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -44,7 +35,6 @@ import com.simbirsoft.timemeter.jobs.LoadTagListJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.model.Period;
 import com.simbirsoft.timemeter.ui.util.KeyboardUtils;
-import com.simbirsoft.timemeter.ui.util.TagViewUtils;
 import com.simbirsoft.timemeter.ui.util.ToastUtils;
 import com.squareup.otto.Bus;
 import com.tokenautocomplete.FilteredArrayAdapter;
@@ -60,9 +50,7 @@ import org.slf4j.Logger;
 
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -441,6 +429,7 @@ public class FilterView extends FrameLayout implements
         mJobEventDispatcher = new JobEventDispatcher(context);
         mJobEventDispatcher.register(this);
 
+        mTagsView.setVisibilityStateCallback(() -> FilterView.this.getVisibility() == View.VISIBLE);
         mTagsView.allowDuplicates(false);
         mTagsView.allowCollapse(false);
         mTagsView.setImeActionLabel(
@@ -449,7 +438,12 @@ public class FilterView extends FrameLayout implements
         mTagsView.setImeOptions(EditorInfo.IME_ACTION_DONE);
         mTagsView.setTokenClickStyle(TokenCompleteTextView.TokenClickStyle.Delete);
         mTagsView.setTokenListener(this);
-        mTagsView.setOnClickListener((v) -> mTagsView.showDropDown());
+        mTagsView.setOnClickListener((v) -> {
+            // re-filter tag list adapter manually as it
+            // isn't done automatically from this point
+            mAdapter.getFilter().filter(mTagsView.getCurrentCompletionText());
+            mTagsView.showDropDown();
+        });
         mJobEventDispatcher.submitJob(Injection.sJobsComponent.loadTagListJob());
     }
 
@@ -503,7 +497,8 @@ public class FilterView extends FrameLayout implements
                         (token) -> ((Tag) token).getName().equalsIgnoreCase(tag.getName())) > -1) {
 
                     return false;
-                } else if ("&".equals(s)) {
+
+                } else if (TagFilterTextView.COMPLETION_TEXT_ALLOW_ANY.equals(s)) {
                     return true;
                 }
 
@@ -530,11 +525,6 @@ public class FilterView extends FrameLayout implements
 
                 vh.tagView.setTag(item);
                 return vh.itemView;
-            }
-
-            @Override
-            public Filter getFilter() {
-                return super.getFilter();
             }
         };
 
@@ -566,33 +556,36 @@ public class FilterView extends FrameLayout implements
 
     @Override
     public void onTokenAdded(Object o) {
-        if (mAdapter != null) {
-            mAdapter.getFilter().filter("&");
+        if (mAdapter == null) {
+            return;
         }
-
-        if (mAdapter != null && mAdapter.getPosition((Tag) o) < 0) {
+        if (mAdapter.getPosition((Tag) o) < 0) {
+            // Allow to add only existing tags
             mTagsView.removeObject(o);
 
-        } else if (mTokenListener != null) {
-            mTokenListener.onTokenAdded(o);
+        } else {
+            if (mTokenListener != null) {
+                mTokenListener.onTokenAdded(o);
+            }
+            KeyboardUtils.hideSoftInput(mTagsView.getContext(), mTagsView.getWindowToken());
             postFilterUpdate();
         }
+
+        // Need to manually re-filter tag list adapter
+        // to exclude previously added tags from list
+        mAdapter.getFilter().filter(mTagsView.getCurrentCompletionText());
     }
 
     @Override
     public void onTokenRemoved(Object o) {
         if (mAdapter != null) {
-            mAdapter.getFilter().filter("&");
+            if (mTokenListener != null && mAdapter.getPosition((Tag) o) > -1) {
+                mTokenListener.onTokenRemoved(o);
+            }
+            // TagFilterTextView automatically re-filter it's adapter after tag remove
         }
 
-        if (mTokenListener == null) {
-            return;
-        }
-
-        if (mAdapter != null && mAdapter.getPosition((Tag) o) > -1) {
-            mTokenListener.onTokenRemoved(o);
-            postFilterUpdate();
-        }
+        postFilterUpdate();
     }
 
     public void setFilterState(FilterState state) {
