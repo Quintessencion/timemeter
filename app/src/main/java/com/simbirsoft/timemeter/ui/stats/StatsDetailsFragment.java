@@ -143,12 +143,7 @@ public class StatsDetailsFragment extends BaseFragment implements
         job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
 
         if (mExtraTaskFilter != null) {
-            ((FilterableJob) job).getTaskLoadFilter()
-                    .tags((mExtraTaskFilter.getFilterTags() != null) ? mExtraTaskFilter.getFilterTags() : Sets.newHashSet())
-                    .dateMillis(mExtraTaskFilter.getDateMillis())
-                    .period(mExtraTaskFilter.getPeriod())
-                    .searchText(mExtraTaskFilter.getSearchText())
-                    .taskIds(mExtraTaskFilter.getTaskIds());
+            ((FilterableJob) job).setTaskLoadFilter(mExtraTaskFilter);
         }
 
         job.addTag(STATS_LOADER_TAG);

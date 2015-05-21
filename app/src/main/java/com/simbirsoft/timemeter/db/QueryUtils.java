@@ -63,7 +63,7 @@ public final class QueryUtils {
         where += beginTimeColumnName + " >= " + String.valueOf(dateMillis);
 
         if (periodEnd > 0) {
-            where += " AND " + beginTimeColumnName + " <= " + String.valueOf(periodEnd);
+            where += " AND " + beginTimeColumnName + " < " + String.valueOf(periodEnd);
         }
 
         return where;
@@ -88,7 +88,7 @@ public final class QueryUtils {
                 .format();
     }
 
-    public static CharSequence createTaskIdsRestrictionStatement(Collection<Long> taskIds) {
+    public static String createTaskIdsRestrictionStatement(Collection<Long> taskIds) {
         final String taskIdsCommaSeparated = Joiner.on(",").join(Iterables.transform(taskIds, taskId -> taskId));
 
         StringBuilder taskIdSBuilder = new StringBuilder();
