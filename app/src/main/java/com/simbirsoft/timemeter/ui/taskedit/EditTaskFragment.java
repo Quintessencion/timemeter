@@ -171,7 +171,7 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
             mTaskTagsEditScene.tagsView.requestFocus();
             KeyboardUtils.showSoftInput(getActivity());
         });
-        mActionBar.setDisplayHomeAsUpEnabled(true);
+        mActionBar.setHomeAsUpIndicator(R.drawable.ic_action_accept);
     }
 
     private void goToMainScene() {
@@ -213,9 +213,7 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         transitionSet.setDuration(Consts.CONTENT_FADE_IN_DELAY_MILLIS);
         transitionSet.setInterpolator(new DecelerateInterpolator());
         TransitionManager.go(mTaskEditScene.scene, transitionSet);
-        mActionBar.setHomeButtonEnabled(true);
-        mActionBar.setDisplayHomeAsUpEnabled(false);
-        mActionBar.setHomeAsUpIndicator(R.drawable.ic_action_accept);
+        mActionBar.setHomeAsUpIndicator(0);
     }
 
     @AfterViews
@@ -224,7 +222,7 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         if (mExtraTitle != null) {
             mActionBar.setTitle(mExtraTitle);
         }
-        mActionBar.setHomeAsUpIndicator(R.drawable.ic_action_accept);
+        mActionBar.setDisplayHomeAsUpEnabled(true);
         goToMainScene();
     }
     @Override
