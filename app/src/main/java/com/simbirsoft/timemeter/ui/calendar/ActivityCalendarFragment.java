@@ -18,7 +18,6 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadActivityCalendarJob;
-import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
@@ -37,6 +36,7 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.List;
@@ -46,10 +46,6 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
         JobLoader.JobLoaderCallbacks, CalendarNavigationView.OnCalendarNavigateListener,
         WeekCalendarView.OnCellClickListener, PopupWindow.OnDismissListener,
         CalendarPopupAdapter.TaskClickListener {
-
-    private static final int REQUEST_CODE_EDIT_TASK = 100;
-
-    private static final Logger LOG = LogFactory.getLogger(ActivityCalendarFragment.class);
 
     private static final String CALENDAR_LOADER_TAG = "ActivityCalendarFragment_calendar_loader";
 
@@ -151,43 +147,6 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
         requestLoad(newStartDate, newEndDate);
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case REQUEST_CODE_EDIT_TASK:
-                if (resultCode == EditTaskFragment.RESULT_CODE_CANCELLED) {
-                    LOG.debug("result: task edit cancelled");
-                    return;
-                }
-                switch (resultCode) {
-                    case EditTaskFragment.RESULT_CODE_TASK_REMOVED:
-                        LOG.debug("result: task removed");
-                        if (mPopupHelper.isVisible()) {
-                            mPopupHelper.dismiss();
-                        }
-                        mPagerAdapter.removeSpansFromCurrentView(data.getLongExtra(
-                                EditTaskFragment.EXTRA_TASK_ID, -1));
-                        showTaskRemoveUndoBar(data.getParcelableExtra(
-                                EditTaskFragment.EXTRA_TASK_BUNDLE));
-                        break;
-
-                    case EditTaskFragment.RESULT_CODE_TASK_UPDATED:
-                        LOG.debug("result: task updated");
-                        if (mPopupHelper.isVisible()) {
-                            mPopupHelper.updateTask(data.getParcelableExtra(
-                                    EditTaskFragment.EXTRA_TASK_BUNDLE));
-                        }
-                        break;
-                }
-                sendTaskChangedEvent(resultCode);
-                return;
-
-            default:
-                break;
-        }
-        super.onActivityResult(requestCode, resultCode, data);
-    }
-
     private void saveScrollViewOffset() {
         WeekCalendarView v = mPagerAdapter.getCurrentView();
         mScrollViewMillisOffset = (v != null) ? v.getMillisOffset(mCalendarScrollView.getScrollY()) : -1;
@@ -238,17 +197,42 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
 
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), ViewTaskFragment_.class.getName(), args);
-        getActivity().startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TASK);
-    }
-
-    @Override
-    protected boolean inactiveTabNeedToInvalidateContentAfterTaskChanged(int resultCode) {
-        return resultCode == EditTaskFragment.RESULT_CODE_TASK_REMOVED;
+        getActivity().startActivityForResult(launchIntent, REQEUST_TASK_PROCESSING);
     }
 
     @Override
     protected void reloadContent() {
         super.reloadContent();
         requestReload(CALENDAR_LOADER_TAG, this);
+    }
+
+    @Override
+    protected void onTaskUpdated(Intent data) {
+        super.onTaskUpdated(data);
+        if (mPopupHelper.isVisible()) {
+            mPopupHelper.updateTask(data.getParcelableExtra(
+                    EditTaskFragment.EXTRA_TASK_BUNDLE));
+        }
+    }
+
+    @Override
+    protected void onTaskRemoved(Intent data) {
+        if (isSelected()) {
+            if (mPopupHelper.isVisible()) {
+                mPopupHelper.dismiss();
+            }
+            mPagerAdapter.removeSpansFromCurrentView(data.getLongExtra(
+                    EditTaskFragment.EXTRA_TASK_ID, -1));
+            showTaskRemoveUndoBar(data.getParcelableExtra(
+                    EditTaskFragment.EXTRA_TASK_BUNDLE));
+
+        } else {
+            invalidateContent();
+        }
+    }
+
+    @Override
+    protected Logger createLogger() {
+        return LoggerFactory.getLogger(ActivityCalendarFragment.class);
     }
 }
