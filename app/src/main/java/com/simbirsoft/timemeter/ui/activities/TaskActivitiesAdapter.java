@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.ui.model.TaskActivityDateItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivityEmptyItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
@@ -212,5 +213,16 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
 
     public void addActivityItemViews(List<View> items) {
         mActivityItemViews.addAll(items);
+    }
+
+    public int getTaskTimeSpanPosition(TaskTimeSpan span) {
+        for(int i = mItems.size() - 1; i >=0; i--) {
+            TaskActivityItem item = mItems.get(i);
+            if (item.getItemType() != TaskActivityItem.SPANS_ITEM_TYPE) continue;
+            if (((TaskActivitySpansItem)item).containsSpan(span)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

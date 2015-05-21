@@ -64,6 +64,10 @@ public class TaskActivitySpansItem extends TaskActivityEmptyItem {
         return (mList == null) ? 0 : mList.size();
     }
 
+    public boolean containsSpan(TaskTimeSpan span) {
+        return (mList != null) ? mList.contains(span) : false;
+    }
+
     private String getHourLabel(long millis) {
         mCalendar.setTimeInMillis(millis);
         return String.format("%02d:%02d", mCalendar.get(Calendar.HOUR_OF_DAY), mCalendar.get(Calendar.MINUTE));

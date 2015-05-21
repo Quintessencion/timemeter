@@ -15,6 +15,8 @@ import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.squareup.phrase.Phrase;
 
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -28,6 +30,7 @@ public class LoadTaskRecentActivitiesJob extends LoadJob{
     private final DatabaseHelper mDatabaseHelper;
     private final LoadTaskTimespansJob mLoadSpansJob;
     private Long mTaskId;
+    private List<TaskTimeSpan> mTaskTimeSpans;
 
     @Inject
     public LoadTaskRecentActivitiesJob(DatabaseHelper databaseHelper, LoadTaskTimespansJob loadSpansJob) {
@@ -39,13 +42,24 @@ public class LoadTaskRecentActivitiesJob extends LoadJob{
         mTaskId = taskId;
     }
 
+    public void setTaskTimeSpans(List<TaskTimeSpan> spans) {
+        mTaskTimeSpans = spans;
+    }
+
     @Override
     protected LoadJobResult<TaskRecentActivity> performLoad() throws Exception {
         TaskRecentActivity recentActivity = new TaskRecentActivity();
+        long startTime;
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());
         cal.add(Calendar.DAY_OF_YEAR, -DAYS_COUNT);
-        mLoadSpansJob.getFilter().startDateMillis(cal.getTimeInMillis())
+        startTime = cal.getTimeInMillis();
+        if (mTaskTimeSpans != null && !mTaskTimeSpans.isEmpty()) {
+            Collections.sort(mTaskTimeSpans, (item1, item2) ->
+                    (int) (item1.getStartTimeMillis() - item2.getStartTimeMillis()));
+            startTime = Math.min(mTaskTimeSpans.get(0).getStartTimeMillis(), startTime);
+        }
+        mLoadSpansJob.getFilter().startDateMillis(startTime)
                 .period(Period.ALL);
         mLoadSpansJob.setTaskId(mTaskId);
         List<TaskTimeSpan> spans =

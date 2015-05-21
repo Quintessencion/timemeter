@@ -22,6 +22,7 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskRecentActivitiesJob;
 import com.simbirsoft.timemeter.log.LogFactory;
@@ -43,6 +44,8 @@ import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
+
+import java.util.List;
 
 @EFragment(R.layout.fragment_view_task)
 public class ViewTaskFragment extends BaseFragment
@@ -222,6 +225,8 @@ public class ViewTaskFragment extends BaseFragment
         if (mListPosition != 0) {
             mRecyclerView.getLayoutManager().scrollToPosition(mListPosition);
             mListPosition = 0;
+        } else {
+            scrollToSelectedSpan();
         }
         mProgressLayout.updateProgressView();
         if (mAdapter.getItemCount() == 0) {
@@ -243,6 +248,7 @@ public class ViewTaskFragment extends BaseFragment
         LoadTaskRecentActivitiesJob job = Injection.sJobsComponent.loadTaskRecentActivitiesJob();
         job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
         job.setTaskId(mExtraTaskBundle.getTask().getId());
+        job.setTaskTimeSpans(mExtraTaskBundle.getTaskTimeSpans());
         job.addTag(LOADER_TAG);
         return job;
     }
@@ -250,5 +256,15 @@ public class ViewTaskFragment extends BaseFragment
     @Click(R.id.activitiesTitleContainer)
     void activitiesTitleClicked() {
         goToActivities();
+    }
+
+    private void scrollToSelectedSpan() {
+        List<TaskTimeSpan> spans = mExtraTaskBundle.getTaskTimeSpans();
+        if (spans.isEmpty()) return;
+        int position = mAdapter.getTaskTimeSpanPosition(spans.get(0));
+        if (position >= 0) {
+            LinearLayoutManager layoutManager = (LinearLayoutManager)mRecyclerView.getLayoutManager();
+            layoutManager.scrollToPositionWithOffset(position, -50);
+        }
     }
 }
