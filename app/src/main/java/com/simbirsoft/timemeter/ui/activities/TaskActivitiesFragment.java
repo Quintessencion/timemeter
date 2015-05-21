@@ -2,7 +2,7 @@ package com.simbirsoft.timemeter.ui.activities;
 
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
@@ -86,7 +86,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
 
     @AfterViews
     void bindViews() {
-        mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
+        mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         mActionBar.setDisplayHomeAsUpEnabled(true);
         if (mExtraTitle != null) {
            mActionBar.setTitle(mExtraTitle);

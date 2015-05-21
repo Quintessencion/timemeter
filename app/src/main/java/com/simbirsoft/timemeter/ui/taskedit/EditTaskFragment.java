@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -213,13 +213,14 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         transitionSet.setDuration(Consts.CONTENT_FADE_IN_DELAY_MILLIS);
         transitionSet.setInterpolator(new DecelerateInterpolator());
         TransitionManager.go(mTaskEditScene.scene, transitionSet);
+        mActionBar.setHomeButtonEnabled(true);
         mActionBar.setDisplayHomeAsUpEnabled(false);
         mActionBar.setHomeAsUpIndicator(R.drawable.ic_action_accept);
     }
 
     @AfterViews
     void bindViews() {
-        mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
+        mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (mExtraTitle != null) {
             mActionBar.setTitle(mExtraTitle);
         }
