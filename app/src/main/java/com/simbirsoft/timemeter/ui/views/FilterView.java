@@ -625,6 +625,13 @@ public class FilterView extends FrameLayout implements
         return mState.copy();
     }
 
+    public void updateDateView() {
+        if (mDatePeriodView != null) {
+            mDatePeriodView.updateStartDateView();
+            mDatePeriodView.updateEndDateView();
+        }
+    }
+
     private void postFilterUpdate() {
         if (mIsSilentUpdate) {
             return;
