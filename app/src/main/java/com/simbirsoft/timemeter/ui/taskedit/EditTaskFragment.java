@@ -171,7 +171,7 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
             mTaskTagsEditScene.tagsView.requestFocus();
             KeyboardUtils.showSoftInput(getActivity());
         });
-        mActionBar.setHomeAsUpIndicator(R.drawable.ic_action_accept);
+        mActionBar.setHomeAsUpIndicator(0);
     }
 
     private void goToMainScene() {
@@ -213,7 +213,7 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         transitionSet.setDuration(Consts.CONTENT_FADE_IN_DELAY_MILLIS);
         transitionSet.setInterpolator(new DecelerateInterpolator());
         TransitionManager.go(mTaskEditScene.scene, transitionSet);
-        mActionBar.setHomeAsUpIndicator(0);
+        mActionBar.setHomeAsUpIndicator(R.drawable.ic_action_accept);
     }
 
     @AfterViews
