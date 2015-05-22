@@ -1,13 +1,26 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent">
-    <android.support.v7.widget.RecyclerView
-        android:id="@android:id/list"
-        android:scrollbars="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/contentRoot">
+    <com.simbirsoft.timemeter.ui.views.TaskActivitiesFilterView_
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-    <com.simbirsoft.timemeter.ui.views.ProgressLayout_
-        android:id="@+id/progressLayout"
+        android:layout_height="wrap_content"
+        android:id="@+id/filter"/>
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:id="@+id/container"
+        android:background="@color/background_material_light">
+        <android.support.v7.widget.RecyclerView
+            android:id="@android:id/list"
+            android:scrollbars="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+        <com.simbirsoft.timemeter.ui.views.ProgressLayout_
+            android:id="@+id/progressLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingLeft="@dimen/task_activity_date_text_margin"
+            android:paddingRight="@dimen/task_activity_date_text_margin"/>
+    </FrameLayout>
 </RelativeLayout>

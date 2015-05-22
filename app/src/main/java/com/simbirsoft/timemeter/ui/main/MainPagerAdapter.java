@@ -14,6 +14,10 @@ import java.util.List;
 
 public class MainPagerAdapter extends FragmentPagerAdapter {
 
+    public interface SetupItemListener{
+        public void onMainPagerAdapterSetupItem(Fragment fragment);
+    }
+
     public static interface PageTitleProvider {
         String getPageTitle(Resources resources);
     }
@@ -22,6 +26,7 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
     private final FragmentManager mFragmentManager;
     private final int mPagerViewId;
     private final Resources mResources;
+    private SetupItemListener mSetupListener;
 
     private final List<PageItem> mPages;
 
@@ -62,6 +67,10 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
             page.setFragment(pageFragment);
         }
 
+        if (mSetupListener != null) {
+            mSetupListener.onMainPagerAdapterSetupItem(pageFragment);
+        }
+
         return pageFragment;
     }
 
@@ -95,5 +104,9 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
                 break;
             }
         }
+    }
+
+    public void setOnSetupItemListener(SetupItemListener listener) {
+        mSetupListener = listener;
     }
 }
