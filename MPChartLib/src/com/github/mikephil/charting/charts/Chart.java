@@ -532,7 +532,7 @@ public abstract class Chart<T extends ChartData<? extends DataSet<? extends Entr
             int entryCount = dataSet.getEntryCount();
 
             // if we have a barchart with stacked bars
-            if (dataSet instanceof BarDataSet && ((BarDataSet) dataSet).getStackSize() > 1) {
+            if (dataSet instanceof BarDataSet && ((BarDataSet) dataSet).getStackSize() > 0) {
 
                 BarDataSet bds = (BarDataSet) dataSet;
                 String[] sLabels = bds.getStackLabels();

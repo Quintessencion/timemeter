@@ -3,7 +3,7 @@ package com.simbirsoft.timemeter.ui.stats;
 
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -84,7 +84,7 @@ public class StatsDetailsFragment extends BaseFragment implements
 
     @AfterViews
     void bindViews() {
-        mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
+        mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         mActionBar.setDisplayHomeAsUpEnabled(true);
         mProgressLayout.setProgressLayoutCallbacks(
                 new ProgressLayout.JobProgressLayoutCallbacks(JobSelector.forJobTags(STATS_LOADER_TAG)) {

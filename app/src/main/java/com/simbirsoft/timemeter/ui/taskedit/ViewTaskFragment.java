@@ -5,7 +5,7 @@ import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -121,7 +121,7 @@ public class ViewTaskFragment extends BaseFragment
     }
 
     private void setActionBarTitleAndHome(String title) {
-        ActionBar mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
+        ActionBar mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (title != null) {
             mActionBar.setTitle(title);
         }

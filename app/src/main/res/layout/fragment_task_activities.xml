@@ -19,6 +19,8 @@
         <com.simbirsoft.timemeter.ui.views.ProgressLayout_
             android:id="@+id/progressLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:paddingLeft="@dimen/task_activity_date_text_margin"
+            android:paddingRight="@dimen/task_activity_date_text_margin"/>
     </FrameLayout>
 </RelativeLayout>
