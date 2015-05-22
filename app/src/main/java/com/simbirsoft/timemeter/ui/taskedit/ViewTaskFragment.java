@@ -23,6 +23,7 @@ import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.events.ScheduledTaskActivityNotificationUpdateEvent;
+import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskRecentActivitiesJob;
 import com.simbirsoft.timemeter.log.LogFactory;
@@ -269,7 +270,7 @@ public class ViewTaskFragment extends BaseFragment
     }
 
     @Subscribe
-    public void ontaskActivityNotificationUpdate(ScheduledTaskActivityNotificationUpdateEvent event) {
+    public void onTaskActivityUpdated(TaskActivityUpdateEvent event) {
         mAdapter.updateCurrentActivityTime();
     }
 }

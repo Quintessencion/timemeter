@@ -29,9 +29,9 @@ import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
-import com.simbirsoft.timemeter.controller.TaskActivityTimerUpdateListener;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
+import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
 import com.simbirsoft.timemeter.log.LogFactory;
@@ -58,7 +58,6 @@ import java.util.List;
 @EFragment(R.layout.fragment_task_list)
 public class TaskListFragment extends MainPageFragment implements JobLoader.JobLoaderCallbacks,
         TaskListAdapter.TaskClickListener,
-        TaskActivityTimerUpdateListener,
         MainPagerAdapter.PageTitleProvider {
 
     private static final String SNACKBAR_TAG = "task_list_snackbar";
@@ -194,13 +193,6 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-
-        mTaskActivityManager.addTaskActivityUpdateListener(this);
-    }
-
-    @Override
     public void onPause() {
         super.onPause();
 
@@ -211,7 +203,6 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
                     mRecyclerView.getLayoutManager()).findFirstVisibleItemPositions(mTaskListPosition);
         }
 
-        mTaskActivityManager.removeTaskActivityUpdateListener(this);
         mTaskActivityManager.saveTaskActivity();
     }
 
@@ -334,8 +325,9 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         requestLoad(loaderTag, this);
     }
 
-    @Override
-    public void onTaskActivityUpdate(ActiveTaskInfo info) {
+    @Subscribe
+    public void onTaskActivityUpdate(TaskActivityUpdateEvent event) {
+        ActiveTaskInfo info = event.getActiveTaskInfo();
         if (mRecyclerView != null && mTasksViewAdapter != null) {
             mTasksViewAdapter.updateItemView(mRecyclerView, info.getTask());
         }

@@ -6,11 +6,9 @@ import android.database.sqlite.SQLiteDatabase;
 import com.be.android.library.worker.annotations.OnJobEvent;
 import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.handlers.JobEventDispatcher;
-import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.util.JobSelector;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Task;
@@ -19,6 +17,7 @@ import com.simbirsoft.timemeter.events.ScheduledTaskUpdateTabContentEvent;
 import com.simbirsoft.timemeter.events.StopTaskActivityRequestedEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStartedEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
+import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.jobs.UpdateTaskActivityTimerJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.squareup.otto.Bus;
@@ -27,12 +26,10 @@ import com.squareup.phrase.Phrase;
 
 import org.slf4j.Logger;
 
-import java.util.LinkedList;
-
-import static nl.qbusict.cupboard.CupboardFactory.cupboard;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 
 @Singleton
 public class TaskActivityManager implements ITaskActivityManager {
@@ -44,7 +41,6 @@ public class TaskActivityManager implements ITaskActivityManager {
     private final TaskNotificationManager mTaskNotificationManager;
     private final Bus mBus;
 
-    private final LinkedList<TaskActivityTimerUpdateListener> mActivityUpdateListeners;
     private ActiveTaskInfo mActiveTaskInfo;
     private boolean mIsInitialized;
     private final String mUpdateJobTag = TaskActivityManager.class.getName() + "_TAG_UPDATE_JOB";
@@ -58,7 +54,6 @@ public class TaskActivityManager implements ITaskActivityManager {
         mDatabaseHelper = databaseHelper;
         mTaskNotificationManager = new TaskNotificationManager(mContext, mBus, this);
         LOG.info("{} created", getClass().getName());
-        mActivityUpdateListeners = Lists.newLinkedList();
         mJobEventDispatcher = new JobEventDispatcher(mContext, "TaskActivityManager_Dispatcher");
         mBus.register(this);
     }
@@ -173,19 +168,7 @@ public class TaskActivityManager implements ITaskActivityManager {
             updateTaskActivityRecord();
         }
 
-        for (TaskActivityTimerUpdateListener listener : mActivityUpdateListeners) {
-            listener.onTaskActivityUpdate(info);
-        }
-    }
-
-    @Override
-    public void addTaskActivityUpdateListener(TaskActivityTimerUpdateListener listener) {
-        mActivityUpdateListeners.add(listener);
-    }
-
-    @Override
-    public void removeTaskActivityUpdateListener(TaskActivityTimerUpdateListener listener) {
-        mActivityUpdateListeners.remove(listener);
+        mBus.post(new TaskActivityUpdateEvent(info));
     }
 
     private void resumeTaskActivity() {

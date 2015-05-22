@@ -55,7 +55,7 @@ public class TaskNotificationManager {
     }
 
     @Subscribe
-    public void ontaskActivityNotificationUpdate(ScheduledTaskActivityNotificationUpdateEvent event) {
+    public void onTaskActivityNotificationUpdate(ScheduledTaskActivityNotificationUpdateEvent event) {
         updateTaskNotification(mTaskActivityInfoProvider.getActiveTaskInfo());
     }
 
