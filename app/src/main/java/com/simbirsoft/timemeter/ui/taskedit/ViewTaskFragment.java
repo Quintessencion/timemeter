@@ -22,7 +22,6 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
-import com.simbirsoft.timemeter.events.ScheduledTaskActivityNotificationUpdateEvent;
 import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskRecentActivitiesJob;
@@ -271,6 +270,15 @@ public class ViewTaskFragment extends BaseFragment
 
     @Subscribe
     public void onTaskActivityUpdated(TaskActivityUpdateEvent event) {
-        mAdapter.updateCurrentActivityTime();
+        if (mExtraTaskBundle == null) {
+            return;
+        }
+
+        final long taskId = event.getActiveTaskInfo().getTask().getId();
+        if (mExtraTaskBundle.getTask().getId() != taskId) {
+            return;
+        }
+
+        mAdapter.updateCurrentActivityTime(taskId);
     }
 }

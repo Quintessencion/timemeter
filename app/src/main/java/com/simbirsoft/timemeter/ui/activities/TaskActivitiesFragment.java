@@ -257,7 +257,12 @@ public class TaskActivitiesFragment extends BaseFragment implements
 
     @Subscribe
     public void onTaskActivityUpdated(TaskActivityUpdateEvent event) {
-        mAdapter.updateCurrentActivityTime();
+        final long taskId = event.getActiveTaskInfo().getTask().getId();
+        if (mExtraTaskId != taskId) {
+            return;
+        }
+
+        mAdapter.updateCurrentActivityTime(taskId);
     }
 
     @Override
