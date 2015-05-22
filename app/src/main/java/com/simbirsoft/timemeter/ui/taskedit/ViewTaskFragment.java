@@ -140,6 +140,7 @@ public class ViewTaskFragment extends BaseFragment
         mRecyclerView.setLayoutManager(layoutManager);
 
         mAdapter = new TaskActivitiesAdapter(getActivity());
+        mAdapter.setHighlightedSpans(mExtraTaskBundle.getTaskTimeSpans());
         mRecyclerView.setAdapter(mAdapter);
         mProgressLayout.setShouldDisplayEmptyIndicatorMessage(true);
         mProgressLayout.setEmptyIndicatorStyle(Typeface.ITALIC);
@@ -281,10 +282,8 @@ public class ViewTaskFragment extends BaseFragment
     }
 
     private void scrollToSelectedSpan() {
-        List<TaskTimeSpan> spans = mExtraTaskBundle.getTaskTimeSpans();
-        if (spans.isEmpty()) return;
         int[] position = new int[2];
-        if (mAdapter.getTaskTimeSpanPosition(spans.get(0), position)) {
+        if (mAdapter.getEarliestHighlightedSpanPosition(position)) {
             TaskActivitiesLayoutManager layoutManager = (TaskActivitiesLayoutManager) mRecyclerView.getLayoutManager();
             layoutManager.scrollToSpan(position[0], position[1]);
         }

@@ -22,7 +22,6 @@ import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.simbirsoft.timemeter.ui.views.TaskActivityItemsLayout;
 
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -75,6 +74,7 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
     private int mCurrentDateColor;
     private int mHolidayDateColor;
     private final Calendar mCalendar;
+    private final List<TaskTimeSpan> mHighlightedSpans;
 
     public TaskActivitiesAdapter(Context context) {
         mContext = context;
@@ -89,12 +89,18 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         mCurrentDateColor = res.getColor(R.color.primary);
         mHolidayDateColor = res.getColor(R.color.accentPrimary);
         mCalendar = Calendar.getInstance();
+        mHighlightedSpans = Lists.newArrayList();
     }
 
     public void setItems(List<TaskActivityItem> items) {
         mItems.clear();
         mItems.addAll(items);
         notifyDataSetChanged();
+    }
+
+    public void setHighlightedSpans(List<TaskTimeSpan> spans) {
+        mHighlightedSpans.clear();
+        mHighlightedSpans.addAll(spans);
     }
 
     public int getItemViewType (int position) {
@@ -200,6 +206,7 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         return getItemViewType(position + 1) == TaskActivityItem.DATE_ITEM_TYPE;
     }
 
+    @Override
     public View getActivityItemView(TaskActivityItemsLayout layout) {
         View view;
         if (mActivityItemViews.size() > 0) {
@@ -213,8 +220,14 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         return view;
     }
 
+    @Override
     public void addActivityItemViews(List<View> items) {
         mActivityItemViews.addAll(items);
+    }
+
+    @Override
+    public boolean isActivityItemViewHighlighted(TaskActivitySpansItem item, int index) {
+        return mHighlightedSpans.contains(item.getSpan(index));
     }
 
     public void updateCurrentActivityTime() {
@@ -226,7 +239,11 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         }
     }
 
-    public boolean getTaskTimeSpanPosition(TaskTimeSpan span, int[] position) {
+    public boolean getEarliestHighlightedSpanPosition(int[] position) {
+        if (mHighlightedSpans.isEmpty()) {
+            return false;
+        }
+        TaskTimeSpan span = mHighlightedSpans.get(0);
         for(int i = mItems.size() - 1; i >=0; i--) {
             TaskActivityItem item = mItems.get(i);
             if (item.getItemType() != TaskActivityItem.SPANS_ITEM_TYPE) continue;
