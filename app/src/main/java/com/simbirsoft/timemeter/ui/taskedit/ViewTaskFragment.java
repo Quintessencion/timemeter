@@ -29,6 +29,7 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesAdapter;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment_;
+import com.simbirsoft.timemeter.ui.activities.TaskActivitiesLayoutManager;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
@@ -118,7 +119,7 @@ public class ViewTaskFragment extends BaseFragment
         tagFlowView.setTagViewsClickListener(mTagViewClickListener);
 
         mRecyclerView.setHasFixedSize(false);
-        final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        final TaskActivitiesLayoutManager layoutManager = new TaskActivitiesLayoutManager(getActivity());
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(layoutManager);
 
@@ -261,10 +262,10 @@ public class ViewTaskFragment extends BaseFragment
     private void scrollToSelectedSpan() {
         List<TaskTimeSpan> spans = mExtraTaskBundle.getTaskTimeSpans();
         if (spans.isEmpty()) return;
-        int position = mAdapter.getTaskTimeSpanPosition(spans.get(0));
-        if (position >= 0) {
-            LinearLayoutManager layoutManager = (LinearLayoutManager)mRecyclerView.getLayoutManager();
-            layoutManager.scrollToPositionWithOffset(position, -50);
+        int[] position = new int[2];
+        if (mAdapter.getTaskTimeSpanPosition(spans.get(0), position)) {
+            TaskActivitiesLayoutManager layoutManager = (TaskActivitiesLayoutManager) mRecyclerView.getLayoutManager();
+            layoutManager.scrollToSpan(position[0], position[1]);
         }
     }
 }

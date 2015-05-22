@@ -64,8 +64,8 @@ public class TaskActivitySpansItem extends TaskActivityEmptyItem {
         return (mList == null) ? 0 : mList.size();
     }
 
-    public boolean containsSpan(TaskTimeSpan span) {
-        return (mList != null) ? mList.contains(span) : false;
+    public int indexOfSpan(TaskTimeSpan span) {
+        return (mList != null) ? mList.indexOf(span) : -1;
     }
 
     private String getHourLabel(long millis) {

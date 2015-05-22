@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.R;
@@ -215,14 +216,24 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         mActivityItemViews.addAll(items);
     }
 
-    public int getTaskTimeSpanPosition(TaskTimeSpan span) {
+    public boolean getTaskTimeSpanPosition(TaskTimeSpan span, int[] position) {
         for(int i = mItems.size() - 1; i >=0; i--) {
             TaskActivityItem item = mItems.get(i);
             if (item.getItemType() != TaskActivityItem.SPANS_ITEM_TYPE) continue;
-            if (((TaskActivitySpansItem)item).containsSpan(span)) {
-                return i;
+            int spanIndex = ((TaskActivitySpansItem)item).indexOfSpan(span);
+            if (spanIndex >=0) {
+                position[0] = i;
+                position[1] = spanIndex;
+                return true;
             }
         }
-        return -1;
+        return false;
+    }
+
+    public int getSpansCount(int position) {
+        Preconditions.checkElementIndex(position, mItems.size());
+        TaskActivityItem item = mItems.get(position);
+        Preconditions.checkArgument(item.getItemType() == TaskActivityItem.SPANS_ITEM_TYPE, "illegal item type");
+        return ((TaskActivitySpansItem)item).getSpansCount();
     }
 }
