@@ -20,6 +20,7 @@ import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.simbirsoft.timemeter.ui.views.TaskActivityItemsLayout;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -212,5 +213,14 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
 
     public void addActivityItemViews(List<View> items) {
         mActivityItemViews.addAll(items);
+    }
+
+    public void updateCurrentActivityTime() {
+        for (TaskActivityItem item : mItems) {
+            if (item.getItemType() == TaskActivityItem.SPANS_ITEM_TYPE) {
+                ((TaskActivitySpansItem)item).updateSpanEndTime(0, System.currentTimeMillis());
+                break;
+            }
+        }
     }
 }

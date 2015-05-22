@@ -13,7 +13,7 @@ import com.simbirsoft.timemeter.ui.model.TaskActivitySpansItem;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TaskActivityItemsLayout extends LinearLayout {
+public class TaskActivityItemsLayout extends LinearLayout implements TaskActivitySpansItem.OnTaskActivityChangedListener {
     public interface TaskActivityItemsAdapter {
         public View getActivityItemView(TaskActivityItemsLayout layout);
         public void addActivityItemViews(List<View> items);
@@ -47,12 +47,20 @@ public class TaskActivityItemsLayout extends LinearLayout {
     }
 
     public void setTaskActivitySpansItem(TaskActivitySpansItem item) {
+        mItem.setOnChangedListener(null);
         mItem = item;
+        mItem.setOnChangedListener(this);
         update();
     }
 
     public void setAdapter(TaskActivityItemsAdapter adapter) {
         mAdapter = adapter;
+    }
+
+    @Override
+    public void onTaskActivityChanged(int index) {
+        TaskActivityItemView itemView = (TaskActivityItemView)getChildAt(0).getTag();
+        itemView.invalidate();
     }
 
     private void update() {
