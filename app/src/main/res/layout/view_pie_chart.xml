@@ -30,7 +30,7 @@
             android:id="@+id/legendPanel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="16dp"
+            android:paddingLeft="@dimen/chart_legend_padding"
             android:paddingTop="12dp" />
 
     </LinearLayout>
