@@ -70,6 +70,8 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     private static final String TASK_LIST_LOADER_TAG = "TaskListFragment_";
     private static final int REQUEST_CODE_EDIT_TASK = 100;
     private static final int COLUMN_COUNT_DEFAULT = 2;
+    private static final int LOAD_TASK_JOB_ID = 2970017;
+
     private int mColumnCount;
 
     @ViewById(android.R.id.list)
@@ -326,7 +328,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     @Override
     public Job onCreateJob(String loaderAttachTag) {
         LoadTaskListJob job = Injection.sJobsComponent.loadTaskListJob();
-        job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
+        job.setGroupId(LOAD_TASK_JOB_ID);
 
         fillTaskLoadFilter(job.getTaskLoadFilter());
         job.addTag(TASK_LIST_LOADER_TAG);

@@ -13,6 +13,7 @@
     <string name="title_view_params">ФИЛЬТР</string>
     <string name="title_view_date">ДАТА:</string>
     <string name="title_view_tags">МЕТКИ:</string>
+    <string name="title_view_period">ПЕРИОД:</string>
     <string name="title_overall_activity_pie_chart">Распределение активности</string>
     <string name="title_activity_timeline">Суммарная активность по дням</string>
     <string name="title_activity_stacked_timeline">Позадачная активность по дням</string>
@@ -51,6 +52,7 @@
     <string name="action_edit">Редактировать</string>
     <string name="action_create_tag">Создать метку</string>
     <string name="action_view_activities">Показать активности</string>
+    <string name="action_show_task_activities">Показать в виде графика</string>
     <string name="action_task_added">Задача %1$s добавлена</string>
 
     <!-- Hints -->
@@ -73,6 +75,7 @@
     <string name="hint_choose_date">не выбрана</string>
     <string name="hint_reset_filter">Сбросить фильтр</string>
     <string name="hint_choose_filter_period">Выбрать период</string>
+    <string name="hint_choose_period">не задан</string>
 
     <!-- Errors -->
     <string name="error_loading_data">Ошибка при загрузке данных</string>
@@ -99,14 +102,36 @@
     <string name="dialog_cancel_tag_changes_warning_title">Метка не сохранена</string>
     <string name="dialog_cancel_tag_changes_warning_message">Завершить редактирование без сохранения?</string>
 
+    <string name="day">День</string>
+    <string name="week">Неделя</string>
+    <string name="month">Месяц</string>
+    <string name="year">Год</string>
+    <string name="all_time">Все время</string>
+    <string name="another">Другой</string>
+
     <string-array name="period_array">
-        <item>День</item>
-        <item>Неделя</item>
-        <item>Месяц</item>
-        <item>Год</item>
-        <item>Все время</item>
+        <item>@string/day</item>
+        <item>@string/week</item>
+        <item>@string/month</item>
+        <item>@string/year</item>
+        <item>@string/all_time</item>
+    </string-array>
+
+    <string-array name="activities_period_array">
+        <item>@string/day</item>
+        <item>@string/week</item>
+        <item>@string/month</item>
+        <item>@string/year</item>
+        <item>@string/all_time</item>
+        <item>@string/another</item>
     </string-array>
 
     <string name="no_activity">нет активности</string>
     <string name="recent_activity">Последняя активность</string>
+    <string name="no_filtered_activity">не найдено активности по заданным критериям</string>
+    <string name="incorrect_filter_end_date_short">Дата окончания меньше даты начала</string>
+    <string name="incorrect_filter_start_date_short">Дата начала больше даты окончания</string>
+    <string name="incorrect_filter_end_date">Дата окончания не может быть меньше даты начала</string>
+    <string name="incorrect_filter_start_date">Дата начала не может быть больше даты окончания</string>
+    <string name="button_choose">Выбрать</string>
 </resources>

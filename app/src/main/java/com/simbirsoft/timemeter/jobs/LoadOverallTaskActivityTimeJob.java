@@ -67,7 +67,7 @@ public class LoadOverallTaskActivityTimeJob extends LoadJob implements Filterabl
 
     @Override
     protected LoadJobResult<List<TaskOverallActivity>> performLoad() throws Exception {
-        final long filterDateMillis = mLoadFilter.getDateMillis();
+        final long filterDateMillis = mLoadFilter.getStartDateMillis();
         final Period filterPeriod = mLoadFilter.getPeriod();
         final Collection<Tag> filterTags = mLoadFilter.getFilterTags();
 

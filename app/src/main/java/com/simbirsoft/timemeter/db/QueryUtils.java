@@ -88,4 +88,15 @@ public final class QueryUtils {
                 .format();
     }
 
+    public static String createTaskIdsRestrictionStatement(Collection<Long> taskIds) {
+        final String taskIdsCommaSeparated = Joiner.on(",").join(Iterables.transform(taskIds, taskId -> taskId));
+
+        StringBuilder taskIdSBuilder = new StringBuilder();
+        taskIdSBuilder.append(" AND " + Task.TABLE_NAME + "." + Task.COLUMN_ID + " IN (");
+        taskIdSBuilder.append(taskIdsCommaSeparated);
+        taskIdSBuilder.append(")");
+
+        return taskIdSBuilder.toString();
+    }
+
 }

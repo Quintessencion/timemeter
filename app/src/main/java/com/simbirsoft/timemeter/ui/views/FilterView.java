@@ -27,6 +27,7 @@ import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
@@ -51,6 +52,8 @@ import org.slf4j.Logger;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -254,6 +257,15 @@ public class FilterView extends FrameLayout implements
     private SearchView mSearchView;
     private ThrottleJob mThrottleJob;
 
+    /**
+     * Used to ignore {@link #onTokenAdded(Object)} events when view state is being restored
+     * to prevent emit of multiple filter state change events
+     */
+    private Set<Tag> mIgnoredEventTokens;
+
+    {
+        mIgnoredEventTokens = Sets.newHashSet();
+    }
 
     public FilterView(Context context) {
         super(context);
@@ -326,11 +338,8 @@ public class FilterView extends FrameLayout implements
     public void setDate(long dateMillis) {
         mState.dateMillis = dateMillis;
 
-        boolean needPostUpdate = mDatePeriodView != null;
         displayDatePeriod();
-        if (needPostUpdate) {
-            postFilterUpdate();
-        }
+        postFilterUpdate();
     }
 
     public SearchView getSearchView() {
@@ -371,7 +380,7 @@ public class FilterView extends FrameLayout implements
             mDatePanel.addView(mDatePeriodView);
         }
 
-        mDatePeriodView.setDateMillis(mState.dateMillis);
+        mDatePeriodView.setStartDateMillis(mState.dateMillis);
         mDatePeriodView.setDatePeriodViewListener(this);
     }
 
@@ -594,10 +603,12 @@ public class FilterView extends FrameLayout implements
         mIsSilentUpdate = true;
         if (state.tags != null && !state.tags.isEmpty()) {
             for (Tag tag : state.tags) {
+                mIgnoredEventTokens.add(tag);
                 mTagsView.addObject(tag);
             }
         } else {
             mTagsView.clear();
+            mIgnoredEventTokens.clear();
         }
 
         if (mState.dateMillis == 0) {
@@ -630,11 +641,9 @@ public class FilterView extends FrameLayout implements
     }
 
     private void updateFilterState() {
-        mState.tags = Lists.newArrayList(
-                Iterables.transform(mTagsView.getObjects(), input -> (Tag) input));
         if (mDatePeriodView != null) {
             mState.period = mDatePeriodView.getPeriod();
-            mState.dateMillis = mDatePeriodView.getDateMillis();
+            mState.dateMillis = mDatePeriodView.getStartDateMillis();
         } else {
             mState.period = null;
             mState.dateMillis = 0;
