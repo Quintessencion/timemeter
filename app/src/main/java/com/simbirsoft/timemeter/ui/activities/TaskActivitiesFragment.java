@@ -35,6 +35,7 @@ import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.enums.SnackbarType;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.events.ScheduledTaskActivityNotificationUpdateEvent;
 import com.simbirsoft.timemeter.injection.ApplicationModule;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskActivitiesJob;
@@ -45,6 +46,7 @@ import com.simbirsoft.timemeter.ui.views.DatePeriodView;
 import com.simbirsoft.timemeter.ui.views.ProgressLayout;
 import com.simbirsoft.timemeter.ui.views.TaskActivitiesFilterView;
 import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
@@ -242,6 +244,11 @@ public class TaskActivitiesFragment extends BaseFragment implements
                     .period(filterState.period);
         }
         return job;
+    }
+
+    @Subscribe
+    public void ontaskActivityNotificationUpdate(ScheduledTaskActivityNotificationUpdateEvent event) {
+        mAdapter.updateCurrentActivityTime();
     }
 
     @Override

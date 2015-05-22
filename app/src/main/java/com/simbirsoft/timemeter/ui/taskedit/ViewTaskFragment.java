@@ -22,6 +22,7 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.events.ScheduledTaskActivityNotificationUpdateEvent;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskRecentActivitiesJob;
@@ -33,10 +34,12 @@ import com.simbirsoft.timemeter.ui.activities.TaskActivitiesLayoutManager;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
-import com.simbirsoft.timemeter.ui.views.TagFlowView;
-import com.simbirsoft.timemeter.ui.views.TagView;
 import com.simbirsoft.timemeter.ui.model.TaskRecentActivity;
 import com.simbirsoft.timemeter.ui.views.ProgressLayout;
+import com.simbirsoft.timemeter.ui.views.TagFlowView;
+import com.simbirsoft.timemeter.ui.views.TagView;
+import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
@@ -45,6 +48,8 @@ import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
+
+import javax.inject.Inject;
 
 import java.util.List;
 
@@ -79,12 +84,23 @@ public class ViewTaskFragment extends BaseFragment
     @InstanceState
     int mListPosition;
 
+    @Inject
+    Bus mBus;
+
     private TaskActivitiesAdapter mAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        Injection.sUiComponent.injectViewTaskFragment(this);
+        mBus.register(this);
+    }
+
+    @Override
+    public void onDestroyView() {
+        mBus.unregister(this);
+        super.onDestroyView();
     }
 
     @Override
@@ -257,6 +273,11 @@ public class ViewTaskFragment extends BaseFragment
     @Click(R.id.activitiesTitleContainer)
     void activitiesTitleClicked() {
         goToActivities();
+    }
+
+    @Subscribe
+    public void ontaskActivityNotificationUpdate(ScheduledTaskActivityNotificationUpdateEvent event) {
+        mAdapter.updateCurrentActivityTime();
     }
 
     private void scrollToSelectedSpan() {
