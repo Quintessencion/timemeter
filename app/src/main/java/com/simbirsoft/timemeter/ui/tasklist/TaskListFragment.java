@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.Html;
@@ -12,6 +13,7 @@ import android.text.Spanned;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -35,6 +37,7 @@ import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.views.HelpCard;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.ContentFragmentCallbacks;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
@@ -45,6 +48,7 @@ import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
 import com.simbirsoft.timemeter.ui.util.TaskFilterPredicate;
+import com.simbirsoft.timemeter.ui.views.HelpCardDataSource;
 import com.squareup.otto.Subscribe;
 
 import org.androidannotations.annotations.AfterViews;
@@ -75,6 +79,12 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
     @ViewById(android.R.id.empty)
     TextView mEmptyListIndicator;
+
+    @ViewById(R.id.helpCardContainer)
+    FrameLayout mHelpCardContainer;
+
+    @ViewById(R.id.helpCard)
+    HelpCard mHelpCard;
 
     @InstanceState
     int[] mTaskListPosition;
@@ -143,6 +153,17 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         mRecyclerView.setAdapter(mTasksViewAdapter);
 
         requestLoad(TASK_LIST_LOADER_TAG, this);
+
+        //((HelpCard_)mHelpCard).onFinishInflate();
+        final HelpCardDataSource ds = new HelpCardDataSource();
+        ds.addItem("Text 00", "No action", "Next");
+
+        mHelpCard.setAdapter(ds);
+
+        Handler handler = new Handler();
+        handler.postDelayed(() -> {
+            mHelpCard.setVisibility(View.VISIBLE);
+        }, 3000);
     }
 
     @Override

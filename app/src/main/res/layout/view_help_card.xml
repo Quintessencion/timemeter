@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    >
+
+    <TextView
+        android:id="@+id/helpCardText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/HelperCardText"
+        tools:text="Здесь ваши ежедневные задачи. Нажмите по карточке задачи, чтобы начать отслеживать время активности. Нажмите еще раз, чтобы закончить."/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/helpCardActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/transparent"
+            tools:text="Действие"/>
+        <Button
+            android:id="@+id/helpCardNextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/transparent"
+            tools:text="Далее"/>
+    </LinearLayout>
+
+</LinearLayout>

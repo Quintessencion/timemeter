@@ -38,4 +38,7 @@
         <item name="android:textSize">@dimen/chart_summary_text_size</item>
     </style>
 
+    <style name="HelperCardText" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textColor">@color/black</item>
+    </style>
 </resources>
