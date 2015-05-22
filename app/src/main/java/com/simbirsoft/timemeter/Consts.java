@@ -10,4 +10,5 @@ public final class Consts {
     public static final int CONTENT_FADE_IN_DELAY_MILLIS = 120;
     public static final int DISMISS_DELAY_MILLIS = 500;
 
+    public static final int UPDATE_TAB_CONTENT_INTERVAL =  5 * 60 * 1000;
 }

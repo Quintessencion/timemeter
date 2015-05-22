@@ -91,9 +91,6 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
     @FragmentArg(EXTRA_TASK_ID)
     Long mExtraTaskId;
 
-    @FragmentArg(EXTRA_TASK_BUNDLE)
-    TaskBundle mExtraTaskBundle;
-
     @ViewById(R.id.rootScene)
     ViewGroup mContentRoot;
 
@@ -192,10 +189,7 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         mCurrentScene = mTaskEditScene.scene;
 
         if (mTaskBundle == null) {
-            if (mExtraTaskBundle != null) {
-                mTaskBundle = mExtraTaskBundle;
-
-            } else if (mExtraTaskId != null) {
+            if (mExtraTaskId != null) {
                 requestLoad(mTaskBundleLoaderAttachTag, this);
 
             } else {
@@ -287,10 +281,6 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         final Activity activity = getActivity();
         if (mIsNewTask) {
             activity.setResult(RESULT_CODE_TASK_CREATED, resultData);
-
-        } else if (mExtraTaskBundle != null) {
-            activity.setResult(RESULT_CODE_TASK_RECREATED, resultData);
-
         } else {
             activity.setResult(RESULT_CODE_TASK_UPDATED, resultData);
         }

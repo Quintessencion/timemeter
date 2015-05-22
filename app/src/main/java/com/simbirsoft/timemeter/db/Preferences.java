@@ -24,8 +24,6 @@ public final class Preferences {
     private static final int DAY_MIN_HOUR = 0;
     private static final int DAY_MAX_HOUR = 24;
 
-    public static final int UPDATE_TAB_CONTENT_INTERVAL =  5 * 60 * 1000;
-
     @Inject
     public Preferences(App appContext) {
         mPrefs = PreferenceManager.getDefaultSharedPreferences(appContext);

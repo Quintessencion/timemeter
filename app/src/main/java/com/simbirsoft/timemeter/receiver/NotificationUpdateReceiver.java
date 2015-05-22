@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
 
+import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.events.ScheduledTaskActivityNotificationUpdateEvent;
 import com.simbirsoft.timemeter.events.ScheduledTaskUpdateTabContentEvent;
@@ -23,7 +24,7 @@ public class NotificationUpdateReceiver extends BroadcastReceiver {
     public static final String ACTION_REQUEST_NOTIFICATION_UPDATE =
             "com.simbirsoft.android.intent.action.REQUEST_NOTIFICATION_UPDATE";
 
-    private static long mUpdateTabContentTimestamp = -Preferences.UPDATE_TAB_CONTENT_INTERVAL;
+    private static long mUpdateTabContentTimestamp = -Consts.UPDATE_TAB_CONTENT_INTERVAL;
 
     @Inject
     Bus mBus;
@@ -43,7 +44,7 @@ public class NotificationUpdateReceiver extends BroadcastReceiver {
         mBus.post(new ScheduledTaskActivityNotificationUpdateEvent());
 
         long currentTime = SystemClock.elapsedRealtime();
-        if ((currentTime - mUpdateTabContentTimestamp) >= Preferences.UPDATE_TAB_CONTENT_INTERVAL) {
+        if ((currentTime - mUpdateTabContentTimestamp) >= Consts.UPDATE_TAB_CONTENT_INTERVAL) {
             mUpdateTabContentTimestamp = currentTime;
             mBus.post(new ScheduledTaskUpdateTabContentEvent());
         }

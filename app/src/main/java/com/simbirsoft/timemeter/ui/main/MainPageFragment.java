@@ -52,7 +52,7 @@ public class MainPageFragment extends BaseFragment {
         }
     }
 
-    public static final int REQEUST_TASK_PROCESSING = 100;
+    public static final int REQEUST_TASK_PROCESSING = 58182253;
 
     protected Logger LOG = createLogger();
 
@@ -62,6 +62,8 @@ public class MainPageFragment extends BaseFragment {
     private boolean mIsContentInvalidated;
     private boolean mIsSelected;
 
+    private boolean mContentAutoupdateEnabled;
+
     @Inject
     Bus mBus;
 
@@ -70,8 +72,6 @@ public class MainPageFragment extends BaseFragment {
     Handler mHandler;
 
     FilterView.FilterState mFilterViewState;
-
-    private boolean mContentAutoupdateEnabled = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -98,6 +98,8 @@ public class MainPageFragment extends BaseFragment {
         }
     }
 
+    // Если метод возвращает true, то содержимое страницы будет периодически обновляться.
+    // Это необходимо, чтобы пользователь видел актуальную информацию по запущенным задачам.
     protected boolean isSupportAutoupdate() {
         return true;
     }
