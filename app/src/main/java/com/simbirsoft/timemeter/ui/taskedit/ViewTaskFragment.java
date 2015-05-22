@@ -31,6 +31,7 @@ import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment_;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
+import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.model.TaskRecentActivity;
 import com.simbirsoft.timemeter.ui.views.ProgressLayout;
@@ -58,7 +59,6 @@ public class ViewTaskFragment extends BaseFragment
 
     private static final Logger LOG = LogFactory.getLogger(ViewTaskFragment.class);
 
-    private static final int REQUEST_CODE_EDIT_TASK = 100;
     private static final int REQUEST_CODE_VIEW_ACTIVITIES = 101;
 
     @ViewById(R.id.tagFlowView)
@@ -161,7 +161,7 @@ public class ViewTaskFragment extends BaseFragment
 
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), EditTaskFragment_.class.getName(), args);
-        getActivity().startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TASK);
+        getActivity().startActivityForResult(launchIntent, MainPageFragment.REQEUST_TASK_PROCESSING);
     }
 
     private void goToActivities() {
@@ -203,7 +203,7 @@ public class ViewTaskFragment extends BaseFragment
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         getActivity().setResult(resultCode, data);
         switch (requestCode) {
-            case REQUEST_CODE_EDIT_TASK:
+            case MainPageFragment.REQEUST_TASK_PROCESSING:
                 if (resultCode == EditTaskFragment.RESULT_CODE_CANCELLED) {
                     LOG.debug("result: task edit cancelled");
                     return;

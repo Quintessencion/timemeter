@@ -1,5 +1,6 @@
 package com.simbirsoft.timemeter.ui.main;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,6 +18,7 @@ import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
+import com.simbirsoft.timemeter.events.ScheduledTaskUpdateTabContentEvent;
 import com.simbirsoft.timemeter.injection.ApplicationModule;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.SaveTaskBundleJob;
@@ -28,6 +30,8 @@ import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
+
+import org.slf4j.Logger;
 
 import java.util.concurrent.ExecutionException;
 
@@ -48,10 +52,16 @@ public class MainPageFragment extends BaseFragment {
         }
     }
 
+    public static final int REQEUST_TASK_PROCESSING = 14688;
+
+    protected Logger LOG = createLogger();
+
     private static final String SNACKBAR_TAG = "main_page_snackbar";
 
     private boolean mIsContentInvalidated;
     private boolean mIsSelected;
+
+    private boolean mContentAutoupdateEnabled;
 
     @Inject
     Bus mBus;
@@ -66,6 +76,37 @@ public class MainPageFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Injection.sUiComponent.injectMainPageFragment(this);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        setContentAutoupdateEnabled(true);
+    }
+
+    @Override
+    public void onStop() {
+        setContentAutoupdateEnabled(false);
+        super.onStop();
+    }
+
+    private void setContentAutoupdateEnabled(boolean value) {
+        if (isSupportAutoupdate()) {
+            mContentAutoupdateEnabled = value;
+        }
+    }
+
+    // Если метод возвращает true, то содержимое страницы будет периодически обновляться.
+    // Это необходимо, чтобы пользователь видел актуальную информацию по запущенным задачам.
+    protected boolean isSupportAutoupdate() {
+        return true;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        reloadContentIfNeeded();
     }
 
     protected Bus getBus() {
@@ -108,10 +149,7 @@ public class MainPageFragment extends BaseFragment {
 
     public void onPageSelected() {
         mIsSelected = true;
-        if (mIsContentInvalidated) {
-            mIsContentInvalidated = false;
-            reloadContent();
-        }
+        reloadContentIfNeeded();
     }
 
     public void onPageDeselected() {
@@ -122,19 +160,32 @@ public class MainPageFragment extends BaseFragment {
         return mIsSelected;
     }
 
-    protected void sendTaskChangedEvent(int resultCode) {
-        mBus.post(new TaskChangedEvent(resultCode));
+    private void sendTaskChangedEvent(int resultCode, Intent data) {
+        mBus.post(new TaskChangedEvent(resultCode, data));
     }
 
     @Subscribe
     public void onTaskChanged(TaskChangedEvent event) {
-        if (mIsSelected && event.getResultCode() == EditTaskFragment.RESULT_CODE_TASK_RECREATED) {
-            reloadContent();
-            return;
-        }
-        if (!mIsSelected && (event.getResultCode() == EditTaskFragment.RESULT_CODE_TASK_RECREATED
-                                ||needUpdateAfterTaskChanged(event.getResultCode()))) {
-            mIsContentInvalidated = true;
+        Intent data = event.getData();
+
+        onTaskProcessed(data);
+
+        switch (event.getResultCode()) {
+            case EditTaskFragment.RESULT_CODE_CANCELLED:
+                onTaskCancelled(data);
+                break;
+            case EditTaskFragment.RESULT_CODE_TASK_CREATED:
+                onTaskCreated(data);
+                break;
+            case EditTaskFragment.RESULT_CODE_TASK_REMOVED:
+                onTaskRemoved(data);
+                break;
+            case EditTaskFragment.RESULT_CODE_TASK_UPDATED:
+                onTaskUpdated(data);
+                break;
+            case EditTaskFragment.RESULT_CODE_TASK_RECREATED:
+                onTaskRecreated(data);
+                break;
         }
     }
 
@@ -149,16 +200,17 @@ public class MainPageFragment extends BaseFragment {
 
     }
 
-    protected boolean needUpdateAfterTaskChanged(int resultCode) {
-        return true;
+    @Subscribe
+    public void onUpdateTabContent(ScheduledTaskUpdateTabContentEvent ev) {
+        if (mContentAutoupdateEnabled) {
+            invalidateContent();
+            reloadContentIfNeeded();
+        }
     }
 
     @OnJobSuccess(SaveTaskBundleJob.class)
     public void onTaskSaved() {
-        if (mIsSelected) {
-            reloadContent();
-        }
-        mBus.post(new TaskChangedEvent(EditTaskFragment.RESULT_CODE_TASK_RECREATED));
+        mBus.post(new TaskChangedEvent(EditTaskFragment.RESULT_CODE_TASK_RECREATED, null));
     }
 
     @OnJobFailure(SaveTaskBundleJob.class)
@@ -268,8 +320,57 @@ public class MainPageFragment extends BaseFragment {
         return null;
     }
 
-    protected void reloadContent() {
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQEUST_TASK_PROCESSING) {
+            sendTaskChangedEvent(resultCode, data);
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
 
+    protected void onTaskProcessed(Intent data) {
+
+    }
+
+    protected void onTaskCancelled(Intent data) {
+        LOG.debug("result: task edit cancelled");
+    }
+
+    protected void onTaskCreated(Intent data) {
+        LOG.debug("result: task created");
+    }
+
+    protected void onTaskUpdated(Intent data) {
+        LOG.debug("result: task updated");
+    }
+
+    protected void onTaskRemoved(Intent data) {
+        LOG.debug("result: task removed");
+    }
+
+    protected void onTaskRecreated(Intent data) {
+        LOG.debug("result: task recreated");
+
+        invalidateContent();
+        reloadContentIfNeeded();
+    }
+
+    private void reloadContentIfNeeded() {
+        if (isSelected() && mIsContentInvalidated) {
+            reloadContent();
+        }
+    }
+
+    protected void reloadContent() {
+        mIsContentInvalidated = false;
+    }
+
+    protected void invalidateContent() {
+        mIsContentInvalidated = true;
+    }
+
+    protected Logger createLogger() {
+        return null;
     }
 
     public void setFilterViewProvider(FilterViewProvider provider) {

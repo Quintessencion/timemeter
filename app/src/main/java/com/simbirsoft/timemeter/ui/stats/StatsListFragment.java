@@ -37,8 +37,6 @@ public class StatsListFragment extends MainPageFragment implements
         MainPagerAdapter.PageTitleProvider,
         StatsListAdapter.ChartClickListener {
 
-    private static final Logger LOG = LogFactory.getLogger(StatsListFragment.class);
-
     private static final String STATISTICS_BINDER_LOADER_TAG = "StatsListFragment_";
 
     @ViewById(android.R.id.list)
@@ -129,6 +127,21 @@ public class StatsListFragment extends MainPageFragment implements
 
     @Override
     protected void reloadContent() {
+        super.reloadContent();
         requestReload(STATISTICS_BINDER_LOADER_TAG, this);
+    }
+
+    @Override
+    protected Logger createLogger() {
+        return LogFactory.getLogger(StatsListFragment.class);
+    }
+
+    @Override
+    protected void onTaskProcessed(Intent data) {
+        super.onTaskProcessed(data);
+
+        if (!isSelected()) {
+            invalidateContent();
+        }
     }
 }
