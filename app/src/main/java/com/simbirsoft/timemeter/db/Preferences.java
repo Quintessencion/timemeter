@@ -17,7 +17,7 @@ public final class Preferences {
     public static final String PREFERENCE_DATABASE_TEST_DATA_INITIALIZED = "is_database_test_data_initialized";
     public static final String PREFERENCE_SELECTED_SECTION_POSITION = "state_selection_position";
     public static final String PREFERENCE_SELECTED_TASK_TAB_POSITION = "tag_page_position";
-
+    public static final String PREFERENCE_USER_LEARNED_DRAWER = "user_learned_drawer";
     private static final String PREFERENCE_DAY_START_HOUR = "day_start_hour";
     private static final String PREFERENCE_DAY_END_HOUR = "day_end_hour";
 
@@ -49,6 +49,14 @@ public final class Preferences {
 
     public void setSelectedSectionPosition(int stateSelectedPosition) {
         mPrefs.edit().putInt(PREFERENCE_SELECTED_SECTION_POSITION, stateSelectedPosition).apply();
+    }
+
+    public boolean getUserLearnedDrawer(boolean defaultValue) {
+        return mPrefs.getBoolean(PREFERENCE_USER_LEARNED_DRAWER, defaultValue);
+    }
+
+    public void setUserLearnedDrawer(boolean userLearnedDrawer) {
+        mPrefs.edit().putBoolean(PREFERENCE_USER_LEARNED_DRAWER, userLearnedDrawer).apply();
     }
 
     public int getSelectedSectionPosition(int defaultValue) {

@@ -40,6 +40,8 @@ public class NavigationDrawerFragment extends Fragment {
     private NavigationDrawerListAdapter mAdapter;
 
     private int mCurrentSelectedPosition = 0;
+    private boolean mFromSavedInstanceState;
+    private boolean mUserLearnedDrawer;
 
     @Inject
     Preferences mPreferences;
@@ -54,6 +56,11 @@ public class NavigationDrawerFragment extends Fragment {
         Injection.sUiComponent.injectNavigationDrawerFragment(this);
 
         loadCurrentSelectedPosition();
+
+        mUserLearnedDrawer = mPreferences.getUserLearnedDrawer(false);
+        if (savedInstanceState != null) {
+            mFromSavedInstanceState = true;
+        }
     }
 
     @Override
@@ -146,9 +153,17 @@ public class NavigationDrawerFragment extends Fragment {
                     return;
                 }
 
+                if (!mUserLearnedDrawer) {
+                    mUserLearnedDrawer = true;
+                    mPreferences.setUserLearnedDrawer(true);
+                }
                 getActivity().supportInvalidateOptionsMenu(); // calls onPrepareOptionsMenu()
             }
         };
+
+        if (!mUserLearnedDrawer && !mFromSavedInstanceState) {
+            mDrawerLayout.openDrawer(mFragmentContainerView);
+        }
 
         mDrawerLayout.post(new Runnable() {
             @Override
