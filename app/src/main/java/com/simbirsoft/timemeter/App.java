@@ -25,11 +25,6 @@ public class App extends Application {
             Injection.sDatabaseComponent.preferences().setDatabaseTestDataInitialized(true);
         }
 
-        JobManager.init(new WorkerJobManager(
-                this,
-                Consts.WORKER_THREAD_POOL_COUNT,
-                TimeWorkerService.class));
-
         LOG.info("App created");
     }
 }

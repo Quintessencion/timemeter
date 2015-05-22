@@ -14,6 +14,7 @@ import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.events.ScheduledTaskUpdateTabContentEvent;
+import com.simbirsoft.timemeter.events.ScreenLockStateChangedEvent;
 import com.simbirsoft.timemeter.events.StopTaskActivityRequestedEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStartedEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
@@ -36,6 +37,7 @@ public class TaskActivityManager implements ITaskActivityManager {
 
     private static final Logger LOG = LogFactory.getLogger(TaskActivityManager.class);
 
+    private final JobManager mJobManager;
     private final Context mContext;
     private final DatabaseHelper mDatabaseHelper;
     private final TaskNotificationManager mTaskNotificationManager;
@@ -48,7 +50,8 @@ public class TaskActivityManager implements ITaskActivityManager {
     private long mLastSaveActivityTimeMillis;
 
     @Inject
-    public TaskActivityManager(Context context, Bus bus, DatabaseHelper databaseHelper) {
+    public TaskActivityManager(JobManager jobManager, Context context, Bus bus, DatabaseHelper databaseHelper) {
+        mJobManager = jobManager;
         mContext = context;
         mBus = bus;
         mDatabaseHelper = databaseHelper;
@@ -171,6 +174,15 @@ public class TaskActivityManager implements ITaskActivityManager {
         mBus.post(new TaskActivityUpdateEvent(info));
     }
 
+    @Subscribe
+    public void onScreenLockStatusChangeEvent(ScreenLockStateChangedEvent event) {
+        if (event.isScreenLocked) {
+            mJobManager.cancelAll(JobSelector.forJobTags(mUpdateJobTag));
+        } else if (hasActiveTask()) {
+            requestTimerUpdates();
+        }
+    }
+
     private void resumeTaskActivity() {
         if (mActiveTaskInfo == null) {
             LOG.error("unable to resume task activity: no active task");
@@ -203,9 +215,11 @@ public class TaskActivityManager implements ITaskActivityManager {
     }
 
     private void requestTimerUpdates() {
-        JobManager.getInstance().cancelAll(JobSelector.forJobTags(mUpdateJobTag));
+        mJobManager.cancelAll(JobSelector.forJobTags(mUpdateJobTag));
 
-        mJobEventDispatcher.submitJob(new UpdateTaskActivityTimerJob(this));
+        UpdateTaskActivityTimerJob job = new UpdateTaskActivityTimerJob(this);
+        job.addTag(mUpdateJobTag);
+        mJobEventDispatcher.submitJob(job);
     }
 
     private void stopTaskActivity() {
@@ -214,7 +228,7 @@ public class TaskActivityManager implements ITaskActivityManager {
             return;
         }
 
-        JobManager.getInstance().cancelAll(JobSelector.forJobTags(mUpdateJobTag));
+        mJobManager.cancelAll(JobSelector.forJobTags(mUpdateJobTag));
 
         final TaskActivityStoppedEvent event = new TaskActivityStoppedEvent(mActiveTaskInfo.getTask());
         mActiveTaskInfo.getTaskTimeSpan().setActive(false);
