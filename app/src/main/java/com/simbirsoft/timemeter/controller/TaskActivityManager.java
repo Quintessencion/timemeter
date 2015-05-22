@@ -15,6 +15,7 @@ import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
+import com.simbirsoft.timemeter.events.ScheduledTaskUpdateTabContentEvent;
 import com.simbirsoft.timemeter.events.StopTaskActivityRequestedEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStartedEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
@@ -214,6 +215,7 @@ public class TaskActivityManager implements ITaskActivityManager {
         mActiveTaskInfo = new ActiveTaskInfo(task, span);
         LOG.info("new task activity created: '{}'", task.getDescription());
         resumeTaskActivity();
+        mBus.post(new ScheduledTaskUpdateTabContentEvent());
         LOG.debug("task activity started");
     }
 

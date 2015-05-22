@@ -24,7 +24,7 @@ public class NotificationUpdateReceiver extends BroadcastReceiver {
     public static final String ACTION_REQUEST_NOTIFICATION_UPDATE =
             "com.simbirsoft.android.intent.action.REQUEST_NOTIFICATION_UPDATE";
 
-    private static long mUpdateTabContentTimestamp = -Consts.UPDATE_TAB_CONTENT_INTERVAL;
+    private static long mUpdateTabContentTimestamp = 0;
 
     @Inject
     Bus mBus;
@@ -44,6 +44,9 @@ public class NotificationUpdateReceiver extends BroadcastReceiver {
         mBus.post(new ScheduledTaskActivityNotificationUpdateEvent());
 
         long currentTime = SystemClock.elapsedRealtime();
+        if (mUpdateTabContentTimestamp == 0) {
+            mUpdateTabContentTimestamp = currentTime;
+        }
         if ((currentTime - mUpdateTabContentTimestamp) >= Consts.UPDATE_TAB_CONTENT_INTERVAL) {
             mUpdateTabContentTimestamp = currentTime;
             mBus.post(new ScheduledTaskUpdateTabContentEvent());
