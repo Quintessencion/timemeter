@@ -5,14 +5,11 @@ import android.database.sqlite.SQLiteDatabase;
 import com.be.android.library.worker.base.BaseJob;
 import com.be.android.library.worker.base.JobEvent;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
-import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTag;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.log.LogFactory;
-import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.squareup.phrase.Phrase;
 
 import org.slf4j.Logger;
