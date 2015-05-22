@@ -154,9 +154,9 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
         requestLoad(TASK_LIST_LOADER_TAG, this);
 
-        //((HelpCard_)mHelpCard).onFinishInflate();
         final HelpCardDataSource ds = new HelpCardDataSource();
-        ds.addItem("Text 00", "No action", "Next");
+        ds.addItem(getActivity(), R.string.help_card_text_00_00, -1, R.string.help_card_btn_next);
+        ds.addItem(getActivity(), R.string.help_card_text_00_01, -1, R.string.help_card_btn_ok);
 
         mHelpCard.setAdapter(ds);
 
