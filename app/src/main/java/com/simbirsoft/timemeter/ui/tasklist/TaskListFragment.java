@@ -63,7 +63,6 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
     private static final String SNACKBAR_TAG = "task_list_snackbar";
     private static final String TASK_LIST_LOADER_TAG = "TaskListFragment_";
-    private static final int REQUEST_CODE_EDIT_TASK = 100;
     private static final int COLUMN_COUNT_DEFAULT = 2;
     private int mColumnCount;
 
@@ -101,7 +100,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
             Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                     getActivity(), EditTaskFragment_.class.getName(), args);
-            getActivity().startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TASK);
+            getActivity().startActivityForResult(launchIntent, MainPageFragment.REQEUST_TASK_PROCESSING);
         }, delay);
     }
 
@@ -317,7 +316,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), ViewTaskFragment_.class.getName(), args);
-        getActivity().startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TASK);
+        getActivity().startActivityForResult(launchIntent, MainPageFragment.REQEUST_TASK_PROCESSING);
     }
 
     @Override

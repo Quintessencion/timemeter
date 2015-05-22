@@ -52,7 +52,7 @@ public class MainPageFragment extends BaseFragment {
         }
     }
 
-    public static final int REQEUST_TASK_PROCESSING = 58182253;
+    public static final int REQEUST_TASK_PROCESSING = 14688;
 
     protected Logger LOG = createLogger();
 
