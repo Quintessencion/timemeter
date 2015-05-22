@@ -161,7 +161,7 @@ public class ViewTaskFragment extends BaseFragment
 
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), EditTaskFragment_.class.getName(), args);
-        getActivity().startActivityForResult(launchIntent, MainPageFragment.REQEUST_TASK_PROCESSING);
+        getActivity().startActivityForResult(launchIntent, MainPageFragment.REQUEST_CODE_PROCESS_TASK);
     }
 
     private void goToActivities() {
@@ -203,7 +203,7 @@ public class ViewTaskFragment extends BaseFragment
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         getActivity().setResult(resultCode, data);
         switch (requestCode) {
-            case MainPageFragment.REQEUST_TASK_PROCESSING:
+            case MainPageFragment.REQUEST_CODE_PROCESS_TASK:
                 if (resultCode == EditTaskFragment.RESULT_CODE_CANCELLED) {
                     LOG.debug("result: task edit cancelled");
                     return;

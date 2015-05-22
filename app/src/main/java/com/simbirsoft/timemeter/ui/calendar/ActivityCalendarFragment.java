@@ -197,7 +197,7 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
 
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), ViewTaskFragment_.class.getName(), args);
-        getActivity().startActivityForResult(launchIntent, REQEUST_TASK_PROCESSING);
+        getActivity().startActivityForResult(launchIntent, REQUEST_CODE_PROCESS_TASK);
     }
 
     @Override

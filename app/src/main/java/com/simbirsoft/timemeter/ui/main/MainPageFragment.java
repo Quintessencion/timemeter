@@ -52,9 +52,9 @@ public class MainPageFragment extends BaseFragment {
         }
     }
 
-    public static final int REQEUST_TASK_PROCESSING = 14688;
+    public static final int REQUEST_CODE_PROCESS_TASK = 14688;
 
-    protected Logger LOG = createLogger();
+    protected Logger mLogger = createLogger();
 
     private static final String SNACKBAR_TAG = "main_page_snackbar";
 
@@ -322,7 +322,7 @@ public class MainPageFragment extends BaseFragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQEUST_TASK_PROCESSING) {
+        if (requestCode == REQUEST_CODE_PROCESS_TASK) {
             sendTaskChangedEvent(resultCode, data);
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -333,23 +333,23 @@ public class MainPageFragment extends BaseFragment {
     }
 
     protected void onTaskCancelled(Intent data) {
-        LOG.debug("result: task edit cancelled");
+        mLogger.debug("result: task edit cancelled");
     }
 
     protected void onTaskCreated(Intent data) {
-        LOG.debug("result: task created");
+        mLogger.debug("result: task created");
     }
 
     protected void onTaskUpdated(Intent data) {
-        LOG.debug("result: task updated");
+        mLogger.debug("result: task updated");
     }
 
     protected void onTaskRemoved(Intent data) {
-        LOG.debug("result: task removed");
+        mLogger.debug("result: task removed");
     }
 
     protected void onTaskRecreated(Intent data) {
-        LOG.debug("result: task recreated");
+        mLogger.debug("result: task recreated");
 
         invalidateContent();
         reloadContentIfNeeded();

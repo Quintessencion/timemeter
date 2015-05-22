@@ -94,7 +94,7 @@ public class StatsListFragment extends MainPageFragment implements
 
     @OnJobFailure(LoadStatisticsViewBinders.class)
     public void onStatisticsViewBindersLoadFailed() {
-        LOG.error("statistics load failed");
+        mLogger.error("statistics load failed");
     }
 
     @Override

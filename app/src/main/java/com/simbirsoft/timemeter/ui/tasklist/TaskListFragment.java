@@ -87,7 +87,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     private ContentFragmentCallbacks mCallbacks;
 
     private void onFloatingButtonClicked(View v) {
-        LOG.info("floating button clicked");
+        mLogger.info("floating button clicked");
 
         Snackbar current = SnackbarManager.getCurrentSnackbar();
         long delay = 0;
@@ -102,7 +102,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
             Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                     getActivity(), EditTaskFragment_.class.getName(), args);
-            getActivity().startActivityForResult(launchIntent, MainPageFragment.REQEUST_TASK_PROCESSING);
+            getActivity().startActivityForResult(launchIntent, MainPageFragment.REQUEST_CODE_PROCESS_TASK);
         }, delay);
     }
 
@@ -227,7 +227,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         if (hasFilter()) {
             TaskFilterPredicate predicate = new TaskFilterPredicate(getFilterViewState());
             if (!predicate.apply(task)) {
-                LOG.debug("created task isn't match current filter");
+                mLogger.debug("created task isn't match current filter");
                 return;
             }
         }
@@ -287,7 +287,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
     @Override
     public void onTaskCardClicked(TaskBundle item) {
-        LOG.info("task card clicked; task {}", item);
+        mLogger.info("task card clicked; task {}", item);
 
         final Task task = item.getTask();
 
@@ -309,7 +309,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
     @Override
     public void onTaskViewClicked(TaskBundle item) {
-        LOG.debug("view task: {}", item);
+        mLogger.debug("view task: {}", item);
 
         SnackbarManager.dismiss();
 
@@ -318,7 +318,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), ViewTaskFragment_.class.getName(), args);
-        getActivity().startActivityForResult(launchIntent, MainPageFragment.REQEUST_TASK_PROCESSING);
+        getActivity().startActivityForResult(launchIntent, MainPageFragment.REQUEST_CODE_PROCESS_TASK);
     }
 
     @Override
