@@ -19,6 +19,7 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadStatisticsViewBinders;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
@@ -117,7 +118,7 @@ public class StatsListFragment extends MainPageFragment implements
     public void onChartClicked(int viewType) {
         Bundle args = new Bundle();
         if (hasFilter()) {
-            args.putParcelable(StatsDetailsFragment.EXTRA_TASK_FILTER, getFilterViewState());
+            args.putParcelable(StatsDetailsFragment.EXTRA_TASK_FILTER, TaskLoadFilter.fromTaskFilter(getFilterViewState()));
         }
         args.putInt(StatsDetailsFragment.EXTRA_CHART_VIEW_TYPE, viewType);
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(

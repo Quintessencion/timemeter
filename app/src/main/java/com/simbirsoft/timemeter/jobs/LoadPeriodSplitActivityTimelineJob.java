@@ -66,7 +66,7 @@ public class LoadPeriodSplitActivityTimelineJob extends LoadJob implements Filte
 
     @Override
     protected LoadJobResult<List<DailyTaskActivityDuration>> performLoad() throws Exception {
-        long filterDateMillis = mLoadFilter.getDateMillis();
+        long filterDateMillis = mLoadFilter.getStartDateMillis();
         final Period filterPeriod = mLoadFilter.getPeriod();
         final List<DailyTaskActivityDuration> results = Lists.newArrayList();
         final List<TaskBundle> tasks = loadTasks();
@@ -138,7 +138,7 @@ public class LoadPeriodSplitActivityTimelineJob extends LoadJob implements Filte
 
         mLoadActivitySplitSumJob.reset();
         mLoadActivitySplitSumJob.getTaskLoadFilter()
-                .dateMillis(dayStartMillis)
+                .startDateMillis(dayStartMillis)
                 .period(Period.DAY)
                 .tags(mLoadFilter.getFilterTags())
                 .searchText(mLoadFilter.getSearchText());

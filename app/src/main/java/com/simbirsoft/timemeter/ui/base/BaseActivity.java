@@ -2,7 +2,7 @@ package com.simbirsoft.timemeter.ui.base;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.widget.Toast;
 
@@ -13,7 +13,7 @@ import com.be.android.library.worker.interfaces.Job;
 import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.R;
 
-public class BaseActivity extends ActionBarActivity {
+public class BaseActivity extends AppCompatActivity {
 
     private JobEventDispatcher mJobEventDispatcher;
     private boolean isStarted;

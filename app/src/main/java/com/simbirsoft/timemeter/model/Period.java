@@ -1,5 +1,6 @@
 package com.simbirsoft.timemeter.model;
 
+import java.security.InvalidParameterException;
 import java.util.Calendar;
 
 public enum Period {
@@ -34,6 +35,9 @@ public enum Period {
                 calendar.add(Calendar.YEAR, 1);
 
                 return calendar.getTimeInMillis();
+
+            case OTHER:
+                throw new InvalidParameterException("Cannot be used with parameter OTHER");
         }
 
         return 0;
