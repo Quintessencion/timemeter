@@ -53,6 +53,8 @@ public class StatsDetailsFragment extends BaseFragment implements
 
     public static final String EXTRA_CHART_VIEW_TYPE = "extra_chart_view_type";
 
+    public static final String EXTRA_TASK_TITLE = "extra_task_title";
+
     private static final String STATS_LOADER_TAG = "StatsDetailsFragment_";
 
     private static final Logger LOG = LogFactory.getLogger(StatsDetailsFragment.class);
@@ -73,6 +75,9 @@ public class StatsDetailsFragment extends BaseFragment implements
 
     @FragmentArg(EXTRA_CHART_VIEW_TYPE)
     int mChartViewType;
+
+    @FragmentArg(EXTRA_TASK_TITLE)
+    String mTaskTitle;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -168,8 +173,16 @@ public class StatsDetailsFragment extends BaseFragment implements
         View view = binder.createView(getActivity(), mContainer, true);
 
         final String chartTitle = binder.getTitle();
-        if (!TextUtils.isEmpty(chartTitle)) {
-            mActionBar.setTitle(chartTitle);
+
+        if (!TextUtils.isEmpty(mTaskTitle)) {
+            mActionBar.setTitle(mTaskTitle);
+            if (!TextUtils.isEmpty(chartTitle)) {
+                mActionBar.setSubtitle(chartTitle);
+            }
+        } else {
+            if (!TextUtils.isEmpty(chartTitle)) {
+                mActionBar.setTitle(chartTitle);
+            }
         }
 
         binder.bindView(view);

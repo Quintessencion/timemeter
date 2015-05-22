@@ -425,6 +425,8 @@ public class TaskActivitiesFragment extends BaseFragment implements
         }
 
         args.putInt(StatsDetailsFragment.EXTRA_CHART_VIEW_TYPE, StatisticsViewBinder.VIEW_TYPE_ACTIVITY_TIMELINE);
+        args.putString(StatsDetailsFragment.EXTRA_TASK_TITLE, mExtraTitle);
+
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), StatsDetailsFragment_.class.getName(), args);
         getActivity().startActivityForResult(launchIntent, 1000);
