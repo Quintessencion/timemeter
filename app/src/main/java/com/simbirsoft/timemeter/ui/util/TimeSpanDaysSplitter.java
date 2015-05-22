@@ -60,8 +60,71 @@ public class TimeSpanDaysSplitter {
         }
     }
 
-    public static List<TaskActivityItem> convertToTaskActivityItems(List<TaskTimeSpan> spans) {
+    public static List<TaskActivityItem> convertToTaskActivityItems(List<TaskTimeSpan> spans, long startTimeMillis, long endDateMillis) {
+        if (spans.isEmpty()) return Lists.newArrayList();
         sortSpansDesc(spans);
+        return (startTimeMillis > 0)
+                ? convertToTaskActivityFullList(spans, startTimeMillis, endDateMillis, true)
+                : convertToTaskActivityShortList(spans);
+    }
+
+    public static List<TaskActivityItem> convertToTaskRecentActivityItems(List<TaskTimeSpan> spans) {
+        if (spans.isEmpty()) return Lists.newArrayList();
+        sortSpansDesc(spans);
+        final Calendar cal1 = Calendar.getInstance();
+        final Calendar cal2 = Calendar.getInstance();
+        cal1.setTime(new Date());
+        final boolean includeDateItems = !isInMonth(cal1, cal2, spans.get(spans.size() - 1));
+        return convertToTaskActivityFullList(spans, 0, 0, includeDateItems);
+    }
+
+    private static List<TaskActivityItem> convertToTaskActivityFullList(List<TaskTimeSpan> spans, long startTimeMillis,
+                                                                     long endTimeMillis, boolean includeDateItems) {
+        List<TaskActivityItem> items = Lists.newArrayList();
+        Calendar currentDay = Calendar.getInstance();
+        currentDay.setTimeInMillis(0);
+
+        final Calendar cal1 = Calendar.getInstance();
+        final Calendar cal2 = Calendar.getInstance();
+        final List<TaskTimeSpan> splitSpans = Lists.newArrayList();
+        final List<TaskTimeSpan> dailySpans = Lists.newArrayList();
+        final long topTimeMillis = getTaskActivitiesMaxTime(cal1, endTimeMillis);
+
+        for(TaskTimeSpan span : spans) {
+            TimeSpanDaysSplitter.splitTimeSpanByDays(cal1, cal2, span, splitSpans);
+            Collections.reverse(splitSpans);
+            for (TaskTimeSpan span1 : splitSpans) {
+                if (!spanIsInBounds(span1, startTimeMillis, endTimeMillis)) continue;
+                if (!isInDay(currentDay, cal1, span1)) {
+                    createListItem(items, dailySpans, currentDay);
+                    long time = currentDay.getTimeInMillis() > 0 ? currentDay.getTimeInMillis() : topTimeMillis;
+                    addItemsBetweenSpans(items, time, span1.getStartTimeMillis(), cal1, cal2, includeDateItems);
+                    currentDay.setTimeInMillis(span1.getStartTimeMillis());
+                }
+                dailySpans.add(span1);
+            }
+            splitSpans.clear();
+        }
+        createListItem(items, dailySpans, currentDay);
+        if (startTimeMillis > 0) {
+            cal1.setTimeInMillis(startTimeMillis);
+            cal1.add(Calendar.DAY_OF_YEAR, -1);
+            addItemsBetweenSpans(items, currentDay.getTimeInMillis(), cal1.getTimeInMillis(), cal1, cal2, includeDateItems);
+        }
+        return items;
+    }
+
+    private static long getTaskActivitiesMaxTime(Calendar calendar, long filterEndTime) {
+        final long currentTime = new Date().getTime();
+        if (filterEndTime == 0) {
+            return currentTime;
+        }
+        calendar.setTimeInMillis(filterEndTime);
+        calendar.add(Calendar.DAY_OF_YEAR, -1);
+        return Math.min(calendar.getTimeInMillis(), currentTime);
+    }
+
+    private static List<TaskActivityItem> convertToTaskActivityShortList(List<TaskTimeSpan> spans) {
         List<TaskActivityItem> items = Lists.newArrayList();
         Calendar currentMonth = Calendar.getInstance();
         Calendar currentDay = Calendar.getInstance();
@@ -84,37 +147,6 @@ public class TimeSpanDaysSplitter {
                         currentMonth.setTimeInMillis(span1.getStartTimeMillis());
                         createDateItem(items, currentMonth);
                     }
-                }
-                dailySpans.add(span1);
-            }
-            splitSpans.clear();
-        }
-        createListItem(items, dailySpans, currentDay);
-        return items;
-    }
-
-    public static List<TaskActivityItem> convertToTaskRecentActivityItems(List<TaskTimeSpan> spans) {
-        List<TaskActivityItem> items = Lists.newArrayList();
-        if (spans.isEmpty()) return items;
-        sortSpansDesc(spans);
-        Calendar currentDay = Calendar.getInstance();
-        currentDay.setTimeInMillis(0);
-
-        final Calendar cal1 = Calendar.getInstance();
-        final Calendar cal2 = Calendar.getInstance();
-        final List<TaskTimeSpan> splitSpans = Lists.newArrayList();
-        final List<TaskTimeSpan> dailySpans = Lists.newArrayList();
-        cal1.setTime(new Date());
-        final boolean includeDateItems = !isInMonth(cal1, cal2, spans.get(spans.size() - 1));
-
-        for(TaskTimeSpan span : spans) {
-            TimeSpanDaysSplitter.splitTimeSpanByDays(cal1, cal2, span, splitSpans);
-            Collections.reverse(splitSpans);
-            for (TaskTimeSpan span1 : splitSpans) {
-                if (!isInDay(currentDay, cal1, span1)) {
-                    createListItem(items, dailySpans, currentDay);
-                    addItemsBetweenSpans(items, currentDay.getTimeInMillis(), span1.getStartTimeMillis(), cal1, cal2, includeDateItems);
-                    currentDay.setTimeInMillis(span1.getStartTimeMillis());
                 }
                 dailySpans.add(span1);
             }
@@ -175,7 +207,7 @@ public class TimeSpanDaysSplitter {
     * Add date (TaskActivityDateItem) and empty (TaskActivityEmpty) items between two span items
     * or before the first span item.
     * @param items - result list of activity items
-    * @param date1 - if items is empty then this is current time in millis,
+    * @param date1 - if items is empty then this is current time (or start time) in millis,
     * otherwise this is the start time of previously processing TaskTimeSpan that has been added to items
     * @param date2 - the start time of currently processing TaskTimeSpan that should be added to items next
     * @param cal1, cal2 - Calendar instances
@@ -185,16 +217,12 @@ public class TimeSpanDaysSplitter {
     private static void addItemsBetweenSpans(List<TaskActivityItem> items, long date1, long date2,
                                       Calendar cal1, Calendar cal2, boolean includeDateItems) {
         Calendar currentMonth = Calendar.getInstance();
-        if (items.isEmpty()) {
-            cal1.setTime(new Date());
-            currentMonth.setTime(cal1.getTime());
-            if (includeDateItems) {
-                createDateItem(items, cal1);
-            }
-        } else {
-            cal1.setTimeInMillis(date1);
-            currentMonth.setTimeInMillis(date1);
+        cal1.setTimeInMillis(date1);
+        currentMonth.setTimeInMillis(date1);
+        if (!items.isEmpty()) {
             cal1.add(Calendar.DAY_OF_YEAR, -1);
+        } else if (includeDateItems) {
+            createDateItem(items, cal1);
         }
         cal2.setTimeInMillis(date2);
         cal2.add(Calendar.DAY_OF_YEAR, 1);
@@ -214,5 +242,10 @@ public class TimeSpanDaysSplitter {
             yearStart = cal1.get(Calendar.YEAR);
             dayStart = cal1.get(Calendar.DAY_OF_YEAR);
         }
+    }
+
+    private static boolean spanIsInBounds(TaskTimeSpan span, long startTimeMillis, long endTimeMillis) {
+        return span.getStartTimeMillis() >= startTimeMillis
+                && ((endTimeMillis > 0) ? span.getStartTimeMillis() < endTimeMillis : true);
     }
 }

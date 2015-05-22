@@ -1,0 +1,88 @@
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- merged with FrameLayout (FilterView.java) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/primaryDark"
+        android:orientation="vertical"
+        android:paddingLeft="16dp"
+        android:elevation="6dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                style="?android:attr/textAppearanceSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="@string/title_view_params"
+                android:textColor="@android:color/white"/>
+
+            <FrameLayout
+                android:id="@+id/resetFilterView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/selectableItemBackground"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:paddingRight="16dp"
+                android:paddingLeft="16dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp">
+                <TextView
+                    style="?android:attr/textAppearanceSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/action_reset_filter"
+                    android:textColor="@android:color/white"/>
+            </FrameLayout>
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/datePanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingRight="16dp"
+            android:paddingBottom="6dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <TextView
+                style="?android:attr/textAppearanceSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/title_view_period"
+                android:textColor="@android:color/white"
+                android:layout_marginRight="18dp" />
+            <FrameLayout
+                android:id="@+id/chooseDateView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:paddingRight="8dp"
+                android:background="?android:attr/selectableItemBackground">
+                <TextView
+                    style="?android:attr/textAppearanceSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/hint_choose_period"
+                    android:textColor="@color/secondary_text_default_material_dark"/>
+            </FrameLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <View
+        android:id="@+id/shadowUp"
+        android:layout_width="match_parent"
+        android:layout_height="5dp"
+        android:background="@drawable/shadow_y"/>
+
+    <View
+        android:id="@+id/shadowDown"
+        android:layout_width="match_parent"
+        android:layout_height="5dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/shadow_y_inverse"/>
+</merge>

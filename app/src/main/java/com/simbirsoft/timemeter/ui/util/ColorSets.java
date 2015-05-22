@@ -27,7 +27,12 @@ public final class ColorSets {
         return result;
     }
 
-    public static int getTaskColor(long taskId) {
-        return MIXED_COLORS[(int)(taskId % MIXED_COLORS.length)];
+    public static int getTaskColor(Long taskId) {
+        return taskId != null ?
+            MIXED_COLORS[(int)(taskId % MIXED_COLORS.length)] : getOtherTaskColor();
+    }
+
+    private static int getOtherTaskColor() {
+        return Color.rgb(191, 213, 203);
     }
 }
