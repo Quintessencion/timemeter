@@ -58,7 +58,7 @@ public class LoadActivityCalendarJob extends LoadJob implements FilterableJob {
         final long startDateMillis = mStartDate.getTime();
         final long endDateMillis = TimeUtils.getDayEndMillis(mEndDate.getTime());
 
-        final long filterDateMillis = mLoadFilter.getDateMillis();
+        final long filterDateMillis = mLoadFilter.getStartDateMillis();
         final Collection<Tag> filterTags = mLoadFilter.getFilterTags();
 
         StringBuilder where = new StringBuilder();
@@ -165,7 +165,7 @@ public class LoadActivityCalendarJob extends LoadJob implements FilterableJob {
      * Calculates calendar period start and end dates (mPeriodStartMillis and mPeriodEndMillis)
      **/
     private void adjustDates() {
-        final long filterDateMillis = mLoadFilter.getDateMillis();
+        final long filterDateMillis = mLoadFilter.getStartDateMillis();
         final Period filterPeriod = mLoadFilter.getPeriod();
         if (filterDateMillis != mPrevFilterDateMillis) {
             mStartDate = null;

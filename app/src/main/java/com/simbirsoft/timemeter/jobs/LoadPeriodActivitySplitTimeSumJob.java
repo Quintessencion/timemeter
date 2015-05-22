@@ -77,7 +77,7 @@ public class LoadPeriodActivitySplitTimeSumJob extends LoadJob implements Filter
     @Override
     protected LoadJobResult<List<long[]>> performLoad() throws Exception {
         final List<long[]> results = Lists.newArrayList();
-        final long filterDateMillis = mLoadFilter.getDateMillis();
+        final long filterDateMillis = mLoadFilter.getStartDateMillis();
         final Period filterPeriod = mLoadFilter.getPeriod();
         final Collection<Tag> filterTags = mLoadFilter.getFilterTags();
 

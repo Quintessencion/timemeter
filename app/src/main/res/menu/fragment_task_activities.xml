@@ -2,6 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/actionShowTaskActivity"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_chart_line_white_24dp"
+        android:title="@string/action_show_task_activities"/>
+
+    <item
         android:id="@+id/actionToggleFilter"
         app:showAsAction="always"
         android:title="@string/action_toggle_filter_on"

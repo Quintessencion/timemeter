@@ -67,15 +67,18 @@ public class LoadPeriodActivityTimelineJob extends LoadJob implements Filterable
 
     @Override
     protected LoadJobResult<List<DailyActivityDuration>> performLoad() throws Exception {
-        long filterDateMillis = mLoadFilter.getDateMillis();
-        final Period filterPeriod = mLoadFilter.getPeriod();
+        long[] dateBounds = new long[2];
+        mLoadFilter.getDateBounds(dateBounds);
+        long filterStartDateMillis = dateBounds[0];
+        long filterEndDateMillis = dateBounds[1];
+        Period filterPeriod = mLoadFilter.getPeriod();
         final List<DailyActivityDuration> results = Lists.newArrayList();
 
-        if (filterDateMillis == 0) {
-            filterDateMillis = TimeUtils.getDayStartMillis(
+        if (filterStartDateMillis == 0) {
+            filterStartDateMillis = TimeUtils.getDayStartMillis(
                     QueryHelper.findFirstActivityBeginDate(mDatabaseHelper.getReadableDatabase()));
 
-            if (filterDateMillis == 0) {
+            if (filterStartDateMillis == 0) {
                 LOG.debug("unable to load activity timeline: no activity found");
 
                 return new LoadJobResult<>(results);
@@ -86,12 +89,12 @@ public class LoadPeriodActivityTimelineJob extends LoadJob implements Filterable
         if (filterPeriod == null || filterPeriod == Period.ALL) {
             timelineEndMillis = TimeUtils.tomorrowStart();
         } else {
-            timelineEndMillis = Period.getPeriodEnd(filterPeriod, filterDateMillis);
+            timelineEndMillis = filterEndDateMillis;
         }
         timelineEndMillis = (timelineEndMillis / 1000) * 1000;
 
         final Calendar currentDate = Calendar.getInstance();
-        currentDate.setTimeInMillis(filterDateMillis);
+        currentDate.setTimeInMillis(filterStartDateMillis);
 
         while (true) {
             long currentTime = (currentDate.getTimeInMillis() / 1000) * 1000;
@@ -121,10 +124,11 @@ public class LoadPeriodActivityTimelineJob extends LoadJob implements Filterable
     private int getDurationForDay(long dayStartMillis) throws JobExecutionException {
         mLoadActivitySumJob.reset();
         mLoadActivitySumJob.getTaskLoadFilter()
-                .dateMillis(dayStartMillis)
+                .startDateMillis(dayStartMillis)
                 .period(Period.DAY)
                 .tags(mLoadFilter.getFilterTags())
-                .searchText(mLoadFilter.getSearchText());
+                .searchText(mLoadFilter.getSearchText())
+                .taskIds(mLoadFilter.getTaskIds());
 
         JobEvent result = forkJob(mLoadActivitySumJob).join();
 

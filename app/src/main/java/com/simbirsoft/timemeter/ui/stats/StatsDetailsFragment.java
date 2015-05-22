@@ -32,7 +32,6 @@ import com.simbirsoft.timemeter.ui.model.DailyTaskActivityDuration;
 import com.simbirsoft.timemeter.ui.stats.binders.ActivityStackedTimelineBinder;
 import com.simbirsoft.timemeter.ui.stats.binders.ActivityTimelineBinder;
 import com.simbirsoft.timemeter.ui.stats.binders.OverallActivityTimePieBinder;
-import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.simbirsoft.timemeter.ui.views.ProgressLayout;
 import com.squareup.otto.Bus;
 
@@ -54,6 +53,8 @@ public class StatsDetailsFragment extends BaseFragment implements
 
     public static final String EXTRA_CHART_VIEW_TYPE = "extra_chart_view_type";
 
+    public static final String EXTRA_TASK_TITLE = "extra_task_title";
+
     private static final String STATS_LOADER_TAG = "StatsDetailsFragment_";
 
     private static final Logger LOG = LogFactory.getLogger(StatsDetailsFragment.class);
@@ -70,10 +71,13 @@ public class StatsDetailsFragment extends BaseFragment implements
     ProgressLayout mProgressLayout;
 
     @FragmentArg(EXTRA_TASK_FILTER)
-    FilterView.FilterState mExtraTaskFilter;
+    TaskLoadFilter mExtraTaskFilter;
 
     @FragmentArg(EXTRA_CHART_VIEW_TYPE)
     int mChartViewType;
+
+    @FragmentArg(EXTRA_TASK_TITLE)
+    String mTaskTitle;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -144,11 +148,7 @@ public class StatsDetailsFragment extends BaseFragment implements
         job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
 
         if (mExtraTaskFilter != null) {
-            ((FilterableJob) job).getTaskLoadFilter()
-                    .tags((mExtraTaskFilter.tags != null) ? mExtraTaskFilter.tags : Sets.newHashSet())
-                    .dateMillis(mExtraTaskFilter.dateMillis)
-                    .period(mExtraTaskFilter.period)
-                    .searchText(mExtraTaskFilter.searchText);
+            ((FilterableJob) job).setTaskLoadFilter(mExtraTaskFilter);
         }
 
         job.addTag(STATS_LOADER_TAG);
@@ -173,8 +173,16 @@ public class StatsDetailsFragment extends BaseFragment implements
         View view = binder.createView(getActivity(), mContainer, true);
 
         final String chartTitle = binder.getTitle();
-        if (!TextUtils.isEmpty(chartTitle)) {
-            mActionBar.setTitle(chartTitle);
+
+        if (!TextUtils.isEmpty(mTaskTitle)) {
+            mActionBar.setTitle(mTaskTitle);
+            if (!TextUtils.isEmpty(chartTitle)) {
+                mActionBar.setSubtitle(chartTitle);
+            }
+        } else {
+            if (!TextUtils.isEmpty(chartTitle)) {
+                mActionBar.setTitle(chartTitle);
+            }
         }
 
         binder.bindView(view);

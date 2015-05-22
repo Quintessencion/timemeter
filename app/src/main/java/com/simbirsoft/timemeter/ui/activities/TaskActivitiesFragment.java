@@ -1,5 +1,6 @@
 package com.simbirsoft.timemeter.ui.activities;
 
+import android.content.Intent;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Typeface;
@@ -38,8 +39,13 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.injection.ApplicationModule;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskActivitiesJob;
+import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
+import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
+import com.simbirsoft.timemeter.ui.stats.StatisticsViewBinder;
+import com.simbirsoft.timemeter.ui.stats.StatsDetailsFragment;
+import com.simbirsoft.timemeter.ui.stats.StatsDetailsFragment_;
 import com.simbirsoft.timemeter.ui.util.DeviceUtils;
 import com.simbirsoft.timemeter.ui.views.DatePeriodView;
 import com.simbirsoft.timemeter.ui.views.ProgressLayout;
@@ -53,6 +59,7 @@ import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -203,7 +210,9 @@ public class TaskActivitiesFragment extends BaseFragment implements
                 toggleFilterView();
                 updateOptionsMenu();
                 return true;
-
+            case R.id.actionShowTaskActivity:
+                showTaskActivity();
+                return true;
             default:
                 break;
         }
@@ -403,6 +412,24 @@ public class TaskActivitiesFragment extends BaseFragment implements
         } else {
             showFilterView(true);
         }
+    }
+
+    private void showTaskActivity() {
+        Bundle args = new Bundle();
+        if (mFilterView != null && mFilterView.getFilterState() != null) {
+            List<Long> taskId = new ArrayList<>();
+            taskId.add(mExtraTaskId);
+            args.putParcelable(StatsDetailsFragment.EXTRA_TASK_FILTER, TaskLoadFilter.fromTaskActivitiesFilter(mFilterView
+                    .getFilterState())
+                    .taskIds(taskId));
+        }
+
+        args.putInt(StatsDetailsFragment.EXTRA_CHART_VIEW_TYPE, StatisticsViewBinder.VIEW_TYPE_ACTIVITY_TIMELINE);
+        args.putString(StatsDetailsFragment.EXTRA_TASK_TITLE, mExtraTitle);
+
+        Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
+                getActivity(), StatsDetailsFragment_.class.getName(), args);
+        getActivity().startActivityForResult(launchIntent, 1000);
     }
 
     private void onChooseDateButtonClicked() {
