@@ -376,4 +376,8 @@ public class MainPageFragment extends BaseFragment {
     public void setFilterViewProvider(FilterViewProvider provider) {
         mFilterViewProvider = provider;
     }
+
+    protected void updateFilterResultsView(int taskCount, FilterView.FilterState filterState) {
+        mFilterViewProvider.updateFilterResultsView(taskCount, filterState);
+    }
 }

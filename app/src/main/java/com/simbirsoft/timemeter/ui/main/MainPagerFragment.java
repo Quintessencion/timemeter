@@ -30,6 +30,7 @@ import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.views.FilterResultsView;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
@@ -69,6 +70,12 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     @InstanceState
     boolean mIsFilterPanelShown;
 
+    @InstanceState
+    boolean mIsFilterResultsPanelShown;
+
+    @InstanceState
+    boolean mIsFilterViewStateChanged;
+
     @Inject
     Bus mBus;
 
@@ -83,6 +90,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
     private PagerSlidingTabStrip mTabs;
     private FilterView mFilterView;
+    private FilterResultsView mFilterResultsView;
     private MainPagerAdapter mPagerAdapter;
     private RelativeLayout mContainerUnderlayView;
     private ViewGroup mContainerView;
@@ -159,6 +167,16 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
                 .inflate(R.layout.view_filter_impl, mContainerUnderlayView, false);
         mFilterView.setVisibility(View.INVISIBLE);
         mContainerUnderlayView.addView(mFilterView);
+
+        mFilterResultsView = (FilterResultsView) LayoutInflater.from(getActivity())
+                .inflate(R.layout.view_filter_results_impl, mContainerUnderlayView, false);
+        mFilterResultsView.setVisibility(View.INVISIBLE);
+
+        //RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        //layoutParams.addRule(RelativeLayout.BELOW, mFilterView.getId());
+        //mContainerUnderlayView.addView(mFilterResultsView, layoutParams);
+
+        mContainerUnderlayView.addView(mFilterResultsView);
 
         if (mIsFilterPanelShown) {
             showFilterView(false);
@@ -286,9 +304,15 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     @Subscribe
     public void onFitlerViewStateChanged(FilterViewStateChangeEvent event) {
         mFilterState = event.getFilterState();
+        mIsFilterViewStateChanged = true;
 
         if (event.isReset()) {
             hideFilterView();
+
+            if (isFilterResultsPanelVisible()) {
+                hideFilterResultsView(true);
+            }
+
             updateOptionsMenu();
         }
     }
@@ -312,6 +336,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
         updateFilterViewSize();
         mFilterView.setVisibility(View.VISIBLE);
+        mFilterResultsView.setVisibility(View.VISIBLE);
     }
 
     private void hideFilterView(boolean animate) {
@@ -333,6 +358,49 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
         updateFilterViewSize();
         mFilterView.setVisibility(View.INVISIBLE);
+        mFilterResultsView.setVisibility(View.INVISIBLE);
+    }
+
+    private void showFilterResultsView(boolean animate) {
+        mIsFilterResultsPanelShown = true;
+
+        if (isFilterResultsPanelVisible()) {
+            return;
+        }
+
+        if (animate) {
+            TransitionSet set = new TransitionSet();
+            set.addTransition(new Fade(Fade.IN));
+            set.addTransition(new ChangeBounds());
+            set.setInterpolator(new DecelerateInterpolator(0.8f));
+            set.setOrdering(TransitionSet.ORDERING_TOGETHER);
+            set.excludeTarget(R.id.floatingButton, true);
+            TransitionManager.beginDelayedTransition(mContentRootView, set);
+        }
+
+        updateFilterResultsViewSize();
+        mFilterResultsView.setVisibility(View.VISIBLE);
+    }
+
+    private void hideFilterResultsView(boolean animate) {
+        mIsFilterResultsPanelShown = false;
+
+        if (!isFilterResultsPanelVisible()) {
+            return;
+        }
+
+        if (animate) {
+            TransitionSet set = new TransitionSet();
+            set.addTransition(new Fade(Fade.OUT));
+            set.addTransition(new ChangeBounds());
+            set.setInterpolator(new DecelerateInterpolator(0.8f));
+            set.setOrdering(TransitionSet.ORDERING_TOGETHER);
+            set.excludeTarget(R.id.floatingButton, true);
+            TransitionManager.beginDelayedTransition(mContentRootView, set);
+        }
+
+        updateFilterResultsViewSize();
+        mFilterResultsView.setVisibility(View.INVISIBLE);
     }
 
     private void updateFilterViewSize() {
@@ -355,8 +423,41 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mContainerView.setLayoutParams(containerLayoutParams);
     }
 
+    private void updateFilterResultsViewSize() {
+        RelativeLayout.LayoutParams containerLayoutParams =
+                (RelativeLayout.LayoutParams) mContainerView.getLayoutParams();
+
+        int measuredHeight;
+        int additionalHeight;
+        if (mIsFilterResultsPanelShown) {
+            measuredHeight = mFilterResultsView.getMeasuredHeight();
+            additionalHeight = (mIsFilterPanelShown)
+                    ? mFilterView.getHeight()
+                    : 0;
+            if (measuredHeight < 1) {
+                int maxHeight = getResources().getDisplayMetrics().heightPixels;
+                int spec = View.MeasureSpec.makeMeasureSpec(maxHeight, View.MeasureSpec.AT_MOST);
+                mFilterResultsView.measure(spec, spec);
+                measuredHeight = mFilterResultsView.getMeasuredHeight();
+                additionalHeight = (mIsFilterPanelShown)
+                        ? mFilterView.getHeight()
+                        : 0;
+            }
+        } else {
+            measuredHeight = 0;
+            additionalHeight = 0;
+        }
+
+        containerLayoutParams.topMargin = measuredHeight + additionalHeight;
+        mContainerView.setLayoutParams(containerLayoutParams);
+    }
+
     private boolean isFilterPanelVisible() {
         return mFilterView != null && mFilterView.getVisibility() == View.VISIBLE;
+    }
+
+    private boolean isFilterResultsPanelVisible() {
+        return mFilterResultsView != null && mFilterResultsView .getVisibility() == View.VISIBLE;
     }
 
     private void toggleFilterView() {
@@ -395,6 +496,15 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     public void hideFilterView() {
         if (isFilterPanelVisible()) {
             hideFilterView(true);
+        }
+    }
+
+    @Override
+    public void updateFilterResultsView(int taskCount, FilterView.FilterState filterState) {
+        if (mIsFilterViewStateChanged) {
+            mFilterResultsView.updateView(taskCount, filterState);
+            showFilterResultsView(true);
+            mIsFilterViewStateChanged = false;
         }
     }
 

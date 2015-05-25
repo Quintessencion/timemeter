@@ -105,6 +105,10 @@
     <!-- Chart legend -->
     <string name="chart_legend_totally">Всего: %s</string>
 
+    <!-- Search results -->
+    <string name="found_tasks">Найдено %s</string>
+    <string name="with_tags">c метками %s</string>
+
     <string name="day">День</string>
     <string name="week">Неделя</string>
     <string name="month">Месяц</string>
@@ -128,6 +132,13 @@
         <item>@string/all_time</item>
         <item>@string/another</item>
     </string-array>
+
+    <plurals name="task_count">
+        <item quantity="one">%d задача</item>
+        <item quantity="few">%d задачи</item>
+        <item quantity="many">%d задач</item>
+        <item quantity="other">%d задач</item>
+    </plurals>
 
     <string name="no_activity">нет активности</string>
     <string name="recent_activity">Последняя активность</string>

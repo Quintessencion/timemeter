@@ -267,6 +267,11 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     }
 
     @Override
+    public void updateFilterResultsView(int taskCount, FilterView.FilterState filterState) {
+
+    }
+
+    @Override
     public List<String> getPageNames(int sectionId) {
         List<String> pages = Lists.newArrayList();
 
