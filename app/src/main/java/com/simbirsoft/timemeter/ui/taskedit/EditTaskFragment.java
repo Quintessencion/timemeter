@@ -395,9 +395,6 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
                 }
             case REQUEST_CODE_PERFORM_REMOVE_TASK:
                 if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
-                    //ITaskActivityManager taskActivityManager = Injection.sTaskManager.taskActivityManager();
-                    //taskActivityManager.stopTask(mTaskBundle.getTask());
-
                     RemoveTaskJob removeJob = Injection.sJobsComponent.removeTaskJob();
                     removeJob.setTask(mTaskBundle.getTask());
                     submitJob(removeJob);
