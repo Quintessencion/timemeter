@@ -6,12 +6,12 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.animation.AlphaAnimation;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
@@ -22,8 +22,9 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
+import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.events.ScheduledTaskActivityNotificationUpdateEvent;
-import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskRecentActivitiesJob;
 import com.simbirsoft.timemeter.log.LogFactory;
@@ -50,8 +51,6 @@ import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
-
-import java.util.List;
 
 @EFragment(R.layout.fragment_view_task)
 public class ViewTaskFragment extends BaseFragment
@@ -88,12 +87,14 @@ public class ViewTaskFragment extends BaseFragment
     Bus mBus;
 
     private TaskActivitiesAdapter mAdapter;
+    private ITaskActivityManager mTaskActivityManager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         Injection.sUiComponent.injectViewTaskFragment(this);
+        mTaskActivityManager = Injection.sTaskManager.taskActivityManager();
         mBus.register(this);
     }
 
@@ -278,7 +279,10 @@ public class ViewTaskFragment extends BaseFragment
 
     @Subscribe
     public void ontaskActivityNotificationUpdate(ScheduledTaskActivityNotificationUpdateEvent event) {
-        mAdapter.updateCurrentActivityTime();
+        ActiveTaskInfo info = mTaskActivityManager.getActiveTaskInfo();
+        if (info != null && info.getTask().getId() == mExtraTaskBundle.getTask().getId()) {
+            mAdapter.updateCurrentActivityTime();
+        }
     }
 
     private void scrollToSelectedSpan() {
