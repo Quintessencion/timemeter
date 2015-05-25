@@ -1,6 +1,7 @@
 package com.simbirsoft.timemeter.jobs;
 
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Handler;
 
 import com.be.android.library.worker.base.BaseJob;
 import com.be.android.library.worker.base.JobEvent;
@@ -10,12 +11,14 @@ import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTag;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
+import com.simbirsoft.timemeter.injection.ApplicationModule;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.squareup.phrase.Phrase;
 
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import nl.qbusict.cupboard.DatabaseCompartment;
 
@@ -27,13 +30,14 @@ public class RemoveTaskJob extends BaseJob {
 
     private final DatabaseHelper mDatabaseHelper;
     private final ITaskActivityManager mITaskActivityManager;
-    //private Long mTaskId;
     private Task mTask;
+    private Handler mHandler;
 
     @Inject
-    public RemoveTaskJob(DatabaseHelper databaseHelper, ITaskActivityManager iTaskActivityManager) {
+    public RemoveTaskJob(DatabaseHelper databaseHelper, ITaskActivityManager iTaskActivityManager, @Named(ApplicationModule.HANDLER_MAIN) Handler handler) {
         mDatabaseHelper = databaseHelper;
         mITaskActivityManager = iTaskActivityManager;
+        mHandler = handler;
     }
 
     @Override
@@ -44,12 +48,6 @@ public class RemoveTaskJob extends BaseJob {
         Preconditions.checkArgument(mITaskActivityManager != null);
 
     }
-
-    /*public void setTaskId(long taskId) {
-        Preconditions.checkArgument(mTaskId == null);
-
-        mTaskId = taskId;
-    }*/
 
     public void setTask(Task task) {
         Preconditions.checkArgument(mTask == null);
@@ -65,7 +63,7 @@ public class RemoveTaskJob extends BaseJob {
         try {
             db.beginTransaction();
 
-            mITaskActivityManager.stopTask(mTask);
+            mHandler.post(() -> mITaskActivityManager.stopTask(mTask));
 
             DatabaseCompartment cupboard = cupboard().withDatabase(db);
 
