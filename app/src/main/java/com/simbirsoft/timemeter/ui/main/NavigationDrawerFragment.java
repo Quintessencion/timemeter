@@ -41,7 +41,6 @@ public class NavigationDrawerFragment extends Fragment {
 
     private int mCurrentSelectedPosition = 0;
     private boolean mFromSavedInstanceState;
-    private boolean mUserLearnedDrawer;
 
     @Inject
     Preferences mPreferences;
@@ -57,7 +56,6 @@ public class NavigationDrawerFragment extends Fragment {
 
         loadCurrentSelectedPosition();
 
-        mUserLearnedDrawer = mPreferences.getUserLearnedDrawer(false);
         if (savedInstanceState != null) {
             mFromSavedInstanceState = true;
         }
@@ -153,15 +151,15 @@ public class NavigationDrawerFragment extends Fragment {
                     return;
                 }
 
-                if (!mUserLearnedDrawer) {
-                    mUserLearnedDrawer = true;
+                if (!mPreferences.getUserLearnedDrawer(false)) {
                     mPreferences.setUserLearnedDrawer(true);
                 }
                 getActivity().supportInvalidateOptionsMenu(); // calls onPrepareOptionsMenu()
             }
         };
 
-        if (!mUserLearnedDrawer && !mFromSavedInstanceState) {
+        if (!mPreferences.getUserLearnedDrawer(false) &&
+            !mFromSavedInstanceState) {
             mDrawerLayout.openDrawer(mFragmentContainerView);
         }
 
