@@ -15,6 +15,7 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.controller.HelpCardController;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadActivityCalendarJob;
@@ -80,7 +81,11 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
         mPopupHelper.setTaskClickListener(this);
         mPagerAdapter = new CalendarPagerAdapter(getActivity(), mCalendarViewPager, this);
         mCalendarNavigationView.setOnCalendarNavigateListener(this);
+
         requestLoad(CALENDAR_LOADER_TAG, this);
+
+        bindHelpCard();
+
         getBus().register(this);
     }
 
@@ -234,5 +239,13 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
     @Override
     protected Logger createLogger() {
         return LoggerFactory.getLogger(ActivityCalendarFragment.class);
+    }
+
+    @Override
+    protected int getHelpCardToPresent(HelpCardController controller) {
+        if (!controller.isPresented(HelpCardController.HELP_CARD_CALENDAR)) {
+            return HelpCardController.HELP_CARD_CALENDAR;
+        }
+        return -1;
     }
 }

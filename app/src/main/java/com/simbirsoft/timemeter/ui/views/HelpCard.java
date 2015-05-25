@@ -51,10 +51,10 @@ public class HelpCard extends CardView {
     @AfterViews
     void initializeView() {
        mNextButton.setOnClickListener(v -> {
-           goToNextItem();
            if (mOnNextClickListener != null) {
                mOnNextClickListener.onClick(v);
            }
+           goToNextItem();
        });
     }
 
@@ -72,7 +72,7 @@ public class HelpCard extends CardView {
     }
 
     public void setOnNextClickListener(View.OnClickListener listener) {
-        mNextButton.setOnClickListener(listener);
+        mOnNextClickListener = listener;
     }
 
     private void reload() {
@@ -93,5 +93,9 @@ public class HelpCard extends CardView {
 
     public int getPosition() {
         return mPosition;
+    }
+
+    public boolean isLastItemPresented() {
+        return mPosition == (mAdapter.getItemsCount() - 1);
     }
 }

@@ -30,6 +30,7 @@ import com.nispok.snackbar.SnackbarManager;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
+import com.simbirsoft.timemeter.controller.HelpCardController;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
@@ -59,6 +60,8 @@ import org.slf4j.Logger;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 @EFragment(R.layout.fragment_task_list)
 public class TaskListFragment extends MainPageFragment implements JobLoader.JobLoaderCallbacks,
         TaskListAdapter.TaskClickListener,
@@ -80,15 +83,8 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     @ViewById(android.R.id.empty)
     TextView mEmptyListIndicator;
 
-    @ViewById(R.id.helpCardContainer)
-    FrameLayout mHelpCardContainer;
-
-    @ViewById(R.id.helpCard)
-    HelpCard mHelpCard;
-
     @InstanceState
     int[] mTaskListPosition;
-
 
     private FloatingActionButton mFloatingActionButton;
     private TaskListAdapter mTasksViewAdapter;
@@ -154,16 +150,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
         requestLoad(TASK_LIST_LOADER_TAG, this);
 
-        final HelpCardDataSource ds = new HelpCardDataSource();
-        ds.addItem(getActivity(), R.string.help_card_text_00_00, -1, R.string.help_card_btn_next);
-        ds.addItem(getActivity(), R.string.help_card_text_00_01, -1, R.string.help_card_btn_ok);
-
-        mHelpCard.setAdapter(ds);
-
-        Handler handler = new Handler();
-        handler.postDelayed(() -> {
-            mHelpCard.setVisibility(View.VISIBLE);
-        }, 3000);
+        bindHelpCard();
     }
 
     @Override
@@ -428,6 +415,14 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     @Override
     protected Logger createLogger() {
         return LogFactory.getLogger(TaskListFragment.class);
+    }
+            
+    protected int getHelpCardToPresent(HelpCardController controller) {
+        if (!controller.isPresented(HelpCardController.HELP_CARD_TASK_LIST)) {
+            return HelpCardController.HELP_CARD_TASK_LIST;
+        }
+
+        return -1;
     }
 }
 

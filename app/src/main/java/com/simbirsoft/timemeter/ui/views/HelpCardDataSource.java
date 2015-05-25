@@ -40,14 +40,16 @@ public class HelpCardDataSource implements HelpCard.Adapter {
         return items.get(index).nextTitle;
     }
 
-    public void addItem(String message, String actionTitle, String nextTitle) {
+    public HelpCardDataSource addItem(String message, String actionTitle, String nextTitle) {
         items.add(new Item(message, actionTitle, nextTitle));
+        return this;
     }
 
-    public void addItem(Context ctx, int message, int actionTitle, int nextTitle) {
+    public HelpCardDataSource addItem(Context ctx, int message, int actionTitle, int nextTitle) {
         String msg = message > 0 ? ctx.getString(message) : "";
         String action = actionTitle > 0 ? ctx.getString(actionTitle) : "";
         String next = nextTitle > 0 ? ctx.getString(nextTitle) : "";
         items.add(new Item(msg, action, next));
+        return this;
     }
 }

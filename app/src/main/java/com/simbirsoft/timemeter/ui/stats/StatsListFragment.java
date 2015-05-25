@@ -16,6 +16,7 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.controller.HelpCardController;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadStatisticsViewBinders;
 import com.simbirsoft.timemeter.log.LogFactory;
@@ -69,6 +70,9 @@ public class StatsListFragment extends MainPageFragment implements
         mRecyclerView.setAdapter(mStatsListAdapter);
 
         requestLoad(STATISTICS_BINDER_LOADER_TAG, this);
+
+        bindHelpCard();
+
         getBus().register(this);
     }
 
@@ -143,5 +147,12 @@ public class StatsListFragment extends MainPageFragment implements
         if (!isSelected()) {
             invalidateContent();
         }
+    }
+            
+    protected int getHelpCardToPresent(HelpCardController controller) {
+        if (!controller.isPresented(HelpCardController.HELP_CARD_STATS_LIST)) {
+            return HelpCardController.HELP_CARD_STATS_LIST;
+        }
+        return -1;
     }
 }

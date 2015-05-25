@@ -4,22 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <FrameLayout
-        android:id="@+id/helpCardContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:animateLayoutChanges="true">
-
-        <com.simbirsoft.timemeter.ui.views.HelpCard_
-            android:id="@+id/helpCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:foreground="?android:attr/selectableItemBackground"
-            card_view:cardUseCompatPadding="true"
-            card_view:cardCornerRadius="4dp"
-            card_view:contentPadding="4dp"
-            android:visibility="gone"/>
-    </FrameLayout>
+    <include layout="@layout/view_help_card_block"/>
 
     <TextView
         android:id="@android:id/empty"

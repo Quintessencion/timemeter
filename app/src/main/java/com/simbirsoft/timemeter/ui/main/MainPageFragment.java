@@ -8,6 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
+import android.view.View;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
@@ -17,7 +18,9 @@ import com.nispok.snackbar.enums.SnackbarType;
 import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.controller.HelpCardController;
 import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
+import com.simbirsoft.timemeter.events.HelpCardPresentedEvent;
 import com.simbirsoft.timemeter.events.ScheduledTaskUpdateTabContentEvent;
 import com.simbirsoft.timemeter.injection.ApplicationModule;
 import com.simbirsoft.timemeter.injection.Injection;
@@ -28,10 +31,16 @@ import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.model.TaskChangedEvent;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.views.FilterView;
+import com.simbirsoft.timemeter.ui.views.HelpCard;
+import com.simbirsoft.timemeter.ui.views.HelpCardDataSource;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
+
 import org.slf4j.Logger;
+
+import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.ViewById;
 
 import java.util.concurrent.ExecutionException;
 
@@ -39,6 +48,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 
+@EFragment
 public class MainPageFragment extends BaseFragment {
     public static class SnackbarShowEvent {
         private boolean mVisible;
@@ -70,7 +80,13 @@ public class MainPageFragment extends BaseFragment {
     @Named(ApplicationModule.HANDLER_MAIN)
     Handler mHandler;
 
+    @Inject
+    HelpCardController mHelpCardController;
+
     FilterViewProvider mFilterViewProvider;
+
+    @ViewById(R.id.helpCard)
+    protected HelpCard mHelpCard;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -82,6 +98,7 @@ public class MainPageFragment extends BaseFragment {
     public void onStart() {
         super.onStart();
         setContentAutoupdateEnabled(true);
+        presentHelpCardIfAny();
     }
 
     @Override
@@ -107,6 +124,31 @@ public class MainPageFragment extends BaseFragment {
         super.onResume();
 
         reloadContentIfNeeded();
+    }
+    
+    protected void bindHelpCard() {
+        mHelpCard.setOnNextClickListener(v -> {
+            onHelpCardNextClicked(mHelpCard);
+        });
+    }
+
+    private int getHelpCardToPresent() {
+        return getHelpCardToPresent(mHelpCardController);
+    }
+
+    protected int getHelpCardToPresent(HelpCardController controller) {
+        return -1;
+    }
+
+    private void presentHelpCardIfAny() {
+        mHelpCard.setVisibility(View.GONE);
+
+        int id = getHelpCardToPresent();
+        if (id != -1) {
+            final HelpCardDataSource ds = mHelpCardController.getCard(id);
+            mHelpCard.setAdapter(ds);
+            mHelpCard.setVisibility(View.VISIBLE);
+        }
     }
 
     protected Bus getBus() {
@@ -375,5 +417,16 @@ public class MainPageFragment extends BaseFragment {
 
     public void setFilterViewProvider(FilterViewProvider provider) {
         mFilterViewProvider = provider;
+    }
+
+    protected void onHelpCardNextClicked(HelpCard sender) {
+        if (mHelpCard.isLastItemPresented()) {
+            mHelpCardController.markPresented(getHelpCardToPresent());
+        }
+    }
+
+    @Subscribe
+    public void onHelpCardPresentedEvent(HelpCardPresentedEvent ev) {
+        presentHelpCardIfAny();
     }
 }
