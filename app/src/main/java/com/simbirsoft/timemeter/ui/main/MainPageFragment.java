@@ -126,6 +126,10 @@ public class MainPageFragment extends BaseFragment {
         mBus.post(new TaskChangedEvent(resultCode));
     }
 
+    protected void setContentInvalidated(boolean isContentInvalidated) {
+        mIsContentInvalidated = isContentInvalidated;
+    }
+
     @Subscribe
     public void onTaskChanged(TaskChangedEvent event) {
         if (mIsSelected && event.getResultCode() == EditTaskFragment.RESULT_CODE_TASK_RECREATED) {
