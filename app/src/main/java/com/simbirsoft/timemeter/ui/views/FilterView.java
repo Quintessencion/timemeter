@@ -367,7 +367,6 @@ public class FilterView extends FrameLayout implements
     public boolean onClose() {
         mState.searchText = null;
         postFilterUpdate();
-
         return false;
     }
 
