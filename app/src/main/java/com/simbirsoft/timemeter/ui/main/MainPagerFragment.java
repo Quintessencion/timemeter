@@ -93,9 +93,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     private List<String> mPageNames;
     private int mPagePosition;
 
-    @Inject
-    Preferences mPreferences;
-
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -436,11 +433,11 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     }
 
     private void savePagePosition() {
-        mPreferences.setSelectedTaskTabPosition(mPagePosition);
+        mPrefs.setSelectedTaskTabPosition(mPagePosition);
     }
 
     private void loadPagePosition() {
-        mPagePosition = mPreferences.getSelectedTaskTabPosition(0);
+        mPagePosition = mPrefs.getSelectedTaskTabPosition(0);
         mViewPager.setCurrentItem(mPagePosition);
     }
 
