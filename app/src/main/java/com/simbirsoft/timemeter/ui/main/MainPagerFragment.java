@@ -30,6 +30,7 @@ import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.util.KeyboardUtils;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
@@ -333,6 +334,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
         updateFilterViewSize();
         mFilterView.setVisibility(View.INVISIBLE);
+        KeyboardUtils.hideSoftInput(mFilterView.getContext(), mFilterView.getWindowToken());
     }
 
     private void updateFilterViewSize() {
