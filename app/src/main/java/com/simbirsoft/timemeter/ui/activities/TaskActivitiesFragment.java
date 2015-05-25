@@ -1,7 +1,7 @@
 package com.simbirsoft.timemeter.ui.activities;
 
-import android.content.Intent;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -36,7 +36,7 @@ import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.enums.SnackbarType;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
-import com.simbirsoft.timemeter.events.ScheduledTaskActivityNotificationUpdateEvent;
+import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.ApplicationModule;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskActivitiesJob;
@@ -256,7 +256,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
     }
 
     @Subscribe
-    public void ontaskActivityNotificationUpdate(ScheduledTaskActivityNotificationUpdateEvent event) {
+    public void onTaskActivityUpdated(TaskActivityUpdateEvent event) {
         mAdapter.updateCurrentActivityTime();
     }
 

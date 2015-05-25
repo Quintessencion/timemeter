@@ -14,6 +14,7 @@ import com.simbirsoft.timemeter.events.ScheduledTaskActivityNotificationUpdateEv
 import com.simbirsoft.timemeter.events.ScreenLockStateChangedEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStartedEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
+import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.receiver.NotificationUpdateReceiver;
 import com.simbirsoft.timemeter.receiver.StopTaskActivityReceiver;
@@ -55,7 +56,12 @@ public class TaskNotificationManager {
     }
 
     @Subscribe
-    public void ontaskActivityNotificationUpdate(ScheduledTaskActivityNotificationUpdateEvent event) {
+    public void onTaskActivityNotificationUpdate(ScheduledTaskActivityNotificationUpdateEvent event) {
+        updateTaskNotification(mTaskActivityInfoProvider.getActiveTaskInfo());
+    }
+
+    @Subscribe
+    public void onTaskActivityUpdated(TaskActivityUpdateEvent event) {
         updateTaskNotification(mTaskActivityInfoProvider.getActiveTaskInfo());
     }
 

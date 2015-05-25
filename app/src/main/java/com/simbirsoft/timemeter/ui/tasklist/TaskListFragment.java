@@ -7,10 +7,7 @@ import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.Html;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.style.StyleSpan;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,9 +29,9 @@ import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
-import com.simbirsoft.timemeter.controller.TaskActivityTimerUpdateListener;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
+import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
 import com.simbirsoft.timemeter.log.LogFactory;
@@ -61,14 +58,10 @@ import java.util.List;
 @EFragment(R.layout.fragment_task_list)
 public class TaskListFragment extends MainPageFragment implements JobLoader.JobLoaderCallbacks,
         TaskListAdapter.TaskClickListener,
-        TaskActivityTimerUpdateListener,
         MainPagerAdapter.PageTitleProvider {
-
-    private static final Logger LOG = LogFactory.getLogger(TaskListFragment.class);
 
     private static final String SNACKBAR_TAG = "task_list_snackbar";
     private static final String TASK_LIST_LOADER_TAG = "TaskListFragment_";
-    private static final int REQUEST_CODE_EDIT_TASK = 100;
     private static final int COLUMN_COUNT_DEFAULT = 2;
     private static final int LOAD_TASK_JOB_ID = 2970017;
 
@@ -93,7 +86,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     private ContentFragmentCallbacks mCallbacks;
 
     private void onFloatingButtonClicked(View v) {
-        LOG.info("floating button clicked");
+        mLogger.info("floating button clicked");
 
         Snackbar current = SnackbarManager.getCurrentSnackbar();
         long delay = 0;
@@ -108,7 +101,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
             Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                     getActivity(), EditTaskFragment_.class.getName(), args);
-            getActivity().startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TASK);
+            getActivity().startActivityForResult(launchIntent, MainPageFragment.REQUEST_CODE_PROCESS_TASK);
         }, delay);
     }
 
@@ -200,13 +193,6 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-
-        mTaskActivityManager.addTaskActivityUpdateListener(this);
-    }
-
-    @Override
     public void onPause() {
         super.onPause();
 
@@ -217,7 +203,6 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
                     mRecyclerView.getLayoutManager()).findFirstVisibleItemPositions(mTaskListPosition);
         }
 
-        mTaskActivityManager.removeTaskActivityUpdateListener(this);
         mTaskActivityManager.saveTaskActivity();
     }
 
@@ -233,7 +218,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         if (hasFilter()) {
             TaskFilterPredicate predicate = new TaskFilterPredicate(getFilterViewState());
             if (!predicate.apply(task)) {
-                LOG.debug("created task isn't match current filter");
+                mLogger.debug("created task isn't match current filter");
                 return;
             }
         }
@@ -257,51 +242,6 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
                 .attachToRecyclerView(mRecyclerView);
         bar.setTag(SNACKBAR_TAG);
         SnackbarManager.show(bar);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case REQUEST_CODE_EDIT_TASK:
-                if (resultCode == EditTaskFragment.RESULT_CODE_CANCELLED) {
-                    LOG.debug("result: task edit cancelled");
-                    return;
-                }
-                final long taskId = data.getLongExtra(EditTaskFragment.EXTRA_TASK_ID, -1);
-                final TaskBundle bundle = data.getParcelableExtra(
-                        EditTaskFragment.EXTRA_TASK_BUNDLE);
-
-                switch (resultCode) {
-                    case EditTaskFragment.RESULT_CODE_TASK_CREATED:
-                        LOG.debug("result: task created");
-                        addTaskToList(bundle);
-                        showTaskAddedBar(bundle);
-                        break;
-
-                    case EditTaskFragment.RESULT_CODE_TASK_RECREATED:
-                        LOG.debug("result: task recreated");
-                        requestReload(TASK_LIST_LOADER_TAG, this);
-                        break;
-
-                    case EditTaskFragment.RESULT_CODE_TASK_REMOVED:
-                        LOG.debug("result: task removed");
-                        removeTaskFromList(taskId);
-                        showTaskRemoveUndoBar(bundle);
-                        break;
-
-                    case EditTaskFragment.RESULT_CODE_TASK_UPDATED:
-                        LOG.debug("result: task updated");
-                        replaceTaskInList(bundle);
-                        break;
-                }
-                sendTaskChangedEvent(resultCode);
-                return;
-
-            default:
-                break;
-        }
-
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @OnJobSuccess(LoadTaskListJob.class)
@@ -338,7 +278,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
     @Override
     public void onTaskCardClicked(TaskBundle item) {
-        LOG.info("task card clicked; task {}", item);
+        mLogger.info("task card clicked; task {}", item);
 
         final Task task = item.getTask();
 
@@ -360,7 +300,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
     @Override
     public void onTaskViewClicked(TaskBundle item) {
-        LOG.debug("view task: {}", item);
+        mLogger.debug("view task: {}", item);
 
         SnackbarManager.dismiss();
 
@@ -369,7 +309,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), ViewTaskFragment_.class.getName(), args);
-        getActivity().startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TASK);
+        getActivity().startActivityForResult(launchIntent, MainPageFragment.REQUEST_CODE_PROCESS_TASK);
     }
 
     @Override
@@ -385,8 +325,9 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         requestLoad(loaderTag, this);
     }
 
-    @Override
-    public void onTaskActivityUpdate(ActiveTaskInfo info) {
+    @Subscribe
+    public void onTaskActivityUpdate(TaskActivityUpdateEvent event) {
+        ActiveTaskInfo info = event.getActiveTaskInfo();
         if (mRecyclerView != null && mTasksViewAdapter != null) {
             mTasksViewAdapter.updateItemView(mRecyclerView, info.getTask());
         }
@@ -422,7 +363,50 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
     @Override
     protected void reloadContent() {
+        super.reloadContent();
         requestReload(TASK_LIST_LOADER_TAG, this);
+    }
+
+    @Override
+    protected boolean isSupportAutoupdate() {
+        return false;
+    }
+
+    private TaskBundle getTaskBundle(Intent data) {
+        return data.getParcelableExtra(EditTaskFragment.EXTRA_TASK_BUNDLE);
+    }
+
+    @Override
+    protected void onTaskCreated(Intent data) {
+        super.onTaskCreated(data);
+
+        TaskBundle bundle = getTaskBundle(data);
+        addTaskToList(bundle);
+        showTaskAddedBar(bundle);
+    }
+
+    @Override
+    protected void onTaskUpdated(Intent data) {
+        super.onTaskUpdated(data);
+
+        TaskBundle bundle = getTaskBundle(data);
+        replaceTaskInList(bundle);
+    }
+
+    @Override
+    protected void onTaskRemoved(Intent data) {
+        super.onTaskRemoved(data);
+
+        TaskBundle bundle = getTaskBundle(data);
+        removeTaskFromList(bundle.getTask().getId());
+        showTaskRemoveUndoBar(bundle);
+
+        invalidateContent();
+    }
+
+    @Override
+    protected Logger createLogger() {
+        return LogFactory.getLogger(TaskListFragment.class);
     }
 }
 

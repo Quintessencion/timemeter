@@ -33,4 +33,9 @@
         <item name="android:textColor">@android:color/white</item>
     </style>
 
+    <style name="ChartSummaryText">
+        <item name="android:textColor">@android:color/darker_gray</item>
+        <item name="android:textSize">@dimen/chart_summary_text_size</item>
+    </style>
+
 </resources>

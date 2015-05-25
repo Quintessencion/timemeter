@@ -2,6 +2,7 @@ package com.simbirsoft.timemeter.ui.stats.binders;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.text.Html;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,8 +19,10 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.DailyActivityDuration;
+import com.simbirsoft.timemeter.ui.model.DailyTaskActivityDuration;
 import com.simbirsoft.timemeter.ui.stats.ActivityTimelineChartMarkerView;
 import com.simbirsoft.timemeter.ui.stats.StatisticsViewBinder;
+import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
 
 import org.slf4j.Logger;
 
@@ -39,6 +42,7 @@ public class ActivityTimelineBinder implements StatisticsViewBinder, OnChartValu
     private ViewGroup mContentRoot;
     private LineChart mChart;
     private TextView mTitleView;
+    private TextView mSummaryActivityView;
     private final List<DailyActivityDuration> mActivityTimeline;
     private int mLineColor;
     private boolean mIsDataBound;
@@ -122,6 +126,9 @@ public class ActivityTimelineBinder implements StatisticsViewBinder, OnChartValu
     private void initializeChart() {
         mLineColor = mContext.getResources().getColor(R.color.primary);
 
+        mSummaryActivityView = (TextView) mContentRoot.findViewById(R.id.summaryActivityView);
+        mSummaryActivityView.setText(getFormattedTotalTime());
+
         mChart = (LineChart) mContentRoot.findViewById(R.id.chart);
         mEmptyIndicatorView = (TextView) mContentRoot.findViewById(android.R.id.empty);
         mEmptyIndicatorView.setVisibility(View.GONE);
@@ -173,5 +180,21 @@ public class ActivityTimelineBinder implements StatisticsViewBinder, OnChartValu
 
     @Override
     public void onNothingSelected() {
+    }
+
+    private String getFormattedTotalTime() {
+        final String formattedTime = TimerTextFormatter.formatTaskSpanText(mContext.getResources(),
+                calculateTotalTime());
+        return String.format(mContext.getString(R.string.chart_legend_totally),
+                Html.fromHtml(formattedTime).toString());
+    }
+
+    private long calculateTotalTime () {
+        long totalTime = 0;
+
+        for (DailyActivityDuration activityDuration: mActivityTimeline) {
+            totalTime += activityDuration.duration;
+        }
+        return totalTime;
     }
 }

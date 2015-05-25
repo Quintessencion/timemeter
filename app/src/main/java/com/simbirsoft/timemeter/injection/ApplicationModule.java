@@ -4,12 +4,16 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.be.android.library.worker.controllers.JobManager;
+import com.be.android.library.worker.controllers.WorkerJobManager;
 import com.simbirsoft.timemeter.App;
+import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.controller.ITaskActivityInfoProvider;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.controller.TaskActivityManager;
 import com.simbirsoft.timemeter.controller.TaskNotificationManager;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
+import com.simbirsoft.timemeter.service.TimeWorkerService;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
@@ -31,10 +35,18 @@ public class ApplicationModule {
 
     private final App mApplication;
     private final Handler mHandler;
+    private final JobManager mJobManager;
 
     public ApplicationModule(App application) {
         mApplication = application;
         mHandler = new Handler();
+
+        mJobManager = new WorkerJobManager(
+                application,
+                Consts.WORKER_THREAD_POOL_COUNT,
+                TimeWorkerService.class);
+
+        JobManager.init(mJobManager);
     }
 
     @Provides
@@ -58,6 +70,10 @@ public class ApplicationModule {
         return mApplication.getResources();
     }
 
+    @Provides
+    JobManager provideJobManager() {
+        return mJobManager;
+    }
 
     @Provides
     @Named(DATE_FORMAT)
@@ -78,9 +94,8 @@ public class ApplicationModule {
 
     @Provides
     @Singleton
-    ITaskActivityManager provideTaskActivityManager(Context context, DatabaseHelper helper, Bus bus) {
-
-        TaskActivityManager mgr = new TaskActivityManager(context, bus, helper);
+    ITaskActivityManager provideTaskActivityManager(JobManager jobManager, Context context, DatabaseHelper helper, Bus bus) {
+        TaskActivityManager mgr = new TaskActivityManager(jobManager, context, bus, helper);
         mgr.initialize();
 
         return mgr;

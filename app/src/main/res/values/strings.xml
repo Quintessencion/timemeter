@@ -102,6 +102,9 @@
     <string name="dialog_cancel_tag_changes_warning_title">Метка не сохранена</string>
     <string name="dialog_cancel_tag_changes_warning_message">Завершить редактирование без сохранения?</string>
 
+    <!-- Chart legend -->
+    <string name="chart_legend_totally">Всего: %s</string>
+
     <string name="day">День</string>
     <string name="week">Неделя</string>
     <string name="month">Месяц</string>

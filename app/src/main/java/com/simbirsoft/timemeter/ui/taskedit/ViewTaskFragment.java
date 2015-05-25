@@ -25,6 +25,7 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.events.ScheduledTaskActivityNotificationUpdateEvent;
+import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskRecentActivitiesJob;
 import com.simbirsoft.timemeter.log.LogFactory;
@@ -34,6 +35,7 @@ import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment_;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesLayoutManager;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
+import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.model.TaskRecentActivity;
 import com.simbirsoft.timemeter.ui.views.ProgressLayout;
@@ -61,7 +63,6 @@ public class ViewTaskFragment extends BaseFragment
 
     private static final Logger LOG = LogFactory.getLogger(ViewTaskFragment.class);
 
-    private static final int REQUEST_CODE_EDIT_TASK = 100;
     private static final int REQUEST_CODE_VIEW_ACTIVITIES = 101;
 
     @ViewById(R.id.tagFlowView)
@@ -167,7 +168,7 @@ public class ViewTaskFragment extends BaseFragment
 
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), EditTaskFragment_.class.getName(), args);
-        getActivity().startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TASK);
+        getActivity().startActivityForResult(launchIntent, MainPageFragment.REQUEST_CODE_PROCESS_TASK);
     }
 
     private void goToActivities() {
@@ -209,7 +210,7 @@ public class ViewTaskFragment extends BaseFragment
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         getActivity().setResult(resultCode, data);
         switch (requestCode) {
-            case REQUEST_CODE_EDIT_TASK:
+            case MainPageFragment.REQUEST_CODE_PROCESS_TASK:
                 if (resultCode == EditTaskFragment.RESULT_CODE_CANCELLED) {
                     LOG.debug("result: task edit cancelled");
                     return;
@@ -278,7 +279,7 @@ public class ViewTaskFragment extends BaseFragment
     }
 
     @Subscribe
-    public void ontaskActivityNotificationUpdate(ScheduledTaskActivityNotificationUpdateEvent event) {
+    public void onTaskActivityUpdated(TaskActivityUpdateEvent event) {
         ActiveTaskInfo info = mTaskActivityManager.getActiveTaskInfo();
         if (info != null && info.getTask().getId() == mExtraTaskBundle.getTask().getId()) {
             mAdapter.updateCurrentActivityTime();
