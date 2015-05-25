@@ -22,9 +22,6 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
-import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
-import com.simbirsoft.timemeter.controller.ITaskActivityManager;
-import com.simbirsoft.timemeter.events.ScheduledTaskActivityNotificationUpdateEvent;
 import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskRecentActivitiesJob;
@@ -88,14 +85,12 @@ public class ViewTaskFragment extends BaseFragment
     Bus mBus;
 
     private TaskActivitiesAdapter mAdapter;
-    private ITaskActivityManager mTaskActivityManager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         Injection.sUiComponent.injectViewTaskFragment(this);
-        mTaskActivityManager = Injection.sTaskManager.taskActivityManager();
         mBus.register(this);
     }
 
@@ -280,8 +275,7 @@ public class ViewTaskFragment extends BaseFragment
 
     @Subscribe
     public void onTaskActivityUpdated(TaskActivityUpdateEvent event) {
-        ActiveTaskInfo info = mTaskActivityManager.getActiveTaskInfo();
-        if (info != null && info.getTask().getId() == mExtraTaskBundle.getTask().getId()) {
+        if (event.getActiveTaskInfo().getTask().getId() == mExtraTaskBundle.getTask().getId()) {
             mAdapter.updateCurrentActivityTime();
         }
     }
