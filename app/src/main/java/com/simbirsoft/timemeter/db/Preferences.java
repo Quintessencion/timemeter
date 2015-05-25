@@ -2,9 +2,12 @@ package com.simbirsoft.timemeter.db;
 
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Base64;
 
 import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.App;
+import com.simbirsoft.timemeter.util.MarshallUtils;
+import com.simbirsoft.timemeter.ui.views.FilterView;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -18,6 +21,9 @@ public final class Preferences {
     public static final String PREFERENCE_SELECTED_SECTION_POSITION = "state_selection_position";
     public static final String PREFERENCE_SELECTED_TASK_TAB_POSITION = "tag_page_position";
     public static final String PREFERENCE_USER_LEARNED_DRAWER = "user_learned_drawer";
+
+    private static final String KEY_FILTER_STATE = "filter_state";
+
     private static final String PREFERENCE_DAY_START_HOUR = "day_start_hour";
     private static final String PREFERENCE_DAY_END_HOUR = "day_end_hour";
 
@@ -61,6 +67,34 @@ public final class Preferences {
 
     public int getSelectedSectionPosition(int defaultValue) {
         return mPrefs.getInt(PREFERENCE_SELECTED_SECTION_POSITION, defaultValue);
+    }
+
+    public FilterView.FilterState getFilterState() {
+        FilterView.FilterState filterState = null;
+        try {
+            if (mPrefs.contains(KEY_FILTER_STATE)) {
+                String value = mPrefs.getString(KEY_FILTER_STATE, "");
+                byte[] arr = Base64.decode(value, Base64.DEFAULT);
+                filterState = MarshallUtils.unmarshall(arr, FilterView.FilterState.CREATOR);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return filterState;
+    }
+
+    public void setFilterState(FilterView.FilterState filterState) {
+        try {
+            if (filterState != null) {
+                byte[] arr = MarshallUtils.marshall(filterState);
+                String value = Base64.encodeToString(arr, Base64.DEFAULT);
+                mPrefs.edit().putString(KEY_FILTER_STATE, value).apply();
+            } else {
+                mPrefs.edit().remove(KEY_FILTER_STATE).apply();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     public int getDayStartHour() {

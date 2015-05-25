@@ -18,6 +18,7 @@ import com.squareup.phrase.Phrase;
 import org.slf4j.Logger;
 
 import java.util.Collection;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -70,9 +71,10 @@ public class LoadPeriodActivityTimeSumJob extends LoadJob implements FilterableJ
 
     @Override
     protected LoadJobResult<Integer> performLoad() throws Exception {
-        final long filterDateMillis = mLoadFilter.getDateMillis();
+        final long filterDateMillis = mLoadFilter.getStartDateMillis();
         final Period filterPeriod = mLoadFilter.getPeriod();
         final Collection<Tag> filterTags = mLoadFilter.getFilterTags();
+        final List<Long> taskIds = mLoadFilter.getTaskIds();
 
         StringBuilder where = null;
         String join = "";
@@ -108,6 +110,10 @@ public class LoadPeriodActivityTimeSumJob extends LoadJob implements FilterableJ
                     TaskTimeSpan.TABLE_NAME + "." + TaskTimeSpan.COLUMN_START_TIME,
                     filterDateMillis,
                     filterPeriod));
+        }
+
+        if (taskIds != null && taskIds.size() > 0) {
+            join = sTaskJoin + QueryUtils.createTaskIdsRestrictionStatement(taskIds);
         }
 
         if (!filterTags.isEmpty()) {

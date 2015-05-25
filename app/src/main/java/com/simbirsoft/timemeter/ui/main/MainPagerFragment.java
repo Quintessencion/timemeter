@@ -78,6 +78,9 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     @InstanceState
     FilterView.FilterState mFilterState;
 
+    @Inject
+    Preferences mPrefs;
+
     private PagerSlidingTabStrip mTabs;
     private FilterView mFilterView;
     private MainPagerAdapter mPagerAdapter;
@@ -131,6 +134,10 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         }
 
         mBus.register(this);
+
+        if (mFilterState == null) {
+            mFilterState = mPrefs.getFilterState();
+        }
     }
 
     @Override
@@ -138,6 +145,13 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mBus.unregister(this);
         savePagePosition();
         super.onDestroy();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        final FilterView.FilterState filterState = mFilterView.getViewFilterState();
+        mPrefs.setFilterState(filterState);
     }
 
     @AfterViews
@@ -165,10 +179,11 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mFilterView.setOnSelectDateClickListener(this);
 
         mPagerAdapter = new MainPagerAdapter(getActivity(), getChildFragmentManager(), R.id.pager);
+        mPagerAdapter.setOnSetupItemListener(fragment -> onAdapterSetupItem(fragment));
         if (mPageNames != null) {
             mPagerAdapter.setPages(Lists.transform(mPageNames, PageItem::create));
-        }
         mViewPager.setOffscreenPageLimit(2);
+        }
         mViewPager.setAdapter(mPagerAdapter);
 
         LayoutInflater.from(getActivity()).inflate(R.layout.view_tabs, mContainerHeader, true);
@@ -188,6 +203,11 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
             }
         });
         onPageChanged(mViewPager.getCurrentItem());
+    }
+
+    private void onAdapterSetupItem(Fragment fragment) {
+        MainPageFragment mpf = (MainPageFragment)fragment;
+        mpf.setFilterViewProvider(this);
     }
 
     @Override
@@ -271,12 +291,12 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
     @Subscribe
     public void onFitlerViewStateChanged(FilterViewStateChangeEvent event) {
+        mFilterState = event.getFilterState();
+
         if (event.isReset()) {
             hideFilterView();
             updateOptionsMenu();
         }
-
-        mFilterState = event.getFilterState().copy();
     }
 
     private void showFilterView(boolean animate) {

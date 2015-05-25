@@ -3,42 +3,22 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:gravity="center_vertical"
-              android:orientation="horizontal">
+              android:orientation="horizontal"
+              android:paddingTop="6dp"
+              android:paddingBottom="6dp">
 
-    <LinearLayout
-        android:id="@+id/taggedPanel"
+    <com.simbirsoft.timemeter.ui.views.DatePanelView_
+        android:id="@+id/periodStartPanel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/tag_rounded_background"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:background="@drawable/tag_rounded_background"/>
 
-        <TextView
-            android:id="@+id/dateText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingBottom="2dp"
-            android:paddingLeft="8dp"
-            android:paddingTop="2dp"
-            android:text="@android:string/untitled"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@android:color/white"/>
-
-        <FrameLayout
-            android:id="@+id/buttonResetDate"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="2dp"
-            android:paddingLeft="6dp"
-            android:paddingRight="6dp">
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_highlight_remove_white_18dp"/>
-        </FrameLayout>
-    </LinearLayout>
+    <com.simbirsoft.timemeter.ui.views.DatePanelView_
+        android:id="@+id/periodEndPanel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="6dp"
+        android:background="@drawable/tag_rounded_background"/>
 
     <Spinner
         android:id="@+id/periodSpinner"

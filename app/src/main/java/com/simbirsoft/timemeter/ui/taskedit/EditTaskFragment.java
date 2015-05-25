@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -91,9 +91,6 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
     @FragmentArg(EXTRA_TASK_ID)
     Long mExtraTaskId;
 
-    @FragmentArg(EXTRA_TASK_BUNDLE)
-    TaskBundle mExtraTaskBundle;
-
     @ViewById(R.id.rootScene)
     ViewGroup mContentRoot;
 
@@ -171,7 +168,7 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
             mTaskTagsEditScene.tagsView.requestFocus();
             KeyboardUtils.showSoftInput(getActivity());
         });
-        mActionBar.setDisplayHomeAsUpEnabled(true);
+        mActionBar.setHomeAsUpIndicator(0);
     }
 
     private void goToMainScene() {
@@ -192,10 +189,7 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         mCurrentScene = mTaskEditScene.scene;
 
         if (mTaskBundle == null) {
-            if (mExtraTaskBundle != null) {
-                mTaskBundle = mExtraTaskBundle;
-
-            } else if (mExtraTaskId != null) {
+            if (mExtraTaskId != null) {
                 requestLoad(mTaskBundleLoaderAttachTag, this);
 
             } else {
@@ -213,17 +207,16 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         transitionSet.setDuration(Consts.CONTENT_FADE_IN_DELAY_MILLIS);
         transitionSet.setInterpolator(new DecelerateInterpolator());
         TransitionManager.go(mTaskEditScene.scene, transitionSet);
-        mActionBar.setDisplayHomeAsUpEnabled(false);
         mActionBar.setHomeAsUpIndicator(R.drawable.ic_action_accept);
     }
 
     @AfterViews
     void bindViews() {
-        mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
+        mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (mExtraTitle != null) {
             mActionBar.setTitle(mExtraTitle);
         }
-        mActionBar.setHomeAsUpIndicator(R.drawable.ic_action_accept);
+        mActionBar.setDisplayHomeAsUpEnabled(true);
         goToMainScene();
     }
     @Override
@@ -288,10 +281,6 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         final Activity activity = getActivity();
         if (mIsNewTask) {
             activity.setResult(RESULT_CODE_TASK_CREATED, resultData);
-
-        } else if (mExtraTaskBundle != null) {
-            activity.setResult(RESULT_CODE_TASK_RECREATED, resultData);
-
         } else {
             activity.setResult(RESULT_CODE_TASK_UPDATED, resultData);
         }

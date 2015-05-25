@@ -8,26 +8,22 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
-import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
-import com.simbirsoft.timemeter.ui.util.TagViewUtils;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
+import com.simbirsoft.timemeter.ui.views.TagFlowView;
+import com.simbirsoft.timemeter.ui.views.TagView;
 
-import org.apmem.tools.layouts.FlowLayout;
 import org.slf4j.Logger;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Stack;
-
 
 public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
 
@@ -47,42 +43,42 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         TextView titleView;
         TaskBundle item;
         TextView timerView;
-        FlowLayout tagContainerView;
+        TagFlowView tagFlowView;
     }
+
+    private static final Logger LOG = LogFactory.getLogger(TaskListAdapter.class);
 
     private final List<TaskBundle> mItems;
     private final ITaskActivityManager mTaskActivityManager;
-    private final Stack<View> mReuseTagViews;
     private TaskClickListener mTaskClickListener;
 
-    private final View.OnClickListener mCardClickListener =
-            view -> {
-                if (mTaskClickListener != null) {
-                    mTaskClickListener.onTaskCardClicked((TaskBundle) view.getTag());
-                }
-            };
+    private final View.OnClickListener mCardClickListener = (view) -> {
+        if (mTaskClickListener != null) {
+            mTaskClickListener.onTaskCardClicked((TaskBundle) view.getTag());
+        }
+    };
 
-    private final View.OnClickListener mViewClickListener =
-            view -> {
-                if (mTaskClickListener != null) {
-                    mTaskClickListener.onTaskViewClicked((TaskBundle) view.getTag());
-                }
-            };
+    private final View.OnClickListener mViewClickListener = (view) -> {
+        if (mTaskClickListener != null) {
+            mTaskClickListener.onTaskViewClicked((TaskBundle) view.getTag());
+        }
+    };
 
-    private final View.OnLongClickListener mViewLongClickListener =
-            view -> {
-                if (mTaskClickListener != null) {
-                    mTaskClickListener.onTaskViewLongClicked((TaskBundle) view.getTag(), view);
-                    return true;
-                }
+    private final View.OnLongClickListener mViewLongClickListener = (view) -> {
+        if (mTaskClickListener != null) {
+            mTaskClickListener.onTaskViewLongClicked((TaskBundle) view.getTag(), view);
+            return true;
+        }
+        return false;
+    };
 
-                return false;
-            };
+    private final TagView.TagViewClickListener mTagViewClickListener = tagView -> {
+        LOG.debug("Tag <" + tagView.getTag().getName() + "> clicked!");
+    };
 
     public TaskListAdapter(ITaskActivityManager taskActivityManager) {
         mTaskActivityManager = taskActivityManager;
         mItems = Lists.newArrayList();
-        mReuseTagViews = new Stack<>();
         setHasStableIds(true);
     }
 
@@ -152,7 +148,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
         holder.titleView = (TextView) view.findViewById(android.R.id.title);
         holder.timerView = (TextView) view.findViewById(R.id.timerText);
-        holder.tagContainerView = (FlowLayout) view.findViewById(R.id.tagViewContainer);
+        holder.tagFlowView = (TagFlowView) view.findViewById(R.id.tagFlowView);
 
         holder.itemEditView = view.findViewById(R.id.edit_or_view);
         holder.itemEditView.setOnClickListener(mViewClickListener);
@@ -167,42 +163,6 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         bindViewHolder(viewHolder, item);
     }
 
-    private void bindTagViews(ViewGroup tagLayout, List<Tag> tags) {
-        final int tagCount = tags.size();
-        final View[] reuseViews = new View[tagCount];
-
-        final int reuseViewCount = tagLayout.getChildCount();
-        for (int i = 0; i < reuseViewCount; i++) {
-            mReuseTagViews.add(tagLayout.getChildAt(i));
-        }
-        tagLayout.removeAllViewsInLayout();
-
-        for (int i = 0; i < tagCount; i++) {
-            if (mReuseTagViews.isEmpty()) {
-                reuseViews[i] = TagViewUtils.inflateTagView(
-                        LayoutInflater.from(tagLayout.getContext()),
-                        tagLayout,
-                        0);
-            } else {
-                reuseViews[i] = mReuseTagViews.pop();
-            }
-
-            tagLayout.addView(reuseViews[i]);
-        }
-
-        if (tagCount > 0) {
-            for (int i = 0; i < tagCount; i++) {
-                Tag tag = tags.get(i);
-                TextView tagView = (TextView) reuseViews[i];
-                tagView.setText(tag.getName());
-                TagViewUtils.updateTagViewColor(tagView, tag.getColor());
-            }
-            tagLayout.setVisibility(View.VISIBLE);
-        } else {
-            tagLayout.setVisibility(View.GONE);
-        }
-    }
-
     private void bindViewHolder(ViewHolder holder, TaskBundle item) {
         final Task task = item.getTask();
 
@@ -212,7 +172,8 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         holder.itemView.setTag(item);
         holder.itemEditView.setTag(item);
 
-        bindTagViews(holder.tagContainerView, item.getTags());
+        holder.tagFlowView.bindTagViews(item.getTags());
+        holder.tagFlowView.setTagViewsClickListener(mTagViewClickListener);
 
         if (mTaskActivityManager.isTaskActive(task)) {
             ActiveTaskInfo taskInfo = mTaskActivityManager.getActiveTaskInfo();

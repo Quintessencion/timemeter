@@ -70,7 +70,7 @@ public class LoadTaskListJob extends LoadJob implements FilterableJob {
     protected LoadJobResult<List<TaskBundle>> performLoad() throws JobExecutionException {
         SQLiteDatabase db = mDatabaseHelper.getReadableDatabase();
 
-        final long filterDateMillis = mLoadFilter.getDateMillis();
+        final long filterDateMillis = mLoadFilter.getStartDateMillis();
         final Period filterPeriod = mLoadFilter.getPeriod();
         final Collection<Tag> filterTags = mLoadFilter.getFilterTags();
 

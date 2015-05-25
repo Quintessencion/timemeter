@@ -5,18 +5,14 @@ import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.TypedValue;
-import android.view.LayoutInflater;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
 import android.view.animation.AlphaAnimation;
-import android.widget.TextView;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
@@ -26,7 +22,8 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
-import com.simbirsoft.timemeter.db.model.Tag;
+import com.simbirsoft.timemeter.events.ScheduledTaskActivityNotificationUpdateEvent;
+import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskRecentActivitiesJob;
 import com.simbirsoft.timemeter.log.LogFactory;
@@ -35,10 +32,14 @@ import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment_;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
+import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.model.TaskRecentActivity;
-import com.simbirsoft.timemeter.ui.util.TagViewUtils;
 import com.simbirsoft.timemeter.ui.views.ProgressLayout;
+import com.simbirsoft.timemeter.ui.views.TagFlowView;
+import com.simbirsoft.timemeter.ui.views.TagView;
+import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
@@ -46,10 +47,9 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
-import org.apmem.tools.layouts.FlowLayout;
 import org.slf4j.Logger;
 
-import java.util.List;
+import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_view_task)
 public class ViewTaskFragment extends BaseFragment
@@ -60,14 +60,17 @@ public class ViewTaskFragment extends BaseFragment
 
     private static final Logger LOG = LogFactory.getLogger(ViewTaskFragment.class);
 
-    private static final int REQUEST_CODE_EDIT_TASK = 100;
     private static final int REQUEST_CODE_VIEW_ACTIVITIES = 101;
+
+    @ViewById(R.id.tagFlowView)
+    protected TagFlowView tagFlowView;
 
     @FragmentArg(EXTRA_TASK_BUNDLE)
     TaskBundle mExtraTaskBundle;
 
-    @ViewById(R.id.tagViewContainer)
-    FlowLayout tagViewContainer;
+    private final TagView.TagViewClickListener mTagViewClickListener = (tagView) -> {
+        LOG.debug("Tag <" + tagView.getTag().getName() + "> clicked!");
+    };
 
     @ViewById(android.R.id.list)
     RecyclerView mRecyclerView;
@@ -78,12 +81,23 @@ public class ViewTaskFragment extends BaseFragment
     @InstanceState
     int mListPosition;
 
+    @Inject
+    Bus mBus;
+
     private TaskActivitiesAdapter mAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        Injection.sUiComponent.injectViewTaskFragment(this);
+        mBus.register(this);
+    }
+
+    @Override
+    public void onDestroyView() {
+        mBus.unregister(this);
+        super.onDestroyView();
     }
 
     @Override
@@ -103,37 +117,8 @@ public class ViewTaskFragment extends BaseFragment
         }
     }
 
-    public void bindTagViews(ViewGroup tagLayout, List<Tag> tags) {
-        if ((tagLayout != null) && (tags != null)) {
-            final int tagCount = tags.size();
-            final View[] reuseViews = new View[tagCount];
-
-            tagLayout.removeAllViewsInLayout();
-
-            for (int i = 0; i < tagCount; i++) {
-                reuseViews[i] = TagViewUtils.inflateTagView(
-                        LayoutInflater.from(tagLayout.getContext()),
-                        tagLayout,
-                        0);
-                tagLayout.addView(reuseViews[i]);
-            }
-
-            if (tagCount > 0) {
-                for (int i = 0; i < tagCount; i++) {
-                    Tag tag = tags.get(i);
-                    TextView tagView = (TextView) reuseViews[i];
-                    tagView.setText(tag.getName());
-                    TagViewUtils.updateTagViewColor(tagView, tag.getColor());
-                }
-                tagLayout.setVisibility(View.VISIBLE);
-            } else {
-                tagLayout.setVisibility(View.GONE);
-            }
-        }
-    }
-
     private void setActionBarTitleAndHome(String title) {
-        ActionBar mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
+        ActionBar mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (title != null) {
             mActionBar.setTitle(title);
         }
@@ -143,7 +128,8 @@ public class ViewTaskFragment extends BaseFragment
     @AfterViews
     void bindViews() {
         setActionBarTitleAndHome(mExtraTaskBundle.getTask().getDescription());
-        bindTagViews(tagViewContainer, mExtraTaskBundle.getTags());
+        tagFlowView.bindTagViews(mExtraTaskBundle.getTags());
+        tagFlowView.setTagViewsClickListener(mTagViewClickListener);
 
         mRecyclerView.setHasFixedSize(false);
         final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
@@ -176,7 +162,7 @@ public class ViewTaskFragment extends BaseFragment
 
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), EditTaskFragment_.class.getName(), args);
-        getActivity().startActivityForResult(launchIntent, REQUEST_CODE_EDIT_TASK);
+        getActivity().startActivityForResult(launchIntent, MainPageFragment.REQUEST_CODE_PROCESS_TASK);
     }
 
     private void goToActivities() {
@@ -218,7 +204,7 @@ public class ViewTaskFragment extends BaseFragment
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         getActivity().setResult(resultCode, data);
         switch (requestCode) {
-            case REQUEST_CODE_EDIT_TASK:
+            case MainPageFragment.REQUEST_CODE_PROCESS_TASK:
                 if (resultCode == EditTaskFragment.RESULT_CODE_CANCELLED) {
                     LOG.debug("result: task edit cancelled");
                     return;
@@ -234,7 +220,7 @@ public class ViewTaskFragment extends BaseFragment
 
                     case EditTaskFragment.RESULT_CODE_TASK_UPDATED:
                         LOG.debug("result: task updated");
-                        bindTagViews(tagViewContainer, bundle.getTags());
+                        tagFlowView.bindTagViews(bundle.getTags());
                         setActionBarTitleAndHome(bundle.getTask().getDescription());
                         break;
                 }
@@ -281,5 +267,10 @@ public class ViewTaskFragment extends BaseFragment
     @Click(R.id.activitiesTitleContainer)
     void activitiesTitleClicked() {
         goToActivities();
+    }
+
+    @Subscribe
+    public void onTaskActivityUpdated(TaskActivityUpdateEvent event) {
+        mAdapter.updateCurrentActivityTime();
     }
 }

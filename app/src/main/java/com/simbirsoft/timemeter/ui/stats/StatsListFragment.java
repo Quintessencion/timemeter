@@ -19,6 +19,7 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadStatisticsViewBinders;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
@@ -35,8 +36,6 @@ public class StatsListFragment extends MainPageFragment implements
         JobLoader.JobLoaderCallbacks,
         MainPagerAdapter.PageTitleProvider,
         StatsListAdapter.ChartClickListener {
-
-    private static final Logger LOG = LogFactory.getLogger(StatsListFragment.class);
 
     private static final String STATISTICS_BINDER_LOADER_TAG = "StatsListFragment_";
 
@@ -95,7 +94,7 @@ public class StatsListFragment extends MainPageFragment implements
 
     @OnJobFailure(LoadStatisticsViewBinders.class)
     public void onStatisticsViewBindersLoadFailed() {
-        LOG.error("statistics load failed");
+        mLogger.error("statistics load failed");
     }
 
     @Override
@@ -117,7 +116,7 @@ public class StatsListFragment extends MainPageFragment implements
     public void onChartClicked(int viewType) {
         Bundle args = new Bundle();
         if (hasFilter()) {
-            args.putParcelable(StatsDetailsFragment.EXTRA_TASK_FILTER, getFilterViewState());
+            args.putParcelable(StatsDetailsFragment.EXTRA_TASK_FILTER, TaskLoadFilter.fromTaskFilter(getFilterViewState()));
         }
         args.putInt(StatsDetailsFragment.EXTRA_CHART_VIEW_TYPE, viewType);
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
@@ -128,6 +127,21 @@ public class StatsListFragment extends MainPageFragment implements
 
     @Override
     protected void reloadContent() {
+        super.reloadContent();
         requestReload(STATISTICS_BINDER_LOADER_TAG, this);
+    }
+
+    @Override
+    protected Logger createLogger() {
+        return LogFactory.getLogger(StatsListFragment.class);
+    }
+
+    @Override
+    protected void onTaskProcessed(Intent data) {
+        super.onTaskProcessed(data);
+
+        if (!isSelected()) {
+            invalidateContent();
+        }
     }
 }
