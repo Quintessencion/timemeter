@@ -73,7 +73,7 @@ public class ApplicationModule {
     @Provides
     @Singleton
     Bus provideBus() {
-        return new Bus(ThreadEnforcer.MAIN);
+        return new Bus(ThreadEnforcer.ANY);
     }
 
     @Provides
