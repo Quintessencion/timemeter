@@ -410,10 +410,15 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
     @Override
     public void updateFilterResultsView(int taskCount, FilterView.FilterState filterState) {
-        if (mIsFilterViewStateChanged) {
+        if (mIsFilterViewStateChanged && !mFilterState.isEmpty()) {
             mFilterResultsView.updateView(taskCount, filterState);
             showSearchResultsPanel(true);
             mIsFilterViewStateChanged = false;
+        }
+
+        if (mFilterState.isEmpty()) {
+            hideFilterView(true);
+            hideSearchResultsPanel(true);
         }
     }
 
