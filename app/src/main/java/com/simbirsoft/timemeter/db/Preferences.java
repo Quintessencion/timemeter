@@ -18,6 +18,9 @@ public final class Preferences {
     private final SharedPreferences mPrefs;
 
     public static final String PREFERENCE_DATABASE_TEST_DATA_INITIALIZED = "is_database_test_data_initialized";
+    public static final String PREFERENCE_SELECTED_SECTION_POSITION = "state_selection_position";
+    public static final String PREFERENCE_SELECTED_TASK_TAB_POSITION = "tag_page_position";
+    public static final String PREFERENCE_USER_LEARNED_DRAWER = "user_learned_drawer";
 
     private static final String KEY_FILTER_STATE = "filter_state";
 
@@ -40,6 +43,30 @@ public final class Preferences {
 
     public void setDatabaseTestDataInitialized(boolean isInitialized) {
         mPrefs.edit().putBoolean(PREFERENCE_DATABASE_TEST_DATA_INITIALIZED, isInitialized).apply();
+    }
+
+    public void setSelectedTaskTabPosition(int tagPagePosition) {
+        mPrefs.edit().putInt(PREFERENCE_SELECTED_TASK_TAB_POSITION, tagPagePosition).apply();
+    }
+
+    public int getSelectedTaskTabPosition() {
+        return mPrefs.getInt(PREFERENCE_SELECTED_TASK_TAB_POSITION, 0);
+    }
+
+    public void setSelectedSectionPosition(int stateSelectedPosition) {
+        mPrefs.edit().putInt(PREFERENCE_SELECTED_SECTION_POSITION, stateSelectedPosition).apply();
+    }
+
+    public int getSelectedSectionPosition() {
+        return mPrefs.getInt(PREFERENCE_SELECTED_SECTION_POSITION, 0);
+    }
+
+    public boolean getUserLearnedDrawer() {
+        return mPrefs.getBoolean(PREFERENCE_USER_LEARNED_DRAWER, false);
+    }
+
+    public void setUserLearnedDrawer(boolean userLearnedDrawer) {
+        mPrefs.edit().putBoolean(PREFERENCE_USER_LEARNED_DRAWER, userLearnedDrawer).apply();
     }
 
     public FilterView.FilterState getFilterState() {
