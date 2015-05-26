@@ -71,6 +71,9 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     @ViewById(R.id.container)
     FrameLayout mFragmentContainer;
 
+    @ViewById(R.id.searchResultContainer)
+    FrameLayout mSearchResultContainer;
+
     @ViewById(R.id.toolbar)
     Toolbar mToolbar;
 
@@ -220,6 +223,11 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     @Override
     public FrameLayout getContainerHeaderView() {
         return mContainerHeader;
+    }
+
+    @Override
+    public FrameLayout getSearchResultContainer() {
+        return mSearchResultContainer;
     }
 
     @Override

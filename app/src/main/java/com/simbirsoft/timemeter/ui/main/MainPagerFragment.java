@@ -19,7 +19,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.astuetz.PagerSlidingTabStrip;
@@ -93,6 +95,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     private FilterResultsView mFilterResultsView;
     private MainPagerAdapter mPagerAdapter;
     private RelativeLayout mContainerUnderlayView;
+    private FrameLayout mSearchResultContainer;
     private ViewGroup mContainerView;
     private ViewGroup mContentRootView;
     private ViewGroup mContainerHeader;
@@ -163,20 +166,17 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mContainerView = mContainerCallbacks.getContainerView();
         mContentRootView = mContainerCallbacks.getContentRootView();
         mContainerHeader = mContainerCallbacks.getContainerHeaderView();
+        mSearchResultContainer = mContainerCallbacks.getSearchResultContainer();
+
         mFilterView = (FilterView) LayoutInflater.from(getActivity())
                 .inflate(R.layout.view_filter_impl, mContainerUnderlayView, false);
         mFilterView.setVisibility(View.INVISIBLE);
         mContainerUnderlayView.addView(mFilterView);
 
         mFilterResultsView = (FilterResultsView) LayoutInflater.from(getActivity())
-                .inflate(R.layout.view_filter_results_impl, mContainerUnderlayView, false);
+                .inflate(R.layout.view_filter_results_impl, mSearchResultContainer, false);
         mFilterResultsView.setVisibility(View.INVISIBLE);
-
-        //RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        //layoutParams.addRule(RelativeLayout.BELOW, mFilterView.getId());
-        //mContainerUnderlayView.addView(mFilterResultsView, layoutParams);
-
-        mContainerUnderlayView.addView(mFilterResultsView);
+        mSearchResultContainer.addView(mFilterResultsView);
 
         if (mIsFilterPanelShown) {
             showFilterView(false);
@@ -235,6 +235,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mContainerHeader.removeAllViews();
         mContentRootView = null;
         mContainerUnderlayView = null;
+        mSearchResultContainer = null;
         mContainerView = null;
         mContainerHeader = null;
         super.onDestroyView();
@@ -336,7 +337,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
         updateFilterViewSize();
         mFilterView.setVisibility(View.VISIBLE);
-        mFilterResultsView.setVisibility(View.VISIBLE);
     }
 
     private void hideFilterView(boolean animate) {
@@ -358,7 +358,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
         updateFilterViewSize();
         mFilterView.setVisibility(View.INVISIBLE);
-        mFilterResultsView.setVisibility(View.INVISIBLE);
     }
 
     private void showFilterResultsView(boolean animate) {
@@ -404,8 +403,8 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     }
 
     private void updateFilterViewSize() {
-        RelativeLayout.LayoutParams containerLayoutParams =
-                (RelativeLayout.LayoutParams) mContainerView.getLayoutParams();
+        LinearLayout.LayoutParams resultsContainerLayoutParams =
+                (LinearLayout.LayoutParams) mSearchResultContainer.getLayoutParams();
 
         int measuredHeight;
         if (mIsFilterPanelShown) {
@@ -419,37 +418,25 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         } else {
             measuredHeight = 0;
         }
-        containerLayoutParams.topMargin = measuredHeight;
-        mContainerView.setLayoutParams(containerLayoutParams);
+
+        resultsContainerLayoutParams.topMargin = measuredHeight;
+        mSearchResultContainer.setLayoutParams(resultsContainerLayoutParams);
     }
 
     private void updateFilterResultsViewSize() {
-        RelativeLayout.LayoutParams containerLayoutParams =
-                (RelativeLayout.LayoutParams) mContainerView.getLayoutParams();
+        LinearLayout.LayoutParams resultsContainerLayoutParams =
+                (LinearLayout.LayoutParams) mSearchResultContainer.getLayoutParams();
 
         int measuredHeight;
-        int additionalHeight;
-        if (mIsFilterResultsPanelShown) {
+
+        if (mIsFilterPanelShown) {
             measuredHeight = mFilterResultsView.getMeasuredHeight();
-            additionalHeight = (mIsFilterPanelShown)
-                    ? mFilterView.getHeight()
-                    : 0;
-            if (measuredHeight < 1) {
-                int maxHeight = getResources().getDisplayMetrics().heightPixels;
-                int spec = View.MeasureSpec.makeMeasureSpec(maxHeight, View.MeasureSpec.AT_MOST);
-                mFilterResultsView.measure(spec, spec);
-                measuredHeight = mFilterResultsView.getMeasuredHeight();
-                additionalHeight = (mIsFilterPanelShown)
-                        ? mFilterView.getHeight()
-                        : 0;
-            }
         } else {
             measuredHeight = 0;
-            additionalHeight = 0;
         }
 
-        containerLayoutParams.topMargin = measuredHeight + additionalHeight;
-        mContainerView.setLayoutParams(containerLayoutParams);
+        resultsContainerLayoutParams.topMargin = measuredHeight;
+        mSearchResultContainer.setLayoutParams(resultsContainerLayoutParams);
     }
 
     private boolean isFilterPanelVisible() {
