@@ -61,6 +61,8 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     private static final Logger LOG = LogFactory.getLogger(MainPagerFragment.class);
     private static final String TAG_DATE_PICKER_FRAGMENT = "main_date_picker_fragment_tag";
 
+    public static final String TAG_ARG_NEED_SWITCH_TO_TASK_LIST = "tag_arg_need_switch_to_task_list";
+
     @ViewById(R.id.pager)
     ViewPager mViewPager;
 
@@ -143,6 +145,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         if (mFilterView != null) {
             mFilterView.updateDateView();
         }
+        loadPagePosition();
     }
 
     @Override
@@ -195,8 +198,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mTabs = (PagerSlidingTabStrip) mContainerHeader.findViewById(R.id.tabs);
         mTabs.setTextColor(mColorWhite);
         mTabs.setViewPager(mViewPager);
-        loadPagePosition();
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Hide custom elevation on Lollipop
             mContainerHeader.findViewById(R.id.shadowDown).setVisibility(View.GONE);
@@ -207,7 +208,8 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
                 onPageChanged(position);
             }
         });
-        onPageChanged(mViewPager.getCurrentItem());
+        loadPagePosition();
+        //onPageChanged(mViewPager.getCurrentItem());
     }
 
     private void onAdapterSetupItem(Fragment fragment) {
@@ -446,12 +448,25 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     }
 
     private void loadPagePosition() {
-        mViewPager.setCurrentItem(mPrefs.getSelectedTaskTabPosition());
+        if (isNeededSwithToTaskList()) {
+            mViewPager.setCurrentItem(0);
+        } else {
+            mViewPager.setCurrentItem(mPrefs.getSelectedTaskTabPosition());
+        }
     }
 
     private void onPageChanged(int position) {
         mPagerAdapter.deselectCurrentPage();
         MainPageFragment currentFragment = (MainPageFragment)mPagerAdapter.getItem(position);
         currentFragment.onPageSelected();
+    }
+
+    private boolean isNeededSwithToTaskList() {
+        return getArguments().getBoolean(TAG_ARG_NEED_SWITCH_TO_TASK_LIST);
+    }
+
+    public void switchToTaskList() {
+        mViewPager.setCurrentItem(0);
+        savePagePosition();
     }
 }

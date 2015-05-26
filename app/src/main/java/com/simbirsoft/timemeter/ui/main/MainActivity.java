@@ -106,6 +106,8 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         super.onNewIntent(intent);
 
         // TODO: handle task activity intent from notification bar
+        selectNavigationDrawerItem(SECTION_ID_TASKS, true);
+        mNavigationDrawerFragment.setCurrentSelectedPosition(SECTION_ID_TASKS);
     }
 
     @Override
@@ -118,8 +120,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         }
     }
 
-    @Override
-    public void onNavigationDrawerItemSelected(int position) {
+    private void selectNavigationDrawerItem(int position, boolean switchToTaskList) {
         Class<?> fragmentType;
 
         switch (position) {
@@ -140,6 +141,9 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         MainFragment fragment = getContentFragment();
         if (fragment != null && fragmentType.equals(fragment.getClass())) {
             // selected fragment is already added
+            if (switchToTaskList && MainPagerFragment_.class.equals(fragment.getClass())) {
+                ((MainPagerFragment)fragment).switchToTaskList();
+            }
             return;
         }
 
@@ -149,6 +153,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
 
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putInt(MainFragment.ARG_SECTION_ID, position);
+        fragmentArgs.putBoolean(MainPagerFragment.TAG_ARG_NEED_SWITCH_TO_TASK_LIST, switchToTaskList);
         fragment = (MainFragment) Fragment.instantiate(this, fragmentType.getName(), fragmentArgs);
 
         Fragment.SavedState fragmentState = getSectionFragmentState(fragment);
@@ -160,6 +165,11 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         fragmentManager.beginTransaction()
                 .replace(R.id.container, fragment, TAG_CONTENT_FRAGMENT)
                 .commit();
+    }
+
+    @Override
+    public void onNavigationDrawerItemSelected(int position) {
+        selectNavigationDrawerItem(position, false);
     }
 
     private MainFragment getContentFragment() {
