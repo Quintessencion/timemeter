@@ -66,4 +66,9 @@ public class TaskActivitiesLayoutManager extends LinearLayoutManager {
         mSpanIndex = spanIndex;
         scrollToPosition(itemIndex);
     }
+
+    public int findItemOffset(int position) {
+        final View view =  findViewByPosition(position);
+        return (view != null) ? (int)view.getY() : 0;
+    }
 }

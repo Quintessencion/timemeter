@@ -138,8 +138,17 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (mFilterView != null) {
+            mFilterView.updateDateView();
+        }
+    }
+
+    @Override
     public void onDestroy() {
         mBus.unregister(this);
+        savePagePosition();
         super.onDestroy();
     }
 
@@ -186,6 +195,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mTabs = (PagerSlidingTabStrip) mContainerHeader.findViewById(R.id.tabs);
         mTabs.setTextColor(mColorWhite);
         mTabs.setViewPager(mViewPager);
+        loadPagePosition();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Hide custom elevation on Lollipop
@@ -429,6 +439,14 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     @Override
     public void onTokenRemoved(Object o) {
         mViewPager.post(this::updateFilterViewSize);
+    }
+
+    private void savePagePosition() {
+        mPrefs.setSelectedTaskTabPosition(mViewPager.getCurrentItem());
+    }
+
+    private void loadPagePosition() {
+        mViewPager.setCurrentItem(mPrefs.getSelectedTaskTabPosition());
     }
 
     private void onPageChanged(int position) {

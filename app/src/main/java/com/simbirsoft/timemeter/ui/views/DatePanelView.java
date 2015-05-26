@@ -77,6 +77,10 @@ public class DatePanelView extends LinearLayout{
         return mDateMillis;
     }
 
+    public void updateView() {
+        printDate();
+    }
+
     public void setDateMillis(long dateMillis) {
         mDateMillis = dateMillis;
         printDate();

@@ -251,6 +251,18 @@ public class DatePeriodView extends FrameLayout {
         mSelectedDatePanel = DATE_PANEL_NONE;
     }
 
+    public void updateStartDateView() {
+        if (mPeriodStartPanel != null) {
+            mPeriodStartPanel.updateView();
+        }
+    }
+
+    public void updateEndDateView() {
+        if (mPeriodEndPanel != null) {
+            mPeriodEndPanel.updateView();
+        }
+    }
+
     public long getInitialValueForSelectedDate() {
         switch (mSelectedDatePanel) {
             case DATE_PANEL_START:

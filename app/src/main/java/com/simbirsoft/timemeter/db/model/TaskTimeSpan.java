@@ -162,7 +162,7 @@ public class TaskTimeSpan implements Parcelable {
             return true;
         }
         if (o instanceof TaskTimeSpan) {
-            return _id == ((TaskTimeSpan)o)._id;
+            return _id.equals(((TaskTimeSpan)o)._id);
         }
         return false;
     }

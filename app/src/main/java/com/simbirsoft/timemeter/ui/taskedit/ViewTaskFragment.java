@@ -79,7 +79,10 @@ public class ViewTaskFragment extends BaseFragment
     ProgressLayout mProgressLayout;
 
     @InstanceState
-    int mListPosition;
+    int mListPosition = -1;
+
+    @InstanceState
+    int mListPositionOffset;
 
     @Inject
     Bus mBus;
@@ -112,8 +115,10 @@ public class ViewTaskFragment extends BaseFragment
         super.onPause();
 
         if (mAdapter.getItemCount() > 0) {
-            mListPosition = ((LinearLayoutManager)
-                    mRecyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+            TaskActivitiesLayoutManager layoutManager = (TaskActivitiesLayoutManager) mRecyclerView.getLayoutManager();
+            mListPosition = layoutManager.findFirstVisibleItemPosition();
+            mListPositionOffset = (mListPosition != RecyclerView.NO_POSITION)
+                                    ? layoutManager.findItemOffset(mListPosition) : 0;
         }
     }
 
@@ -237,9 +242,11 @@ public class ViewTaskFragment extends BaseFragment
     public void onLoadSuccess(LoadJobResult<TaskRecentActivity> result) {
         TaskRecentActivity recentActivity = result.getData();
         mAdapter.setItems(recentActivity.getList());
-        if (mListPosition != 0) {
-            mRecyclerView.getLayoutManager().scrollToPosition(mListPosition);
-            mListPosition = 0;
+        if (mListPosition >=0) {
+            TaskActivitiesLayoutManager layoutManager = (TaskActivitiesLayoutManager) mRecyclerView.getLayoutManager();
+            layoutManager.scrollToPositionWithOffset(mListPosition, mListPositionOffset);
+            mListPosition = -1;
+            mListPositionOffset = 0;
         } else {
             scrollToSelectedSpan();
         }
@@ -275,9 +282,16 @@ public class ViewTaskFragment extends BaseFragment
 
     @Subscribe
     public void onTaskActivityUpdated(TaskActivityUpdateEvent event) {
-        if (event.getActiveTaskInfo().getTask().getId() == mExtraTaskBundle.getTask().getId()) {
-            mAdapter.updateCurrentActivityTime();
+        if (mExtraTaskBundle == null) {
+            return;
         }
+
+        final long taskId = event.getActiveTaskInfo().getTask().getId();
+        if (mExtraTaskBundle.getTask().getId() != taskId) {
+            return;
+        }
+
+        mAdapter.updateCurrentActivityTime(taskId);
     }
 
     private void scrollToSelectedSpan() {

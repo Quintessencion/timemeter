@@ -131,7 +131,10 @@ public class TaskActivityManager implements ITaskActivityManager {
             return;
         }
 
-        Preconditions.checkState(mActiveTaskInfo.getTask().equals(task), "specified task is not active");
+        if (!mActiveTaskInfo.getTask().equals(task)) {
+            LOG.warn("specified task is not active");
+            return;
+        }
 
         stopTaskActivity();
     }

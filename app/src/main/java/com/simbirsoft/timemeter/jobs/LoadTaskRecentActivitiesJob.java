@@ -5,24 +5,19 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.be.android.library.worker.jobs.LoadJob;
 import com.be.android.library.worker.models.LoadJobResult;
-import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.model.Period;
 import com.simbirsoft.timemeter.ui.model.TaskRecentActivity;
 import com.simbirsoft.timemeter.ui.util.TimeSpanDaysSplitter;
-import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.squareup.phrase.Phrase;
 
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
-
-import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 
 public class LoadTaskRecentActivitiesJob extends LoadJob{
     private static final int DAYS_COUNT = 14;
