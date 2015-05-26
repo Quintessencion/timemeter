@@ -275,9 +275,16 @@ public class ViewTaskFragment extends BaseFragment
 
     @Subscribe
     public void onTaskActivityUpdated(TaskActivityUpdateEvent event) {
-        if (event.getActiveTaskInfo().getTask().getId() == mExtraTaskBundle.getTask().getId()) {
-            mAdapter.updateCurrentActivityTime();
+        if (mExtraTaskBundle == null) {
+            return;
         }
+
+        final long taskId = event.getActiveTaskInfo().getTask().getId();
+        if (mExtraTaskBundle.getTask().getId() != taskId) {
+            return;
+        }
+
+        mAdapter.updateCurrentActivityTime(taskId);
     }
 
     private void scrollToSelectedSpan() {

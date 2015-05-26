@@ -133,6 +133,14 @@ public class TaskActivitiesFragment extends BaseFragment implements
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (mFilterView != null) {
+            mFilterView.updateDateView();
+        }
+    }
+
+    @Override
     public void onDestroyView() {
         mBus.unregister(this);
         super.onDestroyView();
@@ -257,9 +265,12 @@ public class TaskActivitiesFragment extends BaseFragment implements
 
     @Subscribe
     public void onTaskActivityUpdated(TaskActivityUpdateEvent event) {
-        if (event.getActiveTaskInfo().getTask().getId() == mExtraTaskId) {
-            mAdapter.updateCurrentActivityTime();
+        final long taskId = event.getActiveTaskInfo().getTask().getId();
+        if (mExtraTaskId != taskId) {
+            return;
         }
+
+        mAdapter.updateCurrentActivityTime(taskId);
     }
 
     @Override

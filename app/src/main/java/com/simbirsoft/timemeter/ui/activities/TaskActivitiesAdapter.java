@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Optional;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.R;
@@ -230,10 +232,18 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         return mHighlightedSpans.contains(item.getSpan(index));
     }
 
-    public void updateCurrentActivityTime() {
-        for (TaskActivityItem item : mItems) {
-            if (item.getItemType() == TaskActivityItem.SPANS_ITEM_TYPE) {
-                ((TaskActivitySpansItem)item).updateSpanEndTime(0, System.currentTimeMillis());
+    public void updateCurrentActivityTime(long taskId) {
+        for (TaskActivityItem activityItem : mItems) {
+            if (activityItem.getItemType() != TaskActivityItem.SPANS_ITEM_TYPE) {
+                continue;
+            }
+
+            final TaskActivitySpansItem spansItem = (TaskActivitySpansItem) activityItem;
+
+            int pos = Iterables.indexOf(spansItem.getList(), (item) -> item.getTaskId() == taskId);
+
+            if (pos > -1) {
+                spansItem.updateSpanEndTime(pos, System.currentTimeMillis());
                 break;
             }
         }

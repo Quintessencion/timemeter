@@ -39,6 +39,7 @@ import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.injection.Injection;
@@ -385,7 +386,7 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
             case REQUEST_CODE_PERFORM_REMOVE_TASK:
                 if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
                     RemoveTaskJob removeJob = Injection.sJobsComponent.removeTaskJob();
-                    removeJob.setTaskId(mTaskBundle.getTask().getId());
+                    removeJob.setTask(mTaskBundle.getTask());
                     submitJob(removeJob);
                     return;
                 }

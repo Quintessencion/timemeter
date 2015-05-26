@@ -290,6 +290,13 @@ public class TaskActivitiesFilterView extends FrameLayout implements
         return (mDatePeriodView != null) ? mDatePeriodView.getInitialValueForSelectedDate() : 0;
     }
 
+    public void updateDateView() {
+        if (mDatePeriodView != null) {
+            mDatePeriodView.updateStartDateView();
+            mDatePeriodView.updateEndDateView();
+        }
+    }
+
     private void displayDatePeriod(long startDateMillis, long endDateMillis, Period period) {
         if (mDatePeriodView == null) {
             mDatePeriodView = (DatePeriodView) LayoutInflater.from(getContext())
