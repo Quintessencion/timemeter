@@ -39,7 +39,10 @@ public class TaskActivityItemView extends View{
     private int mDurationBlockColor;
     private int mTimeBlockHighlightedColor;
     private int mDurationBlockHighlightedColor;
+    private int mTimeBlockSelectedColor;
+    private int mDurationBlockSelectedColor;
     private boolean mIsHighlighted;
+    private boolean mIsSelected;
 
     private TaskActivitySpansItem mItem;
     private int mIndex;

@@ -19,6 +19,7 @@ import com.simbirsoft.timemeter.ui.model.TaskActivityEmptyItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivitySpansItem;
 import com.simbirsoft.timemeter.ui.util.TimeUtils;
+import com.simbirsoft.timemeter.ui.views.TaskActivityItemView;
 import com.simbirsoft.timemeter.ui.views.TaskActivityItemsLayout;
 
 import java.util.Calendar;
@@ -26,7 +27,9 @@ import java.util.HashSet;
 import java.util.List;
 
 public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesAdapter.ViewHolder>
-                                   implements TaskActivityItemsLayout.TaskActivityItemsAdapter {
+                                   implements TaskActivityItemsLayout.TaskActivityItemsAdapter,
+                                    View.OnLongClickListener {
+
     static class ViewHolder extends RecyclerView.ViewHolder {
         public ViewHolder(View itemView) {
             super(itemView);
@@ -216,6 +219,7 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
             view = LayoutInflater.from(mContext)
                     .inflate(R.layout.view_task_activity_item, layout, false);
             view.setTag(view.findViewById(R.id.taskActivityItemView));
+            view.setOnLongClickListener(this);
         }
         return view;
     }
@@ -262,5 +266,11 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         TaskActivityItem item = mItems.get(position);
         Preconditions.checkArgument(item.getItemType() == TaskActivityItem.SPANS_ITEM_TYPE, "illegal item type");
         return ((TaskActivitySpansItem)item).getSpansCount();
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        TaskActivityItemView itemView = (TaskActivityItemView)v.getTag();
+        return true;
     }
 }
