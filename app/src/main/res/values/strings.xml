@@ -107,7 +107,6 @@
 
     <!-- Search results -->
     <string name="found_tasks">Найдено %s</string>
-    <string name="with_tags">c метками %s</string>
 
     <string name="day">День</string>
     <string name="week">Неделя</string>
@@ -138,6 +137,13 @@
         <item quantity="few">%d задачи</item>
         <item quantity="many">%d задач</item>
         <item quantity="other">%d задач</item>
+    </plurals>
+
+    <plurals name="tags_count">
+        <item quantity="one">\u0020c меткой: %s</item>
+        <item quantity="few">\u0020c метками: %s</item>
+        <item quantity="many">\u0020c метками: %s</item>
+        <item quantity="other">\u0020c метками: %s</item>
     </plurals>
 
     <string name="no_activity">нет активности</string>

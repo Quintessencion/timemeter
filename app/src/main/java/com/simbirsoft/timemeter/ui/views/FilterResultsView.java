@@ -24,9 +24,6 @@ public class FilterResultsView extends RelativeLayout{
     @StringRes(R.string.found_tasks)
     String mFoundTasks;
 
-    @StringRes(R.string.with_tags)
-    String mWithTags;
-
     Context mContext;
 
     public FilterResultsView(Context context) {
@@ -57,7 +54,8 @@ public class FilterResultsView extends RelativeLayout{
 
         if (!filterState.tags.isEmpty()) {
             final String tags = Joiner.on(",").join(Iterables.transform(filterState.tags, Tag::getName));
-            stringBuilder.append(String.format(mWithTags, tags));
+            stringBuilder.append(String.format(String.format(mContext.getResources().
+                    getQuantityString(R.plurals.tags_count, filterState.tags.size()), tags)));
         }
 
         mSearchResultsTextView.setText(stringBuilder.toString());

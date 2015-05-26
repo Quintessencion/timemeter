@@ -175,13 +175,19 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
         mFilterResultsView = (FilterResultsView) LayoutInflater.from(getActivity())
                 .inflate(R.layout.view_filter_results_impl, mSearchResultContainer, false);
-        //mFilterResultsView.setVisibility(View.INVISIBLE);
+        mFilterResultsView.setVisibility(View.INVISIBLE);
         mSearchResultContainer.addView(mFilterResultsView);
 
         if (mIsFilterPanelShown) {
             showFilterView(false);
         } else {
             hideFilterView(false);
+        }
+
+        if (mIsFilterResultsPanelShown) {
+            showSearchResultsPanel(false);
+        } else {
+            hideSearchResultsPanel(false);
         }
 
         if (mFilterView != null && mFilterState != null) {
@@ -330,7 +336,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
             TransitionManager.beginDelayedTransition(mContentRootView, set);
         }
 
-        updateFilterViewSize();
+        updateContainerMargin();
         mFilterView.setVisibility(View.VISIBLE);
     }
 
@@ -351,29 +357,8 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
             TransitionManager.beginDelayedTransition(mContentRootView, set);
         }
 
-        updateFilterViewSize();
+        updateContainerMargin();
         mFilterView.setVisibility(View.INVISIBLE);
-    }
-
-    private void updateFilterViewSize() {
-        LinearLayout.LayoutParams resultsContainerLayoutParams =
-                (LinearLayout.LayoutParams) mSearchResultContainer.getLayoutParams();
-
-        int measuredHeight;
-        if (mIsFilterPanelShown) {
-            measuredHeight = mFilterView.getMeasuredHeight();
-            if (measuredHeight < 1) {
-                int maxHeight = getResources().getDisplayMetrics().heightPixels;
-                int spec = View.MeasureSpec.makeMeasureSpec(maxHeight, View.MeasureSpec.AT_MOST);
-                mFilterView.measure(spec, spec);
-                measuredHeight = mFilterView.getMeasuredHeight();
-            }
-        } else {
-            measuredHeight = 0;
-        }
-
-        resultsContainerLayoutParams.topMargin = measuredHeight;
-        mSearchResultContainer.setLayoutParams(resultsContainerLayoutParams);
     }
 
     private boolean isFilterPanelVisible() {
@@ -427,7 +412,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     public void updateFilterResultsView(int taskCount, FilterView.FilterState filterState) {
         if (mIsFilterViewStateChanged) {
             mFilterResultsView.updateView(taskCount, filterState);
-            //showFilterResultsView(true);
+            showSearchResultsPanel(true);
             mIsFilterViewStateChanged = false;
         }
     }
@@ -455,17 +440,88 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
     @Override
     public void onTokenAdded(Object o) {
-        mViewPager.post(this::updateFilterViewSize);
+        mViewPager.post(this::updateContainerMargin);
     }
 
     @Override
     public void onTokenRemoved(Object o) {
-        mViewPager.post(this::updateFilterViewSize);
+        mViewPager.post(this::updateContainerMargin);
     }
 
     private void onPageChanged(int position) {
         mPagerAdapter.deselectCurrentPage();
         MainPageFragment currentFragment = (MainPageFragment)mPagerAdapter.getItem(position);
         currentFragment.onPageSelected();
+    }
+
+    private void showSearchResultsPanel(boolean animate) {
+        mIsFilterResultsPanelShown = true;
+
+        if (isFilterResultsPanelVisible()) {
+            return;
+        }
+
+        if (animate) {
+            TransitionSet set = new TransitionSet();
+            set.addTransition(new Fade(Fade.IN));
+            set.addTransition(new ChangeBounds());
+            set.setInterpolator(new DecelerateInterpolator(0.8f));
+            set.setOrdering(TransitionSet.ORDERING_TOGETHER);
+            set.excludeTarget(R.id.floatingButton, true);
+            TransitionManager.beginDelayedTransition(mContentRootView, set);
+        }
+
+        updateContainerMargin();
+        mFilterResultsView.setVisibility(View.VISIBLE);
+    }
+
+    private void hideSearchResultsPanel(boolean animate) {
+        mIsFilterResultsPanelShown = false;
+
+        if (!isFilterResultsPanelVisible()) {
+            return;
+        }
+
+        if (animate) {
+            TransitionSet set = new TransitionSet();
+            set.addTransition(new Fade(Fade.OUT));
+            set.addTransition(new ChangeBounds());
+            set.setInterpolator(new DecelerateInterpolator(0.8f));
+            set.setOrdering(TransitionSet.ORDERING_TOGETHER);
+            set.excludeTarget(R.id.floatingButton, true);
+            TransitionManager.beginDelayedTransition(mContentRootView, set);
+        }
+
+        updateContainerMargin();
+        mFilterResultsView.setVisibility(View.INVISIBLE);
+    }
+
+    private void updateContainerMargin() {
+        LinearLayout.LayoutParams resultsContainerLayoutParams =
+                (LinearLayout.LayoutParams) mSearchResultContainer.getLayoutParams();
+
+        int filterPanelHeight;
+        int resPanelHeight;
+
+        if (mIsFilterPanelShown) {
+            filterPanelHeight = mFilterView.getMeasuredHeight();
+            if (filterPanelHeight < 1) {
+                int maxHeight = getResources().getDisplayMetrics().heightPixels;
+                int spec = View.MeasureSpec.makeMeasureSpec(maxHeight, View.MeasureSpec.AT_MOST);
+                mFilterView.measure(spec, spec);
+                filterPanelHeight = mFilterView.getMeasuredHeight();
+            }
+        } else {
+            filterPanelHeight = 0;
+        }
+
+        if (mIsFilterResultsPanelShown) {
+            resPanelHeight = 0;
+        } else {
+            resPanelHeight = - mFilterResultsView.getMeasuredHeight();
+        }
+
+        resultsContainerLayoutParams.topMargin = filterPanelHeight + resPanelHeight;
+        mSearchResultContainer.setLayoutParams(resultsContainerLayoutParams);
     }
 }
