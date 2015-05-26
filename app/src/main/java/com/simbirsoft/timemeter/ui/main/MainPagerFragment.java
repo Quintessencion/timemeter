@@ -175,7 +175,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
         mFilterResultsView = (FilterResultsView) LayoutInflater.from(getActivity())
                 .inflate(R.layout.view_filter_results_impl, mSearchResultContainer, false);
-        mFilterResultsView.setVisibility(View.INVISIBLE);
+        //mFilterResultsView.setVisibility(View.INVISIBLE);
         mSearchResultContainer.addView(mFilterResultsView);
 
         if (mIsFilterPanelShown) {
@@ -309,11 +309,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
         if (event.isReset()) {
             hideFilterView();
-
-            if (isFilterResultsPanelVisible()) {
-                hideFilterResultsView(true);
-            }
-
             updateOptionsMenu();
         }
     }
@@ -360,48 +355,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mFilterView.setVisibility(View.INVISIBLE);
     }
 
-    private void showFilterResultsView(boolean animate) {
-        mIsFilterResultsPanelShown = true;
-
-        if (isFilterResultsPanelVisible()) {
-            return;
-        }
-
-        if (animate) {
-            TransitionSet set = new TransitionSet();
-            set.addTransition(new Fade(Fade.IN));
-            set.addTransition(new ChangeBounds());
-            set.setInterpolator(new DecelerateInterpolator(0.8f));
-            set.setOrdering(TransitionSet.ORDERING_TOGETHER);
-            set.excludeTarget(R.id.floatingButton, true);
-            TransitionManager.beginDelayedTransition(mContentRootView, set);
-        }
-
-        updateFilterResultsViewSize();
-        mFilterResultsView.setVisibility(View.VISIBLE);
-    }
-
-    private void hideFilterResultsView(boolean animate) {
-        mIsFilterResultsPanelShown = false;
-
-        if (!isFilterResultsPanelVisible()) {
-            return;
-        }
-
-        if (animate) {
-            TransitionSet set = new TransitionSet();
-            set.addTransition(new Fade(Fade.OUT));
-            set.addTransition(new ChangeBounds());
-            set.setInterpolator(new DecelerateInterpolator(0.8f));
-            set.setOrdering(TransitionSet.ORDERING_TOGETHER);
-            set.excludeTarget(R.id.floatingButton, true);
-            TransitionManager.beginDelayedTransition(mContentRootView, set);
-        }
-
-        updateFilterResultsViewSize();
-        mFilterResultsView.setVisibility(View.INVISIBLE);
-    }
-
     private void updateFilterViewSize() {
         LinearLayout.LayoutParams resultsContainerLayoutParams =
                 (LinearLayout.LayoutParams) mSearchResultContainer.getLayoutParams();
@@ -415,22 +368,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
                 mFilterView.measure(spec, spec);
                 measuredHeight = mFilterView.getMeasuredHeight();
             }
-        } else {
-            measuredHeight = 0;
-        }
-
-        resultsContainerLayoutParams.topMargin = measuredHeight;
-        mSearchResultContainer.setLayoutParams(resultsContainerLayoutParams);
-    }
-
-    private void updateFilterResultsViewSize() {
-        LinearLayout.LayoutParams resultsContainerLayoutParams =
-                (LinearLayout.LayoutParams) mSearchResultContainer.getLayoutParams();
-
-        int measuredHeight;
-
-        if (mIsFilterPanelShown) {
-            measuredHeight = mFilterResultsView.getMeasuredHeight();
         } else {
             measuredHeight = 0;
         }
@@ -490,7 +427,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     public void updateFilterResultsView(int taskCount, FilterView.FilterState filterState) {
         if (mIsFilterViewStateChanged) {
             mFilterResultsView.updateView(taskCount, filterState);
-            showFilterResultsView(true);
+            //showFilterResultsView(true);
             mIsFilterViewStateChanged = false;
         }
     }
