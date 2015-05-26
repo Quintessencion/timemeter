@@ -49,24 +49,24 @@ public final class Preferences {
         mPrefs.edit().putInt(PREFERENCE_SELECTED_TASK_TAB_POSITION, tagPagePosition).apply();
     }
 
-    public int getSelectedTaskTabPosition(int defaultValue) {
-        return mPrefs.getInt(PREFERENCE_SELECTED_TASK_TAB_POSITION, defaultValue);
+    public int getSelectedTaskTabPosition() {
+        return mPrefs.getInt(PREFERENCE_SELECTED_TASK_TAB_POSITION, 0);
     }
 
     public void setSelectedSectionPosition(int stateSelectedPosition) {
         mPrefs.edit().putInt(PREFERENCE_SELECTED_SECTION_POSITION, stateSelectedPosition).apply();
     }
 
-    public boolean getUserLearnedDrawer(boolean defaultValue) {
-        return mPrefs.getBoolean(PREFERENCE_USER_LEARNED_DRAWER, defaultValue);
+    public int getSelectedSectionPosition() {
+        return mPrefs.getInt(PREFERENCE_SELECTED_SECTION_POSITION, 0);
+    }
+
+    public boolean getUserLearnedDrawer() {
+        return mPrefs.getBoolean(PREFERENCE_USER_LEARNED_DRAWER, false);
     }
 
     public void setUserLearnedDrawer(boolean userLearnedDrawer) {
         mPrefs.edit().putBoolean(PREFERENCE_USER_LEARNED_DRAWER, userLearnedDrawer).apply();
-    }
-
-    public int getSelectedSectionPosition(int defaultValue) {
-        return mPrefs.getInt(PREFERENCE_SELECTED_SECTION_POSITION, defaultValue);
     }
 
     public FilterView.FilterState getFilterState() {

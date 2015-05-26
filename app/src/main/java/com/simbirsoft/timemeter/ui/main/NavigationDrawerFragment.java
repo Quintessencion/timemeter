@@ -67,7 +67,7 @@ public class NavigationDrawerFragment extends Fragment {
     }
 
     private void loadCurrentSelectedPosition() {
-        mCurrentSelectedPosition = mPreferences.getSelectedSectionPosition(0);
+        mCurrentSelectedPosition = mPreferences.getSelectedSectionPosition();
         selectItem(mCurrentSelectedPosition);
     }
 
@@ -136,7 +136,7 @@ public class NavigationDrawerFragment extends Fragment {
                     return;
                 }
 
-                if (!mPreferences.getUserLearnedDrawer(false)) {
+                if (!mPreferences.getUserLearnedDrawer()) {
                     mPreferences.setUserLearnedDrawer(true);
                 }
 
@@ -154,7 +154,7 @@ public class NavigationDrawerFragment extends Fragment {
             }
         };
 
-        if (!mPreferences.getUserLearnedDrawer(false)) {
+        if (!mPreferences.getUserLearnedDrawer()) {
             mDrawerLayout.openDrawer(mFragmentContainerView);
         }
 
