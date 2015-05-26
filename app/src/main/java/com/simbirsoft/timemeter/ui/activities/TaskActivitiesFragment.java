@@ -133,6 +133,14 @@ public class TaskActivitiesFragment extends BaseFragment implements
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (mFilterView != null) {
+            mFilterView.updateDateView();
+        }
+    }
+
+    @Override
     public void onDestroyView() {
         mBus.unregister(this);
         super.onDestroyView();

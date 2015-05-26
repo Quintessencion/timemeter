@@ -138,6 +138,14 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (mFilterView != null) {
+            mFilterView.updateDateView();
+        }
+    }
+
+    @Override
     public void onDestroy() {
         mBus.unregister(this);
         savePagePosition();
