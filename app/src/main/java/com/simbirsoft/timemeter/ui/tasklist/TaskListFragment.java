@@ -32,6 +32,7 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.HelpCardController;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
+import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
 import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
@@ -85,6 +86,9 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
     @InstanceState
     int[] mTaskListPosition;
+
+    @Inject
+    DatabaseHelper mDatabaseHelper;
 
     private FloatingActionButton mFloatingActionButton;
     private TaskListAdapter mTasksViewAdapter;
@@ -266,6 +270,8 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         } else {
             mEmptyListIndicator.setVisibility(View.GONE);
         }
+
+        presentHelpCardIfAny();
     }
 
     @OnJobFailure(LoadTaskListJob.class)
@@ -391,6 +397,8 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         TaskBundle bundle = getTaskBundle(data);
         addTaskToList(bundle);
         showTaskAddedBar(bundle);
+
+        presentHelpCardIfAny();
     }
 
     @Override
@@ -410,6 +418,8 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         showTaskRemoveUndoBar(bundle);
 
         invalidateContent();
+
+        presentHelpCardIfAny();
     }
 
     @Override
@@ -422,7 +432,37 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
             return HelpCardController.HELP_CARD_TASK_LIST;
         }
 
+        if (mTasksViewAdapter.getItemCount() == 0 && !controller.isPresented(HelpCardController.HELP_CARD_ADD_NEW_TASK)) {
+            return HelpCardController.HELP_CARD_ADD_NEW_TASK;
+        }
+
+        boolean basicCardsPresented = controller.isPresented(
+                HelpCardController.HELP_CARD_TASK_LIST,
+                HelpCardController.HELP_CARD_STATS_LIST,
+                HelpCardController.HELP_CARD_CALENDAR);
+
+        boolean demosExist = mDatabaseHelper.isDemoDatasExist();
+
+        if (basicCardsPresented && demosExist && !controller.isPresented(HelpCardController.HELP_CARD_DEMO_DATAS)) {
+            return HelpCardController.HELP_CARD_DEMO_DATAS;
+        }
+
         return -1;
+    }
+
+    @Override
+    protected void onHelpCardActionClicked(HelpCard sender, int helpCardID) {
+        if (helpCardID == HelpCardController.HELP_CARD_DEMO_DATAS) {
+            mDatabaseHelper.removeTestData();
+            reloadContent();
+        }
+    }
+
+    @Override
+    protected void onHelpCardClicked(HelpCard sender, int helpCardID) {
+        if (helpCardID == HelpCardController.HELP_CARD_ADD_NEW_TASK) {
+            onFloatingButtonClicked(null);
+        }
     }
 }
 

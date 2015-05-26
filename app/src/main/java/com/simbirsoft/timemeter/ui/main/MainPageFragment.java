@@ -85,6 +85,8 @@ public class MainPageFragment extends BaseFragment {
 
     FilterViewProvider mFilterViewProvider;
 
+    int mCurrentHelpCardId;
+
     @ViewById(R.id.helpCard)
     protected HelpCard mHelpCard;
 
@@ -128,24 +130,26 @@ public class MainPageFragment extends BaseFragment {
     
     protected void bindHelpCard() {
         mHelpCard.setOnNextClickListener(v -> {
-            onHelpCardNextClicked(mHelpCard);
+            onHelpCardNextClicked(mHelpCard, mCurrentHelpCardId);
         });
-    }
-
-    private int getHelpCardToPresent() {
-        return getHelpCardToPresent(mHelpCardController);
+        mHelpCard.setOnActionClickListener(v -> {
+            onHelpCardActionClicked(mHelpCard, mCurrentHelpCardId);
+        });
+        mHelpCard.setOnClickListener(v -> {
+            onHelpCardClicked(mHelpCard, mCurrentHelpCardId);
+        });
     }
 
     protected int getHelpCardToPresent(HelpCardController controller) {
         return -1;
     }
 
-    private void presentHelpCardIfAny() {
+    protected void presentHelpCardIfAny() {
         mHelpCard.setVisibility(View.GONE);
 
-        int id = getHelpCardToPresent();
-        if (id != -1) {
-            final HelpCardDataSource ds = mHelpCardController.getCard(id);
+        mCurrentHelpCardId = getHelpCardToPresent(mHelpCardController);
+        if (mCurrentHelpCardId != -1) {
+            final HelpCardDataSource ds = mHelpCardController.getCard(mCurrentHelpCardId);
             mHelpCard.setAdapter(ds);
             mHelpCard.setVisibility(View.VISIBLE);
         }
@@ -419,10 +423,18 @@ public class MainPageFragment extends BaseFragment {
         mFilterViewProvider = provider;
     }
 
-    protected void onHelpCardNextClicked(HelpCard sender) {
+    protected void onHelpCardNextClicked(HelpCard sender, int cardID) {
         if (mHelpCard.isLastItemPresented()) {
-            mHelpCardController.markPresented(getHelpCardToPresent());
+            mHelpCardController.markPresented(cardID);
         }
+    }
+
+    protected void onHelpCardActionClicked(HelpCard sender, int cardID) {
+
+    }
+
+    protected void onHelpCardClicked(HelpCard sender, int cardID) {
+
     }
 
     @Subscribe

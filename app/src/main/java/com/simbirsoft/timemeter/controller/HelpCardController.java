@@ -22,6 +22,9 @@ public class HelpCardController {
     public final static int HELP_CARD_TASK_LIST = 0;
     public final static int HELP_CARD_STATS_LIST = 1;
     public final static int HELP_CARD_CALENDAR = 2;
+    public final static int HELP_CARD_DEMO_DATAS = 3;
+    public final static int HELP_CARD_ADD_NEW_TASK = 4;
+    public final static int HELP_CARD_TAGS = 5;
 
     private final Preferences mPreferences;
     private final Application mAppContext;
@@ -48,6 +51,15 @@ public class HelpCardController {
 
         mCards.put(HELP_CARD_CALENDAR, new HelpCardDataSource()
                 .addItem(mAppContext, R.string.help_card_text_02_00, -1, R.string.help_card_btn_ok));
+
+        mCards.put(HELP_CARD_DEMO_DATAS, new HelpCardDataSource()
+                .addItem(mAppContext, R.string.help_card_text_03_00, R.string.help_card_btn_delete, R.string.help_card_btn_hide));
+
+        mCards.put(HELP_CARD_ADD_NEW_TASK, new HelpCardDataSource()
+                .addItem(mAppContext, R.string.help_card_text_04_00, -1, R.string.help_card_btn_hide));
+
+        mCards.put(HELP_CARD_TAGS, new HelpCardDataSource()
+                .addItem(mAppContext, R.string.help_card_text_05_00, -1, R.string.help_card_btn_hide));
     }
 
     public HelpCardDataSource getCard(int cardId) {

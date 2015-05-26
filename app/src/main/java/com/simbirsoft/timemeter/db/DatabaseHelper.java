@@ -2,12 +2,13 @@ package com.simbirsoft.timemeter.db;
 
 import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
 
 import com.google.common.io.Closeables;
-import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.model.DemoTask;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTag;
@@ -27,7 +28,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.FileChannel;
-import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -37,6 +37,7 @@ import nl.qbusict.cupboard.Cupboard;
 import nl.qbusict.cupboard.CupboardBuilder;
 import nl.qbusict.cupboard.CupboardFactory;
 import nl.qbusict.cupboard.DatabaseCompartment;
+import nl.qbusict.cupboard.QueryResultIterable;
 
 @Singleton
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -54,6 +55,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cupboard.register(Tag.class);
         cupboard.register(TaskTag.class);
         cupboard.register(TaskTimeSpan.class);
+        cupboard.register(DemoTask.class);
     }
 
     @Inject
@@ -91,6 +93,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             for (XmlTask xmlTask : taskList.getTaskList()) {
                 Task task = xmlTask.getTask();
                 cupboard.put(task);
+                cupboard.put(new DemoTask(task));
                 xmlTask.setId(task.getId());
                 List<TaskTimeSpan> spans = xmlTask.getTaskActivity();
                 cupboard.put(spans);
@@ -112,6 +115,40 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         } finally {
             Closeables.closeQuietly(in);
         }
+    }
+
+    public void removeTestData() {
+        SQLiteDatabase db = getWritableDatabase();
+        DatabaseCompartment cupboard = cupboard().withDatabase(db);
+
+        db.beginTransaction();
+        try {
+            QueryResultIterable<DemoTask> demos = cupboard.query(DemoTask.class).query();
+            for (DemoTask task : demos) {
+                cupboard.delete(Task.class, task.getId());
+            }
+            demos.close();
+            db.delete(DemoTask.TABLE_NAME, null, null);
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public boolean isDemoDatasExist() {
+        SQLiteDatabase db = getWritableDatabase();
+        DatabaseCompartment cupboard = cupboard().withDatabase(db);
+
+        boolean result = false;
+        Cursor c = cupboard.query(DemoTask.class).getCursor();
+        try {
+            c.moveToFirst();
+            result = c.getCount() > 0;
+        } finally {
+            c.close();
+        }
+
+        return result;
     }
 
     public static void backupDatabase(Context context) {
