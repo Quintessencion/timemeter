@@ -91,7 +91,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     private Menu mOptionsMenu;
     private ContentFragmentCallbacks mContainerCallbacks;
     private List<String> mPageNames;
-    private int mPagePosition;
 
     @Override
     public void onAttach(Activity activity) {
@@ -433,16 +432,14 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     }
 
     private void savePagePosition() {
-        mPrefs.setSelectedTaskTabPosition(mPagePosition);
+        mPrefs.setSelectedTaskTabPosition(mViewPager.getCurrentItem());
     }
 
     private void loadPagePosition() {
-        mPagePosition = mPrefs.getSelectedTaskTabPosition();
-        mViewPager.setCurrentItem(mPagePosition);
+        mViewPager.setCurrentItem(mPrefs.getSelectedTaskTabPosition());
     }
 
     private void onPageChanged(int position) {
-        mPagePosition = position;
         mPagerAdapter.deselectCurrentPage();
         MainPageFragment currentFragment = (MainPageFragment)mPagerAdapter.getItem(position);
         currentFragment.onPageSelected();
