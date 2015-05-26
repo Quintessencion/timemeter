@@ -207,7 +207,12 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
                 onPageChanged(position);
             }
         });
-        onPageChanged(mViewPager.getCurrentItem());
+        mTabs.post(new Runnable() {
+            @Override
+            public void run() {
+                onPageChanged(mViewPager.getCurrentItem());
+            }
+        });
     }
 
     private void onAdapterSetupItem(Fragment fragment) {
