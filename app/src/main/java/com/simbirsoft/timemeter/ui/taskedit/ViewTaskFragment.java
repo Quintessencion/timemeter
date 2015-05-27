@@ -133,6 +133,7 @@ public class ViewTaskFragment extends BaseFragment
     @AfterViews
     void bindViews() {
         setActionBarTitleAndHome(mExtraTaskBundle.getTask().getDescription());
+        tagFlowView.setHintVisible(true);
         tagFlowView.bindTagViews(mExtraTaskBundle.getTags());
         tagFlowView.setTagViewsClickListener(mTagViewClickListener);
 

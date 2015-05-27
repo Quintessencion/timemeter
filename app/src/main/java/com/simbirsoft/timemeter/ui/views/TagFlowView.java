@@ -2,6 +2,7 @@ package com.simbirsoft.timemeter.ui.views;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
 
 import com.simbirsoft.timemeter.R;
@@ -19,6 +20,7 @@ import java.util.List;
 public class TagFlowView extends FlowLayout {
 
     private final ArrayList<TagView> mTagViews = new ArrayList<>();
+    private boolean mHintVisible;
 
     @ViewById(R.id.tagFlowViewContainer)
     protected FlowLayout mTagContainerView;
@@ -61,7 +63,15 @@ public class TagFlowView extends FlowLayout {
             }
             mTagContainerView.setVisibility(View.VISIBLE);
         } else {
-            mTagContainerView.setVisibility(View.GONE);
+            if (mHintVisible) {
+                LayoutInflater inflater =
+                        (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                View view = inflater.inflate(R.layout.view_text_view_hint, null, false);
+                mTagContainerView.addView(view);
+                mTagContainerView.setVisibility(View.VISIBLE);
+            } else {
+                mTagContainerView.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -73,5 +83,9 @@ public class TagFlowView extends FlowLayout {
         for (TagView tagView : mTagViews) {
             tagView.setTagViewClickListener(tagViewClickListener);
         }
+    }
+
+    public void setHintVisible(boolean hintVisible) {
+        mHintVisible = hintVisible;
     }
 }
