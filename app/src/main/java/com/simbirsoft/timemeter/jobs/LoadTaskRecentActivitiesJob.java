@@ -5,22 +5,19 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.be.android.library.worker.jobs.LoadJob;
 import com.be.android.library.worker.models.LoadJobResult;
-import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.model.Period;
 import com.simbirsoft.timemeter.ui.model.TaskRecentActivity;
 import com.simbirsoft.timemeter.ui.util.TimeSpanDaysSplitter;
-import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.squareup.phrase.Phrase;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
-
-import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 
 public class LoadTaskRecentActivitiesJob extends LoadJob{
     private static final int DAYS_COUNT = 14;
@@ -28,6 +25,7 @@ public class LoadTaskRecentActivitiesJob extends LoadJob{
     private final DatabaseHelper mDatabaseHelper;
     private final LoadTaskTimespansJob mLoadSpansJob;
     private Long mTaskId;
+    private List<TaskTimeSpan> mTaskTimeSpans;
 
     @Inject
     public LoadTaskRecentActivitiesJob(DatabaseHelper databaseHelper, LoadTaskTimespansJob loadSpansJob) {
@@ -39,13 +37,24 @@ public class LoadTaskRecentActivitiesJob extends LoadJob{
         mTaskId = taskId;
     }
 
+    public void setTaskTimeSpans(List<TaskTimeSpan> spans) {
+        mTaskTimeSpans = spans;
+    }
+
     @Override
     protected LoadJobResult<TaskRecentActivity> performLoad() throws Exception {
         TaskRecentActivity recentActivity = new TaskRecentActivity();
+        long startTime;
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());
         cal.add(Calendar.DAY_OF_YEAR, -DAYS_COUNT);
-        mLoadSpansJob.getFilter().startDateMillis(cal.getTimeInMillis())
+        startTime = cal.getTimeInMillis();
+        if (mTaskTimeSpans != null && !mTaskTimeSpans.isEmpty()) {
+            Collections.sort(mTaskTimeSpans, (item1, item2) ->
+                    (int) (item1.getStartTimeMillis() - item2.getStartTimeMillis()));
+            startTime = Math.min(mTaskTimeSpans.get(0).getStartTimeMillis(), startTime);
+        }
+        mLoadSpansJob.getFilter().startDateMillis(startTime)
                 .period(Period.ALL);
         mLoadSpansJob.setTaskId(mTaskId);
         List<TaskTimeSpan> spans =

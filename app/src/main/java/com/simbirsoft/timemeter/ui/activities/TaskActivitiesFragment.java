@@ -102,7 +102,10 @@ public class TaskActivitiesFragment extends BaseFragment implements
     String mExtraTitle;
 
     @InstanceState
-    int mListPosition;
+    int mListPosition = -1;
+
+    @InstanceState
+    int mListPositionOffset;
 
     @InstanceState
     boolean mIsFilterPanelShown;
@@ -151,8 +154,10 @@ public class TaskActivitiesFragment extends BaseFragment implements
         super.onPause();
 
         if (mAdapter.getItemCount() > 0) {
-            mListPosition = ((LinearLayoutManager)
-                    mRecyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+            TaskActivitiesLayoutManager layoutManager = (TaskActivitiesLayoutManager) mRecyclerView.getLayoutManager();
+            mListPosition = layoutManager.findFirstVisibleItemPosition();
+            mListPositionOffset = (mListPosition != RecyclerView.NO_POSITION)
+                    ? layoutManager.findItemOffset(mListPosition) : 0;
         }
     }
 
@@ -166,7 +171,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
         }
 
         mRecyclerView.setHasFixedSize(false);
-        final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        final TaskActivitiesLayoutManager layoutManager = new TaskActivitiesLayoutManager(getActivity());
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(layoutManager);
 
@@ -233,9 +238,11 @@ public class TaskActivitiesFragment extends BaseFragment implements
     public void onLoadSuccess(LoadJobResult<List<TaskActivityItem>> result) {
         mAdapter.setItems(result.getData());
         mProgressLayout.updateProgressView();
-        if (mListPosition != 0) {
-            mRecyclerView.getLayoutManager().scrollToPosition(mListPosition);
-            mListPosition = 0;
+        if (mListPosition >=0) {
+            TaskActivitiesLayoutManager layoutManager = (TaskActivitiesLayoutManager) mRecyclerView.getLayoutManager();
+            layoutManager.scrollToPositionWithOffset(mListPosition, mListPositionOffset);
+            mListPosition = -1;
+            mListPositionOffset = 0;
         }
         if (mAdapter.getItemCount() == 0) {
             mProgressLayout.setEmptyIndicatorMessage(mFilterView.getFilterState().isEmpty()

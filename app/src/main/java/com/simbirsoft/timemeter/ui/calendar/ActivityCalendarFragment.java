@@ -15,7 +15,9 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
+import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadActivityCalendarJob;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
@@ -30,6 +32,7 @@ import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
 import com.simbirsoft.timemeter.ui.views.CalendarNavigationView;
 import com.simbirsoft.timemeter.ui.views.CalendarViewPager;
 import com.simbirsoft.timemeter.ui.views.WeekCalendarView;
+import com.squareup.otto.Subscribe;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
@@ -66,11 +69,13 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
     private CalendarPagerAdapter mPagerAdapter;
     private CalendarPopupHelper mPopupHelper;
     private long mScrollViewMillisOffset = -1;
+    private ITaskActivityManager mTaskActivityManager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Injection.sUiComponent.injectActivityCalendarFragment(this);
+        mTaskActivityManager = Injection.sTaskManager.taskActivityManager();
     }
 
     @AfterViews
@@ -102,6 +107,14 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
         saveScrollViewOffset();
         String loaderTag = getFilterLoaderTag(CALENDAR_LOADER_TAG);
         requestLoad(loaderTag, this);
+    }
+
+    @Override
+    public void onPageSelected() {
+        if (mTaskActivityManager.hasActiveTask()) {
+            setContentInvalidated(true);
+        }
+        super.onPageSelected();
     }
 
     @OnJobSuccess(LoadActivityCalendarJob.class)
@@ -145,6 +158,11 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
         saveScrollViewOffset();
         mPagerAdapter.movePrev(newStartDate, newEndDate);
         requestLoad(newStartDate, newEndDate);
+    }
+
+    @Subscribe
+    public void onTaskStopped(TaskActivityStoppedEvent event) {
+        setContentInvalidated(true);
     }
 
     private void saveScrollViewOffset() {
