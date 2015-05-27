@@ -210,6 +210,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
             mPagerAdapter.setPages(Lists.transform(mPageNames, PageItem::create));
         mViewPager.setOffscreenPageLimit(2);
         }
+
         mViewPager.setAdapter(mPagerAdapter);
 
         LayoutInflater.from(getActivity()).inflate(R.layout.view_tabs, mContainerHeader, true);
@@ -453,6 +454,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mPagerAdapter.deselectCurrentPage();
         MainPageFragment currentFragment = (MainPageFragment)mPagerAdapter.getItem(position);
         currentFragment.onPageSelected();
+        updateSearchResultsPanelOnPage(position);
     }
 
     private void showSearchResultsPanel(boolean animate) {
@@ -493,6 +495,14 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         set.setOrdering(TransitionSet.ORDERING_TOGETHER);
         set.excludeTarget(R.id.floatingButton, true);
         TransitionManager.beginDelayedTransition(mContentRootView, set);
+    }
+
+    private void updateSearchResultsPanelOnPage(int position) {
+        if (position == 0 && !mFilterState.isEmpty()) {
+            showSearchResultsPanel(true);
+        } else {
+            hideSearchResultsPanel(true);
+        }
     }
 
     private void updateContainerMargin() {
