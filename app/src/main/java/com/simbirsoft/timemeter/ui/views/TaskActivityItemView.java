@@ -41,6 +41,8 @@ public class TaskActivityItemView extends View{
     private int mDurationBlockHighlightedColor;
     private int mTimeBlockSelectedColor;
     private int mDurationBlockSelectedColor;
+    private int mTimeBlockAccentSelectedColor;
+    private int mDurationBlockAccentSelectedColor;
     private boolean mIsHighlighted;
     private boolean mIsSelected;
 
@@ -94,6 +96,10 @@ public class TaskActivityItemView extends View{
         mDurationBlockColor = res.getColor(R.color.primaryDark);
         mTimeBlockHighlightedColor = res.getColor(R.color.accentPrimary);
         mDurationBlockHighlightedColor = res.getColor(R.color.accentDark);
+        mTimeBlockSelectedColor = res.getColor(R.color.green);
+        mDurationBlockSelectedColor = res.getColor(R.color.green);
+        mTimeBlockAccentSelectedColor = res.getColor(R.color.green);
+        mDurationBlockAccentSelectedColor = res.getColor(R.color.green);
 
         mIndex = -1;
         mItem = new TaskActivitySpansItem();
@@ -101,11 +107,20 @@ public class TaskActivityItemView extends View{
         mTextBounds = new Rect();
     }
 
-    public void setTaskActivitySpansItem(TaskActivitySpansItem item, int index, boolean isHighlighted) {
+    public void setTaskActivitySpansItem(TaskActivitySpansItem item, int index, boolean isHighlighted, boolean isSelected) {
         mItem = item;
         mIndex = index;
         mIsHighlighted = isHighlighted;
+        mIsSelected = isSelected;
         invalidate();
+    }
+
+    public TaskActivitySpansItem getItem() {
+        return mItem;
+    }
+
+    public int getIndex() {
+        return mIndex;
     }
 
     @Override
@@ -132,10 +147,19 @@ public class TaskActivityItemView extends View{
     protected void onDraw(Canvas canvas) {
         if (mIndex < 0) return;
         final int saveCount = canvas.save();
-        mBlockPaint.setColor(mIsHighlighted ? mTimeBlockHighlightedColor : mTimeBlockColor);
+        int timeBlockColor;
+        int durationBlockColor;
+        if (mIsSelected) {
+            timeBlockColor = mIsHighlighted ? mTimeBlockAccentSelectedColor : mTimeBlockSelectedColor;
+            durationBlockColor = mIsHighlighted ? mDurationBlockAccentSelectedColor : mDurationBlockSelectedColor;
+        } else {
+            timeBlockColor = mIsHighlighted ? mTimeBlockHighlightedColor : mTimeBlockColor;
+            durationBlockColor = mIsHighlighted ? mDurationBlockHighlightedColor : mDurationBlockColor;
+        }
+        mBlockPaint.setColor(timeBlockColor);
         drawBlock(canvas, mItem.getSpanTimeLabel(mIndex), mTimeBlockWidth, mTimeTextPaint);
         canvas.translate(mTimeBlockWidth + mBlockHorizontalSpacing, 0);
-        mBlockPaint.setColor(mIsHighlighted ? mDurationBlockHighlightedColor : mDurationBlockColor);
+        mBlockPaint.setColor(durationBlockColor);
         drawBlock(canvas, mItem.getSpanDurationLabel(mIndex, mContext), 0, mDurationTextPaint);
         canvas.restoreToCount(saveCount);
     }

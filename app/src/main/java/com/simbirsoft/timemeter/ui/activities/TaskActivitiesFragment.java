@@ -36,6 +36,7 @@ import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.enums.SnackbarType;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.ApplicationModule;
 import com.simbirsoft.timemeter.injection.Injection;
@@ -72,7 +73,8 @@ import javax.inject.Named;
 public class TaskActivitiesFragment extends BaseFragment implements
         JobLoader.JobLoaderCallbacks,
         TaskActivitiesFilterView.OnTaskActivitiesFilterListener,
-        DatePickerDialog.OnDateSetListener {
+        DatePickerDialog.OnDateSetListener,
+        TaskActivitiesAdapter.OnMenuListener {
     public static final String EXTRA_TASK_ID = "extra_task_id";
     public static final String EXTRA_TITLE = "extra_title";
 
@@ -480,5 +482,10 @@ public class TaskActivitiesFragment extends BaseFragment implements
         if (snackbar != null && snackbar.isShowing()) {
             snackbar.dismiss();
         }
+    }
+
+    @Override
+    public void onTaskTimeSpanEditClicked(TaskTimeSpan span) {
+
     }
 }
