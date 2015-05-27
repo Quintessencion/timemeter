@@ -50,7 +50,7 @@ public class FilterResultsView extends RelativeLayout{
                 getQuantityString(R.plurals.task_count, foundTaskCount), foundTaskCount));
 
         if (!filterState.tags.isEmpty()) {
-            final String tags = Joiner.on(",").join(Iterables.transform(filterState.tags, Tag::getName));
+            final String tags = Joiner.on(", ").join(Iterables.transform(filterState.tags, Tag::getName));
             stringBuilder.append(String.format(String.format(mContext.getResources().
                     getQuantityString(R.plurals.tags_count, filterState.tags.size()), tags)));
         }

@@ -2,8 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:paddingLeft="16dp"
+                android:layout_height="@dimen/filter_results_view_height"
+                android:paddingLeft="@dimen/filter_results_view_text_padding"
                 android:background="@color/middleGrey">
     <TextView
         android:id="@+id/filter_results"

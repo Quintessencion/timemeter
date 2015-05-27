@@ -327,13 +327,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         }
 
         if (animate) {
-            TransitionSet set = new TransitionSet();
-            set.addTransition(new Fade(Fade.IN));
-            set.addTransition(new ChangeBounds());
-            set.setInterpolator(new DecelerateInterpolator(0.8f));
-            set.setOrdering(TransitionSet.ORDERING_TOGETHER);
-            set.excludeTarget(R.id.floatingButton, true);
-            TransitionManager.beginDelayedTransition(mContentRootView, set);
+            showTransition(Fade.IN);
         }
 
         updateContainerMargin();
@@ -348,13 +342,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         }
 
         if (animate) {
-            TransitionSet set = new TransitionSet();
-            set.addTransition(new Fade(Fade.OUT));
-            set.addTransition(new ChangeBounds());
-            set.setInterpolator(new DecelerateInterpolator(0.8f));
-            set.setOrdering(TransitionSet.ORDERING_TOGETHER);
-            set.excludeTarget(R.id.floatingButton, true);
-            TransitionManager.beginDelayedTransition(mContentRootView, set);
+            showTransition(Fade.OUT);
         }
 
         updateContainerMargin();
@@ -466,13 +454,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         }
 
         if (animate) {
-            TransitionSet set = new TransitionSet();
-            set.addTransition(new Fade(Fade.IN));
-            set.addTransition(new ChangeBounds());
-            set.setInterpolator(new DecelerateInterpolator(0.8f));
-            set.setOrdering(TransitionSet.ORDERING_TOGETHER);
-            set.excludeTarget(R.id.floatingButton, true);
-            TransitionManager.beginDelayedTransition(mContentRootView, set);
+            showTransition(Fade.IN);
         }
 
         updateContainerMargin();
@@ -487,17 +469,21 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         }
 
         if (animate) {
-            TransitionSet set = new TransitionSet();
-            set.addTransition(new Fade(Fade.OUT));
-            set.addTransition(new ChangeBounds());
-            set.setInterpolator(new DecelerateInterpolator(0.8f));
-            set.setOrdering(TransitionSet.ORDERING_TOGETHER);
-            set.excludeTarget(R.id.floatingButton, true);
-            TransitionManager.beginDelayedTransition(mContentRootView, set);
+            showTransition(Fade.OUT);
         }
 
         updateContainerMargin();
         mFilterResultsView.setVisibility(View.INVISIBLE);
+    }
+
+    private void showTransition(int direction) {
+        TransitionSet set = new TransitionSet();
+        set.addTransition(new Fade(direction));
+        set.addTransition(new ChangeBounds());
+        set.setInterpolator(new DecelerateInterpolator(0.8f));
+        set.setOrdering(TransitionSet.ORDERING_TOGETHER);
+        set.excludeTarget(R.id.floatingButton, true);
+        TransitionManager.beginDelayedTransition(mContentRootView, set);
     }
 
     private void updateContainerMargin() {
