@@ -416,7 +416,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         }
 
         if (mFilterState.isEmpty()) {
-            hideSearchResultsPanel(false);
+            hideSearchResultsPanel(mIsFilterPanelShown);
         }
     }
 
