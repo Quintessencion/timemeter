@@ -63,6 +63,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
     private static final Logger LOG = LogFactory.getLogger(MainPagerFragment.class);
     private static final String TAG_DATE_PICKER_FRAGMENT = "main_date_picker_fragment_tag";
+    private static final int TASKS_FRAGMENT_POSITION = 0;
 
     @ViewById(R.id.pager)
     ViewPager mViewPager;
@@ -458,18 +459,20 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     }
 
     private void showSearchResultsPanel(boolean animate) {
-        mIsFilterResultsPanelShown = true;
+        if (mViewPager.getCurrentItem() == TASKS_FRAGMENT_POSITION) {
+            mIsFilterResultsPanelShown = true;
 
-        if (isFilterResultsPanelVisible()) {
-            return;
+            if (isFilterResultsPanelVisible()) {
+                return;
+            }
+
+            if (animate) {
+                showTransition(Fade.IN);
+            }
+
+            updateContainerMargin();
+            mFilterResultsView.setVisibility(View.VISIBLE);
         }
-
-        if (animate) {
-            showTransition(Fade.IN);
-        }
-
-        updateContainerMargin();
-        mFilterResultsView.setVisibility(View.VISIBLE);
     }
 
     private void hideSearchResultsPanel(boolean animate) {
@@ -498,7 +501,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     }
 
     private void updateSearchResultsPanelOnPage(int position) {
-        if (position == 0 && !mFilterState.isEmpty()) {
+        if (position == TASKS_FRAGMENT_POSITION && !mFilterState.isEmpty()) {
             showSearchResultsPanel(true);
         } else {
             hideSearchResultsPanel(true);
@@ -510,7 +513,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
                 (LinearLayout.LayoutParams) mSearchResultContainer.getLayoutParams();
 
         int filterPanelHeight;
-        int resPanelHeight;
+        int resultsPanelHeight;
 
         if (mIsFilterPanelShown) {
             filterPanelHeight = mFilterView.getMeasuredHeight();
@@ -525,12 +528,12 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         }
 
         if (mIsFilterResultsPanelShown) {
-            resPanelHeight = 0;
+            resultsPanelHeight = 0;
         } else {
-            resPanelHeight = - mFilterResultsView.getMeasuredHeight();
+            resultsPanelHeight = - mFilterResultsView.getMeasuredHeight();
         }
 
-        resultsContainerLayoutParams.topMargin = filterPanelHeight + resPanelHeight;
+        resultsContainerLayoutParams.topMargin = filterPanelHeight + resultsPanelHeight;
         mSearchResultContainer.setLayoutParams(resultsContainerLayoutParams);
     }
 }

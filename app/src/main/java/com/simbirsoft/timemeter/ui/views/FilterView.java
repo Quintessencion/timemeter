@@ -316,22 +316,25 @@ public class FilterView extends FrameLayout implements
 
     @Override
     public boolean onQueryTextChange(String s) {
-        mState.searchText = s;
+        boolean hasOnlyWhitespaces = "".equals(s.trim()) && !"".equals(s);
+        if (!hasOnlyWhitespaces) {
+            mState.searchText = s;
 
-        if (mThrottleJob == null || mThrottleJob.isFinished()) {
-            mThrottleJob = new ThrottleJob();
-            mThrottleJob.setTargetJob(new CallableForkJoinJob(
-                    JobManager.JOB_GROUP_DEFAULT, () -> {
+            if (mThrottleJob == null || mThrottleJob.isFinished()) {
+                mThrottleJob = new ThrottleJob();
+                mThrottleJob.setTargetJob(new CallableForkJoinJob(
+                        JobManager.JOB_GROUP_DEFAULT, () -> {
 
-                mHandler.post(FilterView.this::postFilterUpdate);
+                    mHandler.post(FilterView.this::postFilterUpdate);
 
-                return JobEvent.ok();
-            }));
+                    return JobEvent.ok();
+                }));
+                mThrottleJob.getThrottle().updateTimeout(180);
+                JobManager.getInstance().submitJob(mThrottleJob);
+            }
+
             mThrottleJob.getThrottle().updateTimeout(180);
-            JobManager.getInstance().submitJob(mThrottleJob);
         }
-
-        mThrottleJob.getThrottle().updateTimeout(180);
 
         return true;
     }
