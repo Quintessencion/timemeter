@@ -155,4 +155,15 @@ public class TaskTimeSpan implements Parcelable {
         parcel.writeLong(endTimeMillis);
         parcel.writeByte((byte) (isActive ? 1 : 0));
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (o instanceof TaskTimeSpan) {
+            return _id.equals(((TaskTimeSpan)o)._id);
+        }
+        return false;
+    }
 }

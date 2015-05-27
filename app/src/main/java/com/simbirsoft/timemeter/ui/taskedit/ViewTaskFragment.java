@@ -6,12 +6,12 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.animation.AlphaAnimation;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
@@ -22,7 +22,6 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
-import com.simbirsoft.timemeter.events.ScheduledTaskActivityNotificationUpdateEvent;
 import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskRecentActivitiesJob;
@@ -30,6 +29,7 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesAdapter;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment_;
+import com.simbirsoft.timemeter.ui.activities.TaskActivitiesLayoutManager;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
@@ -79,7 +79,10 @@ public class ViewTaskFragment extends BaseFragment
     ProgressLayout mProgressLayout;
 
     @InstanceState
-    int mListPosition;
+    int mListPosition = -1;
+
+    @InstanceState
+    int mListPositionOffset;
 
     @Inject
     Bus mBus;
@@ -112,8 +115,10 @@ public class ViewTaskFragment extends BaseFragment
         super.onPause();
 
         if (mAdapter.getItemCount() > 0) {
-            mListPosition = ((LinearLayoutManager)
-                    mRecyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+            TaskActivitiesLayoutManager layoutManager = (TaskActivitiesLayoutManager) mRecyclerView.getLayoutManager();
+            mListPosition = layoutManager.findFirstVisibleItemPosition();
+            mListPositionOffset = (mListPosition != RecyclerView.NO_POSITION)
+                                    ? layoutManager.findItemOffset(mListPosition) : 0;
         }
     }
 
@@ -132,11 +137,12 @@ public class ViewTaskFragment extends BaseFragment
         tagFlowView.setTagViewsClickListener(mTagViewClickListener);
 
         mRecyclerView.setHasFixedSize(false);
-        final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        final TaskActivitiesLayoutManager layoutManager = new TaskActivitiesLayoutManager(getActivity());
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(layoutManager);
 
         mAdapter = new TaskActivitiesAdapter(getActivity());
+        mAdapter.setHighlightedSpans(mExtraTaskBundle.getTaskTimeSpans());
         mRecyclerView.setAdapter(mAdapter);
         mProgressLayout.setShouldDisplayEmptyIndicatorMessage(true);
         mProgressLayout.setEmptyIndicatorStyle(Typeface.ITALIC);
@@ -236,9 +242,13 @@ public class ViewTaskFragment extends BaseFragment
     public void onLoadSuccess(LoadJobResult<TaskRecentActivity> result) {
         TaskRecentActivity recentActivity = result.getData();
         mAdapter.setItems(recentActivity.getList());
-        if (mListPosition != 0) {
-            mRecyclerView.getLayoutManager().scrollToPosition(mListPosition);
-            mListPosition = 0;
+        if (mListPosition >=0) {
+            TaskActivitiesLayoutManager layoutManager = (TaskActivitiesLayoutManager) mRecyclerView.getLayoutManager();
+            layoutManager.scrollToPositionWithOffset(mListPosition, mListPositionOffset);
+            mListPosition = -1;
+            mListPositionOffset = 0;
+        } else {
+            scrollToSelectedSpan();
         }
         mProgressLayout.updateProgressView();
         if (mAdapter.getItemCount() == 0) {
@@ -260,6 +270,7 @@ public class ViewTaskFragment extends BaseFragment
         LoadTaskRecentActivitiesJob job = Injection.sJobsComponent.loadTaskRecentActivitiesJob();
         job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
         job.setTaskId(mExtraTaskBundle.getTask().getId());
+        job.setTaskTimeSpans(mExtraTaskBundle.getTaskTimeSpans());
         job.addTag(LOADER_TAG);
         return job;
     }
@@ -271,6 +282,23 @@ public class ViewTaskFragment extends BaseFragment
 
     @Subscribe
     public void onTaskActivityUpdated(TaskActivityUpdateEvent event) {
-        mAdapter.updateCurrentActivityTime();
+        if (mExtraTaskBundle == null) {
+            return;
+        }
+
+        final long taskId = event.getActiveTaskInfo().getTask().getId();
+        if (mExtraTaskBundle.getTask().getId() != taskId) {
+            return;
+        }
+
+        mAdapter.updateCurrentActivityTime(taskId);
+    }
+
+    private void scrollToSelectedSpan() {
+        int[] position = new int[2];
+        if (mAdapter.getEarliestHighlightedSpanPosition(position)) {
+            TaskActivitiesLayoutManager layoutManager = (TaskActivitiesLayoutManager) mRecyclerView.getLayoutManager();
+            layoutManager.scrollToSpan(position[0], position[1]);
+        }
     }
 }

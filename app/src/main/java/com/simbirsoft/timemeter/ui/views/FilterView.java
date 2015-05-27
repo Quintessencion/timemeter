@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.FrameLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
@@ -25,6 +24,7 @@ import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.handlers.JobEventDispatcher;
 import com.be.android.library.worker.jobs.CallableForkJoinJob;
 import com.be.android.library.worker.models.LoadJobResult;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -37,7 +37,6 @@ import com.simbirsoft.timemeter.jobs.LoadTagListJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.model.Period;
 import com.simbirsoft.timemeter.ui.util.KeyboardUtils;
-import com.simbirsoft.timemeter.ui.util.TagViewUtils;
 import com.simbirsoft.timemeter.ui.util.ToastUtils;
 import com.squareup.otto.Bus;
 import com.tokenautocomplete.FilteredArrayAdapter;
@@ -55,6 +54,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -371,7 +371,6 @@ public class FilterView extends FrameLayout implements
     public boolean onClose() {
         mState.searchText = null;
         postFilterUpdate();
-
         return false;
     }
 
@@ -442,6 +441,7 @@ public class FilterView extends FrameLayout implements
         mJobEventDispatcher = new JobEventDispatcher(context);
         mJobEventDispatcher.register(this);
 
+        mTagsView.setVisibilityStateCallback(() -> FilterView.this.getVisibility() == View.VISIBLE);
         mTagsView.allowDuplicates(false);
         mTagsView.allowCollapse(false);
         mTagsView.setImeActionLabel(
@@ -450,6 +450,12 @@ public class FilterView extends FrameLayout implements
         mTagsView.setImeOptions(EditorInfo.IME_ACTION_DONE);
         mTagsView.setTokenClickStyle(TokenCompleteTextView.TokenClickStyle.Delete);
         mTagsView.setTokenListener(this);
+        mTagsView.setOnClickListener((v) -> {
+            // re-filter tag list adapter manually as it
+            // isn't done automatically from this point
+            mAdapter.getFilter().filter(mTagsView.getCurrentCompletionText());
+            mTagsView.showDropDown();
+        });
         mJobEventDispatcher.submitJob(Injection.sJobsComponent.loadTagListJob());
     }
 
@@ -497,6 +503,16 @@ public class FilterView extends FrameLayout implements
             @Override
             protected boolean keepObject(Tag tag, String s) {
                 final String name = s.trim();
+
+                if (Iterables.indexOf(
+                        mTagsView.getObjects(),
+                        (token) -> ((Tag) token).getName().equalsIgnoreCase(tag.getName())) > -1) {
+
+                    return false;
+
+                } else if (TagFilterTextView.COMPLETION_TEXT_ALLOW_ANY.equals(s)) {
+                    return true;
+                }
 
                 if (TextUtils.isEmpty(name)) {
                     return false;
@@ -548,51 +564,40 @@ public class FilterView extends FrameLayout implements
         super.onDetachedFromWindow();
     }
 
+
+
     @Override
     public void onTokenAdded(Object o) {
-        final Tag tag = (Tag) o;
-        if (mAdapter != null && mAdapter.getPosition(tag) < 0) {
-            mTagsView.removeObject(tag);
-
+        if (mAdapter == null) {
             return;
         }
+        if (mAdapter.getPosition((Tag) o) < 0) {
+            // Allow to add only existing tags
+            mTagsView.removeObject(o);
 
-        if (!mState.tags.contains(tag)) {
-            mState.tags.add(tag);
-        }
-
-        if (mTokenListener != null) {
-            mTokenListener.onTokenAdded(tag);
-        }
-
-        if (mIgnoredEventTokens.contains(tag)) {
-            mIgnoredEventTokens.remove(tag);
         } else {
+            if (mTokenListener != null) {
+                mTokenListener.onTokenAdded(o);
+            }
+            KeyboardUtils.hideSoftInput(mTagsView.getContext(), mTagsView.getWindowToken());
             postFilterUpdate();
         }
+
+        // Need to manually re-filter tag list adapter
+        // to exclude previously added tags from list
+        mAdapter.getFilter().filter(mTagsView.getCurrentCompletionText());
     }
 
     @Override
     public void onTokenRemoved(Object o) {
-        final Tag tag = (Tag) o;
-
-        if (mState.tags.contains(tag)) {
-            mState.tags.remove(tag);
+        if (mAdapter != null) {
+            if (mTokenListener != null && mAdapter.getPosition((Tag) o) > -1) {
+                mTokenListener.onTokenRemoved(o);
+            }
+            // TagFilterTextView automatically re-filter it's adapter after tag remove
         }
 
-        if (mIgnoredEventTokens.contains(o)) {
-            mIgnoredEventTokens.remove(o);
-        } else {
-            postFilterUpdate();
-        }
-
-        if (mTokenListener == null) {
-            return;
-        }
-
-        if (mAdapter != null && mAdapter.getPosition(tag) > -1) {
-            mTokenListener.onTokenRemoved(tag);
-        }
+        postFilterUpdate();
     }
 
     public void setFilterState(FilterState state) {
@@ -628,6 +633,13 @@ public class FilterView extends FrameLayout implements
         return mState.copy();
     }
 
+    public void updateDateView() {
+        if (mDatePeriodView != null) {
+            mDatePeriodView.updateStartDateView();
+            mDatePeriodView.updateEndDateView();
+        }
+    }
+
     private void postFilterUpdate() {
         if (mIsSilentUpdate) {
             return;
@@ -646,6 +658,8 @@ public class FilterView extends FrameLayout implements
             mState.period = null;
             mState.dateMillis = 0;
         }
+
+        mState.tags = ImmutableList.copyOf(Lists.transform(mTagsView.getObjects(), input -> (Tag) input));
     }
 
     private void sendSelectDateClickEvent() {

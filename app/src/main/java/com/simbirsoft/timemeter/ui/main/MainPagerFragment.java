@@ -33,6 +33,7 @@ import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.views.FilterResultsView;
+import com.simbirsoft.timemeter.ui.util.KeyboardUtils;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
@@ -153,8 +154,17 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (mFilterView != null) {
+            mFilterView.updateDateView();
+        }
+    }
+
+    @Override
     public void onDestroy() {
         mBus.unregister(this);
+        savePagePosition();
         super.onDestroy();
     }
 
@@ -219,6 +229,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mTabs = (PagerSlidingTabStrip) mContainerHeader.findViewById(R.id.tabs);
         mTabs.setTextColor(mColorWhite);
         mTabs.setViewPager(mViewPager);
+        loadPagePosition();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Hide custom elevation on Lollipop
@@ -230,7 +241,12 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
                 onPageChanged(position);
             }
         });
-        onPageChanged(mViewPager.getCurrentItem());
+        mTabs.post(new Runnable() {
+            @Override
+            public void run() {
+                onPageChanged(mViewPager.getCurrentItem());
+            }
+        });
     }
 
     private void onAdapterSetupItem(Fragment fragment) {
@@ -357,6 +373,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
         updateContainerMargin();
         mFilterView.setVisibility(View.INVISIBLE);
+        KeyboardUtils.hideSoftInput(mFilterView.getContext(), mFilterView.getWindowToken());
     }
 
     private boolean isFilterPanelVisible() {
@@ -449,6 +466,14 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     @Override
     public void onTokenRemoved(Object o) {
         mViewPager.post(this::updateContainerMargin);
+    }
+
+    private void savePagePosition() {
+        mPrefs.setSelectedTaskTabPosition(mViewPager.getCurrentItem());
+    }
+
+    private void loadPagePosition() {
+        mViewPager.setCurrentItem(mPrefs.getSelectedTaskTabPosition());
     }
 
     private void onPageChanged(int position) {
