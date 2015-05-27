@@ -76,9 +76,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     @InstanceState
     boolean mIsFilterResultsPanelShown;
 
-    @InstanceState
-    boolean mIsFilterViewStateChanged;
-
     @Inject
     Bus mBus;
 
@@ -324,7 +321,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     @Subscribe
     public void onFitlerViewStateChanged(FilterViewStateChangeEvent event) {
         mFilterState = event.getFilterState();
-        mIsFilterViewStateChanged = true;
 
         if (event.isReset()) {
             hideFilterView();
@@ -413,10 +409,9 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     public void updateFilterResultsView(int taskCount, FilterView.FilterState filterState) {
         mTaskCount = taskCount;
 
-        if (mIsFilterViewStateChanged && !mFilterState.isEmpty()) {
+        if (!mFilterState.isEmpty()) {
             mFilterResultsView.updateView(taskCount, filterState);
             showSearchResultsPanel(true);
-            mIsFilterViewStateChanged = false;
         }
 
         if (mFilterState.isEmpty()) {
