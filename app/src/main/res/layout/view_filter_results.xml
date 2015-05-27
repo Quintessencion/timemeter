@@ -4,7 +4,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/filter_results_view_height"
                 android:paddingLeft="@dimen/filter_results_view_text_padding"
-                android:background="@color/middleGrey">
+                android:background="@color/primaryDark">
     <TextView
         android:id="@+id/filter_results"
         android:layout_width="wrap_content"
