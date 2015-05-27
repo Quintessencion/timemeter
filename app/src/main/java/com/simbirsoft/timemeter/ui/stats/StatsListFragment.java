@@ -24,6 +24,7 @@ import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
+import com.simbirsoft.timemeter.ui.views.HelpCardPresenter;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
@@ -56,6 +57,7 @@ public class StatsListFragment extends MainPageFragment implements
 
         mStatsListAdapter = new StatsListAdapter();
         mStatsListAdapter.setChartClickListener(this);
+        mStatsListAdapter.setHelpCardSource(this);
     }
 
     @AfterViews
@@ -70,8 +72,6 @@ public class StatsListFragment extends MainPageFragment implements
         mRecyclerView.setAdapter(mStatsListAdapter);
 
         requestLoad(STATISTICS_BINDER_LOADER_TAG, this);
-
-        bindHelpCard();
 
         getBus().register(this);
     }
@@ -153,6 +153,10 @@ public class StatsListFragment extends MainPageFragment implements
         if (!controller.isPresented(HelpCardController.HELP_CARD_STATS_LIST)) {
             return HelpCardController.HELP_CARD_STATS_LIST;
         }
-        return -1;
+        return super.getHelpCardToPresent(controller);
+    }
+
+    protected HelpCardPresenter getHelpCardPresenter() {
+        return mStatsListAdapter;
     }
 }

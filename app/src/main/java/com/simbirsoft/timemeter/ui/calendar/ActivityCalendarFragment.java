@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.PopupWindow;
 import android.widget.ScrollView;
 
@@ -30,6 +31,9 @@ import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
 import com.simbirsoft.timemeter.ui.views.CalendarNavigationView;
 import com.simbirsoft.timemeter.ui.views.CalendarViewPager;
+import com.simbirsoft.timemeter.ui.views.HelpCard;
+import com.simbirsoft.timemeter.ui.views.HelpCardPresenter;
+import com.simbirsoft.timemeter.ui.views.HelpCardSource;
 import com.simbirsoft.timemeter.ui.views.WeekCalendarView;
 
 import org.androidannotations.annotations.AfterViews;
@@ -46,7 +50,7 @@ import java.util.List;
 public class ActivityCalendarFragment extends MainPageFragment implements MainPagerAdapter.PageTitleProvider,
         JobLoader.JobLoaderCallbacks, CalendarNavigationView.OnCalendarNavigateListener,
         WeekCalendarView.OnCellClickListener, PopupWindow.OnDismissListener,
-        CalendarPopupAdapter.TaskClickListener {
+        CalendarPopupAdapter.TaskClickListener, HelpCardPresenter {
 
     private static final String CALENDAR_LOADER_TAG = "ActivityCalendarFragment_calendar_loader";
 
@@ -56,9 +60,11 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
     @ViewById(R.id.calendarViewPager)
     CalendarViewPager mCalendarViewPager;
 
-
     @ViewById(R.id.calendarNavigationView)
     CalendarNavigationView mCalendarNavigationView;
+
+    @ViewById(R.id.helpCard)
+    protected HelpCard mHelpCard;
 
     @InstanceState
     CalendarPeriod mCalendarPeriod;
@@ -67,6 +73,7 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
     private CalendarPagerAdapter mPagerAdapter;
     private CalendarPopupHelper mPopupHelper;
     private long mScrollViewMillisOffset = -1;
+    boolean mHelpCardSettedUp;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -83,8 +90,6 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
         mCalendarNavigationView.setOnCalendarNavigateListener(this);
 
         requestLoad(CALENDAR_LOADER_TAG, this);
-
-        bindHelpCard();
 
         getBus().register(this);
     }
@@ -246,6 +251,31 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
         if (!controller.isPresented(HelpCardController.HELP_CARD_CALENDAR)) {
             return HelpCardController.HELP_CARD_CALENDAR;
         }
-        return -1;
+        return super.getHelpCardToPresent(controller);
+    }
+
+    @Override
+    protected HelpCardPresenter getHelpCardPresenter() {
+        return this;
+    }
+
+    @Override
+    public void show() {
+        if (!mHelpCardSettedUp) {
+            setupHelpCard(mHelpCard);
+            mHelpCardSettedUp = true;
+        }
+
+        mHelpCard.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void hide() {
+        mHelpCard.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void setHelpCardSource(HelpCardSource user) {
+        // do nothing because this fragment is help card user
     }
 }

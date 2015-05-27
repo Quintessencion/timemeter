@@ -8,7 +8,6 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
-import android.view.View;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
@@ -33,6 +32,8 @@ import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.simbirsoft.timemeter.ui.views.HelpCard;
 import com.simbirsoft.timemeter.ui.views.HelpCardDataSource;
+import com.simbirsoft.timemeter.ui.views.HelpCardPresenter;
+import com.simbirsoft.timemeter.ui.views.HelpCardSource;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
@@ -40,7 +41,6 @@ import com.squareup.otto.Subscribe;
 import org.slf4j.Logger;
 
 import org.androidannotations.annotations.EFragment;
-import org.androidannotations.annotations.ViewById;
 
 import java.util.concurrent.ExecutionException;
 
@@ -49,7 +49,8 @@ import javax.inject.Named;
 
 
 @EFragment
-public class MainPageFragment extends BaseFragment {
+public class MainPageFragment extends BaseFragment implements HelpCardSource {
+
     public static class SnackbarShowEvent {
         private boolean mVisible;
 
@@ -85,10 +86,7 @@ public class MainPageFragment extends BaseFragment {
 
     FilterViewProvider mFilterViewProvider;
 
-    int mCurrentHelpCardId;
-
-    @ViewById(R.id.helpCard)
-    protected HelpCard mHelpCard;
+    int mCurrentHelpCardId = HelpCardController.HELP_CARD_NONE;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -127,32 +125,31 @@ public class MainPageFragment extends BaseFragment {
 
         reloadContentIfNeeded();
     }
-    
-    protected void bindHelpCard() {
-        mHelpCard.setOnNextClickListener(v -> {
-            onHelpCardNextClicked(mHelpCard, mCurrentHelpCardId);
-        });
-        mHelpCard.setOnActionClickListener(v -> {
-            onHelpCardActionClicked(mHelpCard, mCurrentHelpCardId);
-        });
-        mHelpCard.setOnClickListener(v -> {
-            onHelpCardClicked(mHelpCard, mCurrentHelpCardId);
-        });
-    }
 
     protected int getHelpCardToPresent(HelpCardController controller) {
-        return -1;
+        return HelpCardController.HELP_CARD_NONE;
     }
 
     protected void presentHelpCardIfAny() {
-        mHelpCard.setVisibility(View.GONE);
+        if (getHelpCardPresenter() == null)
+            return;
 
+        int oldId = mCurrentHelpCardId;
         mCurrentHelpCardId = getHelpCardToPresent(mHelpCardController);
-        if (mCurrentHelpCardId != -1) {
-            final HelpCardDataSource ds = mHelpCardController.getCard(mCurrentHelpCardId);
-            mHelpCard.setAdapter(ds);
-            mHelpCard.setVisibility(View.VISIBLE);
+
+        if (mCurrentHelpCardId == oldId) {
+            return;
         }
+
+        if (mCurrentHelpCardId != HelpCardController.HELP_CARD_NONE) {
+            getHelpCardPresenter().show();
+        } else {
+            getHelpCardPresenter().hide();
+        }
+    }
+
+    protected HelpCardPresenter getHelpCardPresenter() {
+        return null;
     }
 
     protected Bus getBus() {
@@ -424,7 +421,7 @@ public class MainPageFragment extends BaseFragment {
     }
 
     protected void onHelpCardNextClicked(HelpCard sender, int cardID) {
-        if (mHelpCard.isLastItemPresented()) {
+        if (sender.isLastItemPresented()) {
             mHelpCardController.markPresented(cardID);
         }
     }
@@ -440,5 +437,21 @@ public class MainPageFragment extends BaseFragment {
     @Subscribe
     public void onHelpCardPresentedEvent(HelpCardPresentedEvent ev) {
         presentHelpCardIfAny();
+    }
+
+    @Override
+    public void setupHelpCard(HelpCard helpCard) {
+        helpCard.setOnNextClickListener(v -> {
+            onHelpCardNextClicked(helpCard, mCurrentHelpCardId);
+        });
+        helpCard.setOnActionClickListener(v -> {
+            onHelpCardActionClicked(helpCard, mCurrentHelpCardId);
+        });
+        helpCard.setOnClickListener(v -> {
+            onHelpCardClicked(helpCard, mCurrentHelpCardId);
+        });
+
+        final HelpCardDataSource ds = mHelpCardController.getCard(mCurrentHelpCardId);
+        helpCard.setAdapter(ds);
     }
 }

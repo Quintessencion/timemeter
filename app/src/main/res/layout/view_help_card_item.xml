@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.simbirsoft.timemeter.ui.views.HelpCard_
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/helpCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:foreground="?android:attr/selectableItemBackground"
+    card_view:cardUseCompatPadding="true"
+    card_view:cardCornerRadius="4dp"
+    card_view:contentPadding="4dp"/>

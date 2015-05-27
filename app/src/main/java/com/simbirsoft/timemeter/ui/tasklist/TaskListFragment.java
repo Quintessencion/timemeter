@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.Html;
@@ -13,7 +12,6 @@ import android.text.Spanned;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -50,7 +48,7 @@ import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
 import com.simbirsoft.timemeter.ui.util.TaskFilterPredicate;
-import com.simbirsoft.timemeter.ui.views.HelpCardDataSource;
+import com.simbirsoft.timemeter.ui.views.HelpCardPresenter;
 import com.squareup.otto.Subscribe;
 
 import org.androidannotations.annotations.AfterViews;
@@ -150,11 +148,10 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
         mTasksViewAdapter = new TaskListAdapter(mTaskActivityManager);
         mTasksViewAdapter.setTaskClickListener(this);
+        mTasksViewAdapter.setHelpCardSource(this);
         mRecyclerView.setAdapter(mTasksViewAdapter);
 
         requestLoad(TASK_LIST_LOADER_TAG, this);
-
-        bindHelpCard();
     }
 
     @Override
@@ -265,7 +262,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
             mTaskListPosition = null;
         }
 
-        if (filterIsEmpty() && mTasksViewAdapter.getItemCount() == 0) {
+        if (filterIsEmpty() && mTasksViewAdapter.getTaskCount() == 0) {
             mEmptyListIndicator.setVisibility(View.VISIBLE);
         } else {
             mEmptyListIndicator.setVisibility(View.GONE);
@@ -432,7 +429,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
             return HelpCardController.HELP_CARD_TASK_LIST;
         }
 
-        if (mTasksViewAdapter.getItemCount() == 0 && !controller.isPresented(HelpCardController.HELP_CARD_ADD_NEW_TASK)) {
+        if (mTasksViewAdapter.getTaskCount() == 0 && !controller.isPresented(HelpCardController.HELP_CARD_ADD_NEW_TASK)) {
             return HelpCardController.HELP_CARD_ADD_NEW_TASK;
         }
 
@@ -443,11 +440,13 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
         boolean demosExist = mDatabaseHelper.isDemoDatasExist();
 
-        if (basicCardsPresented && demosExist && !controller.isPresented(HelpCardController.HELP_CARD_DEMO_DATAS)) {
+        boolean demoDatasPresented = controller.isPresented(HelpCardController.HELP_CARD_DEMO_DATAS);
+
+        if (basicCardsPresented && demosExist && !demoDatasPresented) {
             return HelpCardController.HELP_CARD_DEMO_DATAS;
         }
 
-        return -1;
+        return super.getHelpCardToPresent(controller);
     }
 
     @Override
@@ -463,6 +462,11 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         if (helpCardID == HelpCardController.HELP_CARD_ADD_NEW_TASK) {
             onFloatingButtonClicked(null);
         }
+    }
+
+    @Override
+    protected HelpCardPresenter getHelpCardPresenter() {
+        return mTasksViewAdapter;
     }
 }
 

@@ -10,20 +10,21 @@ import android.view.ViewGroup;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.ui.base.BaseMainPageAdapter;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 
 import java.util.Collection;
 import java.util.List;
 
-public class StatsListAdapter extends RecyclerView.Adapter<StatsListAdapter.ViewHolder> {
+public class StatsListAdapter extends BaseMainPageAdapter {
 
-    static interface ChartClickListener {
+    interface ChartClickListener {
         void onChartClicked(int viewType);
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    static class StatsViewHolder extends BaseViewHolder {
 
-        public ViewHolder(CardView itemView, View contentView) {
+        public StatsViewHolder(CardView itemView, View contentView) {
             super(itemView);
 
             this.itemView = itemView;
@@ -63,35 +64,44 @@ public class StatsListAdapter extends RecyclerView.Adapter<StatsListAdapter.View
     }
 
     @Override
-    public int getItemViewType(int position) {
+    protected int internalGetItemViewType(int position) {
         return getViewBinder(position).getViewTypeId();
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        StatisticsViewBinder binder = getViewBinderForViewTypeId(viewType);
-
-        CardView view = (CardView) LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.view_statistics_card, parent, false);
-
-        View contentView = binder.createView(parent.getContext(), view, false);
-        view.addView(contentView);
-        view.setOnClickListener(mClickListener);
-        view.setTag(viewType);
-
-        return new ViewHolder(view, contentView);
+    protected int internalGetItemCount() {
+        return mViewBinders.size();
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    protected long internalGetItemId(int position) {
+        return 0;
+    }
+
+    @Override
+    protected void internalOnBindViewHolder(BaseViewHolder viewHolder, int viewType, int position) {
         StatisticsViewBinder binder = getViewBinder(position);
 
-        binder.bindView(holder.contentView);
+        binder.bindView(((StatsViewHolder) viewHolder).contentView);
     }
 
     @Override
-    public int getItemCount() {
-        return mViewBinders.size();
+    public BaseViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        if (viewType != VIEW_TYPE_HELP_CARD) {
+            StatisticsViewBinder binder = getViewBinderForViewTypeId(viewType);
+
+            CardView view = (CardView) LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.view_statistics_card, parent, false);
+
+            View contentView = binder.createView(parent.getContext(), view, false);
+            view.addView(contentView);
+            view.setOnClickListener(mClickListener);
+            view.setTag(viewType);
+
+            return new StatsViewHolder(view, contentView);
+        }
+
+        return super.onCreateViewHolder(parent, viewType);
     }
 
     public void setChartClickListener(ChartClickListener chartClickListener) {

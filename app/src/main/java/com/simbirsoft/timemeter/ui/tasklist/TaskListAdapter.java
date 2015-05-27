@@ -15,6 +15,7 @@ import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.base.BaseMainPageAdapter;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
 import com.simbirsoft.timemeter.ui.views.TagFlowView;
@@ -25,17 +26,16 @@ import org.slf4j.Logger;
 import java.util.Collections;
 import java.util.List;
 
-public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
+public class TaskListAdapter extends BaseMainPageAdapter {
 
-    static interface TaskClickListener {
+    interface TaskClickListener {
         void onTaskViewClicked(TaskBundle item);
         void onTaskViewLongClicked(TaskBundle item, View itemView);
         void onTaskCardClicked(TaskBundle item);
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
-
-        public ViewHolder(View itemView) {
+    static class TaskViewHolder extends BaseViewHolder {
+        public TaskViewHolder(View itemView) {
             super(itemView);
         }
 
@@ -45,6 +45,8 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         TextView timerView;
         TagFlowView tagFlowView;
     }
+
+    private static final int VIEW_TYPE_TASK = 1;
 
     private static final Logger LOG = LogFactory.getLogger(TaskListAdapter.class);
 
@@ -124,7 +126,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     }
 
     public void updateItemView(RecyclerView recyclerView, Task task) {
-        ViewHolder holder = (ViewHolder) recyclerView.findViewHolderForItemId(task.getId());
+        TaskViewHolder holder = (TaskViewHolder) recyclerView.findViewHolderForItemId(task.getId());
         if (holder == null) {
             return;
         }
@@ -133,16 +135,29 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     }
 
     @Override
-    public long getItemId(int position) {
+    protected long internalGetItemId(int position) {
         return mItems.get(position).getTask().getId();
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-        View view = LayoutInflater.from(viewGroup.getContext())
-                                  .inflate(R.layout.view_task_card, viewGroup, false);
+    protected int internalGetItemViewType(int position) {
+        return VIEW_TYPE_TASK;
+    }
 
-        ViewHolder holder = new ViewHolder(view);
+    @Override
+    public BaseViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+        if (viewType == VIEW_TYPE_TASK) {
+            return onCreateTaskItemViewHolder(viewGroup);
+        }
+
+        return super.onCreateViewHolder(viewGroup, viewType);
+    }
+
+    private TaskViewHolder onCreateTaskItemViewHolder(ViewGroup viewGroup) {
+        View view = LayoutInflater.from(viewGroup.getContext())
+                .inflate(R.layout.view_task_card, viewGroup, false);
+
+        TaskViewHolder holder = new TaskViewHolder(view);
 
         view.setOnClickListener(mCardClickListener);
 
@@ -153,17 +168,19 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         holder.itemEditView = view.findViewById(R.id.edit_or_view);
         holder.itemEditView.setOnClickListener(mViewClickListener);
         holder.itemEditView.setOnLongClickListener(mViewLongClickListener);
+
         return holder;
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, int position) {
-        TaskBundle item = mItems.get(position);
-
-        bindViewHolder(viewHolder, item);
+    protected void internalOnBindViewHolder(BaseViewHolder viewHolder, int viewType, int position) {
+        if (viewType == VIEW_TYPE_TASK) {
+            TaskBundle item = mItems.get(position);
+            bindViewHolder((TaskViewHolder)viewHolder, item);
+        }
     }
 
-    private void bindViewHolder(ViewHolder holder, TaskBundle item) {
+    private void bindViewHolder(TaskViewHolder holder, TaskBundle item) {
         final Task task = item.getTask();
 
         holder.titleView.setText(task.getDescription());
@@ -189,8 +206,11 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     }
 
     @Override
-    public int getItemCount() {
+    protected int internalGetItemCount() {
         return mItems.size();
     }
 
+    public int getTaskCount() {
+        return internalGetItemCount();
+    }
 }

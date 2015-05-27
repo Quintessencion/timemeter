@@ -19,6 +19,7 @@ import javax.inject.Singleton;
 @Singleton
 public class HelpCardController {
 
+    public final static int HELP_CARD_NONE = -1;
     public final static int HELP_CARD_TASK_LIST = 0;
     public final static int HELP_CARD_STATS_LIST = 1;
     public final static int HELP_CARD_CALENDAR = 2;
