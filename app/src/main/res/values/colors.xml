@@ -13,6 +13,7 @@
 
     <color name="lightRed">#F44336</color>
     <color name="lightGrey">#DEDEDE</color>
+    <color name="middleGrey">#9E9E9E</color>
 
     <color name="deepOrange">#FF3D00</color>
     <color name="pink">#E91E63</color>
