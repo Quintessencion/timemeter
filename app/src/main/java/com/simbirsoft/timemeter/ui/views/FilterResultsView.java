@@ -21,9 +21,6 @@ public class FilterResultsView extends RelativeLayout{
     @ViewById(R.id.filter_results)
     TextView mSearchResultsTextView;
 
-    @StringRes(R.string.found_tasks)
-    String mFoundTasks;
-
     Context mContext;
 
     public FilterResultsView(Context context) {
@@ -49,8 +46,8 @@ public class FilterResultsView extends RelativeLayout{
 
     public void updateView(int foundTaskCount, FilterView.FilterState filterState) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(String.format(mFoundTasks, String.format(mContext.getResources().
-                getQuantityString(R.plurals.task_count, foundTaskCount), foundTaskCount)));
+        stringBuilder.append(String.format(mContext.getResources().
+                getQuantityString(R.plurals.task_count, foundTaskCount), foundTaskCount));
 
         if (!filterState.tags.isEmpty()) {
             final String tags = Joiner.on(",").join(Iterables.transform(filterState.tags, Tag::getName));

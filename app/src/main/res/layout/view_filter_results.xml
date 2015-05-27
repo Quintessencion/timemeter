@@ -13,5 +13,5 @@
         android:text=""
         android:textColor="@android:color/white"
         style="?android:attr/textAppearanceSmall"
-        tools:text="Найдено 5 задач с метками: Работа, Хобби"/>
+        tools:text="Найдены 5 задач с метками: Работа, Хобби"/>
 </LinearLayout>
