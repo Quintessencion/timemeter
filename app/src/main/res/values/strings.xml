@@ -31,6 +31,7 @@
     <string name="content_empty">Нет данных</string>
     <string name="caption_progress">Загрузка&#8230;</string>
     <string name="label_color">Цвет</string>
+    <string name="search_by_name">Поиск по названию&#8230;</string>
 
     <!-- Actions -->
     <string name="action_search">Поиск</string>

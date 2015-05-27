@@ -43,6 +43,7 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.ColorRes;
+import org.androidannotations.annotations.res.StringRes;
 import org.slf4j.Logger;
 
 import java.util.Calendar;
@@ -92,6 +93,9 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
     @Inject
     Preferences mPrefs;
+
+    @StringRes(R.string.search_by_name)
+    String mSearchHint;
 
     private PagerSlidingTabStrip mTabs;
     private FilterView mFilterView;
@@ -282,6 +286,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
             }
         });
         SearchView searchView = (SearchView) searchItem.getActionView();
+        searchView.setQueryHint(mSearchHint);
         ImageView closeButton = (ImageView) searchView.findViewById(R.id.search_close_btn);
         closeButton.setOnClickListener(view -> searchItem.collapseActionView());
         mFilterView.setSearchView(searchView);
