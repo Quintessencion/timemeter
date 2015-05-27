@@ -21,6 +21,7 @@ public class HelpCard extends CardView {
         String getMessage(int index);
         String getTitleForActionButton(int index);
         String getTitleForNextButton(int index);
+        String getTitleForBackButton(int index);
     }
 
     @ViewById(R.id.helpCardText)
@@ -32,9 +33,13 @@ public class HelpCard extends CardView {
     @ViewById(R.id.helpCardNextButton)
     protected Button mNextButton;
 
+    @ViewById(R.id.helpCardBackButton)
+    protected Button mBackButton;
+
     private int mPosition = 0;
     private Adapter mAdapter;
     private OnClickListener mOnNextClickListener;
+    private OnClickListener mOnBackClickListener;
 
     public HelpCard(Context context) {
         super(context);
@@ -48,20 +53,35 @@ public class HelpCard extends CardView {
         super(context, attrs, defStyle);
     }
 
-    @AfterViews
-    void initializeView() {
-       mNextButton.setOnClickListener(v -> {
-           if (mOnNextClickListener != null) {
-               mOnNextClickListener.onClick(v);
-           }
-           goToNextItem();
-       });
+    @Override
+    protected void onFinishInflate() {
+        mNextButton.setOnClickListener(v -> {
+            if (mOnNextClickListener != null) {
+                mOnNextClickListener.onClick(v);
+            }
+            goToNextItem();
+        });
+        mBackButton.setOnClickListener(v -> {
+            if (mOnBackClickListener != null) {
+                mOnBackClickListener.onClick(v);
+            }
+            goToPrevItem();
+        });
+        super.onFinishInflate();
     }
 
     private void goToNextItem() {
         final int nextPosition = mPosition + 1;
         final int itemsCount = mAdapter.getItemsCount();
         if (nextPosition < itemsCount) {
+            mPosition = nextPosition;
+            presentItemAtIndex(mPosition);
+        }
+    }
+
+    private void goToPrevItem() {
+        final int nextPosition = mPosition - 1;
+        if (nextPosition >= 0) {
             mPosition = nextPosition;
             presentItemAtIndex(mPosition);
         }
@@ -75,8 +95,16 @@ public class HelpCard extends CardView {
         mOnNextClickListener = listener;
     }
 
+    public void setOnBackClickListener(View.OnClickListener listener) {
+        mOnBackClickListener = listener;
+    }
+
     private void reload() {
         mPosition = 0;
+
+        int count = mAdapter.getItemsCount();
+        mBackButton.setVisibility(count > 1 ? VISIBLE : GONE);
+
         presentItemAtIndex(mPosition);
     }
 
@@ -84,6 +112,7 @@ public class HelpCard extends CardView {
         mTextView.setText(mAdapter.getMessage(index));
         mActionButton.setText(mAdapter.getTitleForActionButton(index));
         mNextButton.setText(mAdapter.getTitleForNextButton(index));
+        mBackButton.setText(mAdapter.getTitleForBackButton(index));
     }
 
     public void setAdapter(Adapter adapter) {

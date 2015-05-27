@@ -8,4 +8,5 @@
     android:foreground="?android:attr/selectableItemBackground"
     card_view:cardUseCompatPadding="true"
     card_view:cardCornerRadius="4dp"
-    card_view:contentPadding="4dp"/>
+    card_view:contentPadding="4dp"
+    card_view:cardBackgroundColor="@color/primaryDark"/>

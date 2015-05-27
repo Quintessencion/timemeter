@@ -1,9 +1,11 @@
 package com.simbirsoft.timemeter.ui.base;
 
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.ui.views.HelpCard;
 import com.simbirsoft.timemeter.ui.views.HelpCardPresenter;
 import com.simbirsoft.timemeter.ui.views.HelpCardSource;
@@ -94,8 +96,11 @@ public abstract class BaseMainPageAdapter extends RecyclerView.Adapter<BaseMainP
     protected abstract void internalOnBindViewHolder(BaseViewHolder viewHolder, int viewType, int position);
 
     private HelpCardViewHolder onCreateHelpCardViewHolder(ViewGroup viewGroup) {
-        HelpCard helpCard = HelpCard_.build(viewGroup.getContext());
+        HelpCard helpCard = (HelpCard)LayoutInflater.from(viewGroup.getContext())
+                .inflate(R.layout.view_help_card_item, viewGroup, false);
+
         HelpCardViewHolder holder = new HelpCardViewHolder(helpCard);
+
         return holder;
     }
 }

@@ -149,6 +149,7 @@
     <string name="help_card_text_05_00">Добавляйте новые метки, выбирайте для них цвета. Используйте метки, чтобы группировать ваши задачи и получать гибкую статистику.</string>
     <string name="help_card_btn_ok">OK</string>
     <string name="help_card_btn_next">Далее</string>
+    <string name="help_card_btn_back">Назад</string>
     <string name="help_card_btn_hide">Скрыть</string>
     <string name="help_card_btn_delete">Удалить</string>
 </resources>

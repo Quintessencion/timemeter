@@ -2,6 +2,8 @@ package com.simbirsoft.timemeter.ui.views;
 
 import android.content.Context;
 
+import com.simbirsoft.timemeter.R;
+
 import java.util.ArrayList;
 
 public class HelpCardDataSource implements HelpCard.Adapter {
@@ -10,11 +12,13 @@ public class HelpCardDataSource implements HelpCard.Adapter {
         public String message;
         public String actionTitle;
         public String nextTitle;
+        public String backTitle;
 
-        public Item(String message, String actionTitle, String nextTitle) {
+        public Item(String message, String actionTitle, String nextTitle, String backTitle) {
             this.message = message;
             this.actionTitle = actionTitle;
             this.nextTitle = nextTitle;
+            this.backTitle = backTitle;
         }
     }
 
@@ -40,16 +44,25 @@ public class HelpCardDataSource implements HelpCard.Adapter {
         return items.get(index).nextTitle;
     }
 
-    public HelpCardDataSource addItem(String message, String actionTitle, String nextTitle) {
-        items.add(new Item(message, actionTitle, nextTitle));
+    @Override
+    public String getTitleForBackButton(int index) {
+        return items.get(index).backTitle;
+    }
+
+    public HelpCardDataSource addItem(String message, String actionTitle, String nextTitle, String backTitle) {
+        items.add(new Item(message, actionTitle, nextTitle, backTitle));
         return this;
     }
 
-    public HelpCardDataSource addItem(Context ctx, int message, int actionTitle, int nextTitle) {
+    public HelpCardDataSource addItem(Context ctx, int message, int actionTitle, int nextTitle, int backTitle) {
         String msg = message > 0 ? ctx.getString(message) : "";
         String action = actionTitle > 0 ? ctx.getString(actionTitle) : "";
         String next = nextTitle > 0 ? ctx.getString(nextTitle) : "";
-        items.add(new Item(msg, action, next));
-        return this;
+        String back = backTitle > 0 ? ctx.getString(backTitle) : "";
+        return addItem(msg, action, next, back);
+    }
+
+    public HelpCardDataSource addItem(Context ctx, int message, int actionTitle, int nextTitle) {
+        return addItem(ctx, message, actionTitle, nextTitle, R.string.help_card_btn_back);
     }
 }
