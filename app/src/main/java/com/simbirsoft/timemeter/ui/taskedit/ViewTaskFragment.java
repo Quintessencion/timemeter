@@ -12,6 +12,7 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.animation.AlphaAnimation;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
@@ -136,6 +137,8 @@ public class ViewTaskFragment extends BaseFragment
         tagFlowView.setHintVisible(true);
         tagFlowView.bindTagViews(mExtraTaskBundle.getTags());
         tagFlowView.setTagViewsClickListener(mTagViewClickListener);
+        View hintView = tagFlowView.getHintView();
+        if (hintView != null) hintView.setOnClickListener((v) -> { LOG.debug("Нажали на подсказку"); });
 
         mRecyclerView.setHasFixedSize(false);
         final TaskActivitiesLayoutManager layoutManager = new TaskActivitiesLayoutManager(getActivity());

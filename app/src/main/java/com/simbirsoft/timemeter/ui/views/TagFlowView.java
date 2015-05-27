@@ -2,8 +2,8 @@ package com.simbirsoft.timemeter.ui.views;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewStub;
 
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
@@ -20,7 +20,9 @@ import java.util.List;
 public class TagFlowView extends FlowLayout {
 
     private final ArrayList<TagView> mTagViews = new ArrayList<>();
+    private View mView;
     private boolean mHintVisible;
+    private View mVsTagsHint;
 
     @ViewById(R.id.tagFlowViewContainer)
     protected FlowLayout mTagContainerView;
@@ -62,15 +64,11 @@ public class TagFlowView extends FlowLayout {
                 mTagViews.add(tagView);
             }
             mTagContainerView.setVisibility(View.VISIBLE);
+            disableTagsHint();
         } else {
+            mTagContainerView.setVisibility(View.GONE);
             if (mHintVisible) {
-                LayoutInflater inflater =
-                        (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                View view = inflater.inflate(R.layout.view_text_view_hint, null, false);
-                mTagContainerView.addView(view);
-                mTagContainerView.setVisibility(View.VISIBLE);
-            } else {
-                mTagContainerView.setVisibility(View.GONE);
+                enableTagsHint();
             }
         }
     }
@@ -87,5 +85,24 @@ public class TagFlowView extends FlowLayout {
 
     public void setHintVisible(boolean hintVisible) {
         mHintVisible = hintVisible;
+    }
+
+    public View getHintView() {
+        return mView;
+    }
+
+    private void enableTagsHint() {
+        if (mVsTagsHint == null) {
+            mVsTagsHint = ((ViewStub) findViewById(R.id.vsTagsHint)).inflate();
+            mView = mVsTagsHint.findViewById(R.id.tagsHint);
+        } else {
+            mVsTagsHint.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void disableTagsHint() {
+        if (mVsTagsHint != null) {
+            mVsTagsHint.setVisibility(View.GONE);
+        }
     }
 }
