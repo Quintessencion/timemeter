@@ -87,6 +87,9 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     @InstanceState
     FilterView.FilterState mFilterState;
 
+    @InstanceState
+    int mTaskCount;
+
     @Inject
     Preferences mPrefs;
 
@@ -182,6 +185,10 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
             showFilterView(false);
         } else {
             hideFilterView(false);
+        }
+
+        if (mFilterResultsView != null && mFilterState != null) {
+            mFilterResultsView.updateView(mTaskCount, mFilterState);
         }
 
         if (mIsFilterResultsPanelShown) {
@@ -398,6 +405,8 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
     @Override
     public void updateFilterResultsView(int taskCount, FilterView.FilterState filterState) {
+        mTaskCount = taskCount;
+
         if (mIsFilterViewStateChanged && !mFilterState.isEmpty()) {
             mFilterResultsView.updateView(taskCount, filterState);
             showSearchResultsPanel(true);
