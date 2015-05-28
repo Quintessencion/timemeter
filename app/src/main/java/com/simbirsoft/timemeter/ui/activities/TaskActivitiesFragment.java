@@ -43,6 +43,7 @@ import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskActivitiesJob;
 import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
+import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
 import com.simbirsoft.timemeter.ui.stats.StatisticsViewBinder;
@@ -81,6 +82,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
     private static final String LOADER_TAG = "TaskActivitiesFragment_";
     private static final String TAG_DATE_PICKER_FRAGMENT = "activities_date_picker_fragment_tag";
     private static final String SNACKBAR_TAG = "task_activities_snackbar";
+    private static final int REQUEST_CODE_EDIT_ACTIVITY = 10005;
 
     @ViewById(android.R.id.list)
     RecyclerView mRecyclerView;
@@ -178,6 +180,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
         mRecyclerView.setLayoutManager(layoutManager);
 
         mAdapter = new TaskActivitiesAdapter(getActivity());
+        mAdapter.setMenuListener(this);
         mRecyclerView.setAdapter(mAdapter);
 
         mFilterView.setVisibility(View.INVISIBLE);
@@ -486,6 +489,11 @@ public class TaskActivitiesFragment extends BaseFragment implements
 
     @Override
     public void onTaskTimeSpanEditClicked(TaskTimeSpan span) {
-
+        Bundle args = new Bundle();
+        args.putString(EditTaskActivityDialogFragment.EXTRA_TITLE, mExtraTitle);
+        args.putLong(EditTaskActivityDialogFragment.EXTRA_SPAN_ID, span.getId());
+        Intent launchIntent = DialogContainerActivity.prepareDialogLaunchIntent(
+                getActivity(), EditTaskActivityDialogFragment.class.getName(), args);
+        startActivityForResult(launchIntent, REQUEST_CODE_EDIT_ACTIVITY);
     }
 }

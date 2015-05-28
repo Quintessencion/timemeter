@@ -22,15 +22,18 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskRecentActivitiesJob;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.activities.EditTaskActivityDialogFragment;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesAdapter;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment_;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesLayoutManager;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
+import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
@@ -53,7 +56,7 @@ import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_view_task)
 public class ViewTaskFragment extends BaseFragment
-        implements JobLoader.JobLoaderCallbacks{
+        implements JobLoader.JobLoaderCallbacks, TaskActivitiesAdapter.OnMenuListener {
     public static final String EXTRA_TASK_BUNDLE = "extra_task_bundle";
 
     private static final String LOADER_TAG = "ViewTaskFragment";
@@ -61,6 +64,7 @@ public class ViewTaskFragment extends BaseFragment
     private static final Logger LOG = LogFactory.getLogger(ViewTaskFragment.class);
 
     private static final int REQUEST_CODE_VIEW_ACTIVITIES = 101;
+    private static final int REQUEST_CODE_EDIT_ACTIVITY = 10005;
 
     @ViewById(R.id.tagFlowView)
     protected TagFlowView tagFlowView;
@@ -143,6 +147,7 @@ public class ViewTaskFragment extends BaseFragment
 
         mAdapter = new TaskActivitiesAdapter(getActivity());
         mAdapter.setHighlightedSpans(mExtraTaskBundle.getTaskTimeSpans());
+        mAdapter.setMenuListener(this);
         mRecyclerView.setAdapter(mAdapter);
         mProgressLayout.setShouldDisplayEmptyIndicatorMessage(true);
         mProgressLayout.setEmptyIndicatorStyle(Typeface.ITALIC);
@@ -300,5 +305,15 @@ public class ViewTaskFragment extends BaseFragment
             TaskActivitiesLayoutManager layoutManager = (TaskActivitiesLayoutManager) mRecyclerView.getLayoutManager();
             layoutManager.scrollToSpan(position[0], position[1]);
         }
+    }
+
+    @Override
+    public void onTaskTimeSpanEditClicked(TaskTimeSpan span) {
+        Bundle args = new Bundle();
+        args.putString(EditTaskActivityDialogFragment.EXTRA_TITLE, mExtraTaskBundle.getTask().getDescription());
+        args.putLong(EditTaskActivityDialogFragment.EXTRA_SPAN_ID, span.getId());
+        Intent launchIntent = DialogContainerActivity.prepareDialogLaunchIntent(
+                getActivity(), EditTaskActivityDialogFragment.class.getName(), args);
+        startActivityForResult(launchIntent, REQUEST_CODE_EDIT_ACTIVITY);
     }
 }

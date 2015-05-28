@@ -2,7 +2,6 @@ package com.simbirsoft.timemeter.ui.activities;
 
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.res.Resources;
 import android.support.v7.widget.RecyclerView;
 import android.view.ActionMode;
@@ -29,9 +28,7 @@ import com.simbirsoft.timemeter.ui.views.TaskActivityItemView;
 import com.simbirsoft.timemeter.ui.views.TaskActivityItemsLayout;
 
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 
 public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesAdapter.ViewHolder>
@@ -119,6 +116,7 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         mItems.addAll(items);
         mSelectedSpans.clear();
         notifyDataSetChanged();
+        updateActionBar();
     }
 
     public void setHighlightedSpans(List<TaskTimeSpan> spans) {
