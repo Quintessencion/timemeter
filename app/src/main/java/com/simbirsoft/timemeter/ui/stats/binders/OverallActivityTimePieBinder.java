@@ -2,6 +2,7 @@ package com.simbirsoft.timemeter.ui.stats.binders;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.LayoutInflater;
@@ -20,9 +21,12 @@ import com.github.mikephil.charting.utils.Utils;
 import com.github.mikephil.charting.utils.ValueFormatter;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.QueryUtils;
+import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.model.TaskOverallActivity;
+import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.stats.OverallTaskActivityChartMarkerView;
 import com.simbirsoft.timemeter.ui.stats.StatisticsViewBinder;
 import com.simbirsoft.timemeter.ui.util.ColorSets;
@@ -41,6 +45,14 @@ import javax.inject.Inject;
 public class OverallActivityTimePieBinder implements StatisticsViewBinder,
         OnChartValueSelectedListener, VerticalLegend.LegendClickListener {
 
+    public void setOnLegendClickListener(OnLegendClickListener onLegendClickListener) {
+        mOnLegendClickListener = onLegendClickListener;
+    }
+
+    public interface OnLegendClickListener {
+        void onLegendItemClicked(TaskBundle taskOverallActivity);
+    }
+
     private static final Logger LOG = LogFactory.getLogger(OverallActivityTimePieBinder.class);
 
     @Inject
@@ -48,6 +60,9 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder,
 
     @Inject
     Resources mResources;
+
+    @Inject
+    SQLiteDatabase mSQLiteDatabase;
 
     private ViewGroup mContentRoot;
     private PieChart mPieChart;
@@ -59,6 +74,8 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder,
     private boolean mIsDataBound;
     private boolean mIsFullScreenMode;
     private Paint mCenterTextPaint;
+
+    private OnLegendClickListener mOnLegendClickListener;
 
     public OverallActivityTimePieBinder(List<TaskOverallActivity> overallActivity) {
         mOverallActivity = overallActivity;
@@ -234,6 +251,11 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder,
 
     @Override
     public void onLabelClicked(int position) {
-        Toast.makeText(mContext, position + "", Toast.LENGTH_LONG).show();
+        TaskOverallActivity taskOverallActivity = mOverallActivity.get(position);
+        List<Tag> tags = QueryUtils.getTagsForTask(mSQLiteDatabase, taskOverallActivity.getId());
+
+        if (mOnLegendClickListener != null) {
+            mOnLegendClickListener.onLegendItemClicked(TaskBundle.create(taskOverallActivity, tags));
+        }
     }
 }
