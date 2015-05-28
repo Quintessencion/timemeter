@@ -23,6 +23,7 @@ import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
+import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
@@ -121,7 +122,7 @@ public class StatsListFragment extends MainPageFragment implements
         args.putInt(StatsDetailsFragment.EXTRA_CHART_VIEW_TYPE, viewType);
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), StatsDetailsFragment_.class.getName(), args);
-        getActivity().startActivityForResult(launchIntent, 1000);
+        getActivity().startActivityForResult(launchIntent, MainPageFragment.REQUEST_CODE_PROCESS_TASK);
 
     }
 
@@ -143,5 +144,21 @@ public class StatsListFragment extends MainPageFragment implements
         if (!isSelected()) {
             invalidateContent();
         }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        getActivity().setResult(resultCode, data);
+        switch (requestCode) {
+            case MainPageFragment.REQUEST_CODE_PROCESS_TASK:
+                if (resultCode == EditTaskFragment.RESULT_CODE_TASK_REMOVED
+                        || resultCode == EditTaskFragment.RESULT_CODE_TASK_UPDATED) {
+                    requestReload(STATISTICS_BINDER_LOADER_TAG, this);
+                }
+                return;
+            default:
+                break;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }
