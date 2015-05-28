@@ -15,6 +15,7 @@ import com.be.android.library.worker.base.JobEvent;
 import com.be.android.library.worker.controllers.JobLoader;
 import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
+import com.fourmob.datetimepicker.date.DatePickerDialog;
 import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
@@ -23,13 +24,20 @@ import com.simbirsoft.timemeter.jobs.LoadTaskTimeSpanJob;
 import com.simbirsoft.timemeter.ui.base.BaseDialogFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerCallbacks;
 import com.simbirsoft.timemeter.ui.views.DateTimeView;
+import com.sleepbot.datetimepicker.time.RadialPickerLayout;
+import com.sleepbot.datetimepicker.time.TimePickerDialog;
+
+import java.util.Calendar;
 
 import javax.inject.Inject;
 
-public class EditTaskActivityDialogFragment extends BaseDialogFragment implements JobLoader.JobLoaderCallbacks {
+public class EditTaskActivityDialogFragment extends BaseDialogFragment implements JobLoader.JobLoaderCallbacks,
+                    DateTimeView.DateTimeViewListener, DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
     public static final String EXTRA_SPAN_ID = "extra_span_id";
     public static final String EXTRA_TITLE = "extra_title";
     public static final String LOAD_SPAN_JOB = "load_span_job";
+    private static final String TAG_DATE_PICKER_FRAGMENT = "edit_activity_date_picker_fragment_tag";
+    private static final String TAG_TIME_PICKER_FRAGMENT = "edit_activity_time_picker_fragment_tag";
 
     private MaterialDialog mDialog;
     private Long mExtraSpanId;
@@ -37,6 +45,7 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
     private FragmentContainerCallbacks mContainerCallbacks;
     private DateTimeView mStartDateTimeView;
     private DateTimeView mEndDateTimeView;
+    private DateTimeView mSelectedDateTimeView;
 
     @Inject
     LoadTaskTimeSpanJob mLoadSpanJob;
@@ -78,7 +87,7 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
 
     @OnJobFailure(LoadTaskTimeSpanJob.class)
     public void onSpanLoadFailed(JobEvent event) {
-
+        //TODO show error alert
     }
 
     @Override
@@ -99,6 +108,8 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
                 .inflate(R.layout.dialog_edit_task_activity, null);
         mStartDateTimeView = (DateTimeView)root.findViewById(R.id.startDateTime);
         mEndDateTimeView = (DateTimeView)root.findViewById(R.id.endDateTime);
+        mStartDateTimeView.setDateTimeViewListener(this);
+        mEndDateTimeView.setDateTimeViewListener(this);
 
         mDialog = new MaterialDialog.Builder(getActivity())
                 .title(mExtraTitle)
@@ -123,5 +134,73 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
                 .build();
 
         return mDialog;
+    }
+
+    @Override
+    public void onDateTextClicked(DateTimeView v, Calendar selectedDate) {
+        mSelectedDateTimeView = v;
+        DatePickerDialog dialog = DatePickerDialog.newInstance(
+                this,
+                selectedDate.get(Calendar.YEAR),
+                selectedDate.get(Calendar.MONTH),
+                selectedDate.get(Calendar.DAY_OF_MONTH),
+                false);
+        dialog.show(getChildFragmentManager(), TAG_DATE_PICKER_FRAGMENT);
+    }
+
+    @Override
+    public void onTimeTextClicked(DateTimeView v, Calendar selectedTime) {
+        mSelectedDateTimeView = v;
+        TimePickerDialog dialog = TimePickerDialog.newInstance(
+                this,
+                selectedTime.get(Calendar.HOUR_OF_DAY),
+                selectedTime.get(Calendar.MINUTE),
+                false
+        );
+        dialog.setVibrate(false);
+        dialog.show(getChildFragmentManager(), TAG_TIME_PICKER_FRAGMENT);
+    }
+
+    @Override
+    public void onDateSet(DatePickerDialog datePickerDialog, int year, int month, int day) {
+        if (mSelectedDateTimeView == null) {
+            return;
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, day, 0, 0, 0);
+        long millis = calendar.getTimeInMillis() + mSelectedDateTimeView.getTimeValueInMillis();
+        setSelectedDateTimeValue(millis);
+    }
+
+    @Override
+    public void onTimeSet(RadialPickerLayout radialPickerLayout, int hour, int minute) {
+        if (mSelectedDateTimeView == null) {
+            return;
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(mSelectedDateTimeView.getDateValueInMillis());
+        calendar.set(Calendar.HOUR_OF_DAY, hour);
+        calendar.set(Calendar.MINUTE, minute);
+        setSelectedDateTimeValue(calendar.getTimeInMillis());
+    }
+
+    private void setSelectedDateTimeValue(long millis) {
+        long start, end;
+        if (mSelectedDateTimeView == mStartDateTimeView) {
+            start = millis;
+            end = mEndDateTimeView.getDateTimeInMillis();
+        } else {
+            if (millis > System.currentTimeMillis()) {
+                //TODO show error alert
+                return;
+            }
+            start = mStartDateTimeView.getDateTimeInMillis();
+            end = millis;
+        }
+        if (end > start) {
+            mSelectedDateTimeView.setDateTimeInMillis(millis);
+        } else {
+            //TODO show error alert
+        }
     }
 }
