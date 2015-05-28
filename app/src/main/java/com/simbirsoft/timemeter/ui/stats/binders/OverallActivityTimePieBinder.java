@@ -3,13 +3,11 @@ package com.simbirsoft.timemeter.ui.stats.binders;
 import android.content.Context;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.Entry;
@@ -31,7 +29,6 @@ import com.simbirsoft.timemeter.ui.stats.OverallTaskActivityChartMarkerView;
 import com.simbirsoft.timemeter.ui.stats.StatisticsViewBinder;
 import com.simbirsoft.timemeter.ui.util.ColorSets;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
-import com.simbirsoft.timemeter.ui.views.VerticalChartLegendView;
 import com.simbirsoft.timemeter.ui.views.VerticalLegend;
 
 import org.slf4j.Logger;
@@ -44,14 +41,6 @@ import javax.inject.Inject;
 
 public class OverallActivityTimePieBinder implements StatisticsViewBinder,
         OnChartValueSelectedListener, VerticalLegend.LegendClickListener {
-
-    public void setOnLegendClickListener(OnLegendClickListener onLegendClickListener) {
-        mOnLegendClickListener = onLegendClickListener;
-    }
-
-    public interface OnLegendClickListener {
-        void onLegendItemClicked(TaskBundle taskOverallActivity);
-    }
 
     private static final Logger LOG = LogFactory.getLogger(OverallActivityTimePieBinder.class);
 
@@ -75,7 +64,7 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder,
     private boolean mIsFullScreenMode;
     private Paint mCenterTextPaint;
 
-    private OnLegendClickListener mOnLegendClickListener;
+    private StatisticsViewBinder.OnLegendClickListener mOnLegendClickListener;
 
     public OverallActivityTimePieBinder(List<TaskOverallActivity> overallActivity) {
         mOverallActivity = overallActivity;
@@ -257,5 +246,9 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder,
         if (mOnLegendClickListener != null) {
             mOnLegendClickListener.onLegendItemClicked(TaskBundle.create(taskOverallActivity, tags));
         }
+    }
+
+    public void setOnLegendClickListener(OnLegendClickListener onLegendClickListener) {
+        mOnLegendClickListener = onLegendClickListener;
     }
 }

@@ -5,6 +5,8 @@ import android.support.annotation.IntDef;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.simbirsoft.timemeter.ui.model.TaskBundle;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -28,4 +30,8 @@ public interface StatisticsViewBinder {
     public View createView(Context context, ViewGroup parent, boolean touchable);
     public void bindView(View view);
     public String getTitle();
+
+    interface OnLegendClickListener {
+        void onLegendItemClicked(TaskBundle taskOverallActivity);
+    }
 }

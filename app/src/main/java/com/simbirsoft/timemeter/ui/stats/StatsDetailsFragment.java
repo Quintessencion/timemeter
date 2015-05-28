@@ -17,7 +17,6 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.jobs.LoadJob;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
-import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.FilterableJob;
@@ -48,14 +47,13 @@ import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
-import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_stats_details)
 public class StatsDetailsFragment extends BaseFragment implements
-        JobLoader.JobLoaderCallbacks, OverallActivityTimePieBinder.OnLegendClickListener {
+        JobLoader.JobLoaderCallbacks, StatisticsViewBinder.OnLegendClickListener {
 
     public static final String EXTRA_TASK_FILTER = "extra_task_filter";
 
@@ -143,7 +141,7 @@ public class StatsDetailsFragment extends BaseFragment implements
     @OnJobSuccess(LoadPeriodSplitActivityTimelineJob.class)
     public void onPeriodSplitActivitiesLoaded(LoadJobResult<List<DailyTaskActivityDuration>> result) {
         ActivityStackedTimelineBinder binder = new ActivityStackedTimelineBinder(result.getData());
-        //binder.setOnLegendClickListener(this);
+        binder.setOnLegendClickListener(this);
         displayChart(binder);
     }
 
