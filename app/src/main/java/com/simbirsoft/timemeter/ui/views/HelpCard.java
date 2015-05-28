@@ -113,6 +113,8 @@ public class HelpCard extends CardView {
         mActionButton.setText(mAdapter.getTitleForActionButton(index));
         mNextButton.setText(mAdapter.getTitleForNextButton(index));
         mBackButton.setText(mAdapter.getTitleForBackButton(index));
+
+        mBackButton.setEnabled(index > 0);
     }
 
     public void setAdapter(Adapter adapter) {
