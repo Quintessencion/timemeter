@@ -1,5 +1,6 @@
 package com.simbirsoft.timemeter.ui.stats;
 
+import android.support.v4.view.ViewPropertyAnimatorListener;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -16,13 +17,15 @@ import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import java.util.Collection;
 import java.util.List;
 
+import jp.wasabeef.recyclerview.animators.holder.AnimateViewHolder;
+
 public class StatsListAdapter extends BaseMainPageAdapter {
 
     interface ChartClickListener {
         void onChartClicked(int viewType);
     }
 
-    static class StatsViewHolder extends BaseViewHolder {
+    static class StatsViewHolder extends AnimateViewHolder {
 
         public StatsViewHolder(CardView itemView, View contentView) {
             super(itemView);
@@ -33,6 +36,16 @@ public class StatsListAdapter extends BaseMainPageAdapter {
 
         public CardView itemView;
         public View contentView;
+
+        @Override
+        public void animateAddImpl(ViewPropertyAnimatorListener viewPropertyAnimatorListener) {
+
+        }
+
+        @Override
+        public void animateRemoveImpl(ViewPropertyAnimatorListener viewPropertyAnimatorListener) {
+
+        }
     }
 
     private final List<StatisticsViewBinder> mViewBinders;
@@ -75,18 +88,18 @@ public class StatsListAdapter extends BaseMainPageAdapter {
 
     @Override
     protected long internalGetItemId(int position) {
-        return 0;
+        return getViewBinder(position).getViewTypeId();
     }
 
     @Override
-    protected void internalOnBindViewHolder(BaseViewHolder viewHolder, int viewType, int position) {
+    protected void internalOnBindViewHolder(RecyclerView.ViewHolder viewHolder, int viewType, int position) {
         StatisticsViewBinder binder = getViewBinder(position);
 
         binder.bindView(((StatsViewHolder) viewHolder).contentView);
     }
 
     @Override
-    public BaseViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType != VIEW_TYPE_HELP_CARD) {
             StatisticsViewBinder binder = getViewBinderForViewTypeId(viewType);
 

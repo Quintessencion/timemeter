@@ -454,4 +454,9 @@ public class MainPageFragment extends BaseFragment implements HelpCardSource {
         final HelpCardDataSource ds = mHelpCardController.getCard(mCurrentHelpCardId);
         helpCard.setAdapter(ds);
     }
+
+    @Override
+    public int getHelpCardId() {
+        return mCurrentHelpCardId;
+    }
 }

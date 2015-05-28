@@ -61,6 +61,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import jp.wasabeef.recyclerview.animators.ScaleInAnimator;
+
 @EFragment(R.layout.fragment_task_list)
 public class TaskListFragment extends MainPageFragment implements JobLoader.JobLoaderCallbacks,
         TaskListAdapter.TaskClickListener,
@@ -150,6 +152,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         mTasksViewAdapter.setTaskClickListener(this);
         mTasksViewAdapter.setHelpCardSource(this);
         mRecyclerView.setAdapter(mTasksViewAdapter);
+        mRecyclerView.setItemAnimator(new ScaleInAnimator());
 
         requestLoad(TASK_LIST_LOADER_TAG, this);
     }

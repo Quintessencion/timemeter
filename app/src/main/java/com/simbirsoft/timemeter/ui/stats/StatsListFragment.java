@@ -33,6 +33,8 @@ import org.slf4j.Logger;
 
 import java.util.List;
 
+import jp.wasabeef.recyclerview.animators.ScaleInAnimator;
+
 @EFragment(R.layout.fragment_stats_list)
 public class StatsListFragment extends MainPageFragment implements
         JobLoader.JobLoaderCallbacks,
@@ -70,6 +72,7 @@ public class StatsListFragment extends MainPageFragment implements
                 StaggeredGridLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(statsLayoutManager);
         mRecyclerView.setAdapter(mStatsListAdapter);
+        mRecyclerView.setItemAnimator(new ScaleInAnimator());
 
         requestLoad(STATISTICS_BINDER_LOADER_TAG, this);
 

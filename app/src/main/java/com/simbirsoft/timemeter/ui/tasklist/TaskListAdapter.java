@@ -1,5 +1,6 @@
 package com.simbirsoft.timemeter.ui.tasklist;
 
+import android.support.v4.view.ViewPropertyAnimatorListener;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.view.LayoutInflater;
@@ -26,6 +27,8 @@ import org.slf4j.Logger;
 import java.util.Collections;
 import java.util.List;
 
+import jp.wasabeef.recyclerview.animators.holder.AnimateViewHolder;
+
 public class TaskListAdapter extends BaseMainPageAdapter {
 
     interface TaskClickListener {
@@ -34,9 +37,19 @@ public class TaskListAdapter extends BaseMainPageAdapter {
         void onTaskCardClicked(TaskBundle item);
     }
 
-    static class TaskViewHolder extends BaseViewHolder {
+    static class TaskViewHolder extends AnimateViewHolder {
         public TaskViewHolder(View itemView) {
             super(itemView);
+        }
+
+        @Override
+        public void animateAddImpl(ViewPropertyAnimatorListener viewPropertyAnimatorListener) {
+
+        }
+
+        @Override
+        public void animateRemoveImpl(ViewPropertyAnimatorListener viewPropertyAnimatorListener) {
+
         }
 
         View itemEditView;
@@ -145,7 +158,7 @@ public class TaskListAdapter extends BaseMainPageAdapter {
     }
 
     @Override
-    public BaseViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         if (viewType == VIEW_TYPE_TASK) {
             return onCreateTaskItemViewHolder(viewGroup);
         }
@@ -173,7 +186,7 @@ public class TaskListAdapter extends BaseMainPageAdapter {
     }
 
     @Override
-    protected void internalOnBindViewHolder(BaseViewHolder viewHolder, int viewType, int position) {
+    protected void internalOnBindViewHolder(RecyclerView.ViewHolder viewHolder, int viewType, int position) {
         if (viewType == VIEW_TYPE_TASK) {
             TaskBundle item = mItems.get(position);
             bindViewHolder((TaskViewHolder)viewHolder, item);

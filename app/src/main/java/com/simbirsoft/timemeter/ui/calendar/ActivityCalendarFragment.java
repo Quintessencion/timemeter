@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.view.ViewPropertyAnimatorListener;
 import android.view.View;
 import android.widget.PopupWindow;
 import android.widget.ScrollView;
@@ -267,11 +269,29 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
         }
 
         mHelpCard.setVisibility(View.VISIBLE);
+        ViewCompat.setScaleX(mHelpCard, 0.0F);
+        ViewCompat.setScaleY(mHelpCard, 0.0F);
+        ViewCompat.animate(mHelpCard).scaleX(1.0F).scaleY(1.0F).setDuration(250);
     }
 
     @Override
     public void hide() {
-        mHelpCard.setVisibility(View.GONE);
+        ViewCompat.animate(mHelpCard).scaleX(0.0F).scaleY(0.0F).setDuration(250).setListener(new ViewPropertyAnimatorListener() {
+            @Override
+            public void onAnimationStart(View view) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(View view) {
+                view.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationCancel(View view) {
+
+            }
+        }).start();
     }
 
     @Override
