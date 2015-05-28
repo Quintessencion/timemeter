@@ -1,5 +1,6 @@
 package com.simbirsoft.timemeter.ui.stats;
 
+import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPropertyAnimatorListener;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -38,13 +39,23 @@ public class StatsListAdapter extends BaseMainPageAdapter {
         public View contentView;
 
         @Override
-        public void animateAddImpl(ViewPropertyAnimatorListener viewPropertyAnimatorListener) {
+        public void preAnimateAddImpl() {
+            ViewCompat.setAlpha(this.itemView, 0);
+        }
 
+        @Override
+        public void preAnimateRemoveImpl() {
+            ViewCompat.setAlpha(this.itemView, 1);
+        }
+
+        @Override
+        public void animateAddImpl(ViewPropertyAnimatorListener viewPropertyAnimatorListener) {
+            ViewCompat.animate(this.itemView).alpha(1).setDuration(250).setListener(viewPropertyAnimatorListener).start();
         }
 
         @Override
         public void animateRemoveImpl(ViewPropertyAnimatorListener viewPropertyAnimatorListener) {
-
+            ViewCompat.animate(this.itemView).alpha(0).setDuration(250).setListener(viewPropertyAnimatorListener).start();
         }
     }
 

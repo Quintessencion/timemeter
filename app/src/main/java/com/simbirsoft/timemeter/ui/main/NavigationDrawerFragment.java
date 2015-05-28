@@ -18,12 +18,18 @@ import android.view.View;
 import android.widget.ListView;
 
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.Preferences;
+import com.simbirsoft.timemeter.events.ReadyToShowHelpCardEvent;
+import com.simbirsoft.timemeter.injection.Injection;
+import com.squareup.otto.Bus;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.ViewById;
 
 import java.util.Arrays;
+
+import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_navigation_drawer)
 public class NavigationDrawerFragment extends Fragment {
@@ -54,6 +60,12 @@ public class NavigationDrawerFragment extends Fragment {
     @ViewById(android.R.id.list)
     ListView mDrawerListView;
 
+    @Inject
+    Bus mBus;
+
+    @Inject
+    Preferences mPrefs;
+
     private View mFragmentContainerView;
 
     private int mCurrentSelectedPosition = 0;
@@ -68,10 +80,11 @@ public class NavigationDrawerFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Injection.sUiComponent.injectNavigationDrawerFragment(this);
+
         // Read in the flag indicating whether or not the user has demonstrated awareness of the
         // drawer. See PREF_USER_LEARNED_DRAWER for details.
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        mUserLearnedDrawer = sp.getBoolean(PREF_USER_LEARNED_DRAWER, false);
+        mUserLearnedDrawer = mPrefs.getUserLearnedNavDrawer();
 
         if (savedInstanceState != null) {
             mCurrentSelectedPosition = savedInstanceState.getInt(STATE_SELECTED_POSITION);
@@ -147,6 +160,10 @@ public class NavigationDrawerFragment extends Fragment {
                     return;
                 }
                 getActivity().supportInvalidateOptionsMenu(); // calls onPrepareOptionsMenu()
+                if (!mUserLearnedDrawer && !mPrefs.getReadyToShowHelpCards()) {
+                    mPrefs.setReadyToShowHelpCards(true);
+                    mBus.post(new ReadyToShowHelpCardEvent());
+                }
             }
 
             @Override
@@ -160,9 +177,7 @@ public class NavigationDrawerFragment extends Fragment {
                     // The user manually opened the drawer; store this flag to prevent auto-showing
                     // the navigation drawer automatically in the future.
                     mUserLearnedDrawer = true;
-                    SharedPreferences sp = PreferenceManager
-                            .getDefaultSharedPreferences(getActivity());
-                    sp.edit().putBoolean(PREF_USER_LEARNED_DRAWER, true).apply();
+                    mPrefs.setUserLearnedNavDrawer(mUserLearnedDrawer);
                 }
 
                 getActivity().supportInvalidateOptionsMenu(); // calls onPrepareOptionsMenu()

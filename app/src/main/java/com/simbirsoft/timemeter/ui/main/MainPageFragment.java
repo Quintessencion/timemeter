@@ -18,8 +18,10 @@ import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.HelpCardController;
+import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.events.HelpCardPresentedEvent;
+import com.simbirsoft.timemeter.events.ReadyToShowHelpCardEvent;
 import com.simbirsoft.timemeter.events.ScheduledTaskUpdateTabContentEvent;
 import com.simbirsoft.timemeter.injection.ApplicationModule;
 import com.simbirsoft.timemeter.injection.Injection;
@@ -84,6 +86,9 @@ public class MainPageFragment extends BaseFragment implements HelpCardSource {
     @Inject
     HelpCardController mHelpCardController;
 
+    @Inject
+    Preferences mPrefs;
+
     FilterViewProvider mFilterViewProvider;
 
     int mCurrentHelpCardId = HelpCardController.HELP_CARD_NONE;
@@ -131,7 +136,7 @@ public class MainPageFragment extends BaseFragment implements HelpCardSource {
     }
 
     protected void presentHelpCardIfAny() {
-        if (getHelpCardPresenter() == null)
+        if (getHelpCardPresenter() == null || !mPrefs.getReadyToShowHelpCards())
             return;
 
         int oldId = mCurrentHelpCardId;
@@ -458,5 +463,10 @@ public class MainPageFragment extends BaseFragment implements HelpCardSource {
     @Override
     public int getHelpCardId() {
         return mCurrentHelpCardId;
+    }
+
+    @Subscribe
+    public void onReadyToShowHelpCardEvent(ReadyToShowHelpCardEvent ev) {
+        presentHelpCardIfAny();
     }
 }

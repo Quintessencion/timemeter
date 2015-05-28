@@ -1,6 +1,8 @@
 package com.simbirsoft.timemeter.ui.tasklist;
 
+import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPropertyAnimatorListener;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.view.LayoutInflater;
@@ -43,13 +45,23 @@ public class TaskListAdapter extends BaseMainPageAdapter {
         }
 
         @Override
-        public void animateAddImpl(ViewPropertyAnimatorListener viewPropertyAnimatorListener) {
+        public void preAnimateAddImpl() {
+            ViewCompat.setAlpha(this.itemView, 0);
+        }
 
+        @Override
+        public void preAnimateRemoveImpl() {
+            ViewCompat.setAlpha(this.itemView, 1);
+        }
+
+        @Override
+        public void animateAddImpl(ViewPropertyAnimatorListener viewPropertyAnimatorListener) {
+            ViewCompat.animate(this.itemView).alpha(1).setDuration(250).setListener(viewPropertyAnimatorListener).start();
         }
 
         @Override
         public void animateRemoveImpl(ViewPropertyAnimatorListener viewPropertyAnimatorListener) {
-
+            ViewCompat.animate(this.itemView).alpha(0).setDuration(250).setListener(viewPropertyAnimatorListener).start();
         }
 
         View itemEditView;
