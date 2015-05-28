@@ -114,9 +114,7 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
     public void setItems(List<TaskActivityItem> items) {
         mItems.clear();
         mItems.addAll(items);
-        mSelectedSpans.clear();
         notifyDataSetChanged();
-        updateActionBar();
     }
 
     public void setHighlightedSpans(List<TaskTimeSpan> spans) {
@@ -346,6 +344,10 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
     @Override
     public void onDestroyActionMode(ActionMode mode) {
         mActionMode = null;
+        if (!mSelectedSpans.isEmpty()) {
+            mSelectedSpans.clear();
+            notifyDataSetChanged();
+        }
     }
 
     private void updateActionBar() {
