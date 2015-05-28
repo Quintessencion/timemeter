@@ -26,8 +26,9 @@
             android:layout_height="0dip"
             android:layout_weight="1"/>
 
-        <com.simbirsoft.timemeter.ui.views.VerticalChartLegendView
+        <com.simbirsoft.timemeter.ui.views.VerticalLegend
             android:id="@+id/legendPanel"
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingLeft="@dimen/chart_legend_padding"

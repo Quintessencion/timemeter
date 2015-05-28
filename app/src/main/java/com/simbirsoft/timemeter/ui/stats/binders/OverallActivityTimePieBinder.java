@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.Entry;
@@ -27,6 +28,7 @@ import com.simbirsoft.timemeter.ui.stats.StatisticsViewBinder;
 import com.simbirsoft.timemeter.ui.util.ColorSets;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
 import com.simbirsoft.timemeter.ui.views.VerticalChartLegendView;
+import com.simbirsoft.timemeter.ui.views.VerticalLegend;
 
 import org.slf4j.Logger;
 
@@ -36,7 +38,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnChartValueSelectedListener {
+public class OverallActivityTimePieBinder implements StatisticsViewBinder,
+        OnChartValueSelectedListener, VerticalLegend.LegendClickListener {
 
     private static final Logger LOG = LogFactory.getLogger(OverallActivityTimePieBinder.class);
 
@@ -51,7 +54,7 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
     private TextView mTitleView;
     private final List<TaskOverallActivity> mOverallActivity;
     private Legend mLegend;
-    private VerticalChartLegendView mVerticalChartLegendView;
+    private VerticalLegend mVerticalLegend;
     private TextView mEmptyIndicatorView;
     private boolean mIsDataBound;
     private boolean mIsFullScreenMode;
@@ -125,14 +128,13 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
             mLegend.setForm(Legend.LegendForm.CIRCLE);
             mLegend.setTextSize(16f);
             mLegend.setStackSpace(12f);
-            mVerticalChartLegendView.setLegend(mLegend);
+            mVerticalLegend.setLegend(mLegend);
             mPieChart.highlightValues(null);
         }
 
         measureChartView(mContentRoot.getResources());
         mPieChart.invalidate();
-        mVerticalChartLegendView.requestLayout();
-        mVerticalChartLegendView.invalidate();
+        mVerticalLegend.update();
 
         if (mOverallActivity.isEmpty()) {
             mEmptyIndicatorView.setVisibility(View.VISIBLE);
@@ -151,7 +153,8 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
     private void initializePieChart() {
         final DecimalFormat format = new DecimalFormat("#.#");
 
-        mVerticalChartLegendView = (VerticalChartLegendView) mContentRoot.findViewById(R.id.legendPanel);
+        mVerticalLegend = (VerticalLegend) mContentRoot.findViewById(R.id.legendPanel);
+        mVerticalLegend.setLegendClickListener(this);
 
         mPieChart = (PieChart) mContentRoot.findViewById(R.id.chart);
         mTitleView = (TextView) mContentRoot.findViewById(android.R.id.title);
@@ -227,5 +230,10 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder, OnCha
 
     @Override
     public void onNothingSelected() {
+    }
+
+    @Override
+    public void onLabelClicked(int position) {
+        Toast.makeText(mContext, position + "", Toast.LENGTH_LONG).show();
     }
 }
