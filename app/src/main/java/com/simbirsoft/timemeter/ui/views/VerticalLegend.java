@@ -53,11 +53,7 @@ public class VerticalLegend extends LinearLayout implements View.OnClickListener
         String[] labels = mLegend.getLegendLabels();
         int[] colors = mLegend.getColors();
 
-        // TODO: fix bug in Legend class
-        // due to extra empty item, created by legend class
-        int labelsCount = (mIsClickable)? labels.length - 1 : labels.length;
-
-        for (int i = 0; i < labelsCount; i++) {
+        for (int i = 0; i < labels.length; i++) {
             addView(getLegendItem(colors[i], labels[i], i));
         }
 
