@@ -51,6 +51,9 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder,
     @Inject
     SQLiteDatabase mSQLiteDatabase;
 
+    @Inject
+    Resources mResources;
+
     private ViewGroup mContentRoot;
     private BarChart mChart;
     private TextView mTitleView;
@@ -144,9 +147,12 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder,
         if (mLegend == null) {
             mLegend = mChart.getLegend();
             mLegend.setXEntrySpace(7f);
-            mLegend.setYEntrySpace(7f);
+            float yEntrySpace = (mIsFullScreenMode)?
+                    mResources.getDimension(R.dimen.chart_legend_labels_padding_big) :
+                    mResources.getDimension(R.dimen.chart_legend_labels_padding_normal);
+            mLegend.setYEntrySpace(yEntrySpace);
             mLegend.setForm(Legend.LegendForm.CIRCLE);
-            mLegend.setTextSize(16f);
+            mLegend.setTextSize(mResources.getDimension(R.dimen.chart_legend_label_text_size));
             mLegend.setStackSpace(12f);
             mVerticalLegend.setLegend(mLegend);
         }
@@ -172,6 +178,7 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder,
     private void initializeChart() {
         mVerticalLegend = (VerticalLegend) mContentRoot.findViewById(R.id.legendPanel);
         mVerticalLegend.setLegendClickListener(this);
+        mVerticalLegend.setIsClickable(mIsFullScreenMode);
 
         mSummaryActivityView = (TextView) mContentRoot.findViewById(R.id.summaryActivityView);
         mSummaryActivityView.setText(getFormattedTotalTime());

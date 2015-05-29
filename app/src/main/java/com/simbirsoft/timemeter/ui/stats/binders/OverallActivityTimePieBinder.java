@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Paint;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -129,11 +130,13 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder,
         if (mLegend == null) {
             mLegend = mPieChart.getLegend();
             mLegend.setPosition(Legend.LegendPosition.BELOW_CHART_LEFT);
-            float yEntrySpace = (mIsFullScreenMode)? 20f : 7f;
             mLegend.setXEntrySpace(7f);
+            float yEntrySpace = (mIsFullScreenMode)?
+                    mResources.getDimension(R.dimen.chart_legend_labels_padding_big) :
+                    mResources.getDimension(R.dimen.chart_legend_labels_padding_normal);
             mLegend.setYEntrySpace(yEntrySpace);
             mLegend.setForm(Legend.LegendForm.CIRCLE);
-            mLegend.setTextSize(16f);
+            mLegend.setTextSize(mResources.getDimension(R.dimen.chart_legend_label_text_size));
             mLegend.setStackSpace(12f);
             mVerticalLegend.setLegend(mLegend);
             mPieChart.highlightValues(null);

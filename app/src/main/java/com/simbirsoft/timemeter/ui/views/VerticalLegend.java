@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -72,7 +73,7 @@ public class VerticalLegend extends LinearLayout implements View.OnClickListener
         LinearLayout linearLayout = new LinearLayout(getContext());
         LinearLayout.LayoutParams layoutParams =
                 new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        layoutParams.bottomMargin = (int) Utils.convertPixelsToDp(mLegend.getYEntrySpace());
+        layoutParams.bottomMargin = (int) mLegend.getYEntrySpace();
         linearLayout.setLayoutParams(layoutParams);
         linearLayout.setOrientation(HORIZONTAL);
 
@@ -99,7 +100,8 @@ public class VerticalLegend extends LinearLayout implements View.OnClickListener
         textView.setText(text);
         textView.setTag(position);
         textView.setTextColor(Color.parseColor(TEXT_COLOR));
-        textView.setTextSize(Utils.convertPixelsToDp(mLegend.getTextSize()));
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_PX,
+                getResources().getDimension(R.dimen.chart_legend_label_text_size));
         textView.setEnabled(mIsClickable);
         textView.setFocusable(mIsClickable);
         if (mIsClickable) {
