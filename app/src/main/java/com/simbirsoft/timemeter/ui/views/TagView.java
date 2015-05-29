@@ -5,6 +5,8 @@ import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewStub;
@@ -63,6 +65,11 @@ public class TagView extends FrameLayout {
         GradientDrawable bg = (GradientDrawable) mTagPanel.getBackground();
         bg.setColor(tag.getColor());
         mTagTitle.setText(tag.getName());
+        if (mTag.getChecked()) {
+            checkTag();
+        } else {
+            uncheckTag();
+        }
     }
 
     public Tag getTag() {
@@ -94,5 +101,31 @@ public class TagView extends FrameLayout {
         if (mVsTagImage != null) {
             mVsTagImage.setVisibility(View.GONE);
         }
+    }
+
+    public void checkTag() {
+        mTag.setChecked(true);
+        mTagPanel.setAlpha(0.5f);
+    }
+
+    public void uncheckTag() {
+        mTag.setChecked(false);
+        mTagPanel.setAlpha(1.0f);
+    }
+
+    public boolean isTagChecked() {
+        if (mTag.getChecked()) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean toggleTag() {
+        if (isTagChecked()) {
+            uncheckTag();
+            return false;
+        }
+        checkTag();
+        return true;
     }
 }

@@ -29,6 +29,7 @@ import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
+import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
 import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
@@ -45,6 +46,7 @@ import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
 import com.simbirsoft.timemeter.ui.util.TaskFilterPredicate;
+import com.simbirsoft.timemeter.ui.views.TagView;
 import com.squareup.otto.Subscribe;
 
 import org.androidannotations.annotations.AfterViews;
@@ -59,6 +61,8 @@ import java.util.List;
 public class TaskListFragment extends MainPageFragment implements JobLoader.JobLoaderCallbacks,
         TaskListAdapter.TaskClickListener,
         MainPagerAdapter.PageTitleProvider {
+
+    private static final Logger LOG = LogFactory.getLogger(TaskListFragment.class);
 
     private static final String SNACKBAR_TAG = "task_list_snackbar";
     private static final String TASK_LIST_LOADER_TAG = "TaskListFragment_";
@@ -84,6 +88,29 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     private TaskListAdapter mTasksViewAdapter;
     private ITaskActivityManager mTaskActivityManager;
     private ContentFragmentCallbacks mCallbacks;
+
+    private final TagView.TagViewClickListener mTagViewClickListener = tagView -> {
+        TaskListAdapter.ViewHolder vh;
+        final int countCards = mRecyclerView.getLayoutManager().getItemCount();
+        final Long tagId = tagView.getTag().getId();
+        for (int i = 0; i < countCards; i++) {
+            vh = (TaskListAdapter.ViewHolder) mRecyclerView.findViewHolderForLayoutPosition(i);
+            if (vh != null) {
+                for (TagView tv : vh.tagFlowView.getTagViews()) {
+                    if (tagId == tv.getTag().getId()) {
+                        tv.toggleTag();
+                    }
+                }
+            }
+        }
+        for (TaskBundle taskBundle : mTasksViewAdapter.getItems()) {
+            for (Tag tag: taskBundle.getTags()) {
+                if (tagId == tag.getId()) {
+                    tag.setChecked(true);
+                }
+            }
+        }
+    };
 
     private void onFloatingButtonClicked(View v) {
         mLogger.info("floating button clicked");
@@ -140,6 +167,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
         mTasksViewAdapter = new TaskListAdapter(mTaskActivityManager);
         mTasksViewAdapter.setTaskClickListener(this);
+        mTasksViewAdapter.setTagViewClickListener(mTagViewClickListener);
         mRecyclerView.setAdapter(mTasksViewAdapter);
 
         requestLoad(TASK_LIST_LOADER_TAG, this);

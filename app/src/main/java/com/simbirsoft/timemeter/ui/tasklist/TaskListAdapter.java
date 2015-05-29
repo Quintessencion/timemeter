@@ -51,6 +51,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     private final List<TaskBundle> mItems;
     private final ITaskActivityManager mTaskActivityManager;
     private TaskClickListener mTaskClickListener;
+    private TagView.TagViewClickListener mTagViewClickListener;
 
     private final View.OnClickListener mCardClickListener = (view) -> {
         if (mTaskClickListener != null) {
@@ -70,10 +71,6 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
             return true;
         }
         return false;
-    };
-
-    private final TagView.TagViewClickListener mTagViewClickListener = tagView -> {
-        LOG.debug("Tag <" + tagView.getTag().getName() + "> clicked!");
     };
 
     public TaskListAdapter(ITaskActivityManager taskActivityManager) {
@@ -193,4 +190,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         return mItems.size();
     }
 
+    public void setTagViewClickListener(TagView.TagViewClickListener tagViewClickListener) {
+        mTagViewClickListener = tagViewClickListener;
+    }
 }
