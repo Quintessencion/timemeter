@@ -24,6 +24,7 @@ import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.handlers.JobEventDispatcher;
 import com.be.android.library.worker.jobs.CallableForkJoinJob;
 import com.be.android.library.worker.models.LoadJobResult;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -629,6 +630,13 @@ public class FilterView extends FrameLayout implements
         return mState.copy();
     }
 
+    public void updateDateView() {
+        if (mDatePeriodView != null) {
+            mDatePeriodView.updateStartDateView();
+            mDatePeriodView.updateEndDateView();
+        }
+    }
+
     private void postFilterUpdate() {
         if (mIsSilentUpdate) {
             return;
@@ -647,6 +655,8 @@ public class FilterView extends FrameLayout implements
             mState.period = null;
             mState.dateMillis = 0;
         }
+
+        mState.tags = ImmutableList.copyOf(Lists.transform(mTagsView.getObjects(), input -> (Tag) input));
     }
 
     private void sendSelectDateClickEvent() {

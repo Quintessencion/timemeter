@@ -10,7 +10,6 @@ import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerFragment;
 import com.simbirsoft.timemeter.ui.main.NavigationDrawerFragment;
 import com.simbirsoft.timemeter.ui.model.TaskRecentActivity;
-import com.simbirsoft.timemeter.ui.stats.StatisticsViewBinder;
 import com.simbirsoft.timemeter.ui.stats.StatsDetailsFragment;
 import com.simbirsoft.timemeter.ui.stats.StatsListFragment;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment;
@@ -32,6 +31,7 @@ public interface UiComponent {
     public void injectFilterView(FilterView filterView);
     public void injectStatsListFragment(StatsListFragment fragment);
     public void injectMainPagerFragment(MainPagerFragment fragment);
+    public void injectNavigationDrawerFragment(NavigationDrawerFragment fragment);
     public void injectStatsDetailsFragment(StatsDetailsFragment fragment);
     public void injectActivityCalendarFragment(ActivityCalendarFragment fragment);
     public void injectTaskActivitiesFragment(TaskActivitiesFragment fragment);
@@ -42,6 +42,5 @@ public interface UiComponent {
     public void injectMainPageFragment(MainPageFragment fragment);
     public void injectTaskRecentActivity(TaskRecentActivity activity);
     public void injectViewTaskFragment(ViewTaskFragment fragment);
-    public void injectNavigationDrawerFragment(NavigationDrawerFragment fragment);
     public void injectTagListFragment(TagListFragment fragment);
 }

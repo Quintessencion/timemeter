@@ -37,6 +37,9 @@ public class TaskActivityItemView extends View{
     private Context mContext;
     private int mTimeBlockColor;
     private int mDurationBlockColor;
+    private int mTimeBlockHighlightedColor;
+    private int mDurationBlockHighlightedColor;
+    private boolean mIsHighlighted;
 
     private TaskActivitySpansItem mItem;
     private int mIndex;
@@ -86,6 +89,8 @@ public class TaskActivityItemView extends View{
 
         mTimeBlockColor = res.getColor(R.color.primary);
         mDurationBlockColor = res.getColor(R.color.primaryDark);
+        mTimeBlockHighlightedColor = res.getColor(R.color.accentPrimary);
+        mDurationBlockHighlightedColor = res.getColor(R.color.accentDark);
 
         mIndex = -1;
         mItem = new TaskActivitySpansItem();
@@ -93,9 +98,10 @@ public class TaskActivityItemView extends View{
         mTextBounds = new Rect();
     }
 
-    public void setTaskActivitySpansItem(TaskActivitySpansItem item, int index) {
+    public void setTaskActivitySpansItem(TaskActivitySpansItem item, int index, boolean isHighlighted) {
         mItem = item;
         mIndex = index;
+        mIsHighlighted = isHighlighted;
         invalidate();
     }
 
@@ -123,10 +129,10 @@ public class TaskActivityItemView extends View{
     protected void onDraw(Canvas canvas) {
         if (mIndex < 0) return;
         final int saveCount = canvas.save();
-        mBlockPaint.setColor(mTimeBlockColor);
+        mBlockPaint.setColor(mIsHighlighted ? mTimeBlockHighlightedColor : mTimeBlockColor);
         drawBlock(canvas, mItem.getSpanTimeLabel(mIndex), mTimeBlockWidth, mTimeTextPaint);
         canvas.translate(mTimeBlockWidth + mBlockHorizontalSpacing, 0);
-        mBlockPaint.setColor(mDurationBlockColor);
+        mBlockPaint.setColor(mIsHighlighted ? mDurationBlockHighlightedColor : mDurationBlockColor);
         drawBlock(canvas, mItem.getSpanDurationLabel(mIndex, mContext), 0, mDurationTextPaint);
         canvas.restoreToCount(saveCount);
     }

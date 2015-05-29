@@ -212,6 +212,10 @@ public class MainPageFragment extends BaseFragment implements HelpCardSource {
         mBus.post(new TaskChangedEvent(resultCode, data));
     }
 
+    protected void setContentInvalidated(boolean isContentInvalidated) {
+        mIsContentInvalidated = isContentInvalidated;
+    }
+
     @Subscribe
     public void onTaskChanged(TaskChangedEvent event) {
         Intent data = event.getData();

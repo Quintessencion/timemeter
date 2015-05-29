@@ -6,6 +6,7 @@ import com.be.android.library.worker.jobs.LoadJob;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -17,6 +18,7 @@ import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.squareup.phrase.Phrase;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -70,7 +72,10 @@ public class LoadTasksForTimespansJob extends LoadJob {
                 }
                 loadJob.setTaskId(task.getId());
                 List<Tag> taskTags = ((LoadJobResult<List<Tag>>) forkJob(loadJob).join()).getData();
-                result.add(TaskBundle.create(task, taskTags));
+                TaskBundle taskBundle = TaskBundle.create(task, taskTags);
+                Collection taskSpans = Collections2.filter(mSpans, (s) -> (s.getTaskId() == task.getId()));
+                        taskBundle.setTaskTimeSpans(Lists.newArrayList(taskSpans));
+                result.add(taskBundle);
                 loadJob.reset();
             }
             return new LoadJobResult<>(result);

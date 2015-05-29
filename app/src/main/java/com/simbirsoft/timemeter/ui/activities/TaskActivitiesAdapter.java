@@ -9,9 +9,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Optional;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.ui.model.TaskActivityDateItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivityEmptyItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
@@ -20,7 +24,6 @@ import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.simbirsoft.timemeter.ui.views.TaskActivityItemsLayout;
 
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -73,6 +76,7 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
     private int mCurrentDateColor;
     private int mHolidayDateColor;
     private final Calendar mCalendar;
+    private final List<TaskTimeSpan> mHighlightedSpans;
 
     public TaskActivitiesAdapter(Context context) {
         mContext = context;
@@ -87,12 +91,18 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         mCurrentDateColor = res.getColor(R.color.primary);
         mHolidayDateColor = res.getColor(R.color.accentPrimary);
         mCalendar = Calendar.getInstance();
+        mHighlightedSpans = Lists.newArrayList();
     }
 
     public void setItems(List<TaskActivityItem> items) {
         mItems.clear();
         mItems.addAll(items);
         notifyDataSetChanged();
+    }
+
+    public void setHighlightedSpans(List<TaskTimeSpan> spans) {
+        mHighlightedSpans.clear();
+        mHighlightedSpans.addAll(spans);
     }
 
     public int getItemViewType (int position) {
@@ -198,6 +208,7 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         return getItemViewType(position + 1) == TaskActivityItem.DATE_ITEM_TYPE;
     }
 
+    @Override
     public View getActivityItemView(TaskActivityItemsLayout layout) {
         View view;
         if (mActivityItemViews.size() > 0) {
@@ -211,16 +222,55 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         return view;
     }
 
+    @Override
     public void addActivityItemViews(List<View> items) {
         mActivityItemViews.addAll(items);
     }
 
-    public void updateCurrentActivityTime() {
-        for (TaskActivityItem item : mItems) {
-            if (item.getItemType() == TaskActivityItem.SPANS_ITEM_TYPE) {
-                ((TaskActivitySpansItem)item).updateSpanEndTime(0, System.currentTimeMillis());
+    @Override
+    public boolean isActivityItemViewHighlighted(TaskActivitySpansItem item, int index) {
+        return mHighlightedSpans.contains(item.getSpan(index));
+    }
+
+    public void updateCurrentActivityTime(long taskId) {
+        for (TaskActivityItem activityItem : mItems) {
+            if (activityItem.getItemType() != TaskActivityItem.SPANS_ITEM_TYPE) {
+                continue;
+            }
+
+            final TaskActivitySpansItem spansItem = (TaskActivitySpansItem) activityItem;
+
+            int pos = Iterables.indexOf(spansItem.getList(), (item) -> item.getTaskId() == taskId);
+
+            if (pos > -1) {
+                spansItem.updateSpanEndTime(pos, System.currentTimeMillis());
                 break;
             }
         }
+    }
+
+    public boolean getEarliestHighlightedSpanPosition(int[] position) {
+        if (mHighlightedSpans.isEmpty()) {
+            return false;
+        }
+        TaskTimeSpan span = mHighlightedSpans.get(0);
+        for(int i = mItems.size() - 1; i >=0; i--) {
+            TaskActivityItem item = mItems.get(i);
+            if (item.getItemType() != TaskActivityItem.SPANS_ITEM_TYPE) continue;
+            int spanIndex = ((TaskActivitySpansItem)item).indexOfSpan(span);
+            if (spanIndex >=0) {
+                position[0] = i;
+                position[1] = spanIndex;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int getSpansCount(int position) {
+        Preconditions.checkElementIndex(position, mItems.size());
+        TaskActivityItem item = mItems.get(position);
+        Preconditions.checkArgument(item.getItemType() == TaskActivityItem.SPANS_ITEM_TYPE, "illegal item type");
+        return ((TaskActivitySpansItem)item).getSpansCount();
     }
 }

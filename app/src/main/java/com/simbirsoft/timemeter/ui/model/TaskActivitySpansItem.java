@@ -42,6 +42,11 @@ public class TaskActivitySpansItem extends TaskActivityEmptyItem {
         mList = list;
     }
 
+    public TaskTimeSpan getSpan(int index) {
+        Preconditions.checkElementIndex(index, mList.size(), "index is out of items range");
+        return mList.get(index);
+    }
+
     public String getSpanTimeTestLabel() {
         return TIME_TEST_STRING;
     }
@@ -78,6 +83,10 @@ public class TaskActivitySpansItem extends TaskActivityEmptyItem {
 
     public void setOnChangedListener(OnTaskActivityChangedListener onChangedListener) {
         mOnChangedListener = onChangedListener;
+    }
+
+    public int indexOfSpan(TaskTimeSpan span) {
+        return (mList != null) ? mList.indexOf(span) : -1;
     }
 
     private String getHourLabel(long millis) {
