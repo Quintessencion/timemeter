@@ -2,6 +2,7 @@ package com.simbirsoft.timemeter.ui.views;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -10,7 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.utils.Legend;
-import com.pkmmte.view.CircularImageView;
+import com.simbirsoft.timemeter.R;
 
 public class VerticalLegend extends LinearLayout implements View.OnClickListener {
 
@@ -80,7 +81,7 @@ public class VerticalLegend extends LinearLayout implements View.OnClickListener
         linearLayout.setOrientation(HORIZONTAL);
 
         LinearLayout.LayoutParams paramsImage = getImageParams();
-        CircularImageView circle = getCircle(color);
+        View circle = getCircle(color);
         linearLayout.addView(circle, paramsImage);
 
         LinearLayout.LayoutParams paramsText = getTextParams();
@@ -90,9 +91,14 @@ public class VerticalLegend extends LinearLayout implements View.OnClickListener
         return linearLayout;
     }
 
-    private CircularImageView getCircle(int color) {
-        CircularImageView imageView = new CircularImageView(getContext());
-        imageView.setBackgroundColor(color);
+    private View getCircle(int color) {
+        View imageView = new View(getContext());
+        imageView.setLayoutParams(getImageParams());
+        imageView.setBackgroundResource(R.drawable.task_marker);
+
+        GradientDrawable drawable = (GradientDrawable)imageView.getBackground();
+        drawable.setColor(color);
+
         return imageView;
     }
 
