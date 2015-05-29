@@ -93,20 +93,23 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         TaskListAdapter.ViewHolder vh;
         final int countCards = mRecyclerView.getLayoutManager().getItemCount();
         final Long tagId = tagView.getTag().getId();
+        boolean tagCheckedState = false;
+
         for (int i = 0; i < countCards; i++) {
             vh = (TaskListAdapter.ViewHolder) mRecyclerView.findViewHolderForLayoutPosition(i);
             if (vh != null) {
                 for (TagView tv : vh.tagFlowView.getTagViews()) {
                     if (tagId == tv.getTag().getId()) {
-                        tv.toggleTag();
+                        tagCheckedState = tv.toggleTag();
                     }
                 }
             }
         }
+
         for (TaskBundle taskBundle : mTasksViewAdapter.getItems()) {
             for (Tag tag: taskBundle.getTags()) {
                 if (tagId == tag.getId()) {
-                    tag.setChecked(true);
+                    tag.setChecked(tagCheckedState);
                 }
             }
         }
