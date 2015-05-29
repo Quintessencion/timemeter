@@ -31,25 +31,12 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/containerHeader" />
 
-        <LinearLayout
+        <FrameLayout
+            android:id="@+id/container"
+            android:layout_below="@+id/containerHeader"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/containerHeader"
-            android:orientation="vertical">
-
-            <FrameLayout
-                android:id="@+id/searchResultContainer"
-                android:layout_marginTop="-40dp"
-                android:layout_width="match_parent"
-                android:layout_height="40dp">
-            </FrameLayout>
-
-            <FrameLayout
-                android:id="@+id/container"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:elevation="6dp"/>
-        </LinearLayout>
+            android:elevation="6dp"/>
 
         <FrameLayout
             android:id="@+id/containerHeader"

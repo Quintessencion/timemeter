@@ -69,6 +69,9 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     @ViewById(R.id.pager)
     ViewPager mViewPager;
 
+    @ViewById(R.id.searchResultContainer)
+    FrameLayout mSearchResultContainer;
+
     @ColorRes(android.R.color.white)
     int mColorWhite;
 
@@ -101,7 +104,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     private FilterResultsView mFilterResultsView;
     private MainPagerAdapter mPagerAdapter;
     private RelativeLayout mContainerUnderlayView;
-    private FrameLayout mSearchResultContainer;
     private ViewGroup mContainerView;
     private ViewGroup mContentRootView;
     private ViewGroup mContainerHeader;
@@ -181,7 +183,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mContainerView = mContainerCallbacks.getContainerView();
         mContentRootView = mContainerCallbacks.getContentRootView();
         mContainerHeader = mContainerCallbacks.getContainerHeaderView();
-        mSearchResultContainer = mContainerCallbacks.getSearchResultContainer();
 
         mFilterView = (FilterView) LayoutInflater.from(getActivity())
                 .inflate(R.layout.view_filter_impl, mContainerUnderlayView, false);
@@ -480,7 +481,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mPagerAdapter.deselectCurrentPage();
         MainPageFragment currentFragment = (MainPageFragment)mPagerAdapter.getItem(position);
         currentFragment.onPageSelected();
-        updateSearchResultsPanelOnPage(position);
+        //updateSearchResultsPanelOnPage(position);
     }
 
     private void showSearchResultsPanel(boolean animate) {
@@ -525,13 +526,13 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         TransitionManager.beginDelayedTransition(mContentRootView, set);
     }
 
-    private void updateSearchResultsPanelOnPage(int position) {
+    /*private void updateSearchResultsPanelOnPage(int position) {
         if (position == TASKS_FRAGMENT_POSITION && !mFilterState.isEmpty()) {
             showSearchResultsPanel(true);
         } else {
             hideSearchResultsPanel(true);
         }
-    }
+    }*/
 
     private void updateContainerMargin() {
         LinearLayout.LayoutParams resultsContainerLayoutParams =

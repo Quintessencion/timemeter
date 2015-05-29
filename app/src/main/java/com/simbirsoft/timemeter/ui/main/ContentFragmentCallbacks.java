@@ -10,5 +10,4 @@ public interface ContentFragmentCallbacks {
     public RelativeLayout getContentRootView();
     public FrameLayout getContainerView();
     public FrameLayout getContainerHeaderView();
-    public FrameLayout getSearchResultContainer();
 }
