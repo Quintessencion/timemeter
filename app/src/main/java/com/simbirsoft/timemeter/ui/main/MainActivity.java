@@ -105,8 +105,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
 
-        // TODO: handle task activity intent from notification bar
-        selectNavigationDrawerItem(SECTION_ID_TASKS, true);
+        setCurrentSection(SECTION_ID_TASKS, true);
         mNavigationDrawerFragment.setCurrentSelectedPosition(SECTION_ID_TASKS);
     }
 
@@ -120,10 +119,10 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         }
     }
 
-    private void selectNavigationDrawerItem(int position, boolean switchToTaskList) {
+    private void setCurrentSection(int sectionId, boolean switchToTaskList) {
         Class<?> fragmentType;
 
-        switch (position) {
+        switch (sectionId) {
             case SECTION_ID_TASKS:
                 fragmentType = MainPagerFragment_.class;
                 break;
@@ -142,7 +141,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         if (fragment != null && fragmentType.equals(fragment.getClass())) {
             // selected fragment is already added
             if (switchToTaskList && MainPagerFragment_.class.equals(fragment.getClass())) {
-                ((MainPagerFragment)fragment).switchToTaskList();
+                ((MainPagerFragment)fragment).switchToSelectedPage(0);
             }
             return;
         }
@@ -152,8 +151,8 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         }
 
         Bundle fragmentArgs = new Bundle();
-        fragmentArgs.putInt(MainFragment.ARG_SECTION_ID, position);
-        fragmentArgs.putBoolean(MainPagerFragment.TAG_ARG_NEED_SWITCH_TO_TASK_LIST, switchToTaskList);
+        fragmentArgs.putInt(MainFragment.ARG_SECTION_ID, sectionId);
+        fragmentArgs.putBoolean(MainPagerFragment.ARG_NEED_SWITCH_TO_SELECTED_PAGE, switchToTaskList);
         fragment = (MainFragment) Fragment.instantiate(this, fragmentType.getName(), fragmentArgs);
 
         Fragment.SavedState fragmentState = getSectionFragmentState(fragment);
@@ -168,8 +167,8 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     }
 
     @Override
-    public void onNavigationDrawerItemSelected(int position) {
-        selectNavigationDrawerItem(position, false);
+    public void onNavigationDrawerItemSelected(int sectionId) {
+        setCurrentSection(sectionId, false);
     }
 
     private MainFragment getContentFragment() {

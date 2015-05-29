@@ -38,6 +38,7 @@ import com.tokenautocomplete.TokenCompleteTextView;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.ColorRes;
@@ -61,7 +62,10 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     private static final Logger LOG = LogFactory.getLogger(MainPagerFragment.class);
     private static final String TAG_DATE_PICKER_FRAGMENT = "main_date_picker_fragment_tag";
 
-    public static final String TAG_ARG_NEED_SWITCH_TO_TASK_LIST = "tag_arg_need_switch_to_task_list";
+    public static final String ARG_NEED_SWITCH_TO_SELECTED_PAGE = "tag_arg_need_switch_to_selected_page";
+
+    @FragmentArg(ARG_NEED_SWITCH_TO_SELECTED_PAGE)
+    protected boolean needSwitchToSelectedPage;
 
     @ViewById(R.id.pager)
     ViewPager mViewPager;
@@ -145,7 +149,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         if (mFilterView != null) {
             mFilterView.updateDateView();
         }
-        loadPagePosition();
+        restorePagePosition();
     }
 
     @Override
@@ -208,8 +212,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
                 onPageChanged(position);
             }
         });
-        loadPagePosition();
-        //onPageChanged(mViewPager.getCurrentItem());
+        restorePagePosition();
     }
 
     private void onAdapterSetupItem(Fragment fragment) {
@@ -447,8 +450,10 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mPrefs.setSelectedTaskTabPosition(mViewPager.getCurrentItem());
     }
 
-    private void loadPagePosition() {
-        if (isNeededSwithToTaskList()) {
+    private void restorePagePosition() {
+        if (needSwitchToSelectedPage) {
+            // вот тут наверное надо либо логику поменять
+            // либо вместо флага needSwitchToSelectedPage передавать id страницы
             mViewPager.setCurrentItem(0);
         } else {
             mViewPager.setCurrentItem(mPrefs.getSelectedTaskTabPosition());
@@ -461,12 +466,8 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         currentFragment.onPageSelected();
     }
 
-    private boolean isNeededSwithToTaskList() {
-        return getArguments().getBoolean(TAG_ARG_NEED_SWITCH_TO_TASK_LIST);
-    }
-
-    public void switchToTaskList() {
-        mViewPager.setCurrentItem(0);
+    public void switchToSelectedPage(int pageId) {
+        mViewPager.setCurrentItem(pageId);
         savePagePosition();
     }
 }
