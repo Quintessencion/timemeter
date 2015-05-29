@@ -6,14 +6,15 @@ import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.utils.Legend;
+import com.github.mikephil.charting.utils.Utils;
 import com.simbirsoft.timemeter.R;
 
 public class VerticalLegend extends LinearLayout implements View.OnClickListener {
+    private static final String TEXT_COLOR = "black";
 
     public interface LegendClickListener {
         void onLabelClicked(int position);
@@ -75,7 +76,7 @@ public class VerticalLegend extends LinearLayout implements View.OnClickListener
         LinearLayout linearLayout = new LinearLayout(getContext());
         LinearLayout.LayoutParams layoutParams =
                 new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        layoutParams.bottomMargin = (int)mLegend.getYEntrySpace() / 2;
+        layoutParams.bottomMargin = (int) Utils.convertPixelsToDp(mLegend.getYEntrySpace());
         linearLayout.setLayoutParams(layoutParams);
         linearLayout.setOrientation(HORIZONTAL);
 
@@ -101,8 +102,8 @@ public class VerticalLegend extends LinearLayout implements View.OnClickListener
         textView.setLayoutParams(getTextParams());
         textView.setText(text);
         textView.setTag(position);
-        textView.setTextColor(Color.parseColor("black"));
-        textView.setTextSize(mLegend.getTextSize() / 2);
+        textView.setTextColor(Color.parseColor(TEXT_COLOR));
+        textView.setTextSize(Utils.convertPixelsToDp(mLegend.getTextSize()));
         textView.setEnabled(mIsClickable);
         textView.setFocusable(mIsClickable);
         if (mIsClickable) {
@@ -112,7 +113,8 @@ public class VerticalLegend extends LinearLayout implements View.OnClickListener
     }
 
     private LinearLayout.LayoutParams getImageParams() {
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(20, 20);
+        final int circleDiameter = (int) getResources().getDimension(R.dimen.task_marker_size);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(circleDiameter, circleDiameter);
         params.gravity = Gravity.CENTER_VERTICAL;
         return params;
     }
