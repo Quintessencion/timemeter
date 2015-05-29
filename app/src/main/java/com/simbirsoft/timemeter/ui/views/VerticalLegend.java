@@ -74,19 +74,13 @@ public class VerticalLegend extends LinearLayout implements View.OnClickListener
     private LinearLayout getLegendItem(int color, String text, int position) {
         LinearLayout linearLayout = new LinearLayout(getContext());
         LinearLayout.LayoutParams layoutParams =
-                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT);
+                new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         layoutParams.bottomMargin = (int)mLegend.getYEntrySpace() / 2;
         linearLayout.setLayoutParams(layoutParams);
         linearLayout.setOrientation(HORIZONTAL);
 
-        LinearLayout.LayoutParams paramsImage = getImageParams();
-        View circle = getCircle(color);
-        linearLayout.addView(circle, paramsImage);
-
-        LinearLayout.LayoutParams paramsText = getTextParams();
-        TextView textView = getText(text, position);
-        linearLayout.addView(textView, paramsText);
+        linearLayout.addView(getCircle(color));
+        linearLayout.addView(getText(text, position));
 
         return linearLayout;
     }
@@ -104,6 +98,7 @@ public class VerticalLegend extends LinearLayout implements View.OnClickListener
 
     private TextView getText(String text, int position) {
         TextView textView = new TextView(getContext());
+        textView.setLayoutParams(getTextParams());
         textView.setText(text);
         textView.setTag(position);
         textView.setTextColor(Color.parseColor("black"));
