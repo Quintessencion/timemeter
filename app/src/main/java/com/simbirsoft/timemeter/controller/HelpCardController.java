@@ -7,7 +7,7 @@ import com.simbirsoft.timemeter.App;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.events.HelpCardPresentedEvent;
-import com.simbirsoft.timemeter.ui.views.HelpCardDataSource;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardDataSource;
 import com.squareup.otto.Bus;
 
 import java.util.Hashtable;

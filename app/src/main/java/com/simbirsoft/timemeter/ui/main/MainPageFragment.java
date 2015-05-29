@@ -32,10 +32,10 @@ import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.model.TaskChangedEvent;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.views.FilterView;
-import com.simbirsoft.timemeter.ui.views.HelpCard;
-import com.simbirsoft.timemeter.ui.views.HelpCardDataSource;
-import com.simbirsoft.timemeter.ui.views.HelpCardPresenter;
-import com.simbirsoft.timemeter.ui.views.HelpCardSource;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCard;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardDataSource;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardPresenter;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardSource;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
@@ -457,7 +457,7 @@ public class MainPageFragment extends BaseFragment implements HelpCardSource {
         });
 
         final HelpCardDataSource ds = mHelpCardController.getCard(mCurrentHelpCardId);
-        helpCard.setAdapter(ds);
+        helpCard.setDataSource(ds);
     }
 
     @Override

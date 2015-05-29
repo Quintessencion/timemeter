@@ -1,4 +1,4 @@
-package com.simbirsoft.timemeter.ui.views;
+package com.simbirsoft.timemeter.ui.helpcards;
 
 public interface HelpCardPresenter {
     void show();

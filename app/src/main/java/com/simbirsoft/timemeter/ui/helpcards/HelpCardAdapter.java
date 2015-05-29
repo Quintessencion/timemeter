@@ -1,20 +1,15 @@
-package com.simbirsoft.timemeter.ui.base;
+package com.simbirsoft.timemeter.ui.helpcards;
 
-import android.support.v4.view.ViewPropertyAnimatorListener;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.simbirsoft.timemeter.R;
-import com.simbirsoft.timemeter.ui.views.HelpCard;
-import com.simbirsoft.timemeter.ui.views.HelpCardPresenter;
-import com.simbirsoft.timemeter.ui.views.HelpCardSource;
-import com.simbirsoft.timemeter.ui.views.HelpCard_;
+import com.simbirsoft.timemeter.ui.util.RecyclerViewUtils;
 
-import jp.wasabeef.recyclerview.animators.holder.AnimateViewHolder;
-
-public abstract class BaseMainPageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements HelpCardPresenter {
+public class HelpCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements HelpCardPresenter {
 
     static class HelpCardViewHolder extends RecyclerView.ViewHolder {
         public HelpCardViewHolder(View itemView) {
@@ -26,14 +21,22 @@ public abstract class BaseMainPageAdapter extends RecyclerView.Adapter<RecyclerV
 
     private HelpCardSource mHelpCardSource;
     private boolean mNeedToPresentHelpCard;
+    private RecyclerView.Adapter mInnerAdapter;
+    private StaggeredGridLayoutManager mLayoutManager;
 
+    public HelpCardAdapter(RecyclerView.Adapter adapter) {
+        mInnerAdapter = adapter;
+        RecyclerViewUtils.forwardDataChanges(mInnerAdapter, this);
+        setHasStableIds(mInnerAdapter.hasStableIds());
+    }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType == VIEW_TYPE_HELP_CARD) {
             return onCreateHelpCardViewHolder(parent);
+        } else {
+            return mInnerAdapter.onCreateViewHolder(parent, viewType);
         }
-        return null;
     }
 
     @Override
@@ -42,37 +45,52 @@ public abstract class BaseMainPageAdapter extends RecyclerView.Adapter<RecyclerV
         if (viewType == VIEW_TYPE_HELP_CARD) {
             mHelpCardSource.setupHelpCard((HelpCard) holder.itemView);
         } else {
-            internalOnBindViewHolder(holder, viewType, getDataActualPosition(position));
+            mInnerAdapter.onBindViewHolder(holder, getDataActualPosition(position));
         }
     }
 
     @Override
     public int getItemCount() {
-        int count = internalGetItemCount();
+        int count = mInnerAdapter.getItemCount();
         return mNeedToPresentHelpCard ? count + 1 : count;
     }
 
     @Override
     public int getItemViewType(int position) {
         return (position == 0 && mNeedToPresentHelpCard) ?
-                VIEW_TYPE_HELP_CARD : internalGetItemViewType(getDataActualPosition(position));
+                VIEW_TYPE_HELP_CARD : mInnerAdapter.getItemViewType(getDataActualPosition(position));
     }
 
     @Override
     public long getItemId(int position) {
-        return (mNeedToPresentHelpCard && position == 0) ? (1777 + mHelpCardSource.getHelpCardId()) : internalGetItemId(getDataActualPosition(position));
+        return (mNeedToPresentHelpCard && position == 0) ? (1777 + mHelpCardSource.getHelpCardId()) : mInnerAdapter.getItemId(getDataActualPosition(position));
     }
 
     @Override
     public void show() {
+        boolean alreadyPresenting = mNeedToPresentHelpCard;
+
         mNeedToPresentHelpCard = true;
-        notifyDataSetChanged();
+
+        if (alreadyPresenting) {
+            notifyItemChanged(0);
+        } else {
+            notifyItemInserted(0);
+            scrollToTop();
+        }
     }
 
     @Override
     public void hide() {
         mNeedToPresentHelpCard = false;
-        notifyDataSetChanged();
+
+        notifyItemRemoved(0);
+    }
+
+    private void scrollToTop() {
+        if (mLayoutManager != null) {
+            mLayoutManager.scrollToPosition(0);
+        }
     }
 
     @Override
@@ -80,17 +98,13 @@ public abstract class BaseMainPageAdapter extends RecyclerView.Adapter<RecyclerV
         mHelpCardSource = source;
     }
 
+    public void setLayoutManager(StaggeredGridLayoutManager lm) {
+        mLayoutManager = lm;
+    }
+
     private int getDataActualPosition(int position) {
         return mNeedToPresentHelpCard ? position - 1 : position;
     }
-
-    protected abstract int internalGetItemViewType(int position);
-
-    protected abstract int internalGetItemCount();
-
-    protected abstract long internalGetItemId(int position);
-
-    protected abstract void internalOnBindViewHolder(RecyclerView.ViewHolder viewHolder, int viewType, int position);
 
     private HelpCardViewHolder onCreateHelpCardViewHolder(ViewGroup viewGroup) {
         HelpCard helpCard = (HelpCard)LayoutInflater.from(viewGroup.getContext())

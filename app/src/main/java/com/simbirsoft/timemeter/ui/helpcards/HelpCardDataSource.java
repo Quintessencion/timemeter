@@ -1,4 +1,4 @@
-package com.simbirsoft.timemeter.ui.views;
+package com.simbirsoft.timemeter.ui.helpcards;
 
 import android.content.Context;
 
@@ -6,7 +6,7 @@ import com.simbirsoft.timemeter.R;
 
 import java.util.ArrayList;
 
-public class HelpCardDataSource implements HelpCard.Adapter {
+public class HelpCardDataSource implements HelpCard.DataSource {
 
     private static class Item {
         public String message;

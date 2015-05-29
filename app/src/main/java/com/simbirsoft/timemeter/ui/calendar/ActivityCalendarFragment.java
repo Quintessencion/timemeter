@@ -33,9 +33,9 @@ import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
 import com.simbirsoft.timemeter.ui.views.CalendarNavigationView;
 import com.simbirsoft.timemeter.ui.views.CalendarViewPager;
-import com.simbirsoft.timemeter.ui.views.HelpCard;
-import com.simbirsoft.timemeter.ui.views.HelpCardPresenter;
-import com.simbirsoft.timemeter.ui.views.HelpCardSource;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCard;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardPresenter;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardSource;
 import com.simbirsoft.timemeter.ui.views.WeekCalendarView;
 
 import org.androidannotations.annotations.AfterViews;

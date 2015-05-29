@@ -1,4 +1,4 @@
-package com.simbirsoft.timemeter.ui.views;
+package com.simbirsoft.timemeter.ui.helpcards;
 
 import android.content.Context;
 import android.support.v7.widget.CardView;
@@ -9,14 +9,13 @@ import android.widget.TextView;
 
 import com.simbirsoft.timemeter.R;
 
-import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EViewGroup;
 import org.androidannotations.annotations.ViewById;
 
 @EViewGroup(R.layout.view_help_card)
 public class HelpCard extends CardView {
 
-    public interface Adapter {
+    public interface DataSource {
         int getItemsCount();
         String getMessage(int index);
         String getTitleForActionButton(int index);
@@ -37,7 +36,7 @@ public class HelpCard extends CardView {
     protected Button mBackButton;
 
     private int mPosition = 0;
-    private Adapter mAdapter;
+    private DataSource mDataSource;
     private OnClickListener mOnNextClickListener;
     private OnClickListener mOnBackClickListener;
 
@@ -72,7 +71,7 @@ public class HelpCard extends CardView {
 
     private void goToNextItem() {
         final int nextPosition = mPosition + 1;
-        final int itemsCount = mAdapter.getItemsCount();
+        final int itemsCount = mDataSource.getItemsCount();
         if (nextPosition < itemsCount) {
             mPosition = nextPosition;
             presentItemAtIndex(mPosition);
@@ -102,23 +101,23 @@ public class HelpCard extends CardView {
     private void reload() {
         mPosition = 0;
 
-        int count = mAdapter.getItemsCount();
+        int count = mDataSource.getItemsCount();
         mBackButton.setVisibility(count > 1 ? VISIBLE : GONE);
 
         presentItemAtIndex(mPosition);
     }
 
     private void presentItemAtIndex(int index) {
-        mTextView.setText(mAdapter.getMessage(index));
-        mActionButton.setText(mAdapter.getTitleForActionButton(index));
-        mNextButton.setText(mAdapter.getTitleForNextButton(index));
-        mBackButton.setText(mAdapter.getTitleForBackButton(index));
+        mTextView.setText(mDataSource.getMessage(index));
+        mActionButton.setText(mDataSource.getTitleForActionButton(index));
+        mNextButton.setText(mDataSource.getTitleForNextButton(index));
+        mBackButton.setText(mDataSource.getTitleForBackButton(index));
 
         mBackButton.setEnabled(index > 0);
     }
 
-    public void setAdapter(Adapter adapter) {
-        mAdapter = adapter;
+    public void setDataSource(DataSource dataSource) {
+        mDataSource = dataSource;
         reload();
     }
 
@@ -127,6 +126,6 @@ public class HelpCard extends CardView {
     }
 
     public boolean isLastItemPresented() {
-        return mPosition == (mAdapter.getItemsCount() - 1);
+        return mPosition == (mDataSource.getItemsCount() - 1);
     }
 }

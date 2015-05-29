@@ -18,7 +18,7 @@ import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.log.LogFactory;
-import com.simbirsoft.timemeter.ui.base.BaseMainPageAdapter;
+import com.simbirsoft.timemeter.ui.base.BaseAnimateViewHolder;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
 import com.simbirsoft.timemeter.ui.views.TagFlowView;
@@ -29,9 +29,7 @@ import org.slf4j.Logger;
 import java.util.Collections;
 import java.util.List;
 
-import jp.wasabeef.recyclerview.animators.holder.AnimateViewHolder;
-
-public class TaskListAdapter extends BaseMainPageAdapter {
+public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.TaskViewHolder> {
 
     interface TaskClickListener {
         void onTaskViewClicked(TaskBundle item);
@@ -39,29 +37,9 @@ public class TaskListAdapter extends BaseMainPageAdapter {
         void onTaskCardClicked(TaskBundle item);
     }
 
-    static class TaskViewHolder extends AnimateViewHolder {
+    static class TaskViewHolder extends BaseAnimateViewHolder {
         public TaskViewHolder(View itemView) {
             super(itemView);
-        }
-
-        @Override
-        public void preAnimateAddImpl() {
-            ViewCompat.setAlpha(this.itemView, 0);
-        }
-
-        @Override
-        public void preAnimateRemoveImpl() {
-            ViewCompat.setAlpha(this.itemView, 1);
-        }
-
-        @Override
-        public void animateAddImpl(ViewPropertyAnimatorListener viewPropertyAnimatorListener) {
-            ViewCompat.animate(this.itemView).alpha(1).setDuration(250).setListener(viewPropertyAnimatorListener).start();
-        }
-
-        @Override
-        public void animateRemoveImpl(ViewPropertyAnimatorListener viewPropertyAnimatorListener) {
-            ViewCompat.animate(this.itemView).alpha(0).setDuration(250).setListener(viewPropertyAnimatorListener).start();
         }
 
         View itemEditView;
@@ -160,22 +138,18 @@ public class TaskListAdapter extends BaseMainPageAdapter {
     }
 
     @Override
-    protected long internalGetItemId(int position) {
+    public long getItemId(int position) {
         return mItems.get(position).getTask().getId();
     }
 
     @Override
-    protected int internalGetItemViewType(int position) {
+    public int getItemViewType(int position) {
         return VIEW_TYPE_TASK;
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        if (viewType == VIEW_TYPE_TASK) {
-            return onCreateTaskItemViewHolder(viewGroup);
-        }
-
-        return super.onCreateViewHolder(viewGroup, viewType);
+    public TaskViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+        return onCreateTaskItemViewHolder(viewGroup);
     }
 
     private TaskViewHolder onCreateTaskItemViewHolder(ViewGroup viewGroup) {
@@ -198,11 +172,9 @@ public class TaskListAdapter extends BaseMainPageAdapter {
     }
 
     @Override
-    protected void internalOnBindViewHolder(RecyclerView.ViewHolder viewHolder, int viewType, int position) {
-        if (viewType == VIEW_TYPE_TASK) {
-            TaskBundle item = mItems.get(position);
-            bindViewHolder((TaskViewHolder)viewHolder, item);
-        }
+    public void onBindViewHolder(TaskViewHolder viewHolder, int position) {
+        TaskBundle item = mItems.get(position);
+        bindViewHolder(viewHolder, item);
     }
 
     private void bindViewHolder(TaskViewHolder holder, TaskBundle item) {
@@ -231,11 +203,7 @@ public class TaskListAdapter extends BaseMainPageAdapter {
     }
 
     @Override
-    protected int internalGetItemCount() {
+    public int getItemCount() {
         return mItems.size();
-    }
-
-    public int getTaskCount() {
-        return internalGetItemCount();
     }
 }

@@ -1,32 +1,26 @@
 package com.simbirsoft.timemeter.ui.stats;
 
-import android.support.v4.view.ViewCompat;
-import android.support.v4.view.ViewPropertyAnimatorListener;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
-import com.simbirsoft.timemeter.ui.base.BaseMainPageAdapter;
-import com.simbirsoft.timemeter.ui.model.TaskBundle;
+import com.simbirsoft.timemeter.ui.base.BaseAnimateViewHolder;
 
 import java.util.Collection;
 import java.util.List;
 
-import jp.wasabeef.recyclerview.animators.holder.AnimateViewHolder;
-
-public class StatsListAdapter extends BaseMainPageAdapter {
+public class StatsListAdapter extends RecyclerView.Adapter<StatsListAdapter.StatsViewHolder> {
 
     interface ChartClickListener {
         void onChartClicked(int viewType);
     }
 
-    static class StatsViewHolder extends AnimateViewHolder {
+    static class StatsViewHolder extends BaseAnimateViewHolder {
 
         public StatsViewHolder(CardView itemView, View contentView) {
             super(itemView);
@@ -37,26 +31,6 @@ public class StatsListAdapter extends BaseMainPageAdapter {
 
         public CardView itemView;
         public View contentView;
-
-        @Override
-        public void preAnimateAddImpl() {
-            ViewCompat.setAlpha(this.itemView, 0);
-        }
-
-        @Override
-        public void preAnimateRemoveImpl() {
-            ViewCompat.setAlpha(this.itemView, 1);
-        }
-
-        @Override
-        public void animateAddImpl(ViewPropertyAnimatorListener viewPropertyAnimatorListener) {
-            ViewCompat.animate(this.itemView).alpha(1).setDuration(250).setListener(viewPropertyAnimatorListener).start();
-        }
-
-        @Override
-        public void animateRemoveImpl(ViewPropertyAnimatorListener viewPropertyAnimatorListener) {
-            ViewCompat.animate(this.itemView).alpha(0).setDuration(250).setListener(viewPropertyAnimatorListener).start();
-        }
     }
 
     private final List<StatisticsViewBinder> mViewBinders;
@@ -88,44 +62,40 @@ public class StatsListAdapter extends BaseMainPageAdapter {
     }
 
     @Override
-    protected int internalGetItemViewType(int position) {
+    public int getItemViewType(int position) {
         return getViewBinder(position).getViewTypeId();
     }
 
     @Override
-    protected int internalGetItemCount() {
+    public int getItemCount() {
         return mViewBinders.size();
     }
 
     @Override
-    protected long internalGetItemId(int position) {
+    public long getItemId(int position) {
         return getViewBinder(position).getViewTypeId();
     }
 
     @Override
-    protected void internalOnBindViewHolder(RecyclerView.ViewHolder viewHolder, int viewType, int position) {
+    public void onBindViewHolder(StatsViewHolder viewHolder, int position) {
         StatisticsViewBinder binder = getViewBinder(position);
 
-        binder.bindView(((StatsViewHolder) viewHolder).contentView);
+        binder.bindView(viewHolder.contentView);
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        if (viewType != VIEW_TYPE_HELP_CARD) {
-            StatisticsViewBinder binder = getViewBinderForViewTypeId(viewType);
+    public StatsViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        StatisticsViewBinder binder = getViewBinderForViewTypeId(viewType);
 
-            CardView view = (CardView) LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.view_statistics_card, parent, false);
+        CardView view = (CardView) LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.view_statistics_card, parent, false);
 
-            View contentView = binder.createView(parent.getContext(), view, false);
-            view.addView(contentView);
-            view.setOnClickListener(mClickListener);
-            view.setTag(viewType);
+        View contentView = binder.createView(parent.getContext(), view, false);
+        view.addView(contentView);
+        view.setOnClickListener(mClickListener);
+        view.setTag(viewType);
 
-            return new StatsViewHolder(view, contentView);
-        }
-
-        return super.onCreateViewHolder(parent, viewType);
+        return new StatsViewHolder(view, contentView);
     }
 
     public void setChartClickListener(ChartClickListener chartClickListener) {

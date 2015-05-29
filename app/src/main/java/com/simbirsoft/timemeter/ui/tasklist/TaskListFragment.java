@@ -37,7 +37,9 @@ import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
 import com.simbirsoft.timemeter.log.LogFactory;
-import com.simbirsoft.timemeter.ui.views.HelpCard;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardAdapter;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardAnimator;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCard;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.ContentFragmentCallbacks;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
@@ -48,7 +50,7 @@ import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
 import com.simbirsoft.timemeter.ui.util.TaskFilterPredicate;
-import com.simbirsoft.timemeter.ui.views.HelpCardPresenter;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardPresenter;
 import com.squareup.otto.Subscribe;
 
 import org.androidannotations.annotations.AfterViews;
@@ -60,8 +62,6 @@ import org.slf4j.Logger;
 import java.util.List;
 
 import javax.inject.Inject;
-
-import jp.wasabeef.recyclerview.animators.ScaleInAnimator;
 
 @EFragment(R.layout.fragment_task_list)
 public class TaskListFragment extends MainPageFragment implements JobLoader.JobLoaderCallbacks,
@@ -92,6 +92,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
     private FloatingActionButton mFloatingActionButton;
     private TaskListAdapter mTasksViewAdapter;
+    private HelpCardAdapter mHelpCardAdapter;
     private ITaskActivityManager mTaskActivityManager;
     private ContentFragmentCallbacks mCallbacks;
 
@@ -143,16 +144,18 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
             mColumnCount = 1;
         }
 
-        RecyclerView.LayoutManager tasksViewLayoutManager = new StaggeredGridLayoutManager(
+        StaggeredGridLayoutManager tasksViewLayoutManager = new StaggeredGridLayoutManager(
                 mColumnCount,
                 StaggeredGridLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(tasksViewLayoutManager);
 
         mTasksViewAdapter = new TaskListAdapter(mTaskActivityManager);
         mTasksViewAdapter.setTaskClickListener(this);
-        mTasksViewAdapter.setHelpCardSource(this);
-        mRecyclerView.setAdapter(mTasksViewAdapter);
-        mRecyclerView.setItemAnimator(new ScaleInAnimator());
+        mHelpCardAdapter = new HelpCardAdapter(mTasksViewAdapter);
+        mHelpCardAdapter.setHelpCardSource(this);
+        mHelpCardAdapter.setLayoutManager(tasksViewLayoutManager);
+        mRecyclerView.setAdapter(mHelpCardAdapter);
+        mRecyclerView.setItemAnimator(new HelpCardAnimator());
 
         requestLoad(TASK_LIST_LOADER_TAG, this);
     }
@@ -265,7 +268,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
             mTaskListPosition = null;
         }
 
-        if (filterIsEmpty() && mTasksViewAdapter.getTaskCount() == 0) {
+        if (filterIsEmpty() && mTasksViewAdapter.getItemCount() == 0) {
             mEmptyListIndicator.setVisibility(View.VISIBLE);
         } else {
             mEmptyListIndicator.setVisibility(View.GONE);
@@ -432,7 +435,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
             return HelpCardController.HELP_CARD_TASK_LIST;
         }
 
-        if (mTasksViewAdapter.getTaskCount() == 0 && !controller.isPresented(HelpCardController.HELP_CARD_ADD_NEW_TASK)) {
+        if (mTasksViewAdapter.getItemCount() == 0 && !controller.isPresented(HelpCardController.HELP_CARD_ADD_NEW_TASK)) {
             return HelpCardController.HELP_CARD_ADD_NEW_TASK;
         }
 
@@ -469,7 +472,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
     @Override
     protected HelpCardPresenter getHelpCardPresenter() {
-        return mTasksViewAdapter;
+        return mHelpCardAdapter;
     }
 }
 
