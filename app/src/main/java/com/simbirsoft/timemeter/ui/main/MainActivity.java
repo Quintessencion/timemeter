@@ -51,6 +51,8 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     private static final String KEY_FRAGMENT_STATE_KEY = "MainActivity_content_fragment_state_key";
     private static final String KEY_FRAGMENT_STATE = "MainActivity_content_fragment_state";
 
+    private static final int SELECTED_PAGE_ID = 0;
+
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
@@ -141,7 +143,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         if (fragment != null && fragmentType.equals(fragment.getClass())) {
             // selected fragment is already added
             if (switchToTaskList && MainPagerFragment_.class.equals(fragment.getClass())) {
-                ((MainPagerFragment)fragment).switchToSelectedPage(0);
+                ((MainPagerFragment)fragment).switchToSelectedPage(SELECTED_PAGE_ID);
             }
             return;
         }
@@ -153,6 +155,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putInt(MainFragment.ARG_SECTION_ID, sectionId);
         fragmentArgs.putBoolean(MainPagerFragment.ARG_NEED_SWITCH_TO_SELECTED_PAGE, switchToTaskList);
+        fragmentArgs.putInt(MainPagerFragment.ARG_PAGE_ID_FOR_SWITCHING, SELECTED_PAGE_ID);
         fragment = (MainFragment) Fragment.instantiate(this, fragmentType.getName(), fragmentArgs);
 
         Fragment.SavedState fragmentState = getSectionFragmentState(fragment);

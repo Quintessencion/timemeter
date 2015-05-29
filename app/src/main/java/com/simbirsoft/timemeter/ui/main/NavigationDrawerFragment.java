@@ -64,7 +64,11 @@ public class NavigationDrawerFragment extends Fragment {
 
     public void setCurrentSelectedPosition(int currentSelectedPosition) {
         mCurrentSelectedPosition = currentSelectedPosition;
-        selectItem(mCurrentSelectedPosition);
+        // вот тут смена выбранной позиции не стыкуется
+        // с логикой восстановления страницы при переходе из уведомлений
+        // если раскоментировать то переход к задачам из уведомлений когда находились на экране меток
+        // не проходит и восстанавливается страница которая была до перехода на экран меток
+        //selectItem(mCurrentSelectedPosition);
     }
 
     private void saveCurrentSelectedPosition() {

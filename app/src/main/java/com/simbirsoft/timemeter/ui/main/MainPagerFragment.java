@@ -62,10 +62,14 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     private static final Logger LOG = LogFactory.getLogger(MainPagerFragment.class);
     private static final String TAG_DATE_PICKER_FRAGMENT = "main_date_picker_fragment_tag";
 
-    public static final String ARG_NEED_SWITCH_TO_SELECTED_PAGE = "tag_arg_need_switch_to_selected_page";
+    public static final String ARG_NEED_SWITCH_TO_SELECTED_PAGE = "arg_need_switch_to_selected_page";
+    public static final String ARG_PAGE_ID_FOR_SWITCHING = "arg_page_id_for_switching";
 
     @FragmentArg(ARG_NEED_SWITCH_TO_SELECTED_PAGE)
     protected boolean needSwitchToSelectedPage;
+
+    @FragmentArg(ARG_PAGE_ID_FOR_SWITCHING)
+    protected int pageId;
 
     @ViewById(R.id.pager)
     ViewPager mViewPager;
@@ -452,9 +456,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
     private void restorePagePosition() {
         if (needSwitchToSelectedPage) {
-            // вот тут наверное надо либо логику поменять
-            // либо вместо флага needSwitchToSelectedPage передавать id страницы
-            mViewPager.setCurrentItem(0);
+            mViewPager.setCurrentItem(pageId);
         } else {
             mViewPager.setCurrentItem(mPrefs.getSelectedTaskTabPosition());
         }
