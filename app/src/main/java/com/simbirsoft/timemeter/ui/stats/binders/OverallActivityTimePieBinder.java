@@ -129,8 +129,9 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder,
         if (mLegend == null) {
             mLegend = mPieChart.getLegend();
             mLegend.setPosition(Legend.LegendPosition.BELOW_CHART_LEFT);
+            float yEntrySpace = (mIsFullScreenMode)? 20f : 7f;
             mLegend.setXEntrySpace(7f);
-            mLegend.setYEntrySpace(7f);
+            mLegend.setYEntrySpace(yEntrySpace);
             mLegend.setForm(Legend.LegendForm.CIRCLE);
             mLegend.setTextSize(16f);
             mLegend.setStackSpace(12f);
@@ -161,6 +162,7 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder,
 
         mVerticalLegend = (VerticalLegend) mContentRoot.findViewById(R.id.legendPanel);
         mVerticalLegend.setLegendClickListener(this);
+        mVerticalLegend.setIsClickable(mIsFullScreenMode);
 
         mPieChart = (PieChart) mContentRoot.findViewById(R.id.chart);
         mTitleView = (TextView) mContentRoot.findViewById(android.R.id.title);

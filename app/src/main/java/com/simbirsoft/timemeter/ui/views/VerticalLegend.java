@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -20,6 +21,8 @@ public class VerticalLegend extends LinearLayout implements View.OnClickListener
     private LegendClickListener mLegendClickListener;
 
     private Legend mLegend;
+
+    private boolean mIsClickable = true;
 
     public VerticalLegend(Context context) {
         super(context);
@@ -65,6 +68,11 @@ public class VerticalLegend extends LinearLayout implements View.OnClickListener
 
     private LinearLayout getLegendItem(int color, String text, int position) {
         LinearLayout linearLayout = new LinearLayout(getContext());
+        LinearLayout.LayoutParams layoutParams =
+                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT);
+        layoutParams.bottomMargin = (int)mLegend.getYEntrySpace() / 2;
+        linearLayout.setLayoutParams(layoutParams);
         linearLayout.setOrientation(HORIZONTAL);
 
         LinearLayout.LayoutParams paramsImage = getImageParams();
@@ -90,7 +98,11 @@ public class VerticalLegend extends LinearLayout implements View.OnClickListener
         textView.setTag(position);
         textView.setTextColor(Color.parseColor("black"));
         textView.setTextSize(mLegend.getTextSize() / 2);
-        textView.setOnClickListener(this);
+        textView.setEnabled(mIsClickable);
+        textView.setFocusable(mIsClickable);
+        if (mIsClickable) {
+            textView.setOnClickListener(this);
+        }
         return textView;
     }
 
@@ -105,5 +117,9 @@ public class VerticalLegend extends LinearLayout implements View.OnClickListener
         params.gravity = Gravity.CENTER_VERTICAL;
         params.leftMargin = (int)mLegend.getXEntrySpace();
         return params;
+    }
+
+    public void setIsClickable(boolean isClickable) {
+        mIsClickable = isClickable;
     }
 }
