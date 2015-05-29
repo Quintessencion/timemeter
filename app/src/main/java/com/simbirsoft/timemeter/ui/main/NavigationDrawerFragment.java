@@ -64,6 +64,7 @@ public class NavigationDrawerFragment extends Fragment {
 
     public void setCurrentSelectedPosition(int currentSelectedPosition) {
         mCurrentSelectedPosition = currentSelectedPosition;
+        selectItem(mCurrentSelectedPosition);
     }
 
     private void saveCurrentSelectedPosition() {

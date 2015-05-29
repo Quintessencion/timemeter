@@ -235,4 +235,10 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
     protected Logger createLogger() {
         return LoggerFactory.getLogger(ActivityCalendarFragment.class);
     }
+
+    @Override
+    public void onPageDeselected() {
+        super.onPageDeselected();
+        mPopupHelper.dismiss();
+    }
 }
