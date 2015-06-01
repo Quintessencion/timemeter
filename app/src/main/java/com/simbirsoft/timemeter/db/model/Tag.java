@@ -72,7 +72,7 @@ public class Tag implements Parcelable, Serializable {
     }
 
     public void setChecked(boolean checked) {
-        mChecked = checked;
+        this.mChecked = checked;
     }
 
     @Override
