@@ -91,6 +91,9 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     FilterView.FilterState mFilterState;
 
     @InstanceState
+    FilterResultsView.SearchResultsViewState mSearchResultsViewState;
+
+    @InstanceState
     int mTaskCount;
 
     @Inject
@@ -153,6 +156,10 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         if (mFilterState == null) {
             mFilterState = mPrefs.getFilterState();
         }
+
+        if (mSearchResultsViewState == null) {
+            mSearchResultsViewState = mPrefs.getSearchResultsState();
+        }
     }
 
     @Override
@@ -175,6 +182,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         super.onStop();
         final FilterView.FilterState filterState = mFilterView.getViewFilterState();
         mPrefs.setFilterState(filterState);
+        mPrefs.setSearchResultsState(mSearchResultsViewState);
     }
 
     @AfterViews
@@ -200,8 +208,8 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
             hideFilterView(false);
         }
 
-        if (mFilterResultsView != null && mFilterState != null) {
-            mFilterResultsView.updateView(mTaskCount, mFilterState);
+        if (mFilterResultsView != null && mSearchResultsViewState != null && mFilterState != null) {
+            mFilterResultsView.setSearchResultsState(mSearchResultsViewState);
         }
 
         if (mIsFilterResultsPanelShown) {
@@ -218,7 +226,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mFilterView.setOnSelectDateClickListener(this);
 
         mPagerAdapter = new MainPagerAdapter(getActivity(), getChildFragmentManager(), R.id.pager);
-        mPagerAdapter.setOnSetupItemListener(fragment -> onAdapterSetupItem(fragment));
+        mPagerAdapter.setOnSetupItemListener(this::onAdapterSetupItem);
         if (mPageNames != null) {
             mPagerAdapter.setPages(Lists.transform(mPageNames, PageItem::create));
         mViewPager.setOffscreenPageLimit(2);
@@ -242,12 +250,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
                 onPageChanged(position);
             }
         });
-        mTabs.post(new Runnable() {
-            @Override
-            public void run() {
-                onPageChanged(mViewPager.getCurrentItem());
-            }
-        });
+        mTabs.post(() -> onPageChanged(mViewPager.getCurrentItem()));
     }
 
     private void onAdapterSetupItem(Fragment fragment) {
@@ -429,7 +432,8 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mTaskCount = taskCount;
 
         if (!mFilterState.isEmpty()) {
-            mFilterResultsView.updateView(taskCount, filterState);
+            mSearchResultsViewState = new FilterResultsView.SearchResultsViewState(taskCount, filterState.tags);
+            mFilterResultsView.setSearchResultsState(mSearchResultsViewState);
             showSearchResultsPanel(true);
         }
 
@@ -481,7 +485,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         mPagerAdapter.deselectCurrentPage();
         MainPageFragment currentFragment = (MainPageFragment)mPagerAdapter.getItem(position);
         currentFragment.onPageSelected();
-        //updateSearchResultsPanelOnPage(position);
     }
 
     private void showSearchResultsPanel(boolean animate) {
@@ -525,14 +528,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         set.excludeTarget(R.id.floatingButton, true);
         TransitionManager.beginDelayedTransition(mContentRootView, set);
     }
-
-    /*private void updateSearchResultsPanelOnPage(int position) {
-        if (position == TASKS_FRAGMENT_POSITION && !mFilterState.isEmpty()) {
-            showSearchResultsPanel(true);
-        } else {
-            hideSearchResultsPanel(true);
-        }
-    }*/
 
     private void updateContainerMargin() {
         LinearLayout.LayoutParams resultsContainerLayoutParams =

@@ -6,6 +6,7 @@ import android.util.Base64;
 
 import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.App;
+import com.simbirsoft.timemeter.ui.views.FilterResultsView;
 import com.simbirsoft.timemeter.util.MarshallUtils;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 
@@ -23,6 +24,7 @@ public final class Preferences {
     public static final String PREFERENCE_USER_LEARNED_DRAWER = "user_learned_drawer";
 
     private static final String KEY_FILTER_STATE = "filter_state";
+    private static final String KEY_SEARCH_RESULTS_STATE = "search_results_state";
 
     private static final String PREFERENCE_DAY_START_HOUR = "day_start_hour";
     private static final String PREFERENCE_DAY_END_HOUR = "day_end_hour";
@@ -91,6 +93,34 @@ public final class Preferences {
                 mPrefs.edit().putString(KEY_FILTER_STATE, value).apply();
             } else {
                 mPrefs.edit().remove(KEY_FILTER_STATE).apply();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public FilterResultsView.SearchResultsViewState getSearchResultsState() {
+        FilterResultsView.SearchResultsViewState searchResultsViewState = null;
+        try {
+            if (mPrefs.contains(KEY_SEARCH_RESULTS_STATE)) {
+                String value = mPrefs.getString(KEY_SEARCH_RESULTS_STATE, "");
+                byte[] arr = Base64.decode(value, Base64.DEFAULT);
+                searchResultsViewState = MarshallUtils.unmarshall(arr, FilterResultsView.SearchResultsViewState.CREATOR);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return searchResultsViewState;
+    }
+
+    public void setSearchResultsState(FilterResultsView.SearchResultsViewState searchResultsState) {
+        try {
+            if (searchResultsState != null) {
+                byte[] arr = MarshallUtils.marshall(searchResultsState);
+                String value = Base64.encodeToString(arr, Base64.DEFAULT);
+                mPrefs.edit().putString(KEY_SEARCH_RESULTS_STATE, value).apply();
+            } else {
+                mPrefs.edit().remove(KEY_SEARCH_RESULTS_STATE).apply();
             }
         } catch (Exception ex) {
             ex.printStackTrace();
