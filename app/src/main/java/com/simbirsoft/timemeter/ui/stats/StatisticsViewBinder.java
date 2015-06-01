@@ -30,8 +30,4 @@ public interface StatisticsViewBinder {
     public View createView(Context context, ViewGroup parent, boolean touchable);
     public void bindView(View view);
     public String getTitle();
-
-    interface OnLegendClickListener {
-        void onLegendItemClicked(TaskBundle taskOverallActivity);
-    }
 }

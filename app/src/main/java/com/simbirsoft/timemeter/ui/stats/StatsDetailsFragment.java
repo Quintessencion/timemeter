@@ -53,7 +53,7 @@ import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_stats_details)
 public class StatsDetailsFragment extends BaseFragment implements
-        JobLoader.JobLoaderCallbacks, StatisticsViewBinder.OnLegendClickListener {
+        JobLoader.JobLoaderCallbacks, LegendClickListener {
 
     public static final String EXTRA_TASK_FILTER = "extra_task_filter";
 
@@ -118,7 +118,7 @@ public class StatsDetailsFragment extends BaseFragment implements
     @OnJobSuccess(LoadOverallTaskActivityTimeJob.class)
     public void onOverallActivitiesLoaded(LoadJobResult<List<TaskOverallActivity>> result) {
         OverallActivityTimePieBinder binder = new OverallActivityTimePieBinder(result.getData());
-        binder.setOnLegendClickListener(this);
+        binder.setLegendClickListener(this);
         displayChart(binder);
     }
 
@@ -141,7 +141,7 @@ public class StatsDetailsFragment extends BaseFragment implements
     @OnJobSuccess(LoadPeriodSplitActivityTimelineJob.class)
     public void onPeriodSplitActivitiesLoaded(LoadJobResult<List<DailyTaskActivityDuration>> result) {
         ActivityStackedTimelineBinder binder = new ActivityStackedTimelineBinder(result.getData());
-        binder.setOnLegendClickListener(this);
+        binder.setLegendClickListener(this);
         displayChart(binder);
     }
 

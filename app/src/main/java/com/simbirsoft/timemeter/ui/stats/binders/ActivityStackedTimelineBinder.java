@@ -27,6 +27,7 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.DailyTaskActivityDuration;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.stats.ActivityStackedTimelineChartMarkerView;
+import com.simbirsoft.timemeter.ui.stats.LegendClickListener;
 import com.simbirsoft.timemeter.ui.stats.StatisticsViewBinder;
 import com.simbirsoft.timemeter.ui.util.ColorSets;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
@@ -41,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 public class ActivityStackedTimelineBinder implements StatisticsViewBinder,
-        OnChartValueSelectedListener, VerticalLegend.LegendClickListener {
+        OnChartValueSelectedListener, VerticalLegend.ClickListener {
 
     private static final Logger LOG = LogFactory.getLogger(ActivityStackedTimelineBinder.class);
 
@@ -65,7 +66,7 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder,
     private TextView mEmptyIndicatorView;
     private boolean mIsFullScreenMode;
 
-    private StatisticsViewBinder.OnLegendClickListener mOnLegendClickListener;
+    private LegendClickListener mLegendClickListener;
 
     public ActivityStackedTimelineBinder(List<DailyTaskActivityDuration> activityTimeline) {
         mActivityTimeline = activityTimeline;
@@ -177,7 +178,7 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder,
 
     private void initializeChart() {
         mVerticalLegend = (VerticalLegend) mContentRoot.findViewById(R.id.legendPanel);
-        mVerticalLegend.setLegendClickListener(this);
+        mVerticalLegend.setClickListener(this);
         mVerticalLegend.setIsClickable(mIsFullScreenMode);
 
         mSummaryActivityView = (TextView) mContentRoot.findViewById(R.id.summaryActivityView);
@@ -239,13 +240,13 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder,
         Task task = mActivityTimeline.get(0).tasks[position];
         List<Tag> tags = QueryUtils.getTagsForTask(mSQLiteDatabase, task.getId());
 
-        if (mOnLegendClickListener != null) {
-            mOnLegendClickListener.onLegendItemClicked(TaskBundle.create(task, tags));
+        if (mLegendClickListener != null) {
+            mLegendClickListener.onLegendItemClicked(TaskBundle.create(task, tags));
         }
     }
 
-    public void setOnLegendClickListener(OnLegendClickListener onLegendClickListener) {
-        mOnLegendClickListener = onLegendClickListener;
+    public void setLegendClickListener(LegendClickListener legendClickListener) {
+        mLegendClickListener = legendClickListener;
     }
 
     private String getFormattedTotalTime() {

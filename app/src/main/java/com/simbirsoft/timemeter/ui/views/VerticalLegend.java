@@ -11,17 +11,16 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.utils.Legend;
-import com.github.mikephil.charting.utils.Utils;
 import com.simbirsoft.timemeter.R;
 
 public class VerticalLegend extends LinearLayout implements View.OnClickListener {
     private static final String TEXT_COLOR = "black";
 
-    public interface LegendClickListener {
+    public interface ClickListener {
         void onLabelClicked(int position);
     }
 
-    private LegendClickListener mLegendClickListener;
+    private ClickListener mClickListener;
 
     private Legend mLegend;
 
@@ -43,8 +42,8 @@ public class VerticalLegend extends LinearLayout implements View.OnClickListener
         mLegend = legend;
     }
 
-    public void setLegendClickListener(LegendClickListener legendClickListener) {
-        mLegendClickListener = legendClickListener;
+    public void setClickListener(ClickListener clickListener) {
+        mClickListener = clickListener;
     }
 
     public void update() {
@@ -63,9 +62,9 @@ public class VerticalLegend extends LinearLayout implements View.OnClickListener
 
     @Override
     public void onClick(View v) {
-        if (mLegendClickListener != null) {
+        if (mClickListener != null) {
             int position = (Integer)v.getTag();
-            mLegendClickListener.onLabelClicked(position);
+            mClickListener.onLabelClicked(position);
         }
     }
 
