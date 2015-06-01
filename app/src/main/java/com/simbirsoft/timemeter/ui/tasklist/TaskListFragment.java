@@ -38,6 +38,7 @@ import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.ContentFragmentCallbacks;
+import com.simbirsoft.timemeter.ui.main.FilterViewProvider;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
@@ -46,6 +47,8 @@ import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
 import com.simbirsoft.timemeter.ui.util.TaskFilterPredicate;
+import com.simbirsoft.timemeter.ui.views.FilterView;
+import com.simbirsoft.timemeter.ui.views.TagFilterTextView;
 import com.simbirsoft.timemeter.ui.views.TagView;
 import com.squareup.otto.Subscribe;
 
@@ -90,29 +93,40 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     private ContentFragmentCallbacks mCallbacks;
 
     private final TagView.TagViewClickListener mTagViewClickListener = tagView -> {
-        TaskListAdapter.ViewHolder vh;
-        final int countCards = mRecyclerView.getLayoutManager().getItemCount();
-        final Long tagId = tagView.getTag().getId();
-        boolean tagCheckedState = false;
+        boolean tagCheckedState = tagView.isTagChecked();
 
-        for (int i = 0; i < countCards; i++) {
-            vh = (TaskListAdapter.ViewHolder) mRecyclerView.findViewHolderForLayoutPosition(i);
-            if (vh != null) {
-                for (TagView tv : vh.tagFlowView.getTagViews()) {
-                    if (tagId == tv.getTag().getId()) {
-                        tagCheckedState = tv.toggleTag();
-                    }
-                }
-            }
+        FilterView filterView = getFilterViewProvider().getFilterView();
+        if (tagCheckedState) {
+            filterView.getTagsView().removeObject(tagView.getTag());
+        } else {
+            filterView.getTagsView().addObject(tagView.getTag());
         }
+        filterView.postFilterUpdate();
 
-        for (TaskBundle taskBundle : mTasksViewAdapter.getItems()) {
-            for (Tag tag: taskBundle.getTags()) {
-                if (tagId == tag.getId()) {
-                    tag.setChecked(tagCheckedState);
-                }
-            }
-        }
+        mTasksViewAdapter.setTagFilterTextView(filterView.getTagsView());
+
+//        TaskListAdapter.ViewHolder vh;
+//        final int countCards = mRecyclerView.getLayoutManager().getItemCount();
+//        final Long tagId = tagView.getTag().getId();
+//
+//        for (int i = 0; i < countCards; i++) {
+//            vh = (TaskListAdapter.ViewHolder) mRecyclerView.findViewHolderForLayoutPosition(i);
+//            if (vh != null) {
+//                for (TagView tv : vh.tagFlowView.getTagViews()) {
+//                    if (tagId == tv.getTag().getId()) {
+//                        tv.toggleTag();
+//                    }
+//                }
+//            }
+//        }
+//
+//        for (TaskBundle taskBundle : mTasksViewAdapter.getItems()) {
+//            for (Tag tag: taskBundle.getTags()) {
+//                if (tagId == tag.getId()) {
+//                    tag.setChecked(!tagCheckedState);
+//                }
+//            }
+//        }
     };
 
     private void onFloatingButtonClicked(View v) {

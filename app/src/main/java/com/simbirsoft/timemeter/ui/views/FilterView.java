@@ -637,7 +637,7 @@ public class FilterView extends FrameLayout implements
         }
     }
 
-    private void postFilterUpdate() {
+    public void postFilterUpdate() {
         if (mIsSilentUpdate) {
             return;
         }

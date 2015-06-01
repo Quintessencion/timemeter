@@ -380,4 +380,8 @@ public class MainPageFragment extends BaseFragment {
     public void setFilterViewProvider(FilterViewProvider provider) {
         mFilterViewProvider = provider;
     }
+
+    public FilterViewProvider getFilterViewProvider() {
+        return mFilterViewProvider;
+    }
 }

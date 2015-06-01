@@ -13,10 +13,12 @@ import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
+import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
+import com.simbirsoft.timemeter.ui.views.TagFilterTextView;
 import com.simbirsoft.timemeter.ui.views.TagFlowView;
 import com.simbirsoft.timemeter.ui.views.TagView;
 
@@ -52,6 +54,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     private final ITaskActivityManager mTaskActivityManager;
     private TaskClickListener mTaskClickListener;
     private TagView.TagViewClickListener mTagViewClickListener;
+    private TagFilterTextView mTagFilterTextView;
 
     private final View.OnClickListener mCardClickListener = (view) -> {
         if (mTaskClickListener != null) {
@@ -172,6 +175,17 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         holder.tagFlowView.bindTagViews(item.getTags());
         holder.tagFlowView.setTagViewsClickListener(mTagViewClickListener);
 
+        if (mTagFilterTextView != null) {
+            for (Object o : mTagFilterTextView.getObjects()) {
+                Tag tagFromFilter = (Tag) o;
+                for (TagView tagView : holder.tagFlowView.getTagViews()) {
+                    if (tagFromFilter.getId() == tagView.getTag().getId()) {
+                        tagView.checkTag();
+                    }
+                }
+            }
+        }
+
         if (mTaskActivityManager.isTaskActive(task)) {
             ActiveTaskInfo taskInfo = mTaskActivityManager.getActiveTaskInfo();
             long pastTime = taskInfo.getPastTimeMillis();
@@ -192,5 +206,9 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
     public void setTagViewClickListener(TagView.TagViewClickListener tagViewClickListener) {
         mTagViewClickListener = tagViewClickListener;
+    }
+
+    public void setTagFilterTextView(TagFilterTextView tagFilterTextView) {
+        mTagFilterTextView = tagFilterTextView;
     }
 }
