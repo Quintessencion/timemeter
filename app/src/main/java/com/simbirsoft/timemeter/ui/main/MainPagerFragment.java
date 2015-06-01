@@ -93,9 +93,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     @InstanceState
     FilterResultsView.SearchResultsViewState mSearchResultsViewState;
 
-    @InstanceState
-    int mTaskCount;
-
     @Inject
     Preferences mPrefs;
 
@@ -429,8 +426,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
     @Override
     public void updateFilterResultsView(int taskCount, FilterView.FilterState filterState) {
-        mTaskCount = taskCount;
-
         if (!mFilterState.isEmpty()) {
             mSearchResultsViewState = new FilterResultsView.SearchResultsViewState(taskCount, filterState.tags);
             mFilterResultsView.setSearchResultsState(mSearchResultsViewState);
