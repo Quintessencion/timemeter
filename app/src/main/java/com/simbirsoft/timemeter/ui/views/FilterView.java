@@ -316,8 +316,8 @@ public class FilterView extends FrameLayout implements
 
     @Override
     public boolean onQueryTextChange(String s) {
-        boolean hasOnlyWhitespaces = "".equals(s.trim()) && !"".equals(s);
-        if (!hasOnlyWhitespaces) {
+        boolean hasSearchableText = "".equals(s.trim()) && !"".equals(s);
+        if (!hasSearchableText) {
             mState.searchText = s;
 
             if (mThrottleJob == null || mThrottleJob.isFinished()) {
