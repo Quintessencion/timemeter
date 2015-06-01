@@ -2,4 +2,5 @@
 <com.simbirsoft.timemeter.ui.views.FilterResultsView_
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"/>
+    android:layout_height="@dimen/filter_results_view_height"
+    android:background="@color/primaryDark"/>

@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/filter_results_view_height"
-                android:paddingLeft="@dimen/filter_results_view_text_padding"
-                android:background="@color/primaryDark">
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+       xmlns:tools="http://schemas.android.com/tools">
     <TextView
         android:id="@+id/filter_results"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
+        android:paddingLeft="@dimen/filter_results_view_text_padding"
+        android:layout_centerVertical="true"
         android:text=""
         style="@style/SearchResultsText"
         tools:text="Найдены 5 задач с метками: Работа, Хобби"/>
-</FrameLayout>
+</merge>
