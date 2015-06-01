@@ -468,7 +468,7 @@ public class Legend {
      * @param size
      */
     public void setTextSize(float size) {
-        mTextSize = size;
+        mTextSize = Utils.convertDpToPixel(size);
     }
 
     /**

@@ -152,7 +152,7 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder,
                     mResources.getDimension(R.dimen.chart_legend_labels_padding_normal);
             mLegend.setYEntrySpace(yEntrySpace);
             mLegend.setForm(Legend.LegendForm.CIRCLE);
-            mLegend.setTextSize(mResources.getDimension(R.dimen.chart_legend_label_text_size));
+            mLegend.setTextSize(16f);
             mLegend.setStackSpace(12f);
             mVerticalLegend.setLegend(mLegend);
         }
