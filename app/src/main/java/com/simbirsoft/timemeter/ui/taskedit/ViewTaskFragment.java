@@ -21,9 +21,13 @@ import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
+import com.nispok.snackbar.Snackbar;
+import com.nispok.snackbar.SnackbarManager;
+import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.Injection;
+import com.simbirsoft.timemeter.jobs.LoadTaskBundleJob;
 import com.simbirsoft.timemeter.jobs.LoadTaskRecentActivitiesJob;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesAdapter;
@@ -55,8 +59,10 @@ import javax.inject.Inject;
 public class ViewTaskFragment extends BaseFragment
         implements JobLoader.JobLoaderCallbacks{
     public static final String EXTRA_TASK_BUNDLE = "extra_task_bundle";
+    public static final String EXTRA_TASK_ID = "extra_task_id";
 
-    private static final String LOADER_TAG = "ViewTaskFragment";
+    private static final String LOADER_TAG = "ViewTaskFragment_load_content";
+    private static final String LOAD_TASK_BUNDLE_TAG = "ViewTaskFragment_load_task_bundle";
 
     private static final Logger LOG = LogFactory.getLogger(ViewTaskFragment.class);
 
@@ -67,6 +73,9 @@ public class ViewTaskFragment extends BaseFragment
 
     @FragmentArg(EXTRA_TASK_BUNDLE)
     TaskBundle mExtraTaskBundle;
+
+    @FragmentArg(EXTRA_TASK_ID)
+    long mExtraTaskId;
 
     private final TagView.TagViewClickListener mTagViewClickListener = (tagView) -> {
         LOG.debug("Tag <" + tagView.getTag().getName() + "> clicked!");
@@ -132,16 +141,24 @@ public class ViewTaskFragment extends BaseFragment
 
     @AfterViews
     void bindViews() {
-        setActionBarTitleAndHome(mExtraTaskBundle.getTask().getDescription());
-        tagFlowView.bindTagViews(mExtraTaskBundle.getTags());
-        tagFlowView.setTagViewsClickListener(mTagViewClickListener);
-
         mRecyclerView.setHasFixedSize(false);
         final TaskActivitiesLayoutManager layoutManager = new TaskActivitiesLayoutManager(getActivity());
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(layoutManager);
 
         mAdapter = new TaskActivitiesAdapter(getActivity());
+
+        if (mExtraTaskBundle == null) {
+            requestLoad(LOAD_TASK_BUNDLE_TAG, this);
+        } else {
+            configureFragment();
+        }
+    }
+
+    private void configureFragment() {
+        setActionBarTitleAndHome(mExtraTaskBundle.getTask().getDescription());
+        tagFlowView.bindTagViews(mExtraTaskBundle.getTags());
+        tagFlowView.setTagViewsClickListener(mTagViewClickListener);
         mAdapter.setHighlightedSpans(mExtraTaskBundle.getTaskTimeSpans());
         mRecyclerView.setAdapter(mAdapter);
         mProgressLayout.setShouldDisplayEmptyIndicatorMessage(true);
@@ -265,14 +282,59 @@ public class ViewTaskFragment extends BaseFragment
         showToast(R.string.error_unable_to_load_task_activities);
     }
 
+    @OnJobSuccess(LoadTaskBundleJob.class)
+    public void onTaskBundleLoaded(LoadJobResult<TaskBundle> taskBundle) {
+        mExtraTaskBundle = taskBundle.getData();
+
+        configureFragment();
+    }
+
+    @OnJobFailure(LoadTaskBundleJob.class)
+    public void onTaskBundleLoadFailure() {
+        SnackbarManager.show(Snackbar.with(getActivity())
+                .text(R.string.error_loading_data)
+                .colorResource(R.color.lightRed)
+                .duration(Snackbar.SnackbarDuration.LENGTH_SHORT)
+                .eventListener(new EventListener() {
+                    @Override
+                    public void onShow(Snackbar snackbar) {
+                    }
+
+                    @Override
+                    public void onShown(Snackbar snackbar) {
+                    }
+
+                    @Override
+                    public void onDismiss(Snackbar snackbar) {
+                    }
+
+                    @Override
+                    public void onDismissed(Snackbar snackbar) {
+                        if (isAdded()) {
+                            getActivity().finish();
+                        }
+                    }
+                }));
+    }
+
     @Override
     public Job onCreateJob(String s) {
-        LoadTaskRecentActivitiesJob job = Injection.sJobsComponent.loadTaskRecentActivitiesJob();
-        job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
-        job.setTaskId(mExtraTaskBundle.getTask().getId());
-        job.setTaskTimeSpans(mExtraTaskBundle.getTaskTimeSpans());
-        job.addTag(LOADER_TAG);
-        return job;
+        switch (s) {
+            case LOADER_TAG:
+                LoadTaskRecentActivitiesJob loadTaskRecentActivitiesJob = Injection.sJobsComponent.loadTaskRecentActivitiesJob();
+                loadTaskRecentActivitiesJob.setGroupId(JobManager.JOB_GROUP_UNIQUE);
+                loadTaskRecentActivitiesJob.setTaskId(mExtraTaskBundle.getTask().getId());
+                loadTaskRecentActivitiesJob.setTaskTimeSpans(mExtraTaskBundle.getTaskTimeSpans());
+                loadTaskRecentActivitiesJob.addTag(LOADER_TAG);
+                return loadTaskRecentActivitiesJob;
+            case LOAD_TASK_BUNDLE_TAG:
+                LoadTaskBundleJob loadTaskBundleJob = Injection.sJobsComponent.loadTaskBundleJob();
+                loadTaskBundleJob.setTaskId(mExtraTaskId);
+                loadTaskBundleJob.setGroupId(JobManager.JOB_GROUP_UNIQUE);
+                return loadTaskBundleJob;
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     @Click(R.id.activitiesTitleContainer)

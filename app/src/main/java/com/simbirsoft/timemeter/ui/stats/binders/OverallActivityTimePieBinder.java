@@ -246,10 +246,9 @@ public class OverallActivityTimePieBinder implements StatisticsViewBinder,
     @Override
     public void onLabelClicked(int position) {
         TaskOverallActivity taskOverallActivity = mOverallActivity.get(position);
-        List<Tag> tags = QueryUtils.getTagsForTask(mSQLiteDatabase, taskOverallActivity.getId());
 
         if (mLegendClickListener != null) {
-            mLegendClickListener.onLegendItemClicked(TaskBundle.create(taskOverallActivity, tags));
+            mLegendClickListener.onLegendItemClicked(taskOverallActivity.getId());
         }
     }
 

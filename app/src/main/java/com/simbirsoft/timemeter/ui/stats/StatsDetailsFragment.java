@@ -217,9 +217,9 @@ public class StatsDetailsFragment extends BaseFragment implements
     }
 
     @Override
-    public void onLegendItemClicked(TaskBundle taskBundle) {
+    public void onLegendItemClicked(long taskId) {
         Bundle args = new Bundle();
-        args.putParcelable(ViewTaskFragment.EXTRA_TASK_BUNDLE, taskBundle);
+        args.putLong(ViewTaskFragment.EXTRA_TASK_ID, taskId);
 
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), ViewTaskFragment_.class.getName(), args);

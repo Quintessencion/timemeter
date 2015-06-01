@@ -238,10 +238,9 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder,
     @Override
     public void onLabelClicked(int position) {
         Task task = mActivityTimeline.get(0).tasks[position];
-        List<Tag> tags = QueryUtils.getTagsForTask(mSQLiteDatabase, task.getId());
 
         if (mLegendClickListener != null) {
-            mLegendClickListener.onLegendItemClicked(TaskBundle.create(task, tags));
+            mLegendClickListener.onLegendItemClicked(task.getId());
         }
     }
 
