@@ -21,6 +21,7 @@ import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
+import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
@@ -32,6 +33,7 @@ import com.simbirsoft.timemeter.ui.activities.TaskActivitiesAdapter;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment_;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesLayoutManager;
+import com.simbirsoft.timemeter.ui.activities.TaskTimeSpanActions;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
@@ -52,11 +54,13 @@ import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
+import java.util.List;
+
 import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_view_task)
 public class ViewTaskFragment extends BaseFragment
-        implements JobLoader.JobLoaderCallbacks, TaskActivitiesAdapter.OnMenuListener {
+        implements JobLoader.JobLoaderCallbacks {
     public static final String EXTRA_TASK_BUNDLE = "extra_task_bundle";
 
     private static final String LOADER_TAG = "ViewTaskFragment";
@@ -92,6 +96,7 @@ public class ViewTaskFragment extends BaseFragment
     Bus mBus;
 
     private TaskActivitiesAdapter mAdapter;
+    private TaskTimeSpanActions mTaskTimeSpanActions;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -147,7 +152,6 @@ public class ViewTaskFragment extends BaseFragment
 
         mAdapter = new TaskActivitiesAdapter(getActivity());
         mAdapter.setHighlightedSpans(mExtraTaskBundle.getTaskTimeSpans());
-        mAdapter.setMenuListener(this);
         mRecyclerView.setAdapter(mAdapter);
         mProgressLayout.setShouldDisplayEmptyIndicatorMessage(true);
         mProgressLayout.setEmptyIndicatorStyle(Typeface.ITALIC);
@@ -164,6 +168,9 @@ public class ViewTaskFragment extends BaseFragment
                 });
         requestLoad(LOADER_TAG, this);
         mProgressLayout.updateProgressView();
+
+        mTaskTimeSpanActions = new TaskTimeSpanActions(getActivity(), mAdapter);
+        mTaskTimeSpanActions.setOnEditListener(sender -> editSelectedSpan());
     }
 
     private void goToEditTask() {
@@ -307,7 +314,12 @@ public class ViewTaskFragment extends BaseFragment
         }
     }
 
-    @Override
+    private void editSelectedSpan() {
+        List<TaskTimeSpan> selected = mAdapter.getSelectedSpans();
+        Preconditions.checkArgument(selected.size() == 1, "there should be 1 selected span");
+        onTaskTimeSpanEditClicked(selected.get(0));
+    }
+
     public void onTaskTimeSpanEditClicked(TaskTimeSpan span) {
         Bundle args = new Bundle();
         args.putString(EditTaskActivityDialogFragment.EXTRA_TITLE, mExtraTaskBundle.getTask().getDescription());

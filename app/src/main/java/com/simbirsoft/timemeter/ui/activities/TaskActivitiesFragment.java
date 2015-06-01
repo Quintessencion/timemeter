@@ -15,6 +15,7 @@ import android.transitions.everywhere.Fade;
 import android.transitions.everywhere.TransitionManager;
 import android.transitions.everywhere.TransitionSet;
 import android.util.TypedValue;
+import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -31,6 +32,7 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.fourmob.datetimepicker.date.DatePickerDialog;
+import com.google.common.base.Preconditions;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.enums.SnackbarType;
@@ -74,8 +76,7 @@ import javax.inject.Named;
 public class TaskActivitiesFragment extends BaseFragment implements
         JobLoader.JobLoaderCallbacks,
         TaskActivitiesFilterView.OnTaskActivitiesFilterListener,
-        DatePickerDialog.OnDateSetListener,
-        TaskActivitiesAdapter.OnMenuListener {
+        DatePickerDialog.OnDateSetListener {
     public static final String EXTRA_TASK_ID = "extra_task_id";
     public static final String EXTRA_TITLE = "extra_title";
 
@@ -128,8 +129,10 @@ public class TaskActivitiesFragment extends BaseFragment implements
     String mNoFilteredActivityMessage;
 
     private ActionBar mActionBar;
+    private ActionMode mActionMode;
     private TaskActivitiesAdapter mAdapter;
     private Menu mOptionsMenu;
+    private TaskTimeSpanActions mTaskTimeSpanActions;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -180,7 +183,6 @@ public class TaskActivitiesFragment extends BaseFragment implements
         mRecyclerView.setLayoutManager(layoutManager);
 
         mAdapter = new TaskActivitiesAdapter(getActivity());
-        mAdapter.setMenuListener(this);
         mRecyclerView.setAdapter(mAdapter);
 
         mFilterView.setVisibility(View.INVISIBLE);
@@ -211,6 +213,14 @@ public class TaskActivitiesFragment extends BaseFragment implements
         if (dialog != null) {
             dialog.setOnDateSetListener(this);
         }
+
+        mTaskTimeSpanActions = new TaskTimeSpanActions(getActivity(), mAdapter);
+        mTaskTimeSpanActions.setOnActivatedListener(sender -> {
+            hideFilterView(true);
+            updateOptionsMenu();
+        });
+        mTaskTimeSpanActions.setOnEditListener(sender -> editSelectedSpan());
+        mTaskTimeSpanActions.setOnRemoveListener(sender -> removeSelectedSpans());
     }
 
     @Override
@@ -487,7 +497,6 @@ public class TaskActivitiesFragment extends BaseFragment implements
         }
     }
 
-    @Override
     public void onTaskTimeSpanEditClicked(TaskTimeSpan span) {
         Bundle args = new Bundle();
         args.putString(EditTaskActivityDialogFragment.EXTRA_TITLE, mExtraTitle);
@@ -495,5 +504,15 @@ public class TaskActivitiesFragment extends BaseFragment implements
         Intent launchIntent = DialogContainerActivity.prepareDialogLaunchIntent(
                 getActivity(), EditTaskActivityDialogFragment.class.getName(), args);
         startActivityForResult(launchIntent, REQUEST_CODE_EDIT_ACTIVITY);
+    }
+
+    private void editSelectedSpan() {
+        List<TaskTimeSpan> selected = mAdapter.getSelectedSpans();
+        Preconditions.checkArgument(selected.size() == 1, "there should be 1 selected span");
+        onTaskTimeSpanEditClicked(selected.get(0));
+    }
+
+    private void removeSelectedSpans() {
+
     }
 }

@@ -28,14 +28,16 @@ import com.simbirsoft.timemeter.ui.views.TaskActivityItemView;
 import com.simbirsoft.timemeter.ui.views.TaskActivityItemsLayout;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
 public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesAdapter.ViewHolder>
                                    implements TaskActivityItemsLayout.TaskActivityItemsAdapter,
-                                    View.OnLongClickListener, ActionMode.Callback {
-    public interface OnMenuListener {
-        void onTaskTimeSpanEditClicked(TaskTimeSpan span);
+                                    View.OnLongClickListener {
+
+    public interface OnSelectionSetChangedListener {
+        void onSelectionSetChanged(TaskActivitiesAdapter sender);
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -87,8 +89,8 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
     private final Calendar mCalendar;
     private final List<TaskTimeSpan> mHighlightedSpans;
     private final List<TaskTimeSpan> mSelectedSpans;
-    private ActionMode mActionMode;
-    private OnMenuListener mMenuListener;
+
+    private OnSelectionSetChangedListener mSelectionSetChangedListener;
 
     public TaskActivitiesAdapter(Activity activityContext) {
         mActivityContext = activityContext;
@@ -105,10 +107,6 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         mCalendar = Calendar.getInstance();
         mHighlightedSpans = Lists.newArrayList();
         mSelectedSpans = Lists.newArrayList();
-    }
-
-    public void setMenuListener(OnMenuListener menuListener) {
-        mMenuListener = menuListener;
     }
 
     public void setItems(List<TaskActivityItem> items) {
@@ -299,87 +297,37 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
 
     @Override
     public boolean onLongClick(View v) {
-        TaskActivityItemView itemView = (TaskActivityItemView)v;
+        TaskActivityItemView itemView = (TaskActivityItemView) v;
         TaskTimeSpan span = itemView.getItem().getSpan(itemView.getIndex());
+
         boolean isSelected = mSelectedSpans.contains(span);
         if (isSelected) {
             mSelectedSpans.remove(span);
         } else {
             mSelectedSpans.add(span);
         }
+
         notifyDataSetChanged();
-        updateActionBar();
-        return true;
-    }
 
-    @Override
-    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-        MenuInflater inflater = mode.getMenuInflater();
-        inflater.inflate(R.menu.task_activities_context_menu, menu);
-        updateActionBarMenu(menu);
-        return true;
-    }
-
-    @Override
-    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        return false;
-    }
-
-    @Override
-    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.edit:
-                editSelectedSpan();
-                return true;
-
-            case R.id.remove:
-                removeSelectedSpans();
-                return true;
-
-            default:
-                return false;
+        if (mSelectionSetChangedListener != null) {
+            mSelectionSetChangedListener.onSelectionSetChanged(this);
         }
+
+        return true;
     }
 
-    @Override
-    public void onDestroyActionMode(ActionMode mode) {
-        mActionMode = null;
+    public List<TaskTimeSpan> getSelectedSpans() {
+        return Collections.unmodifiableList(mSelectedSpans);
+    }
+
+    public void clearSelection() {
         if (!mSelectedSpans.isEmpty()) {
             mSelectedSpans.clear();
             notifyDataSetChanged();
         }
     }
 
-    private void updateActionBar() {
-        if (mSelectedSpans.isEmpty()) {
-           if (mActionMode != null) {
-               mActionMode.finish();
-           }
-        } else {
-            if(mActionMode == null) {
-                mActionMode = mActivityContext.startActionMode(this);
-            } else {
-                updateActionBarMenu(mActionMode.getMenu());
-            }
-        }
-    }
-
-    private void updateActionBarMenu(Menu menu) {
-        MenuItem item = menu.findItem(R.id.edit);
-        if (item == null) {
-            return;
-        }
-        item.setVisible(mSelectedSpans.size() == 1);
-    }
-
-    private void editSelectedSpan() {
-        Preconditions.checkArgument(mSelectedSpans.size() == 1, "there should be 1 selected span");
-        if (mMenuListener != null) {
-            mMenuListener.onTaskTimeSpanEditClicked(mSelectedSpans.get(0));
-        }
-    }
-
-    private void removeSelectedSpans() {
-
+    public void setSelectionSetChangedListener(OnSelectionSetChangedListener selectionSetChangedListener) {
+        mSelectionSetChangedListener = selectionSetChangedListener;
     }
 }
