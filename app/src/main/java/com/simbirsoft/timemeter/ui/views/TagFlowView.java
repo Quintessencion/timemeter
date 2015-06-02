@@ -39,7 +39,7 @@ public class TagFlowView extends FlowLayout {
     void initializeView() {
     }
 
-    public void checkTags(List<Object> tagsFromFilter) {
+    public void checkTagViews(List<Object> tagsFromFilter) {
         if (tagsFromFilter != null) {
             for (Object o : tagsFromFilter) {
                 Tag tagFromFilter = (Tag) o;

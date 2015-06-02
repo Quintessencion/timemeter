@@ -172,7 +172,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         holder.itemEditView.setTag(item);
 
         holder.tagFlowView.bindTagViews(item.getTags());
-        holder.tagFlowView.checkTags(
+        holder.tagFlowView.checkTagViews(
                 (mTagFilterTextView != null) ? mTagFilterTextView.getObjects() : null);
         holder.tagFlowView.setTagViewsClickListener(mTagViewClickListener);
 
