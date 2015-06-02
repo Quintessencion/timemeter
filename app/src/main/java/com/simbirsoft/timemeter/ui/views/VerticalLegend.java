@@ -74,8 +74,11 @@ public class VerticalLegend extends LinearLayout implements View.OnClickListener
         MaterialRippleLayout materialRippleLayout = new MaterialRippleLayout(getContext());
         FrameLayout.LayoutParams materialRippleLayoutParams =
                 new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        materialRippleLayoutParams.bottomMargin = (int) mLegend.getYEntrySpace();
+        int padding = (mIsClickable)?
+                getContext().getResources().getDimensionPixelSize(R.dimen.chart_legend_labels_padding_big):
+                getContext().getResources().getDimensionPixelSize(R.dimen.chart_legend_labels_padding_normal);
 
+        materialRippleLayout.setPadding(0, padding, 0, padding);
         materialRippleLayout.setLayoutParams(materialRippleLayoutParams);
 
         LinearLayout linearLayout = getContainerLayout(position);
