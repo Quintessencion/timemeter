@@ -8,7 +8,7 @@
     <dimen name="chart_summary_text_size">12sp</dimen>
     <dimen name="chart_legend_label_text_size">16sp</dimen>
     <dimen name="chart_legend_labels_padding_normal">0dp</dimen>
-    <dimen name="chart_legend_labels_padding_big">6dp</dimen>
+    <dimen name="chart_legend_labels_padding_big">5dp</dimen>
     <dimen name="chart_legend_padding">16dp</dimen>
     <dimen name="calendar_date_text_size">18sp</dimen>
     <dimen name="calendar_day_text_size">10sp</dimen>

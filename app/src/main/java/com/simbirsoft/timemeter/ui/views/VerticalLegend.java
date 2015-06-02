@@ -7,9 +7,11 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.balysv.materialripple.MaterialRippleLayout;
 import com.github.mikephil.charting.utils.Legend;
 import com.simbirsoft.timemeter.R;
 
@@ -68,17 +70,38 @@ public class VerticalLegend extends LinearLayout implements View.OnClickListener
         }
     }
 
-    private LinearLayout getLegendItem(int color, String text, int position) {
+    private FrameLayout getLegendItem(int color, String text, int position) {
+        MaterialRippleLayout materialRippleLayout = new MaterialRippleLayout(getContext());
+        FrameLayout.LayoutParams materialRippleLayoutParams =
+                new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        materialRippleLayoutParams.bottomMargin = (int) mLegend.getYEntrySpace();
+
+        materialRippleLayout.setLayoutParams(materialRippleLayoutParams);
+
+        LinearLayout linearLayout = getContainerLayout(position);
+
+        linearLayout.addView(getCircle(color));
+        linearLayout.addView(getText(text));
+
+        materialRippleLayout.addView(linearLayout);
+        materialRippleLayout.setEnabled(mIsClickable);
+        materialRippleLayout.setFocusable(mIsClickable);
+
+        if (mIsClickable) {
+            materialRippleLayout.setOnClickListener(this);
+        }
+
+        return materialRippleLayout;
+    }
+
+    private LinearLayout getContainerLayout(int position) {
         LinearLayout linearLayout = new LinearLayout(getContext());
         LinearLayout.LayoutParams layoutParams =
                 new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         layoutParams.bottomMargin = (int) mLegend.getYEntrySpace();
         linearLayout.setLayoutParams(layoutParams);
         linearLayout.setOrientation(HORIZONTAL);
-
-        linearLayout.addView(getCircle(color));
-        linearLayout.addView(getText(text, position));
-
+        linearLayout.setTag(position);
         return linearLayout;
     }
 
@@ -93,19 +116,15 @@ public class VerticalLegend extends LinearLayout implements View.OnClickListener
         return imageView;
     }
 
-    private TextView getText(String text, int position) {
+    private TextView getText(String text) {
         TextView textView = new TextView(getContext());
         textView.setLayoutParams(getTextParams());
         textView.setText(text);
-        textView.setTag(position);
         textView.setTextColor(Color.parseColor(TEXT_COLOR));
         textView.setTextSize(TypedValue.COMPLEX_UNIT_PX,
                 getResources().getDimension(R.dimen.chart_legend_label_text_size));
         textView.setEnabled(mIsClickable);
         textView.setFocusable(mIsClickable);
-        if (mIsClickable) {
-            textView.setOnClickListener(this);
-        }
         return textView;
     }
 
