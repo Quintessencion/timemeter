@@ -159,7 +159,7 @@ public class ViewTaskFragment extends BaseFragment
         setActionBarTitleAndHome(mExtraTaskBundle.getTask().getDescription());
         tagFlowView.bindTagViews(mExtraTaskBundle.getTags());
         tagFlowView.setTagViewsClickListener(mTagViewClickListener);
-        mAdapter.setHighlightedSpans(mExtraTaskBundle.getTaskTimeSpans());
+        //mAdapter.setHighlightedSpans(mExtraTaskBundle.getTaskTimeSpans());
         mRecyclerView.setAdapter(mAdapter);
         mProgressLayout.setShouldDisplayEmptyIndicatorMessage(true);
         mProgressLayout.setEmptyIndicatorStyle(Typeface.ITALIC);
