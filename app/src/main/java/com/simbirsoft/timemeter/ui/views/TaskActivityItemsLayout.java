@@ -17,6 +17,7 @@ public class TaskActivityItemsLayout extends LinearLayout implements TaskActivit
     public interface TaskActivityItemsAdapter {
         public View getActivityItemView(TaskActivityItemsLayout layout);
         public void addActivityItemViews(List<View> items);
+        public boolean isActivityItemViewHighlighted(TaskActivitySpansItem item, int index);
     }
 
     private TaskActivitySpansItem mItem;
@@ -80,7 +81,8 @@ public class TaskActivityItemsLayout extends LinearLayout implements TaskActivit
                 itemView = mAdapter.getActivityItemView(this);
                 addView(itemView, i);
             }
-            ((TaskActivityItemView)itemView.getTag()).setTaskActivitySpansItem(mItem, i);
+            boolean isHighlighted = mAdapter.isActivityItemViewHighlighted(mItem, i);
+            ((TaskActivityItemView)itemView.getTag()).setTaskActivitySpansItem(mItem, i, isHighlighted);
         }
     }
 
