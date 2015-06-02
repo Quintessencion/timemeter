@@ -38,8 +38,6 @@ public class Tag implements Parcelable, Serializable {
     @Column(COLUMN_COLOR)
     private int color = -10453621; /* blue grey #607D8B */
 
-    private boolean mChecked;
-
     public Tag() {
     }
 
@@ -65,14 +63,6 @@ public class Tag implements Parcelable, Serializable {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public boolean getChecked() {
-        return mChecked;
-    }
-
-    public void setChecked(boolean checked) {
-        this.mChecked = checked;
     }
 
     @Override

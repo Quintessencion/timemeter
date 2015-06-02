@@ -13,7 +13,6 @@ import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
-import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
@@ -173,18 +172,9 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         holder.itemEditView.setTag(item);
 
         holder.tagFlowView.bindTagViews(item.getTags());
+        holder.tagFlowView.checkTags(
+                (mTagFilterTextView != null) ? mTagFilterTextView.getObjects() : null);
         holder.tagFlowView.setTagViewsClickListener(mTagViewClickListener);
-
-        if (mTagFilterTextView != null) {
-            for (Object o : mTagFilterTextView.getObjects()) {
-                Tag tagFromFilter = (Tag) o;
-                for (TagView tagView : holder.tagFlowView.getTagViews()) {
-                    if (tagFromFilter.getId() == tagView.getTag().getId()) {
-                        tagView.checkTag();
-                    }
-                }
-            }
-        }
 
         if (mTaskActivityManager.isTaskActive(task)) {
             ActiveTaskInfo taskInfo = mTaskActivityManager.getActiveTaskInfo();

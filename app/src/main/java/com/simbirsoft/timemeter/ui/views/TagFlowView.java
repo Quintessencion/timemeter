@@ -39,6 +39,19 @@ public class TagFlowView extends FlowLayout {
     void initializeView() {
     }
 
+    public void checkTags(List<Object> tagsFromFilter) {
+        if (tagsFromFilter != null) {
+            for (Object o : tagsFromFilter) {
+                Tag tagFromFilter = (Tag) o;
+                for (TagView tagView : mTagViews) {
+                    if (tagFromFilter.getId() == tagView.getTag().getId()) {
+                        tagView.checkTag();
+                    }
+                }
+            }
+        }
+    }
+
     public void bindTagViews(List<Tag> tags) {
         final int newTagCount = tags.size();
         final int oldTagCount = mTagContainerView.getChildCount();
