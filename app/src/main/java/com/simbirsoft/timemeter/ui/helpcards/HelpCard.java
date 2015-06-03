@@ -2,6 +2,7 @@ package com.simbirsoft.timemeter.ui.helpcards;
 
 import android.content.Context;
 import android.support.v7.widget.CardView;
+import android.text.Html;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
@@ -108,7 +109,8 @@ public class HelpCard extends CardView {
     }
 
     private void presentItemAtIndex(int index) {
-        mTextView.setText(mDataSource.getMessage(index));
+        String msg = mDataSource.getMessage(index);
+        mTextView.setText(Html.fromHtml(msg));
         mActionButton.setText(mDataSource.getTitleForActionButton(index));
         mNextButton.setText(mDataSource.getTitleForNextButton(index));
         mBackButton.setText(mDataSource.getTitleForBackButton(index));
