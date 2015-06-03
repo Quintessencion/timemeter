@@ -531,8 +531,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         if (mIsFilterPanelShown) {
             filterPanelHeight = mFilterView.getMeasuredHeight();
             if (filterPanelHeight < 1) {
-                int maxHeight = getResources().getDisplayMetrics().heightPixels;
-                int spec = View.MeasureSpec.makeMeasureSpec(maxHeight, View.MeasureSpec.AT_MOST);
+                int spec = getMeasureSpec();
                 mFilterView.measure(spec, spec);
                 filterPanelHeight = mFilterView.getMeasuredHeight();
             }
@@ -543,10 +542,23 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         if (mIsFilterResultsPanelShown) {
             resultsPanelHeight = 0;
         } else {
-            resultsPanelHeight = - mFilterResultsView.getMeasuredHeight();
+            resultsPanelHeight = mFilterResultsView.getMeasuredHeight();
+
+            if (resultsPanelHeight < 1) {
+                int spec = getMeasureSpec();
+                mFilterResultsView.measure(spec, spec);
+                resultsPanelHeight = - mFilterResultsView.getMeasuredHeight();
+            } else {
+                resultsPanelHeight = - resultsPanelHeight;
+            }
         }
 
         resultsContainerLayoutParams.topMargin = filterPanelHeight + resultsPanelHeight;
         mSearchResultContainer.setLayoutParams(resultsContainerLayoutParams);
+    }
+
+    private int getMeasureSpec() {
+        int maxHeight = getResources().getDisplayMetrics().heightPixels;
+        return View.MeasureSpec.makeMeasureSpec(maxHeight, View.MeasureSpec.AT_MOST);
     }
 }
