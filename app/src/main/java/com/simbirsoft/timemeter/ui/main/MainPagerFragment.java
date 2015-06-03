@@ -89,9 +89,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewResults
     @InstanceState
     FilterView.FilterState mFilterState;
 
-    @InstanceState
-    FilterResultsView.SearchResultsViewState mSearchResultsViewState;
-
     @Inject
     Preferences mPrefs;
 
@@ -152,10 +149,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewResults
         if (mFilterState == null) {
             mFilterState = mPrefs.getFilterState();
         }
-
-        if (mSearchResultsViewState == null) {
-            mSearchResultsViewState = mPrefs.getSearchResultsState();
-        }
     }
 
     @Override
@@ -178,7 +171,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewResults
         super.onStop();
         final FilterView.FilterState filterState = mFilterView.getViewFilterState();
         mPrefs.setFilterState(filterState);
-        mPrefs.setSearchResultsState(mSearchResultsViewState);
     }
 
     @AfterViews
@@ -202,10 +194,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewResults
             showFilterView(false);
         } else {
             hideFilterView(false);
-        }
-
-        if (mFilterResultsView != null && mSearchResultsViewState != null && mFilterState != null) {
-            mFilterResultsView.setSearchResultsState(mSearchResultsViewState);
         }
 
         if (mIsFilterResultsPanelShown) {
@@ -432,8 +420,8 @@ public class MainPagerFragment extends MainFragment implements FilterViewResults
         if (mFilterState.isEmpty()) {
             hideSearchResultsPanel(mIsFilterPanelShown);
         } else {
-            mSearchResultsViewState = new FilterResultsView.SearchResultsViewState(taskCount, filterState.tags);
-            mFilterResultsView.setSearchResultsState(mSearchResultsViewState);
+            mFilterResultsView.setSearchResultsState(new FilterResultsView.SearchResultsViewState(taskCount,
+                    filterState.tags));
             showSearchResultsPanel(true);
         }
     }
