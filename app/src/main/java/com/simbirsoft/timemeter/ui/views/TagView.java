@@ -33,9 +33,9 @@ public class TagView extends FrameLayout {
     protected LinearLayout mTagPanel;
 
     private View mVsTagImage;
-
     private TagViewClickListener mTagViewClickListener;
     private Tag mTag;
+    private boolean mChecked;
 
     public TagView(Context context) {
         super(context);
@@ -63,7 +63,8 @@ public class TagView extends FrameLayout {
         GradientDrawable bg = (GradientDrawable) mTagPanel.getBackground();
         bg.setColor(tag.getColor());
         mTagTitle.setText(tag.getName());
-        mTagPanel.setAlpha(1.0f);
+        highlightTag();
+        mChecked = false;
     }
 
     public Tag getTag() {
@@ -97,18 +98,19 @@ public class TagView extends FrameLayout {
         }
     }
 
-    public void checkTag() {
+    public void unhighlightTag() {
         mTagPanel.setAlpha(0.5f);
     }
 
-    public void uncheckTag() {
+    public void highlightTag() {
         mTagPanel.setAlpha(1.0f);
     }
 
-    public boolean isTagChecked() {
-        if (mTagPanel.getAlpha() < 1.0f) {
-            return true;
-        }
-        return false;
+    public  boolean isChecked() {
+        return mChecked;
+    }
+
+    public void setChecked(boolean checked) {
+        mChecked = checked;
     }
 }

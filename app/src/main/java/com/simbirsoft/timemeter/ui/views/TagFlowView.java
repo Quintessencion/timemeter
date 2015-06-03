@@ -42,11 +42,23 @@ public class TagFlowView extends FlowLayout {
     public void checkTagViews(List<Object> tagsFromFilter) {
         if (tagsFromFilter == null) return;
 
+        if (tagsFromFilter.isEmpty()) {
+            for (TagView tagView : mTagViews) {
+                tagView.highlightTag();
+                tagView.setChecked(false);
+            }
+            return;
+        }
+
         for (Object o : tagsFromFilter) {
             Tag tagFromFilter = (Tag) o;
             for (TagView tagView : mTagViews) {
                 if (tagFromFilter.getId().equals(tagView.getTag().getId())) {
-                    tagView.checkTag();
+                    tagView.highlightTag();
+                    tagView.setChecked(true);
+                } else {
+                    tagView.unhighlightTag();
+                    tagView.setChecked(false);
                 }
             }
         }

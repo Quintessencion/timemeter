@@ -90,10 +90,8 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     private ContentFragmentCallbacks mCallbacks;
 
     private final TagView.TagViewClickListener mTagViewClickListener = tagView -> {
-        boolean tagCheckedState = tagView.isTagChecked();
-
         FilterView filterView = getFilterViewProvider().getFilterView();
-        if (tagCheckedState) {
+        if (tagView.isChecked()) {
             filterView.getTagsView().removeObject(tagView.getTag());
         } else {
             filterView.getTagsView().addObject(tagView.getTag());
