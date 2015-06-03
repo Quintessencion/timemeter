@@ -80,12 +80,15 @@ public final class DatabaseUtils {
 
         long duration = endTimeMillis - startTimeMillis;
         int weeks = 1 + ((int) TimeUnit.MILLISECONDS.toDays(duration) / 7);
+        int firstActivityStartHour = (int) TimeUnit.MILLISECONDS.toHours(startTimeMillis) % 24;
+        int firstActivityStartMinute = (int) TimeUnit.MILLISECONDS.toMinutes(startTimeMillis) % 60;
+        int firstActivityStartSecond = (int) TimeUnit.MILLISECONDS.toSeconds(startTimeMillis) % 60;
 
         Calendar c = Calendar.getInstance();
         c.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-        c.set(Calendar.HOUR_OF_DAY, 0);
-        c.set(Calendar.MINUTE,0);
-        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.HOUR_OF_DAY, firstActivityStartHour);
+        c.set(Calendar.MINUTE, firstActivityStartMinute);
+        c.set(Calendar.SECOND, firstActivityStartSecond);
         c.add(Calendar.WEEK_OF_YEAR, -weeks);
 
         long shift = c.getTimeInMillis() - startTimeMillis;
