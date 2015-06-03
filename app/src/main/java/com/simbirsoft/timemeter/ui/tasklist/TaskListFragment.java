@@ -98,7 +98,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         } else {
             filterView.getTagsView().addObject(tagView.getTag());
         }
-        applyFilterState();
+        mTasksViewAdapter.setTagListForChecking(filterView.getTagsView().getObjects());
     };
 
     private void onFloatingButtonClicked(View v) {
@@ -165,8 +165,8 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
     private void applyFilterState() {
         FilterView filterView = getFilterViewProvider().getFilterView();
-        mTasksViewAdapter.setTagFilterTextView(filterView.getTagsView());
-        filterView.postFilterUpdate();
+        mTasksViewAdapter.setTagListForChecking(filterView.getTagsView().getObjects());
+        //filterView.postFilterUpdate();
     }
 
     @Override

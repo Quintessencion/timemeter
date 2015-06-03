@@ -17,7 +17,6 @@ import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
-import com.simbirsoft.timemeter.ui.views.TagFilterTextView;
 import com.simbirsoft.timemeter.ui.views.TagFlowView;
 import com.simbirsoft.timemeter.ui.views.TagView;
 
@@ -53,7 +52,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     private final ITaskActivityManager mTaskActivityManager;
     private TaskClickListener mTaskClickListener;
     private TagView.TagViewClickListener mTagViewClickListener;
-    private TagFilterTextView mTagFilterTextView;
+    private List<Object> mTagListForChecking;
 
     private final View.OnClickListener mCardClickListener = (view) -> {
         if (mTaskClickListener != null) {
@@ -172,8 +171,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         holder.itemEditView.setTag(item);
 
         holder.tagFlowView.bindTagViews(item.getTags());
-        holder.tagFlowView.checkTagViews(
-                (mTagFilterTextView != null) ? mTagFilterTextView.getObjects() : null);
+        holder.tagFlowView.checkTagViews(mTagListForChecking);
         holder.tagFlowView.setTagViewsClickListener(mTagViewClickListener);
 
         if (mTaskActivityManager.isTaskActive(task)) {
@@ -198,7 +196,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         mTagViewClickListener = tagViewClickListener;
     }
 
-    public void setTagFilterTextView(TagFilterTextView tagFilterTextView) {
-        mTagFilterTextView = tagFilterTextView;
+    public void setTagListForChecking(List<Object> tagListForChecking) {
+        mTagListForChecking = tagListForChecking;
     }
 }
