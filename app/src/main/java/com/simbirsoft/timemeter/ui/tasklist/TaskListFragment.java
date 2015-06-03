@@ -270,15 +270,19 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
             mTaskListPosition = null;
         }
 
-        if (filterIsEmpty() && mTasksViewAdapter.getItemCount() == 0) {
-            mEmptyListIndicator.setVisibility(View.VISIBLE);
-        } else {
-            mEmptyListIndicator.setVisibility(View.GONE);
-        }
+        updateEmptyListIndicator();
 
         mDataIsLoaded = true;
 
         presentHelpCardIfAny();
+    }
+
+    private void updateEmptyListIndicator() {
+        if (filterIsEmpty() && mHelpCardAdapter.getItemCount() == 0) {
+            mEmptyListIndicator.setVisibility(View.VISIBLE);
+        } else {
+            mEmptyListIndicator.setVisibility(View.GONE);
+        }
     }
 
     @OnJobFailure(LoadTaskListJob.class)
@@ -477,6 +481,12 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     @Override
     protected HelpCardPresenter getHelpCardPresenter() {
         return mHelpCardAdapter;
+    }
+
+    @Override
+    protected void presentHelpCardIfAny() {
+        super.presentHelpCardIfAny();
+        updateEmptyListIndicator();
     }
 }
 
