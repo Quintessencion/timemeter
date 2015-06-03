@@ -90,6 +90,8 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     @Inject
     DatabaseHelper mDatabaseHelper;
 
+    boolean mDataIsLoaded;
+
     private FloatingActionButton mFloatingActionButton;
     private TaskListAdapter mTasksViewAdapter;
     private HelpCardAdapter mHelpCardAdapter;
@@ -274,6 +276,8 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
             mEmptyListIndicator.setVisibility(View.GONE);
         }
 
+        mDataIsLoaded = true;
+
         presentHelpCardIfAny();
     }
 
@@ -435,7 +439,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
             return HelpCardController.HELP_CARD_TASK_LIST;
         }
 
-        if (mTasksViewAdapter.getItemCount() == 0 && !controller.isPresented(HelpCardController.HELP_CARD_ADD_NEW_TASK)) {
+        if (mDataIsLoaded && mTasksViewAdapter.getItemCount() == 0 && !controller.isPresented(HelpCardController.HELP_CARD_ADD_NEW_TASK)) {
             return HelpCardController.HELP_CARD_ADD_NEW_TASK;
         }
 
