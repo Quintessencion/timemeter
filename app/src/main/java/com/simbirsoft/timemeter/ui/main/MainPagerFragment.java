@@ -425,14 +425,16 @@ public class MainPagerFragment extends MainFragment implements FilterViewResults
 
     @Override
     public void updateFilterResultsView(int taskCount, FilterView.FilterState filterState) {
-        if (!mFilterState.isEmpty()) {
-            mSearchResultsViewState = new FilterResultsView.SearchResultsViewState(taskCount, filterState.tags);
-            mFilterResultsView.setSearchResultsState(mSearchResultsViewState);
-            showSearchResultsPanel(true);
+        if (mFilterState == null) {
+            return;
         }
 
         if (mFilterState.isEmpty()) {
             hideSearchResultsPanel(mIsFilterPanelShown);
+        } else {
+            mSearchResultsViewState = new FilterResultsView.SearchResultsViewState(taskCount, filterState.tags);
+            mFilterResultsView.setSearchResultsState(mSearchResultsViewState);
+            showSearchResultsPanel(true);
         }
     }
 
