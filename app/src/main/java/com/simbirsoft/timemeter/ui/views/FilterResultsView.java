@@ -65,7 +65,6 @@ public class FilterResultsView extends RelativeLayout {
             SearchResultsViewState searchResultsViewState = new SearchResultsViewState();
 
             searchResultsViewState.taskCount = taskCount;
-            searchResultsViewState.tags = tags;
             searchResultsViewState.tags = Lists.newArrayList(tags == null ? Collections.emptyList() : tags);
 
             return searchResultsViewState;
