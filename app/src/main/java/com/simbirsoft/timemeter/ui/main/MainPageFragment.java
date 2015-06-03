@@ -70,7 +70,7 @@ public class MainPageFragment extends BaseFragment {
     @Named(ApplicationModule.HANDLER_MAIN)
     Handler mHandler;
 
-    FilterViewProvider mFilterViewProvider;
+    FilterViewResultsProvider mFilterViewResultsProvider;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -114,10 +114,10 @@ public class MainPageFragment extends BaseFragment {
     }
 
     protected FilterView.FilterState getFilterViewState() {
-        if (mFilterViewProvider == null)
+        if (mFilterViewResultsProvider == null)
             return null;
 
-        FilterView filterView = mFilterViewProvider.getFilterView();
+        FilterView filterView = mFilterViewResultsProvider.getFilterView();
         if (filterView == null)
             return null;
 
@@ -377,11 +377,11 @@ public class MainPageFragment extends BaseFragment {
         return null;
     }
 
-    public void setFilterViewProvider(FilterViewProvider provider) {
-        mFilterViewProvider = provider;
+    public void setFilterViewResultsProvider(FilterViewResultsProvider provider) {
+        mFilterViewResultsProvider = provider;
     }
 
     protected void updateFilterResultsView(int taskCount, FilterView.FilterState filterState) {
-        mFilterViewProvider.updateFilterResultsView(taskCount, filterState);
+        mFilterViewResultsProvider.updateFilterResultsView(taskCount, filterState);
     }
 }

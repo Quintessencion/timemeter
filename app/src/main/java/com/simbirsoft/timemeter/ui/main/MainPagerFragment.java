@@ -53,7 +53,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_tasks_pager)
-public class MainPagerFragment extends MainFragment implements FilterViewProvider,
+public class MainPagerFragment extends MainFragment implements FilterViewResultsProvider,
         TokenCompleteTextView.TokenListener,
         FilterView.OnSelectDateClickListener,
         DatePickerDialog.OnDateSetListener {
@@ -251,7 +251,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
     private void onAdapterSetupItem(Fragment fragment) {
         MainPageFragment mpf = (MainPageFragment)fragment;
-        mpf.setFilterViewProvider(this);
+        mpf.setFilterViewResultsProvider(this);
     }
 
     @Override
