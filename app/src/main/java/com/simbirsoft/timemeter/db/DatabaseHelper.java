@@ -95,7 +95,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 cupboard.put(task);
                 xmlTask.setId(task.getId());
                 List<TaskTimeSpan> spans = xmlTask.getTaskActivity();
-                cupboard.put(actualizeTasks(spans));
+                cupboard.put(actualizeTaskActivities(spans));
 
                 for (XmlTagRef tagRef : xmlTask.getTagList()) {
                     TaskTag taskTag = new TaskTag();
@@ -116,7 +116,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    private List<TaskTimeSpan> actualizeTasks(List<TaskTimeSpan> spans) {
+    private static List<TaskTimeSpan> actualizeTaskActivities(List<TaskTimeSpan> spans) {
         long startTimeMillis = 0;
         long endTimeMillis = 0;
 
@@ -128,13 +128,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
         long duration = endTimeMillis - startTimeMillis;
-        int weeks = 1 + (int) (duration / (1000*60*60*24*7));
+        int weeks = 1 + ((int) TimeUnit.MILLISECONDS.toDays(duration) / 7);
 
         Calendar c = Calendar.getInstance();
         c.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-        c.set(Calendar.HOUR_OF_DAY,0);
+        c.set(Calendar.HOUR_OF_DAY, 0);
         c.set(Calendar.MINUTE,0);
-        c.set(Calendar.SECOND,0);
+        c.set(Calendar.SECOND, 0);
         c.add(Calendar.WEEK_OF_YEAR, -weeks);
 
         long shift = c.getTimeInMillis() - startTimeMillis;
