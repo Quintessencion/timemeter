@@ -397,8 +397,11 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         if (isFilterPanelVisible()) {
             item.setIcon(R.drawable.ic_filter_remove_white_24dp);
             item.setTitle(R.string.action_toggle_filter_off);
-        } else {
+        } else if (mFilterView.getViewFilterState().isEmpty()) {
             item.setIcon(R.drawable.ic_filter_white_24dp);
+            item.setTitle(R.string.action_toggle_filter_on);
+        } else {
+            item.setIcon(R.drawable.ic_filter_red_24dp);
             item.setTitle(R.string.action_toggle_filter_on);
         }
     }
