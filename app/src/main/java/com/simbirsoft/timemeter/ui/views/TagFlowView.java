@@ -50,16 +50,21 @@ public class TagFlowView extends FlowLayout {
             return;
         }
 
-        for (Object o : tagsFromFilter) {
-            Tag tagFromFilter = (Tag) o;
-            for (TagView tagView : mTagViews) {
+        for (TagView tagView : mTagViews) {
+            boolean contains = false;
+            for (Object o : tagsFromFilter) {
+                Tag tagFromFilter = (Tag) o;
                 if (tagFromFilter.getId().equals(tagView.getTag().getId())) {
-                    tagView.highlightTag();
-                    tagView.setChecked(true);
-                } else {
-                    tagView.unhighlightTag();
-                    tagView.setChecked(false);
+                    contains = true;
+                    break;
                 }
+            }
+            if (contains) {
+                tagView.highlightTag();
+                tagView.setChecked(true);
+            } else {
+                tagView.unhighlightTag();
+                tagView.setChecked(false);
             }
         }
     }
