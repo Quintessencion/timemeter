@@ -75,42 +75,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         removeDatabase(context);
 
         DatabaseCompartment cupboard = cupboard().withDatabase(getWritableDatabase());
-
-        InputStream in = null;
-        try {
-            in = context.getAssets().open("testdata/tasklist-ru.xml");
-            XmlTaskList taskList = XmlTaskListReader.readXml(in);
-            LOG.trace("task list read successfully");
-
-            for (XmlTag xmlTag : taskList.getTagList()) {
-                Tag tag = xmlTag.getTag();
-                cupboard.put(tag);
-            }
-
-            for (XmlTask xmlTask : taskList.getTaskList()) {
-                Task task = xmlTask.getTask();
-                cupboard.put(task);
-                xmlTask.setId(task.getId());
-                List<TaskTimeSpan> spans = xmlTask.getTaskActivity();
-                cupboard.put(DatabaseUtils.actualizeTaskActivities(spans));
-
-                for (XmlTagRef tagRef : xmlTask.getTagList()) {
-                    TaskTag taskTag = new TaskTag();
-                    taskTag.setTaskId(task.getId());
-                    taskTag.setTagId(tagRef.getTagId());
-                    cupboard.put(taskTag);
-                }
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-
-        } finally {
-            Closeables.closeQuietly(in);
-        }
+        DatabaseUtils.fillTestData(context, cupboard);
     }
 
     public static void backupDatabase(Context context) {
