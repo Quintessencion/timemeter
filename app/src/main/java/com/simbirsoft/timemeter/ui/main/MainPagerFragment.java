@@ -64,7 +64,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
 
     private static final Logger LOG = LogFactory.getLogger(MainPagerFragment.class);
     private static final String TAG_DATE_PICKER_FRAGMENT = "main_date_picker_fragment_tag";
-    private static final int TASKS_FRAGMENT_POSITION = 0;
 
     @ViewById(R.id.pager)
     ViewPager mViewPager;
@@ -483,20 +482,18 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
     }
 
     private void showSearchResultsPanel(boolean animate) {
-        if (mViewPager.getCurrentItem() == TASKS_FRAGMENT_POSITION) {
-            mIsFilterResultsPanelShown = true;
+        mIsFilterResultsPanelShown = true;
 
-            if (isFilterResultsPanelVisible()) {
-                return;
-            }
-
-            if (animate) {
-                showTransition(Fade.IN);
-            }
-
-            updateContainerMargin();
-            mFilterResultsView.setVisibility(View.VISIBLE);
+        if (isFilterResultsPanelVisible()) {
+            return;
         }
+
+        if (animate) {
+            showTransition(Fade.IN);
+        }
+
+        updateContainerMargin();
+        mFilterResultsView.setVisibility(View.VISIBLE);
     }
 
     private void hideSearchResultsPanel(boolean animate) {
