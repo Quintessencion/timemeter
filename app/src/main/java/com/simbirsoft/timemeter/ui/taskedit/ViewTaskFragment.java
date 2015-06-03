@@ -244,6 +244,10 @@ public class ViewTaskFragment extends BaseFragment
                 }
                 return;
 
+            case REQUEST_CODE_VIEW_ACTIVITIES:
+                requestLoad(LOADER_TAG, this);
+                break;
+
             default:
                 break;
         }

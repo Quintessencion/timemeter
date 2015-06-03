@@ -3,6 +3,8 @@ package com.simbirsoft.timemeter.db.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.Collection;
+
 import nl.qbusict.cupboard.annotation.Column;
 import nl.qbusict.cupboard.annotation.Ignore;
 import nl.qbusict.cupboard.annotation.Index;
@@ -163,6 +165,19 @@ public class TaskTimeSpan implements Parcelable {
         }
         if (o instanceof TaskTimeSpan) {
             return _id.equals(((TaskTimeSpan)o)._id);
+        }
+        return false;
+    }
+
+    public boolean isOverlaps(TaskTimeSpan span) {
+        return (this.startTimeMillis <= span.endTimeMillis) && (span.startTimeMillis <= this.endTimeMillis);
+    }
+
+    public boolean isOverlaps(Collection<TaskTimeSpan> spans) {
+        for(TaskTimeSpan span : spans) {
+            if (isOverlaps(span)) {
+                return true;
+            }
         }
         return false;
     }

@@ -98,5 +98,4 @@ public final class QueryUtils {
 
         return taskIdSBuilder.toString();
     }
-
 }

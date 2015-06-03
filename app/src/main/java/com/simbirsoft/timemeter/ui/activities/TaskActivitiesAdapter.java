@@ -27,6 +27,7 @@ import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.simbirsoft.timemeter.ui.views.TaskActivityItemView;
 import com.simbirsoft.timemeter.ui.views.TaskActivityItemsLayout;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashSet;
@@ -112,6 +113,10 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
     public void setItems(List<TaskActivityItem> items) {
         mItems.clear();
         mItems.addAll(items);
+
+        mSelectedSpans.clear();
+        mHighlightedSpans.clear();
+
         notifyDataSetChanged();
     }
 
@@ -318,6 +323,14 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
 
     public List<TaskTimeSpan> getSelectedSpans() {
         return Collections.unmodifiableList(mSelectedSpans);
+    }
+
+    public List<Long> getSelectedSpanIds() {
+        List<Long> result = new ArrayList<>();
+        for (TaskTimeSpan span : mSelectedSpans) {
+            result.add(span.getId());
+        }
+        return result;
     }
 
     public void clearSelection() {

@@ -76,8 +76,10 @@
     <string name="hint_reset_filter">Сбросить фильтр</string>
     <string name="hint_choose_filter_period">Выбрать период</string>
     <string name="hint_choose_period">не задан</string>
+    <string name="hint_new_time_span">Добавить новый временной отрезок</string>
 
     <!-- Errors -->
+    <string name="error_unknown">Неизвестная ошибка.</string>
     <string name="error_loading_data">Ошибка при загрузке данных</string>
     <string name="error_unable_to_load_task_list">Ошибка при загрузке списка задач</string>
     <string name="error_unable_to_save_task">Не удалось сохранить задачу</string>
@@ -91,6 +93,9 @@
     <string name="error_tag_name_is_empty">Название метки не задано</string>
     <string name="error_unable_to_load_task_activities">Ошибка при загрузке списка активностей</string>
     <string name="error_unable_to_load_calendar_data">Ошибка при загрузке данных для календаря</string>
+    <string name="error_time_span_overlaps">Временной отрезок не может пересекаться с другим отрезком.</string>
+    <string name="error_time_span_belongs_to_future">Временной отрезок не может захватывать будущее.</string>
+    <string name="error_time_span_bad_range">Временной отрезок неверное задан.</string>
 
     <!-- Dialogs -->
     <string name="dialog_cancel_task_changes_warning_title">Задача не сохранена</string>

@@ -1,6 +1,7 @@
 package com.simbirsoft.timemeter.ui.activities;
 
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.widget.RecyclerView;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -11,7 +12,7 @@ import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 
 import java.util.List;
 
-public class TaskTimeSpanActions implements ActionMode.Callback, TaskActivitiesAdapter.OnSelectionSetChangedListener {
+public class TaskTimeSpanActions implements ActionMode.Callback {
 
     public interface OnActionListener {
         void onAction(TaskTimeSpanActions sender);
@@ -20,15 +21,18 @@ public class TaskTimeSpanActions implements ActionMode.Callback, TaskActivitiesA
     private FragmentActivity mActivityContext;
     private TaskActivitiesAdapter mAdapter;
     private ActionMode mActionMode;
+    private DataObserver mDataObserver;
 
     private OnActionListener mOnEditListener;
     private OnActionListener mOnRemoveListener;
     private OnActionListener mOnActivated;
+    private OnActionListener mOnDeactivated;
 
     public TaskTimeSpanActions(FragmentActivity activityContext, TaskActivitiesAdapter adapter) {
         mActivityContext = activityContext;
         mAdapter = adapter;
-        mAdapter.setSelectionSetChangedListener(this);
+        mDataObserver = new DataObserver();
+        mAdapter.registerAdapterDataObserver(mDataObserver);
     }
 
     public void setOnEditListener(OnActionListener onEditListener) {
@@ -41,6 +45,10 @@ public class TaskTimeSpanActions implements ActionMode.Callback, TaskActivitiesA
 
     public void setOnActivatedListener(OnActionListener listener) {
         mOnActivated = listener;
+    }
+
+    public void setOnDeactivatedListener(OnActionListener listener) {
+        mOnDeactivated = listener;
     }
 
     @Override
@@ -76,6 +84,7 @@ public class TaskTimeSpanActions implements ActionMode.Callback, TaskActivitiesA
     public void onDestroyActionMode(ActionMode mode) {
         mActionMode = null;
         mAdapter.clearSelection();
+        fireActionCallback(mOnDeactivated);
     }
 
     private void updateActionBarMenu(Menu menu) {
@@ -108,8 +117,10 @@ public class TaskTimeSpanActions implements ActionMode.Callback, TaskActivitiesA
         }
     }
 
-    @Override
-    public void onSelectionSetChanged(TaskActivitiesAdapter sender) {
-        updateActionBar();
+    private class DataObserver extends RecyclerView.AdapterDataObserver {
+        @Override
+        public void onChanged() {
+            updateActionBar();
+        }
     }
 }
