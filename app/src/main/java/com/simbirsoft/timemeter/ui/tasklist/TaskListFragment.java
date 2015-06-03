@@ -32,6 +32,7 @@ import com.simbirsoft.timemeter.controller.HelpCardController;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Task;
+import com.simbirsoft.timemeter.events.ScheduledTaskUpdateTabContentEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
 import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.Injection;
@@ -468,6 +469,8 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         if (helpCardID == HelpCardController.HELP_CARD_DEMO_DATAS) {
             mDatabaseHelper.removeTestData();
             reloadContent();
+            // force update for other tabs
+            getBus().post(new ScheduledTaskUpdateTabContentEvent());
         }
     }
 
