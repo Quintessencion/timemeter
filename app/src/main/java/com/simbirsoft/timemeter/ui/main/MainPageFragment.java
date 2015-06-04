@@ -17,13 +17,21 @@ import com.nispok.snackbar.enums.SnackbarType;
 import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.controller.HelpCardController;
+import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
+import com.simbirsoft.timemeter.events.HelpCardPresentedEvent;
+import com.simbirsoft.timemeter.events.ReadyToShowHelpCardEvent;
 import com.simbirsoft.timemeter.events.ScheduledTaskUpdateTabContentEvent;
 import com.simbirsoft.timemeter.injection.ApplicationModule;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.SaveTaskBundleJob;
 import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCard;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardDataSource;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardPresenter;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardSource;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.model.TaskChangedEvent;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
@@ -31,6 +39,7 @@ import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
+import org.androidannotations.annotations.EFragment;
 import org.slf4j.Logger;
 
 import java.util.concurrent.ExecutionException;
@@ -39,7 +48,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 
-public class MainPageFragment extends BaseFragment {
+@EFragment
+public class MainPageFragment extends BaseFragment implements HelpCardSource {
+
     public static class SnackbarShowEvent {
         private boolean mVisible;
 
@@ -70,7 +81,15 @@ public class MainPageFragment extends BaseFragment {
     @Named(ApplicationModule.HANDLER_MAIN)
     Handler mHandler;
 
-    FilterViewResultsProvider mFilterViewResultsProvider;
+    @Inject
+    HelpCardController mHelpCardController;
+
+    @Inject
+    Preferences mPrefs;
+
+    private FilterViewProvider mFilterViewProvider;
+    private FilterViewResultsProvider mFilterViewResultsProvider;
+    private int mCurrentHelpCardId = HelpCardController.HELP_CARD_NONE;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -82,6 +101,7 @@ public class MainPageFragment extends BaseFragment {
     public void onStart() {
         super.onStart();
         setContentAutoupdateEnabled(true);
+        presentHelpCardIfAny();
     }
 
     @Override
@@ -107,6 +127,32 @@ public class MainPageFragment extends BaseFragment {
         super.onResume();
 
         reloadContentIfNeeded();
+    }
+
+    protected int getHelpCardToPresent(HelpCardController controller) {
+        return HelpCardController.HELP_CARD_NONE;
+    }
+
+    protected void presentHelpCardIfAny() {
+        if (getHelpCardPresenter() == null || !mPrefs.getUserLearnedDrawer())
+            return;
+
+        int oldId = mCurrentHelpCardId;
+        mCurrentHelpCardId = getHelpCardToPresent(mHelpCardController);
+
+        if (mCurrentHelpCardId == oldId) {
+            return;
+        }
+
+        if (mCurrentHelpCardId != HelpCardController.HELP_CARD_NONE) {
+            getHelpCardPresenter().show();
+        } else {
+            getHelpCardPresenter().hide();
+        }
+    }
+
+    protected HelpCardPresenter getHelpCardPresenter() {
+        return null;
     }
 
     protected Bus getBus() {
@@ -383,5 +429,54 @@ public class MainPageFragment extends BaseFragment {
 
     protected void updateFilterResultsView(int taskCount, FilterView.FilterState filterState) {
         mFilterViewResultsProvider.updateFilterResultsView(taskCount, filterState);
+    }
+
+    protected void onHelpCardNextClicked(HelpCard sender, int cardID) {
+        if (sender.isLastItemPresented()) {
+            mHelpCardController.markPresented(cardID);
+        }
+    }
+
+    protected void onHelpCardActionClicked(HelpCard sender, int cardID) {
+
+    }
+
+    protected void onHelpCardClicked(HelpCard sender, int cardID) {
+
+    }
+
+    @Subscribe
+    public void onHelpCardPresentedEvent(HelpCardPresentedEvent ev) {
+        presentHelpCardIfAny();
+    }
+
+    @Override
+    public void setupHelpCard(HelpCard helpCard) {
+        helpCard.setOnNextClickListener(v -> {
+            onHelpCardNextClicked(helpCard, mCurrentHelpCardId);
+        });
+        helpCard.setOnActionClickListener(v -> {
+            onHelpCardActionClicked(helpCard, mCurrentHelpCardId);
+        });
+        helpCard.setOnClickListener(v -> {
+            onHelpCardClicked(helpCard, mCurrentHelpCardId);
+        });
+
+        final HelpCardDataSource ds = mHelpCardController.getCard(mCurrentHelpCardId);
+        helpCard.setDataSource(ds);
+    }
+
+    @Override
+    public int getHelpCardId() {
+        return mCurrentHelpCardId;
+    }
+
+    @Subscribe
+    public void onReadyToShowHelpCardEvent(ReadyToShowHelpCardEvent ev) {
+        presentHelpCardIfAny();
+    }
+
+    public FilterViewProvider getFilterViewProvider() {
+        return mFilterViewProvider;
     }
 }

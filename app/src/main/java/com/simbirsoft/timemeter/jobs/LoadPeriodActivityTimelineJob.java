@@ -75,8 +75,8 @@ public class LoadPeriodActivityTimelineJob extends LoadJob implements Filterable
         final List<DailyActivityDuration> results = Lists.newArrayList();
 
         if (filterStartDateMillis == 0) {
-            filterStartDateMillis = TimeUtils.getDayStartMillis(
-                    QueryHelper.findFirstActivityBeginDate(mDatabaseHelper.getReadableDatabase()));
+            long firstActivityBeginDate = QueryHelper.findFirstActivityBeginDate(mDatabaseHelper.getReadableDatabase());
+            filterStartDateMillis = (firstActivityBeginDate == 0) ? 0 : TimeUtils.getDayStartMillis(firstActivityBeginDate);
 
             if (filterStartDateMillis == 0) {
                 LOG.debug("unable to load activity timeline: no activity found");

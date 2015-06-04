@@ -55,11 +55,13 @@
     <string name="action_view_activities">Показать активности</string>
     <string name="action_show_task_activities">Показать в виде графика</string>
     <string name="action_task_added">Задача %1$s добавлена</string>
+    <string name="action_proceed">Продолжить</string>
 
     <!-- Hints -->
     <string name="hint_new_task">Начать новую задачу</string>
     <string name="hint_task_description">Описание задачи</string>
     <string name="hint_task_tags">Метки</string>
+    <string name="hint_task_tags_arent_selected">Метки не выбраны</string>
     <string name="hint_edit">Редактировать</string>
     <string name="hint_remove">Удалить</string>
     <string name="hint_edit_task">Редактировать задачу</string>
@@ -102,6 +104,8 @@
     <string name="dialog_edit_tag_color_title">Выберите цвет</string>
     <string name="dialog_cancel_tag_changes_warning_title">Метка не сохранена</string>
     <string name="dialog_cancel_tag_changes_warning_message">Завершить редактирование без сохранения?</string>
+    <string name="dialog_delete_test_data_title">Предупреждение</string>
+    <string name="dialog_delete_test_data">Все демонстрационный задачи будут удалены. Продолжить?</string>
 
     <!-- Chart legend -->
     <string name="chart_legend_totally">Всего: %s</string>
@@ -152,4 +156,19 @@
     <string name="incorrect_filter_end_date">Дата окончания не может быть меньше даты начала</string>
     <string name="incorrect_filter_start_date">Дата начала не может быть больше даты окончания</string>
     <string name="button_choose">Выбрать</string>
+    
+    <!-- HelpCards -->
+    <string name="help_card_text_00_00">Здесь ваши ежедневные задачи. Нажмите по карточке задачи, чтобы начать отслеживать время активности. Нажмите еще раз, чтобы закончить.</string>
+    <string name="help_card_text_00_01">Нажмите на иконку в правом нижнем углу карточки задачи, чтобы просмотреть или изменить детали.</string>
+    <string name="help_card_text_01_00">Смотрите статистику активности по вашим задачам в любое время. Нажмите по карточке с графиком, чтобы развернуть ее. Используйте жесты, чтобы детально рассмотреть графики со шкалой.</string>
+    <string name="help_card_text_01_01">Нажмите на иконку фильтра или лупы вверху, чтобы отсеять ненужную статистику по дате, периоду, меткам, описанию задачи. Фильтрация работает на всех вкладках.</string>
+    <string name="help_card_text_02_00">Календарь отражает время и продолжительность активности по отдельным задачам за каждую неделю. Нажмите по закрашенной ячейке, чтобы просмотреть задачи, которые отслеживались.</string>
+    <string name="help_card_text_03_00"><![CDATA[Чтобы удалить демонстрационные данные нажмите <i>Удалить</i> или перейдите к настройкам.]]></string>
+    <string name="help_card_text_04_00">Нажмите, чтобы создать новую задачу и начать отслеживать свою активность.</string>
+    <string name="help_card_text_05_00">Добавляйте новые метки, выбирайте для них цвета. Используйте метки, чтобы группировать ваши задачи и получать гибкую статистику.</string>
+    <string name="help_card_btn_ok">OK</string>
+    <string name="help_card_btn_next">Далее</string>
+    <string name="help_card_btn_back">Назад</string>
+    <string name="help_card_btn_hide">Скрыть</string>
+    <string name="help_card_btn_delete">Удалить</string>
 </resources>

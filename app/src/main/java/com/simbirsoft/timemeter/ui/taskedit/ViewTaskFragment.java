@@ -12,6 +12,7 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.animation.AlphaAnimation;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
@@ -133,8 +134,13 @@ public class ViewTaskFragment extends BaseFragment
     @AfterViews
     void bindViews() {
         setActionBarTitleAndHome(mExtraTaskBundle.getTask().getDescription());
+        tagFlowView.setHintVisible(true);
         tagFlowView.bindTagViews(mExtraTaskBundle.getTags());
         tagFlowView.setTagViewsClickListener(mTagViewClickListener);
+        View hintView = tagFlowView.getHintView();
+        if (hintView != null) hintView.setOnClickListener((v) -> {
+            goToEditTaskTagsScene();
+        });
 
         mRecyclerView.setHasFixedSize(false);
         final TaskActivitiesLayoutManager layoutManager = new TaskActivitiesLayoutManager(getActivity());
@@ -165,6 +171,18 @@ public class ViewTaskFragment extends BaseFragment
         Bundle args = new Bundle();
         args.putString(EditTaskFragment.EXTRA_TITLE, getString(R.string.title_edit_task));
         args.putLong(EditTaskFragment.EXTRA_TASK_ID, mExtraTaskBundle.getTask().getId());
+        args.putBoolean(EditTaskFragment.EXTRA_GO_TO_EDIT_TAGS_SCENE, false);
+
+        Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
+                getActivity(), EditTaskFragment_.class.getName(), args);
+        getActivity().startActivityForResult(launchIntent, MainPageFragment.REQUEST_CODE_PROCESS_TASK);
+    }
+
+    private void goToEditTaskTagsScene() {
+        Bundle args = new Bundle();
+        args.putString(EditTaskFragment.EXTRA_TITLE, getString(R.string.title_edit_task));
+        args.putLong(EditTaskFragment.EXTRA_TASK_ID, mExtraTaskBundle.getTask().getId());
+        args.putBoolean(EditTaskFragment.EXTRA_GO_TO_EDIT_TAGS_SCENE, true);
 
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), EditTaskFragment_.class.getName(), args);

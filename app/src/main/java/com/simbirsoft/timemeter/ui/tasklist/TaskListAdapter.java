@@ -1,5 +1,8 @@
 package com.simbirsoft.timemeter.ui.tasklist;
 
+import android.support.v4.view.ViewCompat;
+import android.support.v4.view.ViewPropertyAnimatorListener;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.view.LayoutInflater;
@@ -15,6 +18,7 @@ import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.base.BaseAnimateViewHolder;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
 import com.simbirsoft.timemeter.ui.views.TagFlowView;
@@ -25,17 +29,16 @@ import org.slf4j.Logger;
 import java.util.Collections;
 import java.util.List;
 
-public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
+public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.TaskViewHolder> {
 
-    static interface TaskClickListener {
+    interface TaskClickListener {
         void onTaskViewClicked(TaskBundle item);
         void onTaskViewLongClicked(TaskBundle item, View itemView);
         void onTaskCardClicked(TaskBundle item);
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
-
-        public ViewHolder(View itemView) {
+    static class TaskViewHolder extends BaseAnimateViewHolder {
+        public TaskViewHolder(View itemView) {
             super(itemView);
         }
 
@@ -46,11 +49,15 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         TagFlowView tagFlowView;
     }
 
+    private static final int VIEW_TYPE_TASK = 1;
+
     private static final Logger LOG = LogFactory.getLogger(TaskListAdapter.class);
 
     private final List<TaskBundle> mItems;
     private final ITaskActivityManager mTaskActivityManager;
     private TaskClickListener mTaskClickListener;
+    private TagView.TagViewClickListener mTagViewClickListener;
+    private List<Object> mTagListForChecking;
 
     private final View.OnClickListener mCardClickListener = (view) -> {
         if (mTaskClickListener != null) {
@@ -70,10 +77,6 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
             return true;
         }
         return false;
-    };
-
-    private final TagView.TagViewClickListener mTagViewClickListener = tagView -> {
-        LOG.debug("Tag <" + tagView.getTag().getName() + "> clicked!");
     };
 
     public TaskListAdapter(ITaskActivityManager taskActivityManager) {
@@ -124,7 +127,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     }
 
     public void updateItemView(RecyclerView recyclerView, Task task) {
-        ViewHolder holder = (ViewHolder) recyclerView.findViewHolderForItemId(task.getId());
+        TaskViewHolder holder = (TaskViewHolder) recyclerView.findViewHolderForItemId(task.getId());
         if (holder == null) {
             return;
         }
@@ -138,11 +141,20 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-        View view = LayoutInflater.from(viewGroup.getContext())
-                                  .inflate(R.layout.view_task_card, viewGroup, false);
+    public int getItemViewType(int position) {
+        return VIEW_TYPE_TASK;
+    }
 
-        ViewHolder holder = new ViewHolder(view);
+    @Override
+    public TaskViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+        return onCreateTaskItemViewHolder(viewGroup);
+    }
+
+    private TaskViewHolder onCreateTaskItemViewHolder(ViewGroup viewGroup) {
+        View view = LayoutInflater.from(viewGroup.getContext())
+                .inflate(R.layout.view_task_card, viewGroup, false);
+
+        TaskViewHolder holder = new TaskViewHolder(view);
 
         view.setOnClickListener(mCardClickListener);
 
@@ -153,17 +165,17 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         holder.itemEditView = view.findViewById(R.id.edit_or_view);
         holder.itemEditView.setOnClickListener(mViewClickListener);
         holder.itemEditView.setOnLongClickListener(mViewLongClickListener);
+
         return holder;
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, int position) {
+    public void onBindViewHolder(TaskViewHolder viewHolder, int position) {
         TaskBundle item = mItems.get(position);
-
         bindViewHolder(viewHolder, item);
     }
 
-    private void bindViewHolder(ViewHolder holder, TaskBundle item) {
+    private void bindViewHolder(TaskViewHolder holder, TaskBundle item) {
         final Task task = item.getTask();
 
         holder.titleView.setText(task.getDescription());
@@ -173,6 +185,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         holder.itemEditView.setTag(item);
 
         holder.tagFlowView.bindTagViews(item.getTags());
+        holder.tagFlowView.checkTagViews(mTagListForChecking);
         holder.tagFlowView.setTagViewsClickListener(mTagViewClickListener);
 
         if (mTaskActivityManager.isTaskActive(task)) {
@@ -193,4 +206,11 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         return mItems.size();
     }
 
+    public void setTagViewClickListener(TagView.TagViewClickListener tagViewClickListener) {
+        mTagViewClickListener = tagViewClickListener;
+    }
+
+    public void setTagListForChecking(List<Object> tagListForChecking) {
+        mTagListForChecking = tagListForChecking;
+    }
 }

@@ -6,8 +6,8 @@ import android.util.Base64;
 
 import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.App;
-import com.simbirsoft.timemeter.util.MarshallUtils;
 import com.simbirsoft.timemeter.ui.views.FilterView;
+import com.simbirsoft.timemeter.util.MarshallUtils;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -23,7 +23,7 @@ public final class Preferences {
     public static final String PREFERENCE_USER_LEARNED_DRAWER = "user_learned_drawer";
 
     private static final String KEY_FILTER_STATE = "filter_state";
-    private static final String KEY_SEARCH_RESULTS_STATE = "search_results_state";
+    private static final String KEY_PRESENTED_HELP_CARDS = "presented_help_cards";
 
     private static final String PREFERENCE_DAY_START_HOUR = "day_start_hour";
     private static final String PREFERENCE_DAY_END_HOUR = "day_end_hour";
@@ -122,5 +122,33 @@ public final class Preferences {
 
     private boolean checkHourValue(int hour) {
         return hour >= DAY_MIN_HOUR && hour <= DAY_MAX_HOUR;
+    }
+
+    public Integer[] getPresentedHelpCards() {
+        Integer[] ids = new Integer[0];
+        try {
+            if (mPrefs.contains(KEY_PRESENTED_HELP_CARDS)) {
+                String value = mPrefs.getString(KEY_PRESENTED_HELP_CARDS, "");
+                byte[] arr = Base64.decode(value, Base64.DEFAULT);
+                ids = MarshallUtils.unmarshall(arr, ids);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return ids;
+    }
+
+    public void setPresentedHelpCards(Integer[] cardIds) {
+        try {
+            if (cardIds != null) {
+                byte[] arr = MarshallUtils.marshall(cardIds);
+                String value = Base64.encodeToString(arr, Base64.DEFAULT);
+                mPrefs.edit().putString(KEY_PRESENTED_HELP_CARDS, value).apply();
+            } else {
+                mPrefs.edit().remove(KEY_PRESENTED_HELP_CARDS).apply();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }

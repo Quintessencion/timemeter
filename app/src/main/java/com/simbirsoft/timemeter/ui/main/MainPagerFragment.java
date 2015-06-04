@@ -32,8 +32,8 @@ import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.events.FilterViewStateChangeEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.log.LogFactory;
-import com.simbirsoft.timemeter.ui.views.FilterResultsView;
 import com.simbirsoft.timemeter.ui.util.KeyboardUtils;
+import com.simbirsoft.timemeter.ui.views.FilterResultsView;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
@@ -550,5 +550,14 @@ public class MainPagerFragment extends MainFragment implements FilterViewResults
     private int getMeasureSpec() {
         int maxHeight = getResources().getDisplayMetrics().heightPixels;
         return View.MeasureSpec.makeMeasureSpec(maxHeight, View.MeasureSpec.AT_MOST);
+    }
+
+    public boolean handleBackPress() {
+        if (isFilterPanelVisible()) {
+            hideFilterView(true);
+            updateOptionsMenu();
+            return true;
+        }
+        return false;
     }
 }
