@@ -2,10 +2,12 @@ package com.simbirsoft.timemeter.ui.views;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Rect;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
+import android.view.TouchDelegate;
 import android.view.View;
 import android.view.ViewStub;
 import android.widget.FrameLayout;
@@ -33,9 +35,9 @@ public class TagView extends FrameLayout {
     protected LinearLayout mTagPanel;
 
     private View mVsTagImage;
-
     private TagViewClickListener mTagViewClickListener;
     private Tag mTag;
+    private boolean mChecked;
 
     public TagView(Context context) {
         super(context);
@@ -63,6 +65,28 @@ public class TagView extends FrameLayout {
         GradientDrawable bg = (GradientDrawable) mTagPanel.getBackground();
         bg.setColor(tag.getColor());
         mTagTitle.setText(tag.getName());
+        highlightTag();
+        mChecked = false;
+
+        mTagPanel.post(new Runnable() {
+            public void run() {
+                // Post in the parent's message queue to make sure the parent
+                // lays out its children before we call getHitRect()
+                Rect delegateArea = new Rect();
+                LinearLayout delegate = mTagPanel;
+                delegate.getHitRect(delegateArea);
+                delegateArea.top -= 2;
+                delegateArea.bottom += 2;
+                delegateArea.left -= 4;
+                delegateArea.right += 4;
+                TouchDelegate expandedArea = new TouchDelegate(delegateArea, delegate);
+                // give the delegate to an ancestor of the view we're
+                // delegating the area to
+                if (View.class.isInstance(delegate.getParent())) {
+                    ((View) delegate.getParent()).setTouchDelegate(expandedArea);
+                }
+            };
+        });
     }
 
     public Tag getTag() {
@@ -72,13 +96,13 @@ public class TagView extends FrameLayout {
     public void setTagViewClickListener(TagViewClickListener tagViewClickListener) {
         mTagViewClickListener = tagViewClickListener;
         if (mTagViewClickListener != null) {
-            mTagTitle.setOnClickListener( (v) -> {
+            mTagPanel.setOnClickListener( (v) -> {
                 if (mTagViewClickListener != null) {
                     mTagViewClickListener.onClick(TagView.this);
                 }
             });
         } else {
-            mTagTitle.setOnClickListener(null);
+            mTagPanel.setOnClickListener(null);
         }
     }
 
@@ -94,5 +118,21 @@ public class TagView extends FrameLayout {
         if (mVsTagImage != null) {
             mVsTagImage.setVisibility(View.GONE);
         }
+    }
+
+    public void unhighlightTag() {
+        mTagPanel.setAlpha(0.5f);
+    }
+
+    public void highlightTag() {
+        mTagPanel.setAlpha(1.0f);
+    }
+
+    public  boolean isChecked() {
+        return mChecked;
+    }
+
+    public void setChecked(boolean checked) {
+        mChecked = checked;
     }
 }

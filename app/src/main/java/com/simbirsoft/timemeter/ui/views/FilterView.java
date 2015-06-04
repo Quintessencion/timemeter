@@ -584,6 +584,7 @@ public class FilterView extends FrameLayout implements
         // Need to manually re-filter tag list adapter
         // to exclude previously added tags from list
         mAdapter.getFilter().filter(mTagsView.getCurrentCompletionText());
+        mTagsView.dismissDropDown();
     }
 
     @Override
@@ -596,6 +597,7 @@ public class FilterView extends FrameLayout implements
         }
 
         postFilterUpdate();
+        mTagsView.dismissDropDown();
     }
 
     public void setFilterState(FilterState state) {
