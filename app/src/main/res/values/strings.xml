@@ -54,6 +54,7 @@
     <string name="action_view_activities">Показать активности</string>
     <string name="action_show_task_activities">Показать в виде графика</string>
     <string name="action_task_added">Задача %1$s добавлена</string>
+    <string name="action_proceed">Продолжить</string>
 
     <!-- Hints -->
     <string name="hint_new_task">Начать новую задачу</string>
@@ -101,6 +102,8 @@
     <string name="dialog_edit_tag_color_title">Выберите цвет</string>
     <string name="dialog_cancel_tag_changes_warning_title">Метка не сохранена</string>
     <string name="dialog_cancel_tag_changes_warning_message">Завершить редактирование без сохранения?</string>
+    <string name="dialog_delete_test_data_title">Предупреждение</string>
+    <string name="dialog_delete_test_data">Все демонстрационный задачи будут удалены. Продолжить?</string>
 
     <!-- Chart legend -->
     <string name="chart_legend_totally">Всего: %s</string>

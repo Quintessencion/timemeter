@@ -38,6 +38,8 @@ import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.base.AppAlertDialogFragment;
+import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
 import com.simbirsoft.timemeter.ui.helpcards.HelpCardAdapter;
 import com.simbirsoft.timemeter.ui.helpcards.HelpCardAnimator;
 import com.simbirsoft.timemeter.ui.helpcards.HelpCard;
@@ -57,6 +59,7 @@ import com.squareup.otto.Subscribe;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
+import org.androidannotations.annotations.OnActivityResult;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
@@ -73,6 +76,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     private static final String TASK_LIST_LOADER_TAG = "TaskListFragment_";
     private static final int COLUMN_COUNT_DEFAULT = 2;
     private static final int LOAD_TASK_JOB_ID = 2970017;
+    private static final int REQUEST_CODE_DELETE_TEST_DATA = 10001;
 
     private int mColumnCount;
 
@@ -467,10 +471,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     @Override
     protected void onHelpCardActionClicked(HelpCard sender, int helpCardID) {
         if (helpCardID == HelpCardController.HELP_CARD_DEMO_DATAS) {
-            mDatabaseHelper.removeTestData();
-            reloadContent();
-            // force update for other tabs
-            getBus().post(new ScheduledTaskUpdateTabContentEvent());
+            showDeleteTestDataDialog();
         }
     }
 
@@ -490,6 +491,30 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     protected void presentHelpCardIfAny() {
         super.presentHelpCardIfAny();
         updateEmptyListIndicator();
+    }
+
+    private void showDeleteTestDataDialog() {
+        Bundle args = AppAlertDialogFragment.prepareArgs(getActivity(),
+                R.string.dialog_delete_test_data_title,
+                R.string.dialog_delete_test_data,
+                R.string.action_proceed,
+                R.string.action_cancel);
+        Intent launchIntent = DialogContainerActivity.prepareDialogLaunchIntent(
+                getActivity(),
+                AppAlertDialogFragment.class.getName(),
+                args);
+        getActivity().startActivityForResult(launchIntent,
+                REQUEST_CODE_DELETE_TEST_DATA);
+    }
+
+    @OnActivityResult(REQUEST_CODE_DELETE_TEST_DATA)
+    public void onDeleteTestDataDialogResult(int resultCode, Intent data) {
+        if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
+            mDatabaseHelper.removeTestData();
+            reloadContent();
+            // force update for other tabs
+            getBus().post(new ScheduledTaskUpdateTabContentEvent());
+        }
     }
 }
 
