@@ -45,6 +45,8 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
     public static final int CREATE_NEW_SPAN_ID = -1;
     private static final String TAG_DATE_PICKER_FRAGMENT = "edit_activity_date_picker_fragment_tag";
     private static final String TAG_TIME_PICKER_FRAGMENT = "edit_activity_time_picker_fragment_tag";
+    public static final String STATE_START_TIME = "state_start_time";
+    public static final String STATE_END_TIME = "state_end_time";
 
     private MaterialDialog mDialog;
     private Long mExtraSpanId;
@@ -64,27 +66,36 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Injection.sUiComponent.injectEditTaskActivityDialogFragment(this);
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
         mExtraTitle = getArguments().getString(EXTRA_TITLE);
-        if (mExtraSpanId != null) {
-            mExtraSpanId = getArguments().getLong(EXTRA_SPAN_ID);
+        mExtraSpanId = getArguments().getLong(EXTRA_SPAN_ID);
+
+        if (mExtraSpanId != CREATE_NEW_SPAN_ID) {
             mLoadSpanJob.setTaskTimeSpanId(mExtraSpanId);
             requestLoad(LOAD_SPAN_JOB, this);
-        } else if (savedInstanceState != null) {
-            mStartDateTimeMillis = savedInstanceState.getLong("asd001");
-            mEndDateTimeMillis = savedInstanceState.getLong("asd002");
         } else {
-            setDefaultSpan();
+            if (savedInstanceState != null) {
+                mStartDateTimeMillis = savedInstanceState.getLong(STATE_START_TIME);
+                mEndDateTimeMillis = savedInstanceState.getLong(STATE_END_TIME);
+            } else {
+                setDefaultSpan();
+            }
+
+            mStartDateTimeView.setDateTimeInMillis(mStartDateTimeMillis);
+            mEndDateTimeView.setDateTimeInMillis(mEndDateTimeMillis);
         }
     }
 
     private void setDefaultSpan() {
         Calendar c = Calendar.getInstance();
         mEndDateTimeMillis = c.getTimeInMillis();
-        //mEndDateTimeView.setDateTimeInMillis(time);
         c.add(Calendar.HOUR, -1);
         mStartDateTimeMillis = c.getTimeInMillis();
-        //mStartDateTimeView.setDateTimeInMillis(time2);
     }
 
     @Override
@@ -134,9 +145,6 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
 
         mStartDateTimeView = (DateTimeView)root.findViewById(R.id.startDateTime);
         mEndDateTimeView = (DateTimeView)root.findViewById(R.id.endDateTime);
-
-        mStartDateTimeView.setDateTimeInMillis(mStartDateTimeMillis);
-        mEndDateTimeView.setDateTimeInMillis(mEndDateTimeMillis);
 
         mStartDateTimeView.setDateTimeViewListener(this);
         mEndDateTimeView.setDateTimeViewListener(this);
@@ -248,7 +256,7 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putLong("asd001", mStartDateTimeView.getDateTimeInMillis());
-        outState.putLong("asd002", mEndDateTimeView.getDateTimeInMillis());
+        outState.putLong(STATE_START_TIME, mStartDateTimeView.getDateTimeInMillis());
+        outState.putLong(STATE_END_TIME, mEndDateTimeView.getDateTimeInMillis());
     }
 }
