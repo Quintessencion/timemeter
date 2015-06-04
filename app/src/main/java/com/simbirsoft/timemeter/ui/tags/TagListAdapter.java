@@ -17,6 +17,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
+import com.simbirsoft.timemeter.ui.base.BaseAnimateViewHolder;
 import com.simbirsoft.timemeter.ui.views.TagView_;
 
 import java.util.Collection;
@@ -70,7 +71,7 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
         }
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends BaseAnimateViewHolder {
 
         public ViewHolder(View itemView) {
             super(itemView);

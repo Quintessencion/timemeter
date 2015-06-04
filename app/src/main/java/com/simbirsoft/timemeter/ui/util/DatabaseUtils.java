@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.google.common.io.Closeables;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
+import com.simbirsoft.timemeter.db.model.DemoTask;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTag;
@@ -44,9 +45,10 @@ public final class DatabaseUtils {
             for (XmlTask xmlTask : taskList.getTaskList()) {
                 Task task = xmlTask.getTask();
                 cupboard.put(task);
+                cupboard.put(new DemoTask(task));
                 xmlTask.setId(task.getId());
                 List<TaskTimeSpan> spans = xmlTask.getTaskActivity();
-                cupboard.put(DatabaseUtils.actualizeTaskActivities(spans));
+                cupboard.put(spans);
 
                 for (XmlTagRef tagRef : xmlTask.getTagList()) {
                     TaskTag taskTag = new TaskTag();

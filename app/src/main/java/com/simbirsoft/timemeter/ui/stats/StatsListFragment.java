@@ -16,13 +16,16 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.controller.HelpCardController;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadStatisticsViewBinders;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardAdapter;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardPresenter;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
@@ -30,6 +33,8 @@ import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
 import java.util.List;
+
+import jp.wasabeef.recyclerview.animators.ScaleInAnimator;
 
 @EFragment(R.layout.fragment_stats_list)
 public class StatsListFragment extends MainPageFragment implements
@@ -46,6 +51,7 @@ public class StatsListFragment extends MainPageFragment implements
     TextView mEmptyStatusMessageView;
 
     private StatsListAdapter mStatsListAdapter;
+    private HelpCardAdapter mHelpCardAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -55,6 +61,9 @@ public class StatsListFragment extends MainPageFragment implements
 
         mStatsListAdapter = new StatsListAdapter();
         mStatsListAdapter.setChartClickListener(this);
+        mHelpCardAdapter = new HelpCardAdapter(mStatsListAdapter);
+        mHelpCardAdapter.setHelpCardSource(this);
+
     }
 
     @AfterViews
@@ -62,13 +71,17 @@ public class StatsListFragment extends MainPageFragment implements
         mEmptyStatusMessageView.setVisibility(View.GONE);
         mRecyclerView.setHasFixedSize(false);
 
-        RecyclerView.LayoutManager statsLayoutManager = new StaggeredGridLayoutManager(
+        StaggeredGridLayoutManager statsLayoutManager = new StaggeredGridLayoutManager(
                 1,
                 StaggeredGridLayoutManager.VERTICAL);
+        mHelpCardAdapter.setLayoutManager(statsLayoutManager);
+
         mRecyclerView.setLayoutManager(statsLayoutManager);
-        mRecyclerView.setAdapter(mStatsListAdapter);
+        mRecyclerView.setAdapter(mHelpCardAdapter);
+        mRecyclerView.setItemAnimator(new ScaleInAnimator());
 
         requestLoad(STATISTICS_BINDER_LOADER_TAG, this);
+
         getBus().register(this);
     }
 
@@ -143,5 +156,16 @@ public class StatsListFragment extends MainPageFragment implements
         if (!isSelected()) {
             invalidateContent();
         }
+    }
+            
+    protected int getHelpCardToPresent(HelpCardController controller) {
+        if (!controller.isPresented(HelpCardController.HELP_CARD_STATS_LIST)) {
+            return HelpCardController.HELP_CARD_STATS_LIST;
+        }
+        return super.getHelpCardToPresent(controller);
+    }
+
+    protected HelpCardPresenter getHelpCardPresenter() {
+        return mHelpCardAdapter;
     }
 }

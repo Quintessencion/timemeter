@@ -2,11 +2,15 @@ package com.simbirsoft.timemeter.db;
 
 import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Iterables;
 import com.google.common.io.Closeables;
+import com.simbirsoft.timemeter.db.model.DemoTask;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTag;
@@ -18,6 +22,7 @@ import com.simbirsoft.timemeter.persist.XmlTask;
 import com.simbirsoft.timemeter.persist.XmlTaskList;
 import com.simbirsoft.timemeter.persist.XmlTaskListReader;
 import com.simbirsoft.timemeter.ui.util.DatabaseUtils;
+import com.squareup.phrase.Phrase;
 
 import org.slf4j.Logger;
 
@@ -27,6 +32,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.FileChannel;
+
+import java.util.Collection;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -53,6 +60,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cupboard.register(Tag.class);
         cupboard.register(TaskTag.class);
         cupboard.register(TaskTimeSpan.class);
+        cupboard.register(DemoTask.class);
     }
 
     @Inject
@@ -76,6 +84,52 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         DatabaseCompartment cupboard = cupboard().withDatabase(getWritableDatabase());
         DatabaseUtils.fillTestData(context, cupboard);
+    }
+
+    public void removeTestData() {
+        SQLiteDatabase db = getWritableDatabase();
+        DatabaseCompartment cupboard = cupboard().withDatabase(db);
+
+        db.beginTransaction();
+        try {
+            List<DemoTask> demos = cupboard.query(DemoTask.class).query().list();
+            String deleteTestSpansStatement = getRemoveTestTimeSpansStatement(demos);
+            for (DemoTask task : demos) {
+                cupboard.delete(Task.class, task.getId());
+            }
+
+            db.delete(DemoTask.TABLE_NAME, null, null);
+            cupboard.delete(TaskTimeSpan.class, deleteTestSpansStatement);
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    private String getRemoveTestTimeSpansStatement(Collection<DemoTask> tasks) {
+        final String taskIds = Joiner.on(",").join(Iterables.transform(tasks, DemoTask::getId));
+
+        return Phrase.from("{table_tts}.{tts_task_id} IN ({task_ids})")
+                .put("table_tts", TaskTimeSpan.TABLE_NAME)
+                .put("tts_task_id", TaskTimeSpan.COLUMN_TASK_ID)
+                .put("task_ids", taskIds)
+                .format().toString();
+    }
+
+    public boolean isDemoDatasExist() {
+        SQLiteDatabase db = getWritableDatabase();
+        DatabaseCompartment cupboard = cupboard().withDatabase(db);
+
+        boolean result = false;
+        Cursor c = cupboard.query(DemoTask.class).getCursor();
+        try {
+            c.moveToFirst();
+            result = c.getCount() > 0;
+        } finally {
+            c.close();
+        }
+
+        return result;
     }
 
     public static void backupDatabase(Context context) {

@@ -4,16 +4,20 @@
                 android:layout_height="match_parent"
                 android:background="@color/background_material_light">
 
+    <include layout="@layout/view_help_card_block"/>
+
     <com.simbirsoft.timemeter.ui.views.CalendarNavigationView_
         android:id="@+id/calendarNavigationView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"/>
+        android:layout_below="@+id/helpCardContainer"/>
+
     <ScrollView
         android:id="@+id/calendarScrollView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/calendarNavigationView">
+
         <com.simbirsoft.timemeter.ui.views.CalendarViewPager
             android:id="@+id/calendarViewPager"
             android:layout_width="match_parent"

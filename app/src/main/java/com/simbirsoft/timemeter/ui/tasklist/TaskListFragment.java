@@ -28,13 +28,21 @@ import com.nispok.snackbar.SnackbarManager;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
+import com.simbirsoft.timemeter.controller.HelpCardController;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
+import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Task;
+import com.simbirsoft.timemeter.events.ScheduledTaskUpdateTabContentEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
 import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.base.AppAlertDialogFragment;
+import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardAdapter;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardAnimator;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCard;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.ContentFragmentCallbacks;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
@@ -45,6 +53,7 @@ import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
 import com.simbirsoft.timemeter.ui.util.TaskFilterPredicate;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardPresenter;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.simbirsoft.timemeter.ui.views.TagView;
 import com.squareup.otto.Subscribe;
@@ -52,10 +61,13 @@ import com.squareup.otto.Subscribe;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
+import org.androidannotations.annotations.OnActivityResult;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
 import java.util.List;
+
+import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_task_list)
 public class TaskListFragment extends MainPageFragment implements JobLoader.JobLoaderCallbacks,
@@ -68,6 +80,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     private static final String TASK_LIST_LOADER_TAG = "TaskListFragment_";
     private static final int COLUMN_COUNT_DEFAULT = 2;
     private static final int LOAD_TASK_JOB_ID = 2970017;
+    private static final int REQUEST_CODE_DELETE_TEST_DATA = 10001;
 
     private int mColumnCount;
 
@@ -83,9 +96,14 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     @InstanceState
     int[] mTaskListPosition;
 
+    @Inject
+    DatabaseHelper mDatabaseHelper;
+
+    boolean mDataIsLoaded;
 
     private FloatingActionButton mFloatingActionButton;
     private TaskListAdapter mTasksViewAdapter;
+    private HelpCardAdapter mHelpCardAdapter;
     private ITaskActivityManager mTaskActivityManager;
     private ContentFragmentCallbacks mCallbacks;
 
@@ -147,7 +165,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
             mColumnCount = 1;
         }
 
-        RecyclerView.LayoutManager tasksViewLayoutManager = new StaggeredGridLayoutManager(
+        StaggeredGridLayoutManager tasksViewLayoutManager = new StaggeredGridLayoutManager(
                 mColumnCount,
                 StaggeredGridLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(tasksViewLayoutManager);
@@ -155,7 +173,12 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         mTasksViewAdapter = new TaskListAdapter(mTaskActivityManager);
         mTasksViewAdapter.setTaskClickListener(this);
         mTasksViewAdapter.setTagViewClickListener(mTagViewClickListener);
-        mRecyclerView.setAdapter(mTasksViewAdapter);
+
+        mHelpCardAdapter = new HelpCardAdapter(mTasksViewAdapter);
+        mHelpCardAdapter.setHelpCardSource(this);
+        mHelpCardAdapter.setLayoutManager(tasksViewLayoutManager);
+        mRecyclerView.setAdapter(mHelpCardAdapter);
+        mRecyclerView.setItemAnimator(new HelpCardAnimator());
 
         requestLoad(TASK_LIST_LOADER_TAG, this);
         applyFilterState();
@@ -275,7 +298,15 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
             mTaskListPosition = null;
         }
 
-        if (filterIsEmpty() && mTasksViewAdapter.getItemCount() == 0) {
+        updateEmptyListIndicator();
+
+        mDataIsLoaded = true;
+
+        presentHelpCardIfAny();
+    }
+
+    private void updateEmptyListIndicator() {
+        if (filterIsEmpty() && mHelpCardAdapter.getItemCount() == 0) {
             mEmptyListIndicator.setVisibility(View.VISIBLE);
         } else {
             mEmptyListIndicator.setVisibility(View.GONE);
@@ -406,6 +437,8 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         TaskBundle bundle = getTaskBundle(data);
         addTaskToList(bundle);
         showTaskAddedBar(bundle);
+
+        presentHelpCardIfAny();
     }
 
     @Override
@@ -425,11 +458,87 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         showTaskRemoveUndoBar(bundle);
 
         invalidateContent();
+
+        presentHelpCardIfAny();
     }
 
     @Override
     protected Logger createLogger() {
         return LogFactory.getLogger(TaskListFragment.class);
+    }
+            
+    protected int getHelpCardToPresent(HelpCardController controller) {
+        if (!controller.isPresented(HelpCardController.HELP_CARD_TASK_LIST)) {
+            return HelpCardController.HELP_CARD_TASK_LIST;
+        }
+
+        if (mDataIsLoaded && mTasksViewAdapter.getItemCount() == 0 && !controller.isPresented(HelpCardController.HELP_CARD_ADD_NEW_TASK)) {
+            return HelpCardController.HELP_CARD_ADD_NEW_TASK;
+        }
+
+        boolean basicCardsPresented = controller.isPresented(
+                HelpCardController.HELP_CARD_TASK_LIST,
+                HelpCardController.HELP_CARD_STATS_LIST,
+                HelpCardController.HELP_CARD_CALENDAR);
+
+        boolean demosExist = mDatabaseHelper.isDemoDatasExist();
+
+        boolean demoDatasPresented = controller.isPresented(HelpCardController.HELP_CARD_DEMO_DATAS);
+
+        if (basicCardsPresented && demosExist && !demoDatasPresented) {
+            return HelpCardController.HELP_CARD_DEMO_DATAS;
+        }
+
+        return super.getHelpCardToPresent(controller);
+    }
+
+    @Override
+    protected void onHelpCardActionClicked(HelpCard sender, int helpCardID) {
+        if (helpCardID == HelpCardController.HELP_CARD_DEMO_DATAS) {
+            showDeleteTestDataDialog();
+        }
+    }
+
+    @Override
+    protected void onHelpCardClicked(HelpCard sender, int helpCardID) {
+        if (helpCardID == HelpCardController.HELP_CARD_ADD_NEW_TASK) {
+            onFloatingButtonClicked(null);
+        }
+    }
+
+    @Override
+    protected HelpCardPresenter getHelpCardPresenter() {
+        return mHelpCardAdapter;
+    }
+
+    @Override
+    protected void presentHelpCardIfAny() {
+        super.presentHelpCardIfAny();
+        updateEmptyListIndicator();
+    }
+
+    private void showDeleteTestDataDialog() {
+        Bundle args = AppAlertDialogFragment.prepareArgs(getActivity(),
+                R.string.dialog_delete_test_data_title,
+                R.string.dialog_delete_test_data,
+                R.string.action_proceed,
+                R.string.action_cancel);
+        Intent launchIntent = DialogContainerActivity.prepareDialogLaunchIntent(
+                getActivity(),
+                AppAlertDialogFragment.class.getName(),
+                args);
+        getActivity().startActivityForResult(launchIntent,
+                REQUEST_CODE_DELETE_TEST_DATA);
+    }
+
+    @OnActivityResult(REQUEST_CODE_DELETE_TEST_DATA)
+    public void onDeleteTestDataDialogResult(int resultCode, Intent data) {
+        if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
+            mDatabaseHelper.removeTestData();
+            reloadContent();
+            // force update for other tabs
+            getBus().post(new ScheduledTaskUpdateTabContentEvent());
+        }
     }
 }
 
