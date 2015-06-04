@@ -48,7 +48,6 @@ public class NavigationDrawerFragment extends Fragment {
     Preferences mPreferences;
 
     private int mCurrentSelectedPosition = 0;
-    private boolean mUserLearnedDrawer;
 
 
     public NavigationDrawerFragment() {
@@ -59,10 +58,6 @@ public class NavigationDrawerFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         Injection.sUiComponent.injectNavigationDrawerFragment(this);
-
-        // Read in the flag indicating whether or not the user has demonstrated awareness of the
-        // drawer. See PREF_USER_LEARNED_DRAWER for details.
-        mUserLearnedDrawer = mPreferences.getUserLearnedNavDrawer();
 
         loadCurrentSelectedPosition();
     }
@@ -148,7 +143,6 @@ public class NavigationDrawerFragment extends Fragment {
                 }
 
                 if (!mPreferences.getUserLearnedDrawer()) {
-                    mUserLearnedDrawer = true;
                     mPreferences.setUserLearnedDrawer(true);
                     mBus.post(new ReadyToShowHelpCardEvent());
                 }
