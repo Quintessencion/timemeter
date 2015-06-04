@@ -138,7 +138,9 @@ public class ViewTaskFragment extends BaseFragment
         tagFlowView.bindTagViews(mExtraTaskBundle.getTags());
         tagFlowView.setTagViewsClickListener(mTagViewClickListener);
         View hintView = tagFlowView.getHintView();
-        if (hintView != null) hintView.setOnClickListener((v) -> { LOG.debug("Нажали на подсказку"); });
+        if (hintView != null) hintView.setOnClickListener((v) -> {
+            goToEditTaskTagsScene();
+        });
 
         mRecyclerView.setHasFixedSize(false);
         final TaskActivitiesLayoutManager layoutManager = new TaskActivitiesLayoutManager(getActivity());
@@ -169,6 +171,18 @@ public class ViewTaskFragment extends BaseFragment
         Bundle args = new Bundle();
         args.putString(EditTaskFragment.EXTRA_TITLE, getString(R.string.title_edit_task));
         args.putLong(EditTaskFragment.EXTRA_TASK_ID, mExtraTaskBundle.getTask().getId());
+        args.putBoolean(EditTaskFragment.EXTRA_GO_TO_EDIT_TAGS_SCENE, false);
+
+        Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
+                getActivity(), EditTaskFragment_.class.getName(), args);
+        getActivity().startActivityForResult(launchIntent, MainPageFragment.REQUEST_CODE_PROCESS_TASK);
+    }
+
+    private void goToEditTaskTagsScene() {
+        Bundle args = new Bundle();
+        args.putString(EditTaskFragment.EXTRA_TITLE, getString(R.string.title_edit_task));
+        args.putLong(EditTaskFragment.EXTRA_TASK_ID, mExtraTaskBundle.getTask().getId());
+        args.putBoolean(EditTaskFragment.EXTRA_GO_TO_EDIT_TAGS_SCENE, true);
 
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), EditTaskFragment_.class.getName(), args);
