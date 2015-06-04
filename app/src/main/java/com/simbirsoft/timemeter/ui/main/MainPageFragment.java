@@ -87,7 +87,6 @@ public class MainPageFragment extends BaseFragment implements HelpCardSource {
     @Inject
     Preferences mPrefs;
 
-    private FilterViewProvider mFilterViewProvider;
     private FilterViewResultsProvider mFilterViewResultsProvider;
     private int mCurrentHelpCardId = HelpCardController.HELP_CARD_NONE;
 
@@ -477,6 +476,6 @@ public class MainPageFragment extends BaseFragment implements HelpCardSource {
     }
 
     public FilterViewProvider getFilterViewProvider() {
-        return mFilterViewProvider;
+        return mFilterViewResultsProvider;
     }
 }

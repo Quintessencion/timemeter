@@ -23,12 +23,12 @@ import java.util.List;
 public class FilterResultsView extends RelativeLayout {
     public static class SearchResultsViewState {
 
-        public int taskCount;
-        public List<Tag> tags;
+        public int mTaskCount;
+        public List<Tag> mTags;
 
         public SearchResultsViewState(int taskCount, List<Tag> tags) {
-            this.taskCount = taskCount;
-            this.tags = tags;
+            mTaskCount = taskCount;
+            mTags = tags;
         }
 
         private SearchResultsViewState() {
@@ -37,8 +37,9 @@ public class FilterResultsView extends RelativeLayout {
         public SearchResultsViewState copy() {
             SearchResultsViewState searchResultsViewState = new SearchResultsViewState();
 
-            searchResultsViewState.taskCount = taskCount;
-            searchResultsViewState.tags = Lists.newArrayList(tags == null ? Collections.emptyList() : tags);
+            searchResultsViewState.mTaskCount = mTaskCount;
+            searchResultsViewState.mTags = Lists.newArrayList(
+                    mTags == null ? Collections.emptyList() : mTags);
 
             return searchResultsViewState;
         }
@@ -84,12 +85,12 @@ public class FilterResultsView extends RelativeLayout {
 
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(String.format(mContext.getResources().
-                getQuantityString(R.plurals.task_count, mSearchResultsViewState.taskCount), mSearchResultsViewState.taskCount));
+                getQuantityString(R.plurals.task_count, mSearchResultsViewState.mTaskCount), mSearchResultsViewState.mTaskCount));
 
-        if (mSearchResultsViewState.tags != null && !mSearchResultsViewState.tags.isEmpty()) {
-            final String tags = Joiner.on(", ").join(Iterables.transform(mSearchResultsViewState.tags, Tag::getName));
+        if (mSearchResultsViewState.mTags != null && !mSearchResultsViewState.mTags.isEmpty()) {
+            final String tags = Joiner.on(", ").join(Iterables.transform(mSearchResultsViewState.mTags, Tag::getName));
             stringBuilder.append(String.format(mContext.getResources().
-                    getQuantityString(R.plurals.tags_count, mSearchResultsViewState.tags.size()), tags));
+                    getQuantityString(R.plurals.tags_count, mSearchResultsViewState.mTags.size()), tags));
         }
 
         mSearchResultsTextView.setText(stringBuilder.toString());
