@@ -79,6 +79,9 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     @InstanceState
     ArrayList<Bundle> mSectionFragmentStates;
 
+    @InstanceState
+    boolean mIsTaskViewPending;
+
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
@@ -107,7 +110,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
 
-        setCurrentSection(SECTION_ID_TASKS, true);
+        mIsTaskViewPending = true;
         mNavigationDrawerFragment.setCurrentSelectedPosition(SECTION_ID_TASKS);
     }
 
@@ -121,7 +124,9 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         }
     }
 
-    private void setCurrentSection(int sectionId, boolean switchToTaskList) {
+    private void setCurrentSection(int sectionId) {
+        final boolean isViewTaskPending = mIsTaskViewPending;
+        mIsTaskViewPending = false;
         Class<?> fragmentType;
 
         switch (sectionId) {
@@ -142,7 +147,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         MainFragment fragment = getContentFragment();
         if (fragment != null && fragmentType.equals(fragment.getClass())) {
             // selected fragment is already added
-            if (switchToTaskList && MainPagerFragment_.class.equals(fragment.getClass())) {
+            if (isViewTaskPending && MainPagerFragment_.class.equals(fragment.getClass())) {
                 ((MainPagerFragment)fragment).switchToSelectedPage(SELECTED_PAGE_ID);
             }
             return;
@@ -154,7 +159,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
 
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putInt(MainFragment.ARG_SECTION_ID, sectionId);
-        fragmentArgs.putBoolean(MainPagerFragment.ARG_NEED_SWITCH_TO_SELECTED_PAGE, switchToTaskList);
+        fragmentArgs.putBoolean(MainPagerFragment.ARG_NEED_SWITCH_TO_SELECTED_PAGE, isViewTaskPending);
         fragmentArgs.putInt(MainPagerFragment.ARG_PAGE_ID_FOR_SWITCHING, SELECTED_PAGE_ID);
         fragment = (MainFragment) Fragment.instantiate(this, fragmentType.getName(), fragmentArgs);
 
@@ -171,7 +176,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
 
     @Override
     public void onNavigationDrawerItemSelected(int sectionId) {
-        setCurrentSection(sectionId, false);
+        setCurrentSection(sectionId);
     }
 
     private MainFragment getContentFragment() {
