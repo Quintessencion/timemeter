@@ -10,6 +10,7 @@
         <item name="android:textColorPrimaryInverse">@color/darkGrey</item>
         <item name="android:textColorSecondaryInverse">@color/darkGrey</item>
         <item name="android:spinnerItemStyle">@style/SpinnerStyle</item>
+        <item name="android:actionModeCloseDrawable">@drawable/ic_keyboard_backspace_grey600_24dp</item>
         <item name="pstsDividerColor">@color/primary</item>
         <item name="pstsIndicatorColor">@color/accentPrimary</item>
         <item name="pstsUnderlineColor">@color/accentPrimary</item>
