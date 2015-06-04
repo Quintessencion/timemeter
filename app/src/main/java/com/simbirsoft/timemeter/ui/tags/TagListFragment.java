@@ -483,8 +483,12 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
         helpCard.setDataSource(mHelpCardController.getCard(HelpCardController.HELP_CARD_TAGS));
         helpCard.setOnNextClickListener(v -> {
             if (helpCard.isLastItemPresented()) {
-                mHelpCardController.markPresented(HelpCardController.HELP_CARD_TAGS);
-                mHelpCardAdapter.hide();
+                // workaround for android 4.2.2 (something related to animation)
+                boolean presented = mHelpCardController.isPresented(HelpCardController.HELP_CARD_TAGS);
+                if (!presented) {
+                    mHelpCardController.markPresented(HelpCardController.HELP_CARD_TAGS);
+                    mHelpCardAdapter.hide();
+                }
             }
         });
     }
