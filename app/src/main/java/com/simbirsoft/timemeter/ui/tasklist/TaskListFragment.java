@@ -293,6 +293,8 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     public void onTaskListLoaded(LoadJobResult<List<TaskBundle>> event) {
         mTasksViewAdapter.setItems(event.getData());
 
+        updateFilterResultsView(mTasksViewAdapter.getItemCount(), getFilterViewState());
+
         if (mTaskListPosition != null) {
             mRecyclerView.getLayoutManager().scrollToPosition(mTaskListPosition[0]);
             mTaskListPosition = null;

@@ -8,9 +8,14 @@ import android.widget.Filter;
 
 import com.google.common.base.Strings;
 import com.simbirsoft.timemeter.db.model.Tag;
+import com.simbirsoft.timemeter.log.LogFactory;
 import com.tokenautocomplete.TokenCompleteTextView;
 
+import org.slf4j.Logger;
+
 public class TagFilterTextView extends TokenCompleteTextView {
+
+    private static final Logger LOG = LogFactory.getLogger(TagFilterTextView.class);
 
     public interface VisibilityStateCallback {
         boolean isTagViewVisible();
@@ -62,12 +67,13 @@ public class TagFilterTextView extends TokenCompleteTextView {
             return false;
         }
 
-        // always return true to trigger suggestions immediately
-        return true;
+        //trigger suggestions in all cases except null adapter
+        return (getAdapter() != null);
     }
 
     @Override
     protected void performFiltering(@NonNull CharSequence text, int start, int end, int keyCode) {
+        LOG.error("perform filtering");
         String input = text.subSequence(start, end).toString();
         if (Strings.isNullOrEmpty(input)) {
             input = COMPLETION_TEXT_ALLOW_ANY;

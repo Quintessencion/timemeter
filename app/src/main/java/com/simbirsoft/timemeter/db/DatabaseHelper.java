@@ -1,6 +1,5 @@
 package com.simbirsoft.timemeter.db;
 
-import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -9,18 +8,12 @@ import android.os.Environment;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
-import com.google.common.io.Closeables;
 import com.simbirsoft.timemeter.db.model.DemoTask;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTag;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.log.LogFactory;
-import com.simbirsoft.timemeter.persist.XmlTag;
-import com.simbirsoft.timemeter.persist.XmlTagRef;
-import com.simbirsoft.timemeter.persist.XmlTask;
-import com.simbirsoft.timemeter.persist.XmlTaskList;
-import com.simbirsoft.timemeter.persist.XmlTaskListReader;
 import com.simbirsoft.timemeter.ui.util.DatabaseUtils;
 import com.squareup.phrase.Phrase;
 
@@ -29,10 +22,7 @@ import org.slf4j.Logger;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.channels.FileChannel;
-
 import java.util.Collection;
 import java.util.List;
 
@@ -44,13 +34,15 @@ import nl.qbusict.cupboard.CupboardBuilder;
 import nl.qbusict.cupboard.CupboardFactory;
 import nl.qbusict.cupboard.DatabaseCompartment;
 
+import static nl.qbusict.cupboard.CupboardFactory.cupboard;
+
 @Singleton
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final Logger LOG = LogFactory.getLogger(DatabaseHelper.class);
 
     private static final String DATABASE_NAME = "timemeter.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     static {
         Cupboard cupboard = new CupboardBuilder().useAnnotations().build();

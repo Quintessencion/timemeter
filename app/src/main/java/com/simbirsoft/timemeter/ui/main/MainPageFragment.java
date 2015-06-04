@@ -28,21 +28,19 @@ import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.SaveTaskBundleJob;
 import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
-import com.simbirsoft.timemeter.ui.model.TaskBundle;
-import com.simbirsoft.timemeter.ui.model.TaskChangedEvent;
-import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
-import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.simbirsoft.timemeter.ui.helpcards.HelpCard;
 import com.simbirsoft.timemeter.ui.helpcards.HelpCardDataSource;
 import com.simbirsoft.timemeter.ui.helpcards.HelpCardPresenter;
 import com.simbirsoft.timemeter.ui.helpcards.HelpCardSource;
+import com.simbirsoft.timemeter.ui.model.TaskBundle;
+import com.simbirsoft.timemeter.ui.model.TaskChangedEvent;
+import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
+import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
-
-import org.slf4j.Logger;
-
 import org.androidannotations.annotations.EFragment;
+import org.slf4j.Logger;
 
 import java.util.concurrent.ExecutionException;
 
@@ -89,9 +87,8 @@ public class MainPageFragment extends BaseFragment implements HelpCardSource {
     @Inject
     Preferences mPrefs;
 
-    FilterViewProvider mFilterViewProvider;
-
-    int mCurrentHelpCardId = HelpCardController.HELP_CARD_NONE;
+    private FilterViewResultsProvider mFilterViewResultsProvider;
+    private int mCurrentHelpCardId = HelpCardController.HELP_CARD_NONE;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -162,10 +159,10 @@ public class MainPageFragment extends BaseFragment implements HelpCardSource {
     }
 
     protected FilterView.FilterState getFilterViewState() {
-        if (mFilterViewProvider == null)
+        if (mFilterViewResultsProvider == null)
             return null;
 
-        FilterView filterView = mFilterViewProvider.getFilterView();
+        FilterView filterView = mFilterViewResultsProvider.getFilterView();
         if (filterView == null)
             return null;
 
@@ -425,8 +422,12 @@ public class MainPageFragment extends BaseFragment implements HelpCardSource {
         return null;
     }
 
-    public void setFilterViewProvider(FilterViewProvider provider) {
-        mFilterViewProvider = provider;
+    public void setFilterViewResultsProvider(FilterViewResultsProvider provider) {
+        mFilterViewResultsProvider = provider;
+    }
+
+    protected void updateFilterResultsView(int taskCount, FilterView.FilterState filterState) {
+        mFilterViewResultsProvider.updateFilterResultsView(taskCount, filterState);
     }
 
     protected void onHelpCardNextClicked(HelpCard sender, int cardID) {
@@ -475,6 +476,6 @@ public class MainPageFragment extends BaseFragment implements HelpCardSource {
     }
 
     public FilterViewProvider getFilterViewProvider() {
-        return mFilterViewProvider;
+        return mFilterViewResultsProvider;
     }
 }

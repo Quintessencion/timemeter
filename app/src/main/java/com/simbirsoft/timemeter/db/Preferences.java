@@ -6,8 +6,8 @@ import android.util.Base64;
 
 import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.App;
-import com.simbirsoft.timemeter.util.MarshallUtils;
 import com.simbirsoft.timemeter.ui.views.FilterView;
+import com.simbirsoft.timemeter.util.MarshallUtils;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

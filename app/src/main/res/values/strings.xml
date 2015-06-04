@@ -31,6 +31,7 @@
     <string name="content_empty">Нет данных</string>
     <string name="caption_progress">Загрузка&#8230;</string>
     <string name="label_color">Цвет</string>
+    <string name="search_by_name">Поиск по названию&#8230;</string>
 
     <!-- Actions -->
     <string name="action_search">Поиск</string>
@@ -132,6 +133,20 @@
         <item>@string/all_time</item>
         <item>@string/another</item>
     </string-array>
+
+    <plurals name="task_count">
+        <item quantity="one">Найдена %d задача</item>
+        <item quantity="few">Найдены %d задачи</item>
+        <item quantity="many">Найдено %d задач</item>
+        <item quantity="other">Найдено %d задач</item>
+    </plurals>
+
+    <plurals name="tags_count">
+        <item quantity="one">\u0020c меткой: %s</item>
+        <item quantity="few">\u0020c метками: %s</item>
+        <item quantity="many">\u0020c метками: %s</item>
+        <item quantity="other">\u0020c метками: %s</item>
+    </plurals>
 
     <string name="no_activity">нет активности</string>
     <string name="recent_activity">Последняя активность</string>
