@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
 
 import com.google.common.io.Closeables;
-import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTag;
@@ -18,6 +17,7 @@ import com.simbirsoft.timemeter.persist.XmlTagRef;
 import com.simbirsoft.timemeter.persist.XmlTask;
 import com.simbirsoft.timemeter.persist.XmlTaskList;
 import com.simbirsoft.timemeter.persist.XmlTaskListReader;
+import com.simbirsoft.timemeter.ui.util.DatabaseUtils;
 
 import org.slf4j.Logger;
 
@@ -27,7 +27,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.FileChannel;
-import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -76,42 +75,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         removeDatabase(context);
 
         DatabaseCompartment cupboard = cupboard().withDatabase(getWritableDatabase());
-
-        InputStream in = null;
-        try {
-            in = context.getAssets().open("testdata/tasklist-ru.xml");
-            XmlTaskList taskList = XmlTaskListReader.readXml(in);
-            LOG.trace("task list read successfully");
-
-            for (XmlTag xmlTag : taskList.getTagList()) {
-                Tag tag = xmlTag.getTag();
-                cupboard.put(tag);
-            }
-
-            for (XmlTask xmlTask : taskList.getTaskList()) {
-                Task task = xmlTask.getTask();
-                cupboard.put(task);
-                xmlTask.setId(task.getId());
-                List<TaskTimeSpan> spans = xmlTask.getTaskActivity();
-                cupboard.put(spans);
-
-                for (XmlTagRef tagRef : xmlTask.getTagList()) {
-                    TaskTag taskTag = new TaskTag();
-                    taskTag.setTaskId(task.getId());
-                    taskTag.setTagId(tagRef.getTagId());
-                    cupboard.put(taskTag);
-                }
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-
-        } finally {
-            Closeables.closeQuietly(in);
-        }
+        DatabaseUtils.fillTestData(context, cupboard);
     }
 
     public static void backupDatabase(Context context) {
