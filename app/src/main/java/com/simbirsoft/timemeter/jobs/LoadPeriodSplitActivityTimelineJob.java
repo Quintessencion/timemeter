@@ -73,8 +73,8 @@ public class LoadPeriodSplitActivityTimelineJob extends LoadJob implements Filte
         final int taskCount = tasks.size();
 
         if (filterDateMillis == 0) {
-            filterDateMillis = TimeUtils.getDayStartMillis(
-                    QueryHelper.findFirstActivityBeginDate(mDatabaseHelper.getReadableDatabase()));
+            long firstActivityBeginDate = QueryHelper.findFirstActivityBeginDate(mDatabaseHelper.getReadableDatabase());
+            filterDateMillis = (firstActivityBeginDate == 0) ? 0 : TimeUtils.getDayStartMillis(firstActivityBeginDate);
 
             if (filterDateMillis == 0) {
                 LOG.debug("unable to load split activity timeline: no activity found");

@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Iterables;
 import com.google.common.io.Closeables;
 import com.simbirsoft.timemeter.db.model.DemoTask;
 import com.simbirsoft.timemeter.db.model.Tag;
@@ -19,6 +21,7 @@ import com.simbirsoft.timemeter.persist.XmlTagRef;
 import com.simbirsoft.timemeter.persist.XmlTask;
 import com.simbirsoft.timemeter.persist.XmlTaskList;
 import com.simbirsoft.timemeter.persist.XmlTaskListReader;
+import com.squareup.phrase.Phrase;
 
 import org.slf4j.Logger;
 
@@ -28,6 +31,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.FileChannel;
+import java.util.Collection;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -123,16 +127,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         db.beginTransaction();
         try {
-            QueryResultIterable<DemoTask> demos = cupboard.query(DemoTask.class).query();
+            List<DemoTask> demos = cupboard.query(DemoTask.class).query().list();
+            String deleteTestSpansStatement = getRemoveTestTimeSpansStatement(demos);
             for (DemoTask task : demos) {
                 cupboard.delete(Task.class, task.getId());
             }
-            demos.close();
+
             db.delete(DemoTask.TABLE_NAME, null, null);
+            cupboard.delete(TaskTimeSpan.class, deleteTestSpansStatement);
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
         }
+    }
+
+    private String getRemoveTestTimeSpansStatement(Collection<DemoTask> tasks) {
+        final String taskIds = Joiner.on(",").join(Iterables.transform(tasks, DemoTask::getId));
+
+        return Phrase.from("{table_tts}.{tts_task_id} IN ({task_ids})")
+                .put("table_tts", TaskTimeSpan.TABLE_NAME)
+                .put("tts_task_id", TaskTimeSpan.COLUMN_TASK_ID)
+                .put("task_ids", taskIds)
+                .format().toString();
     }
 
     public boolean isDemoDatasExist() {
