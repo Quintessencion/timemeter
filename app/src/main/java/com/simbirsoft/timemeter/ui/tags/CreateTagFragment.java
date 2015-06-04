@@ -83,6 +83,7 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
             showPaletteView();
         }
         mActionBar.setHomeAsUpIndicator(R.drawable.ic_action_accept);
+        mActionBar.setDisplayHomeAsUpEnabled(true);
     }
 
     @Override
