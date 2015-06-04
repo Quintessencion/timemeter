@@ -25,7 +25,6 @@ public final class Preferences {
     private static final String KEY_FILTER_STATE = "filter_state";
     private static final String KEY_PRESENTED_HELP_CARDS = "presented_help_cards";
     private static final String KEY_USER_LEARNED_NAV_DRAWER = "user_learned_nav_drawer";
-    private static final String KEY_READY_TO_SHOW_HC = "ready_to_show_hc";
 
     private static final String PREFERENCE_DAY_START_HOUR = "day_start_hour";
     private static final String PREFERENCE_DAY_END_HOUR = "day_end_hour";
@@ -160,13 +159,5 @@ public final class Preferences {
 
     public void setUserLearnedNavDrawer(boolean value) {
         mPrefs.edit().putBoolean(KEY_USER_LEARNED_NAV_DRAWER, value).apply();
-    }
-
-    public boolean getReadyToShowHelpCards() {
-        return mPrefs.getBoolean(KEY_READY_TO_SHOW_HC, false);
-    }
-
-    public void setReadyToShowHelpCards(boolean value) {
-        mPrefs.edit().putBoolean(KEY_READY_TO_SHOW_HC, value).apply();
     }
 }

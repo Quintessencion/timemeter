@@ -1,7 +1,6 @@
 package com.simbirsoft.timemeter.ui.helpcards;
 
-import android.support.v4.view.ViewCompat;
-import android.support.v4.view.ViewPropertyAnimatorListener;
+import android.animation.Animator;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
@@ -14,14 +13,14 @@ public class HelpCardAnimator extends ScaleInAnimator {
     public boolean animateChange(RecyclerView.ViewHolder oldHolder, RecyclerView.ViewHolder newHolder, int fromX, int fromY, int toX, int toY) {
         if (notNull(oldHolder)) {
             View oldView = oldHolder.itemView;
-            ViewCompat.setScaleX(oldView, 1.0F);
-            ViewCompat.setScaleY(oldView, 1.0F);
+            oldView.setScaleX(1.0F);
+            oldView.setScaleY(1.0F);
         }
 
         if (notNull(newHolder)) {
             View newView = newHolder.itemView;
-            ViewCompat.setScaleX(newView, 0.0F);
-            ViewCompat.setScaleY(newView, 0.0F);
+            newView.setScaleX(0.0F);
+            newView.setScaleY(0.0F);
         }
 
         animateRemoveOldHolder(oldHolder, newHolder);
@@ -31,21 +30,26 @@ public class HelpCardAnimator extends ScaleInAnimator {
 
     private void animateRemoveOldHolder(RecyclerView.ViewHolder oldHolder, RecyclerView.ViewHolder newHolder) {
         if (notNull(oldHolder)) {
-            ViewCompat.animate(oldHolder.itemView).scaleX(0.0F).scaleY(0.0F).setDuration(this.getRemoveDuration()).setListener(new ViewPropertyAnimatorListener() {
+            oldHolder.itemView.animate().scaleX(0.0F).scaleY(0.0F).setDuration(this.getRemoveDuration()).setListener(new Animator.AnimatorListener() {
                 @Override
-                public void onAnimationStart(View view) {
+                public void onAnimationStart(Animator animation) {
                     dispatchRemoveStarting(oldHolder);
                 }
 
                 @Override
-                public void onAnimationEnd(View view) {
+                public void onAnimationEnd(Animator animation) {
                     dispatchRemoveFinished(oldHolder);
                     animateAddNewHolder(newHolder);
                 }
 
                 @Override
-                public void onAnimationCancel(View view) {
+                public void onAnimationCancel(Animator animation) {
                     Log.d("ANIMATE", "REMOVE CANCELLED!!!");
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
                 }
             }).start();
         } else {
@@ -55,14 +59,14 @@ public class HelpCardAnimator extends ScaleInAnimator {
 
     private void animateAddNewHolder(RecyclerView.ViewHolder newHolder) {
         if (notNull(newHolder)) {
-            ViewCompat.animate(newHolder.itemView).scaleX(1.0F).scaleY(1.0F).setDuration(this.getAddDuration()).setListener(new ViewPropertyAnimatorListener() {
+            newHolder.itemView.animate().scaleX(1.0F).scaleY(1.0F).setDuration(this.getAddDuration()).setListener(new Animator.AnimatorListener() {
                 @Override
-                public void onAnimationStart(View view) {
+                public void onAnimationStart(Animator animation) {
                     dispatchAddStarting(newHolder);
                 }
 
                 @Override
-                public void onAnimationEnd(View view) {
+                public void onAnimationEnd(Animator animation) {
                     dispatchAddFinished(newHolder);
                     if (!isRunning()) {
                         dispatchAnimationsFinished();
@@ -70,8 +74,13 @@ public class HelpCardAnimator extends ScaleInAnimator {
                 }
 
                 @Override
-                public void onAnimationCancel(View view) {
+                public void onAnimationCancel(Animator animation) {
                     Log.d("ANIMATE", "ADD CANCELLED!!!");
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
                 }
             }).start();
         }

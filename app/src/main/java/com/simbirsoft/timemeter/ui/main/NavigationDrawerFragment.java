@@ -148,14 +148,12 @@ public class NavigationDrawerFragment extends Fragment {
                 }
 
                 if (!mPreferences.getUserLearnedDrawer()) {
+                    mUserLearnedDrawer = true;
                     mPreferences.setUserLearnedDrawer(true);
+                    mBus.post(new ReadyToShowHelpCardEvent());
                 }
 
                 getActivity().supportInvalidateOptionsMenu(); // calls onPrepareOptionsMenu()
-                if (!mUserLearnedDrawer && !mPreferences.getReadyToShowHelpCards()) {
-                    mPreferences.setReadyToShowHelpCards(true);
-                    mBus.post(new ReadyToShowHelpCardEvent());
-                }
             }
 
             @Override
@@ -163,13 +161,6 @@ public class NavigationDrawerFragment extends Fragment {
                 super.onDrawerOpened(drawerView);
                 if (!isAdded()) {
                     return;
-                }
-
-                if (!mUserLearnedDrawer) {
-                    // The user manually opened the drawer; store this flag to prevent auto-showing
-                    // the navigation drawer automatically in the future.
-                    mUserLearnedDrawer = true;
-                    mPreferences.setUserLearnedNavDrawer(mUserLearnedDrawer);
                 }
 
                 getActivity().supportInvalidateOptionsMenu(); // calls onPrepareOptionsMenu()

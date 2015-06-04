@@ -212,7 +212,7 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
                 if (isAdded()) {
                     mHelpCardAdapter.show();
                 }
-            }, 1500);
+            }, 1200);
         }
     }
 

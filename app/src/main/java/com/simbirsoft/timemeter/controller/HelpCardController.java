@@ -70,14 +70,14 @@ public class HelpCardController {
     public void markPresented(int cardId) {
         List<Integer> presented = Lists.newArrayList(mPreferences.getPresentedHelpCards());
         presented.add(cardId);
-        mPreferences.setPresentedHelpCards(presented.toArray(new Integer[0]));
+        mPreferences.setPresentedHelpCards(presented.toArray(new Integer[presented.size()]));
         mBus.post(new HelpCardPresentedEvent(cardId, true));
     }
 
     public void markUnpresented(int cardId) {
         List<Integer> presented = Lists.newArrayList(mPreferences.getPresentedHelpCards());
         presented.remove(cardId);
-        mPreferences.setPresentedHelpCards(presented.toArray(new Integer[0]));
+        mPreferences.setPresentedHelpCards(presented.toArray(new Integer[presented.size()]));
         mBus.post(new HelpCardPresentedEvent(cardId, false));
     }
 

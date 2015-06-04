@@ -136,7 +136,7 @@ public class MainPageFragment extends BaseFragment implements HelpCardSource {
     }
 
     protected void presentHelpCardIfAny() {
-        if (getHelpCardPresenter() == null || !mPrefs.getReadyToShowHelpCards())
+        if (getHelpCardPresenter() == null || !mPrefs.getUserLearnedDrawer())
             return;
 
         int oldId = mCurrentHelpCardId;
