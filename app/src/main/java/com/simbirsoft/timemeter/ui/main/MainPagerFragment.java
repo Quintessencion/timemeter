@@ -459,4 +459,14 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         MainPageFragment currentFragment = (MainPageFragment)mPagerAdapter.getItem(position);
         currentFragment.onPageSelected();
     }
+
+    public boolean handleBackPress() {
+        if (isFilterPanelVisible()) {
+            hideFilterView(true);
+            updateOptionsMenu();
+            return true;
+        }
+        return false;
+    }
+
 }
