@@ -39,12 +39,8 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
-import com.simbirsoft.timemeter.ui.main.MainActivity;
 import com.simbirsoft.timemeter.ui.main.MainFragment;
 import com.simbirsoft.timemeter.ui.main.SectionFragmentContainer;
-import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
-import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
-import com.simbirsoft.timemeter.ui.tasklist.TaskListFragment;
 import com.simbirsoft.timemeter.ui.model.TagBundle;
 import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerDialog;
 import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerSwatch;
@@ -64,7 +60,7 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
         ColorPickerSwatch.OnColorSelectedListener {
 
 
-    private static final Logger LOG = LogFactory.getLogger(TaskListFragment.class);
+    private static final Logger LOG = LogFactory.getLogger(TagListFragment.class);
 
     private static final int REQUEST_CODE_EDIT_TAG_NAME = 10002;
     private static final int REQUEST_CODE_CREATE_TAG = 10003;
