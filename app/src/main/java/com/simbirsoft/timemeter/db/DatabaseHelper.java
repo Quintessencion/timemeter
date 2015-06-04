@@ -21,6 +21,7 @@ import com.simbirsoft.timemeter.persist.XmlTagRef;
 import com.simbirsoft.timemeter.persist.XmlTask;
 import com.simbirsoft.timemeter.persist.XmlTaskList;
 import com.simbirsoft.timemeter.persist.XmlTaskListReader;
+import com.simbirsoft.timemeter.ui.util.DatabaseUtils;
 import com.squareup.phrase.Phrase;
 
 import org.slf4j.Logger;
@@ -31,6 +32,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.FileChannel;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -41,7 +43,6 @@ import nl.qbusict.cupboard.Cupboard;
 import nl.qbusict.cupboard.CupboardBuilder;
 import nl.qbusict.cupboard.CupboardFactory;
 import nl.qbusict.cupboard.DatabaseCompartment;
-import nl.qbusict.cupboard.QueryResultIterable;
 
 @Singleton
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -82,43 +83,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         removeDatabase(context);
 
         DatabaseCompartment cupboard = cupboard().withDatabase(getWritableDatabase());
-
-        InputStream in = null;
-        try {
-            in = context.getAssets().open("testdata/tasklist-ru.xml");
-            XmlTaskList taskList = XmlTaskListReader.readXml(in);
-            LOG.trace("task list read successfully");
-
-            for (XmlTag xmlTag : taskList.getTagList()) {
-                Tag tag = xmlTag.getTag();
-                cupboard.put(tag);
-            }
-
-            for (XmlTask xmlTask : taskList.getTaskList()) {
-                Task task = xmlTask.getTask();
-                cupboard.put(task);
-                cupboard.put(new DemoTask(task));
-                xmlTask.setId(task.getId());
-                List<TaskTimeSpan> spans = xmlTask.getTaskActivity();
-                cupboard.put(spans);
-
-                for (XmlTagRef tagRef : xmlTask.getTagList()) {
-                    TaskTag taskTag = new TaskTag();
-                    taskTag.setTaskId(task.getId());
-                    taskTag.setTagId(tagRef.getTagId());
-                    cupboard.put(taskTag);
-                }
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-
-        } finally {
-            Closeables.closeQuietly(in);
-        }
+        DatabaseUtils.fillTestData(context, cupboard);
     }
 
     public void removeTestData() {

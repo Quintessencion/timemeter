@@ -54,6 +54,8 @@ import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
 import com.simbirsoft.timemeter.ui.util.TaskFilterPredicate;
 import com.simbirsoft.timemeter.ui.helpcards.HelpCardPresenter;
+import com.simbirsoft.timemeter.ui.views.FilterView;
+import com.simbirsoft.timemeter.ui.views.TagView;
 import com.squareup.otto.Subscribe;
 
 import org.androidannotations.annotations.AfterViews;
@@ -71,6 +73,8 @@ import javax.inject.Inject;
 public class TaskListFragment extends MainPageFragment implements JobLoader.JobLoaderCallbacks,
         TaskListAdapter.TaskClickListener,
         MainPagerAdapter.PageTitleProvider {
+
+    private static final Logger LOG = LogFactory.getLogger(TaskListFragment.class);
 
     private static final String SNACKBAR_TAG = "task_list_snackbar";
     private static final String TASK_LIST_LOADER_TAG = "TaskListFragment_";
@@ -102,6 +106,16 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     private HelpCardAdapter mHelpCardAdapter;
     private ITaskActivityManager mTaskActivityManager;
     private ContentFragmentCallbacks mCallbacks;
+
+    private final TagView.TagViewClickListener mTagViewClickListener = tagView -> {
+        FilterView filterView = getFilterViewProvider().getFilterView();
+        if (tagView.isChecked()) {
+            filterView.getTagsView().removeObject(tagView.getTag());
+        } else {
+            filterView.getTagsView().addObject(tagView.getTag());
+        }
+        mTasksViewAdapter.setTagListForChecking(filterView.getTagsView().getObjects());
+    };
 
     private void onFloatingButtonClicked(View v) {
         mLogger.info("floating button clicked");
@@ -158,6 +172,8 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
         mTasksViewAdapter = new TaskListAdapter(mTaskActivityManager);
         mTasksViewAdapter.setTaskClickListener(this);
+        mTasksViewAdapter.setTagViewClickListener(mTagViewClickListener);
+
         mHelpCardAdapter = new HelpCardAdapter(mTasksViewAdapter);
         mHelpCardAdapter.setHelpCardSource(this);
         mHelpCardAdapter.setLayoutManager(tasksViewLayoutManager);
@@ -165,6 +181,13 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         mRecyclerView.setItemAnimator(new HelpCardAnimator());
 
         requestLoad(TASK_LIST_LOADER_TAG, this);
+        applyFilterState();
+    }
+
+    private void applyFilterState() {
+        FilterView filterView = getFilterViewProvider().getFilterView();
+        mTasksViewAdapter.setTagListForChecking(filterView.getTagsView().getObjects());
+        //filterView.postFilterUpdate();
     }
 
     @Override
@@ -353,6 +376,7 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
         String loaderTag = getFilterLoaderTag(TASK_LIST_LOADER_TAG);
         requestLoad(loaderTag, this);
+
     }
 
     @Subscribe

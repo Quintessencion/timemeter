@@ -56,6 +56,8 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.TaskVi
     private final List<TaskBundle> mItems;
     private final ITaskActivityManager mTaskActivityManager;
     private TaskClickListener mTaskClickListener;
+    private TagView.TagViewClickListener mTagViewClickListener;
+    private List<Object> mTagListForChecking;
 
     private final View.OnClickListener mCardClickListener = (view) -> {
         if (mTaskClickListener != null) {
@@ -75,10 +77,6 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.TaskVi
             return true;
         }
         return false;
-    };
-
-    private final TagView.TagViewClickListener mTagViewClickListener = tagView -> {
-        LOG.debug("Tag <" + tagView.getTag().getName() + "> clicked!");
     };
 
     public TaskListAdapter(ITaskActivityManager taskActivityManager) {
@@ -187,6 +185,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.TaskVi
         holder.itemEditView.setTag(item);
 
         holder.tagFlowView.bindTagViews(item.getTags());
+        holder.tagFlowView.checkTagViews(mTagListForChecking);
         holder.tagFlowView.setTagViewsClickListener(mTagViewClickListener);
 
         if (mTaskActivityManager.isTaskActive(task)) {
@@ -205,5 +204,13 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.TaskVi
     @Override
     public int getItemCount() {
         return mItems.size();
+    }
+
+    public void setTagViewClickListener(TagView.TagViewClickListener tagViewClickListener) {
+        mTagViewClickListener = tagViewClickListener;
+    }
+
+    public void setTagListForChecking(List<Object> tagListForChecking) {
+        mTagListForChecking = tagListForChecking;
     }
 }

@@ -473,4 +473,8 @@ public class MainPageFragment extends BaseFragment implements HelpCardSource {
     public void onReadyToShowHelpCardEvent(ReadyToShowHelpCardEvent ev) {
         presentHelpCardIfAny();
     }
+
+    public FilterViewProvider getFilterViewProvider() {
+        return mFilterViewProvider;
+    }
 }

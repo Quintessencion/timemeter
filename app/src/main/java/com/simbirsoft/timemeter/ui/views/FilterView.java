@@ -9,6 +9,7 @@ import android.os.Parcelable;
 import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -583,6 +584,7 @@ public class FilterView extends FrameLayout implements
         // Need to manually re-filter tag list adapter
         // to exclude previously added tags from list
         mAdapter.getFilter().filter(mTagsView.getCurrentCompletionText());
+        mTagsView.dismissDropDown();
     }
 
     @Override
@@ -595,6 +597,7 @@ public class FilterView extends FrameLayout implements
         }
 
         postFilterUpdate();
+        mTagsView.dismissDropDown();
     }
 
     public void setFilterState(FilterState state) {
