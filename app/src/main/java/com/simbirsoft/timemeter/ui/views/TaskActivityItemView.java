@@ -96,10 +96,10 @@ public class TaskActivityItemView extends View{
         mDurationBlockColor = res.getColor(R.color.primaryDark);
         mTimeBlockHighlightedColor = res.getColor(R.color.accentPrimary);
         mDurationBlockHighlightedColor = res.getColor(R.color.accentDark);
-        mTimeBlockSelectedColor = res.getColor(R.color.green);
-        mDurationBlockSelectedColor = res.getColor(R.color.green);
-        mTimeBlockAccentSelectedColor = res.getColor(R.color.green);
-        mDurationBlockAccentSelectedColor = res.getColor(R.color.green);
+        mTimeBlockSelectedColor = res.getColor(R.color.accentLight);
+        mDurationBlockSelectedColor = res.getColor(R.color.accentLight);
+        mTimeBlockAccentSelectedColor = res.getColor(R.color.accentLight);
+        mDurationBlockAccentSelectedColor = res.getColor(R.color.accentLight);
 
         mIndex = -1;
         mItem = new TaskActivitySpansItem();
