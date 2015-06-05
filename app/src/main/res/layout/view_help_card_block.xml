@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/helpCardContainer"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="4dp"
+    android:animateLayoutChanges="true">
+
+    <com.simbirsoft.timemeter.ui.helpcards.HelpCard_
+        android:id="@+id/helpCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:foreground="?android:attr/selectableItemBackground"
+        card_view:cardUseCompatPadding="true"
+        card_view:cardCornerRadius="4dp"
+        card_view:contentPadding="4dp"
+        card_view:cardBackgroundColor="@color/primaryDark"
+        android:visibility="gone"/>
+</FrameLayout>

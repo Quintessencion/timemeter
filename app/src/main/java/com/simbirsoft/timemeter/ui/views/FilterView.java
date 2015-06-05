@@ -9,6 +9,7 @@ import android.os.Parcelable;
 import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,6 +53,7 @@ import org.slf4j.Logger;
 
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -257,6 +259,7 @@ public class FilterView extends FrameLayout implements
     private boolean mIsReset;
     private SearchView mSearchView;
     private ThrottleJob mThrottleJob;
+    private LinkedList<Tag> mTags = Lists.newLinkedList();
 
     /**
      * Used to ignore {@link #onTokenAdded(Object)} events when view state is being restored
@@ -316,22 +319,25 @@ public class FilterView extends FrameLayout implements
 
     @Override
     public boolean onQueryTextChange(String s) {
-        mState.searchText = s;
+        boolean hasSearchableText = "".equals(s.trim()) && !"".equals(s);
+        if (!hasSearchableText) {
+            mState.searchText = s;
 
-        if (mThrottleJob == null || mThrottleJob.isFinished()) {
-            mThrottleJob = new ThrottleJob();
-            mThrottleJob.setTargetJob(new CallableForkJoinJob(
-                    JobManager.JOB_GROUP_DEFAULT, () -> {
+            if (mThrottleJob == null || mThrottleJob.isFinished()) {
+                mThrottleJob = new ThrottleJob();
+                mThrottleJob.setTargetJob(new CallableForkJoinJob(
+                        JobManager.JOB_GROUP_DEFAULT, () -> {
 
-                mHandler.post(FilterView.this::postFilterUpdate);
+                    mHandler.post(FilterView.this::postFilterUpdate);
 
-                return JobEvent.ok();
-            }));
+                    return JobEvent.ok();
+                }));
+                mThrottleJob.getThrottle().updateTimeout(180);
+                JobManager.getInstance().submitJob(mThrottleJob);
+            }
+
             mThrottleJob.getThrottle().updateTimeout(180);
-            JobManager.getInstance().submitJob(mThrottleJob);
         }
-
-        mThrottleJob.getThrottle().updateTimeout(180);
 
         return true;
     }
@@ -401,6 +407,7 @@ public class FilterView extends FrameLayout implements
     @Click(R.id.resetFilterView)
     void onResetFilterClicked() {
         mIsSilentUpdate = true;
+        mTags.clear();
         for (Object tag : mTagsView.getObjects()) {
             mTagsView.removeObject(tag);
         }
@@ -561,20 +568,25 @@ public class FilterView extends FrameLayout implements
         super.onDetachedFromWindow();
     }
 
-
-
     @Override
     public void onTokenAdded(Object o) {
         if (mAdapter == null) {
             return;
         }
-        if (mAdapter.getPosition((Tag) o) < 0) {
+
+        final Tag tag = (Tag) o;
+
+        if (mAdapter.getPosition(tag) < 0) {
             // Allow to add only existing tags
-            mTagsView.removeObject(o);
+            mTagsView.removeObject(tag);
+            mTags.remove(tag);
 
         } else {
+            if (!mTags.contains(tag)) {
+                mTags.add(tag);
+            }
             if (mTokenListener != null) {
-                mTokenListener.onTokenAdded(o);
+                mTokenListener.onTokenAdded(tag);
             }
             KeyboardUtils.hideSoftInput(mTagsView.getContext(), mTagsView.getWindowToken());
             postFilterUpdate();
@@ -583,10 +595,13 @@ public class FilterView extends FrameLayout implements
         // Need to manually re-filter tag list adapter
         // to exclude previously added tags from list
         mAdapter.getFilter().filter(mTagsView.getCurrentCompletionText());
+        mTagsView.dismissDropDown();
     }
 
     @Override
     public void onTokenRemoved(Object o) {
+        mTags.remove(o);
+
         if (mAdapter != null) {
             if (mTokenListener != null && mAdapter.getPosition((Tag) o) > -1) {
                 mTokenListener.onTokenRemoved(o);
@@ -595,13 +610,17 @@ public class FilterView extends FrameLayout implements
         }
 
         postFilterUpdate();
+        mTagsView.dismissDropDown();
     }
 
     public void setFilterState(FilterState state) {
         mState = state.copy();
 
         mIsSilentUpdate = true;
+        mTags.clear();
         if (state.tags != null && !state.tags.isEmpty()) {
+            mTags.addAll(state.tags);
+
             for (Tag tag : state.tags) {
                 mIgnoredEventTokens.add(tag);
                 mTagsView.addObject(tag);
@@ -609,6 +628,7 @@ public class FilterView extends FrameLayout implements
         } else {
             mTagsView.clear();
             mIgnoredEventTokens.clear();
+            mTags.clear();
         }
 
         if (mState.dateMillis == 0) {
@@ -656,7 +676,7 @@ public class FilterView extends FrameLayout implements
             mState.dateMillis = 0;
         }
 
-        mState.tags = ImmutableList.copyOf(Lists.transform(mTagsView.getObjects(), input -> (Tag) input));
+        mState.tags = ImmutableList.copyOf(mTags);
     }
 
     private void sendSelectDateClickEvent() {

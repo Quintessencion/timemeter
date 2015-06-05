@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -29,6 +30,7 @@ import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.enums.SnackbarType;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.controller.HelpCardController;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.BackupTagJob;
@@ -39,15 +41,15 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
-import com.simbirsoft.timemeter.ui.main.MainActivity;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardAdapter;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardAnimator;
 import com.simbirsoft.timemeter.ui.main.MainFragment;
 import com.simbirsoft.timemeter.ui.main.SectionFragmentContainer;
-import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
-import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
-import com.simbirsoft.timemeter.ui.tasklist.TaskListFragment;
 import com.simbirsoft.timemeter.ui.model.TagBundle;
 import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerDialog;
 import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerSwatch;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCard;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardSource;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import org.androidannotations.annotations.AfterViews;
@@ -58,13 +60,16 @@ import org.slf4j.Logger;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 @EFragment(R.layout.fragment_tag_list)
 public class TagListFragment extends MainFragment implements JobLoader.JobLoaderCallbacks,
         TagListAdapter.ItemClickListener,
-        ColorPickerSwatch.OnColorSelectedListener {
+        ColorPickerSwatch.OnColorSelectedListener,
+        HelpCardSource {
 
 
-    private static final Logger LOG = LogFactory.getLogger(TaskListFragment.class);
+    private static final Logger LOG = LogFactory.getLogger(TagListFragment.class);
 
     private static final int REQUEST_CODE_EDIT_TAG_NAME = 10002;
     private static final int REQUEST_CODE_CREATE_TAG = 10003;
@@ -76,6 +81,9 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
     @ViewById(android.R.id.list)
     RecyclerView mRecyclerView;
 
+    @Inject
+    HelpCardController mHelpCardController;
+
     @InstanceState
     boolean mIsInActionMode;
 
@@ -86,6 +94,7 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
     Integer mTagListPosition;
 
     private TagListAdapter mTagListAdapter;
+    private HelpCardAdapter mHelpCardAdapter;
     private Toolbar mToolbar;
     private final String mLoaderAttachTag = getClass().getName() + "_loader";
     private ActionMode mActionMode;
@@ -145,7 +154,10 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
 
         mTagListAdapter = new TagListAdapter();
         mTagListAdapter.setItemClickListener(this);
-        mRecyclerView.setAdapter(mTagListAdapter);
+        mHelpCardAdapter = new HelpCardAdapter(mTagListAdapter);
+        mHelpCardAdapter.setHelpCardSource(this);
+        mRecyclerView.setAdapter(mHelpCardAdapter);
+        mRecyclerView.setItemAnimator(new HelpCardAnimator());
 
         if (mIsInActionMode) {
             startActionMode();
@@ -166,6 +178,7 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Injection.sUiComponent.injectTagListFragment(this);
 
         setHasOptionsMenu(true);
     }
@@ -186,6 +199,20 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
         }
 
         super.onDestroy();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        if (!mHelpCardController.isPresented(HelpCardController.HELP_CARD_TAGS)) {
+            Handler handler = new Handler();
+            handler.postDelayed(() -> {
+                if (isAdded()) {
+                    mHelpCardAdapter.show();
+                }
+            }, 1200);
+        }
     }
 
     @Override
@@ -448,5 +475,25 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
         SaveTagJob saveTagJob = Injection.sJobsComponent.saveTagJob();
         saveTagJob.setTag(tag);
         submitJob(saveTagJob);
+    }
+
+    @Override
+    public void setupHelpCard(HelpCard helpCard) {
+        helpCard.setDataSource(mHelpCardController.getCard(HelpCardController.HELP_CARD_TAGS));
+        helpCard.setOnNextClickListener(v -> {
+            if (helpCard.isLastItemPresented()) {
+                // workaround for android 4.2.2 (something related to animation)
+                boolean presented = mHelpCardController.isPresented(HelpCardController.HELP_CARD_TAGS);
+                if (!presented) {
+                    mHelpCardController.markPresented(HelpCardController.HELP_CARD_TAGS);
+                    mHelpCardAdapter.hide();
+                }
+            }
+        });
+    }
+
+    @Override
+    public int getHelpCardId() {
+        return HelpCardController.HELP_CARD_TAGS;
     }
 }

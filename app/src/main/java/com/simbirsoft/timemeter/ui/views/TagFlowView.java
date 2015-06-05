@@ -3,6 +3,7 @@ package com.simbirsoft.timemeter.ui.views;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewStub;
 
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
@@ -19,6 +20,9 @@ import java.util.List;
 public class TagFlowView extends FlowLayout {
 
     private final ArrayList<TagView> mTagViews = new ArrayList<>();
+    private View mView;
+    private boolean mHintVisible;
+    private View mVsTagsHint;
 
     @ViewById(R.id.tagFlowViewContainer)
     protected FlowLayout mTagContainerView;
@@ -37,6 +41,36 @@ public class TagFlowView extends FlowLayout {
 
     @AfterViews
     void initializeView() {
+    }
+
+    public void checkTagViews(List<Object> tagsFromFilter) {
+        if (tagsFromFilter == null) return;
+
+        if (tagsFromFilter.isEmpty()) {
+            for (TagView tagView : mTagViews) {
+                tagView.highlightTag();
+                tagView.setChecked(false);
+            }
+            return;
+        }
+
+        for (TagView tagView : mTagViews) {
+            boolean contains = false;
+            for (Object o : tagsFromFilter) {
+                Tag tagFromFilter = (Tag) o;
+                if (tagFromFilter.getId().equals(tagView.getTag().getId())) {
+                    contains = true;
+                    break;
+                }
+            }
+            if (contains) {
+                tagView.highlightTag();
+                tagView.setChecked(true);
+            } else {
+                tagView.unhighlightTag();
+                tagView.setChecked(false);
+            }
+        }
     }
 
     public void bindTagViews(List<Tag> tags) {
@@ -60,8 +94,12 @@ public class TagFlowView extends FlowLayout {
                 mTagViews.add(tagView);
             }
             mTagContainerView.setVisibility(View.VISIBLE);
+            disableTagsHint();
         } else {
             mTagContainerView.setVisibility(View.GONE);
+            if (mHintVisible) {
+                enableTagsHint();
+            }
         }
     }
 
@@ -72,6 +110,29 @@ public class TagFlowView extends FlowLayout {
     public void setTagViewsClickListener(TagView.TagViewClickListener tagViewClickListener) {
         for (TagView tagView : mTagViews) {
             tagView.setTagViewClickListener(tagViewClickListener);
+        }
+    }
+
+    public void setHintVisible(boolean hintVisible) {
+        mHintVisible = hintVisible;
+    }
+
+    public View getHintView() {
+        return mView;
+    }
+
+    private void enableTagsHint() {
+        if (mVsTagsHint == null) {
+            mVsTagsHint = ((ViewStub) findViewById(R.id.vsTagsHint)).inflate();
+            mView = mVsTagsHint.findViewById(R.id.tagsHint);
+        } else {
+            mVsTagsHint.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void disableTagsHint() {
+        if (mVsTagsHint != null) {
+            mVsTagsHint.setVisibility(View.GONE);
         }
     }
 }
