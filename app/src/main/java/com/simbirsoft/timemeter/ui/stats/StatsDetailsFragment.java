@@ -1,6 +1,7 @@
 package com.simbirsoft.timemeter.ui.stats;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -16,7 +17,6 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.jobs.LoadJob;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
-import com.google.common.collect.Sets;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.FilterableJob;
@@ -27,11 +27,17 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.model.TaskOverallActivity;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
+import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
+import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.model.DailyActivityDuration;
 import com.simbirsoft.timemeter.ui.model.DailyTaskActivityDuration;
+import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.stats.binders.ActivityStackedTimelineBinder;
 import com.simbirsoft.timemeter.ui.stats.binders.ActivityTimelineBinder;
 import com.simbirsoft.timemeter.ui.stats.binders.OverallActivityTimePieBinder;
+import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
+import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
+import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
 import com.simbirsoft.timemeter.ui.views.ProgressLayout;
 import com.squareup.otto.Bus;
 
@@ -47,7 +53,7 @@ import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_stats_details)
 public class StatsDetailsFragment extends BaseFragment implements
-        JobLoader.JobLoaderCallbacks {
+        JobLoader.JobLoaderCallbacks, LegendClickListener {
 
     public static final String EXTRA_TASK_FILTER = "extra_task_filter";
 
@@ -112,6 +118,7 @@ public class StatsDetailsFragment extends BaseFragment implements
     @OnJobSuccess(LoadOverallTaskActivityTimeJob.class)
     public void onOverallActivitiesLoaded(LoadJobResult<List<TaskOverallActivity>> result) {
         OverallActivityTimePieBinder binder = new OverallActivityTimePieBinder(result.getData());
+        binder.setLegendClickListener(this);
         displayChart(binder);
     }
 
@@ -134,6 +141,7 @@ public class StatsDetailsFragment extends BaseFragment implements
     @OnJobSuccess(LoadPeriodSplitActivityTimelineJob.class)
     public void onPeriodSplitActivitiesLoaded(LoadJobResult<List<DailyTaskActivityDuration>> result) {
         ActivityStackedTimelineBinder binder = new ActivityStackedTimelineBinder(result.getData());
+        binder.setLegendClickListener(this);
         displayChart(binder);
     }
 
@@ -190,5 +198,31 @@ public class StatsDetailsFragment extends BaseFragment implements
         mContainer.addView(view);
 
         mProgressLayout.updateProgressView();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        getActivity().setResult(resultCode, data);
+        switch (requestCode) {
+            case MainPageFragment.REQUEST_CODE_PROCESS_TASK:
+                if (resultCode == EditTaskFragment.RESULT_CODE_TASK_REMOVED
+                        || resultCode == EditTaskFragment.RESULT_CODE_TASK_UPDATED) {
+                    requestReload(STATS_LOADER_TAG, this);
+                }
+                return;
+            default:
+                break;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onLegendItemClicked(long taskId) {
+        Bundle args = new Bundle();
+        args.putLong(ViewTaskFragment.EXTRA_TASK_ID, taskId);
+
+        Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
+                getActivity(), ViewTaskFragment_.class.getName(), args);
+        getActivity().startActivityForResult(launchIntent, MainPageFragment.REQUEST_CODE_PROCESS_TASK);
     }
 }

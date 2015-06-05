@@ -25,6 +25,7 @@ import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.helpcards.HelpCardAdapter;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
+import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.helpcards.HelpCardPresenter;
 
 import org.androidannotations.annotations.AfterViews;
@@ -134,7 +135,7 @@ public class StatsListFragment extends MainPageFragment implements
         args.putInt(StatsDetailsFragment.EXTRA_CHART_VIEW_TYPE, viewType);
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), StatsDetailsFragment_.class.getName(), args);
-        getActivity().startActivityForResult(launchIntent, 1000);
+        getActivity().startActivityForResult(launchIntent, MainPageFragment.REQUEST_CODE_PROCESS_TASK);
 
     }
 
