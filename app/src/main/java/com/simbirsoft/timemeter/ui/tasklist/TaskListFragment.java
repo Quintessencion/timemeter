@@ -35,6 +35,7 @@ import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.activities.TaskActivitiesLayoutManager;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.ContentFragmentCallbacks;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
@@ -407,6 +408,28 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     @Override
     protected Logger createLogger() {
         return LogFactory.getLogger(TaskListFragment.class);
+    }
+
+    @Override
+    public void onPageSelected() {
+        super.onPageSelected();
+        if (mTaskActivityManager.hasActiveTask()) {
+            Long activeTaskId = mTaskActivityManager.getActiveTaskInfo().getTask().getId();
+            int position = 0;
+            boolean found = false;
+            for (TaskBundle taskBundle : mTasksViewAdapter.getItems()) {
+                if (activeTaskId.equals(taskBundle.getTask().getId())) {
+                    found = true;
+                    break;
+                }
+                position++;
+            }
+
+            if (found) {
+                RecyclerView.LayoutManager layoutManager = (RecyclerView.LayoutManager) mRecyclerView.getLayoutManager();
+                layoutManager.scrollToPosition(position);
+            }
+        }
     }
 }
 
