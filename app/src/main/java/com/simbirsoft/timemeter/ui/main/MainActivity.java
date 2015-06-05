@@ -104,6 +104,12 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.navigation_drawer);
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer, mDrawerLayout);
+
+        Intent intent1 = getIntent();
+        if ("com.simbirsoft.android.intent.action.SHOW_ACTIVE_TASK".equals(getIntent().getAction())) {
+            mIsTaskViewPending = true;
+            mNavigationDrawerFragment.setCurrentSelectedPosition(SECTION_ID_TASKS);
+        }
     }
 
     @Override
