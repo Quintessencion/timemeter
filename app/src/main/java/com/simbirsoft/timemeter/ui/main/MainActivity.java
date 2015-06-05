@@ -2,7 +2,6 @@ package com.simbirsoft.timemeter.ui.main;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.preference.PreferenceFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
@@ -17,7 +16,6 @@ import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
-import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.calendar.ActivityCalendarFragment_;
 import com.simbirsoft.timemeter.ui.settings.SettingsFragment;
 import com.simbirsoft.timemeter.ui.stats.StatsListFragment_;
@@ -115,7 +113,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        MainFragment fragment = getContentFragment();
+        Fragment fragment = getContentFragment();
         if (fragment != null) {
             saveSectionFragmentState(fragment);
         }
@@ -144,8 +142,8 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
                 break;
         }
 
-        if (position != SECTION_ID_SETTINGS) {
-            MainFragment fragment = getContentFragment();
+        if (true) {
+            Fragment fragment = getContentFragment();
             if (fragment != null && fragmentType.equals(fragment.getClass())) {
                 // selected fragment is already added
                 return;
@@ -157,9 +155,9 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
 
             Bundle fragmentArgs = new Bundle();
             fragmentArgs.putInt(MainFragment.ARG_SECTION_ID, position);
-            fragment = (MainFragment) Fragment.instantiate(this, fragmentType.getName(), fragmentArgs);
+            fragment = Fragment.instantiate(this, fragmentType.getName(), fragmentArgs);
 
-            Fragment.SavedState fragmentState = getSectionFragmentState(fragment);
+            Fragment.SavedState fragmentState = getSectionFragmentState(((SectionFragment)fragment));
             if (fragmentState != null) {
                 fragment.setInitialSavedState(fragmentState);
             }
@@ -168,19 +166,11 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
             fragmentManager.beginTransaction()
                     .replace(R.id.container, fragment, TAG_CONTENT_FRAGMENT)
                     .commit();
-        } else {
-            PreferenceFragment fragment1 = new SettingsFragment();
-
-            FragmentManager fragmentManager = getSupportFragmentManager();
-
-            fragmentManager.beginTransaction()
-                    .replace(R.id.container, fragment1, TAG_CONTENT_FRAGMENT)
-                    .commit();
         }
     }
 
-    private MainFragment getContentFragment() {
-        return (MainFragment) getSupportFragmentManager().findFragmentByTag(TAG_CONTENT_FRAGMENT);
+    private Fragment getContentFragment() {
+        return getSupportFragmentManager().findFragmentByTag(TAG_CONTENT_FRAGMENT);
     }
 
     public void restoreActionBar() {
@@ -224,7 +214,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        BaseFragment fragment = getContentFragment();
+        Fragment fragment = getContentFragment();
         if (fragment != null) {
             fragment.onActivityResult(requestCode, resultCode, data);
         }
@@ -269,8 +259,11 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
             return;
         }
 
-        MainFragment sectionFragment = getContentFragment();
-        if (sectionFragment != null && sectionFragment.handleBackPress()) {
+        Fragment sectionFragment = getContentFragment();
+        boolean isHandleBackPress = (sectionFragment instanceof MainFragment) ?
+                ((MainFragment) sectionFragment).handleBackPress() :
+                false;
+        if (sectionFragment != null && isHandleBackPress) {
             return;
         }
 
@@ -311,16 +304,16 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         return pages;
     }
 
-    private Fragment.SavedState getSectionFragmentState(MainFragment fragment) {
+    private Fragment.SavedState getSectionFragmentState(SectionFragment fragment) {
         return popFragmentState(fragment.getFragmentStateKey());
     }
 
-    private void saveSectionFragmentState(MainFragment fragment) {
+    private void saveSectionFragmentState(Fragment fragment) {
         Fragment.SavedState state = getSupportFragmentManager().saveFragmentInstanceState(fragment);
         Bundle stateBundle = new Bundle();
 
         stateBundle.putParcelable(KEY_FRAGMENT_STATE, state);
-        stateBundle.putString(KEY_FRAGMENT_STATE_KEY, fragment.getFragmentStateKey());
+        stateBundle.putString(KEY_FRAGMENT_STATE_KEY, ((SectionFragment)fragment).getFragmentStateKey());
         pushFragmentState(stateBundle);
     }
 

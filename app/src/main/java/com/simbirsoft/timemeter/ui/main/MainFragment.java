@@ -1,14 +1,11 @@
 package com.simbirsoft.timemeter.ui.main;
 
-import android.app.Activity;
 import android.os.Bundle;
 
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 
-public class MainFragment extends BaseFragment {
-
-    public static final String ARG_SECTION_ID = "MainFragment_section_id";
-
+public class MainFragment extends BaseFragment implements SectionFragment{
+    @Override
     public int getSectionId() {
         Bundle args = getArguments();
 
@@ -19,10 +16,7 @@ public class MainFragment extends BaseFragment {
         return args.getInt(ARG_SECTION_ID);
     }
 
-    public String getPageTitle() {
-        return getClass().getSimpleName();
-    }
-
+    @Override
     public String getFragmentStateKey() {
         return "_state_" + getClass().getSimpleName();
     }
