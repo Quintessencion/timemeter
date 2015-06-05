@@ -39,6 +39,7 @@ import com.melnykov.fab.FloatingActionButton;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.enums.SnackbarType;
+import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
@@ -47,7 +48,7 @@ import com.simbirsoft.timemeter.injection.ApplicationModule;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskActivitiesJob;
 import com.simbirsoft.timemeter.jobs.RemoveTaskTimeSpanJob;
-import com.simbirsoft.timemeter.jobs.UpdateTaskTimeSpanJob;
+import com.simbirsoft.timemeter.jobs.RestoreTaskTimeSpansJob;
 import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
@@ -88,6 +89,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
 
     private static final String LOADER_TAG = "TaskActivitiesFragment_";
     private static final String REMOVE_SPAN_JOB = "remove_span_job";
+    private static final String RESTORE_SPAN_JOB = "restore_span_job";
     private static final String TAG_DATE_PICKER_FRAGMENT = "activities_date_picker_fragment_tag";
     private static final String SNACKBAR_TAG = "task_activities_snackbar";
     private static final int REQUEST_CODE_PROCESS_ACTIVITY = 10005;
@@ -140,6 +142,8 @@ public class TaskActivitiesFragment extends BaseFragment implements
     private Menu mOptionsMenu;
     private TaskTimeSpanActions mTaskTimeSpanActions;
     private FloatingActionButton mFloatingActionButton;
+
+    Bundle mActivitiesBackup;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -299,8 +303,49 @@ public class TaskActivitiesFragment extends BaseFragment implements
     }
 
     @OnJobSuccess(RemoveTaskTimeSpanJob.class)
-    public void onRemoveSuccess(JobEvent ev) {
+    public void onRemoveSuccess(LoadJobResult<Bundle> result) {
         requestLoad(LOADER_TAG, this);
+        mActivitiesBackup = result.getData();
+        showUndoRemoveSnackbar();
+    }
+
+    @OnJobSuccess(RestoreTaskTimeSpansJob.class)
+    public void onRestoreSuccess(JobEvent event) {
+        requestLoad(LOADER_TAG, this);
+    }
+
+    public void showUndoRemoveSnackbar() {
+        Snackbar sb = Snackbar.with(getActivity())
+                .type(SnackbarType.MULTI_LINE)
+                .text(R.string.hint_task_time_spans_removed)
+                .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE)
+                .color(getResources().getColor(R.color.primaryDark))
+                .actionLabel(R.string.action_undo_remove)
+                .actionListener(v -> requestLoad(RESTORE_SPAN_JOB, this))
+                .eventListener(new EventListener() {
+                    @Override
+                    public void onShow(Snackbar snackbar) {
+
+                    }
+
+                    @Override
+                    public void onShown(Snackbar snackbar) {
+
+                    }
+
+                    @Override
+                    public void onDismiss(Snackbar snackbar) {
+
+                    }
+
+                    @Override
+                    public void onDismissed(Snackbar snackbar) {
+                        mActivitiesBackup = null;
+                    }
+                })
+                .animation(true)
+                .attachToRecyclerView(mRecyclerView);
+        SnackbarManager.show(sb);
     }
 
     @Override
@@ -321,6 +366,12 @@ public class TaskActivitiesFragment extends BaseFragment implements
         if (REMOVE_SPAN_JOB.equals(s)) {
             RemoveTaskTimeSpanJob job = Injection.sJobsComponent.removeTaskTimeSpanJob();
             job.setSpan(mAdapter.getSelectedSpanIds());
+            return job;
+        }
+        if (RESTORE_SPAN_JOB.equals(s)) {
+            RestoreTaskTimeSpansJob job = Injection.sJobsComponent.restoreTaskTimeSpanJob();
+            job.setBackupBundle(mActivitiesBackup);
+            mActivitiesBackup = null;
             return job;
         }
         throw new UnsupportedOperationException("Unknown job id");

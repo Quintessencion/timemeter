@@ -6,12 +6,12 @@ import android.os.Parcelable;
 
 import com.be.android.library.worker.base.BaseJob;
 import com.be.android.library.worker.base.JobEvent;
-import com.be.android.library.worker.models.LoadJobResult;
+import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -19,38 +19,34 @@ import nl.qbusict.cupboard.DatabaseCompartment;
 
 import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 
-public class RemoveTaskTimeSpanJob extends BaseJob {
+public class RestoreTaskTimeSpansJob extends BaseJob {
     private DatabaseHelper mDatabaseHelper;
-    private Collection<Long> mSpanIds;
+    private Bundle mBackupBundle;
 
     @Inject
-    public RemoveTaskTimeSpanJob(DatabaseHelper dbHelper) {
+    public RestoreTaskTimeSpansJob(DatabaseHelper dbHelper) {
         mDatabaseHelper = dbHelper;
     }
 
-    public void setSpan(Collection<Long> spanIds) {
-        mSpanIds = spanIds;
+    public void setBackupBundle(Bundle backupBundle) {
+        mBackupBundle = backupBundle;
     }
 
     @Override
-    protected LoadJobResult<Bundle> executeImpl() throws Exception {
+    protected JobEvent executeImpl() throws Exception {
         SQLiteDatabase db = mDatabaseHelper.getWritableDatabase();
         DatabaseCompartment cb = cupboard().withDatabase(db);
 
-        Bundle removedSpans = new Bundle();
         try {
             db.beginTransaction();
-            ArrayList<TaskTimeSpan> ps = new ArrayList<>();
-            for (long id : mSpanIds) {
-                ps.add(cb.get(TaskTimeSpan.class, id));
-                cb.delete(TaskTimeSpan.class, id);
-            }
-            removedSpans.putParcelableArrayList("removed_spans", ps);
+            ArrayList<Parcelable> ps = mBackupBundle.getParcelableArrayList("removed_spans");
+            List<TaskTimeSpan> spans = Lists.transform(ps, item -> (TaskTimeSpan)item);
+            cb.put(spans);
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
         }
 
-        return new LoadJobResult<>(removedSpans);
+        return JobEvent.ok();
     }
 }
