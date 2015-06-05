@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.SearchView;
+import android.text.TextUtils;
 import android.transitions.everywhere.ChangeBounds;
 import android.transitions.everywhere.Fade;
 import android.transitions.everywhere.TransitionManager;
@@ -397,7 +398,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewProvide
         if (isFilterPanelVisible()) {
             item.setIcon(R.drawable.ic_filter_remove_white_24dp);
             item.setTitle(R.string.action_toggle_filter_off);
-        } else if (mFilterView.getViewFilterState().isEmpty()) {
+        } else if (mFilterState.isEmpty() || mFilterState.isFilteredBySearchText()) {
             item.setIcon(R.drawable.ic_filter_white_24dp);
             item.setTitle(R.string.action_toggle_filter_on);
         } else {
