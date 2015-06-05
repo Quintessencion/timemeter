@@ -38,6 +38,7 @@ public class NavigationDrawerListAdapter extends BaseAdapter {
     }
 
     private final List<NavigationItem> mItems;
+    private NavigationItem mBottomItem;
 
     public NavigationDrawerListAdapter() {
         mItems = Lists.newArrayList();
@@ -47,6 +48,10 @@ public class NavigationDrawerListAdapter extends BaseAdapter {
         mItems.clear();
         mItems.addAll(items);
         notifyDataSetChanged();
+    }
+
+    public void setBottomItem(NavigationItem item) {
+        mBottomItem = item;
     }
 
     @Override
