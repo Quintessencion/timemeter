@@ -17,6 +17,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.nispok.snackbar.Snackbar;
+import com.nispok.snackbar.SnackbarManager;
+import com.nispok.snackbar.enums.SnackbarType;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.ui.model.TaskActivityDateItem;
@@ -304,8 +307,9 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
     public boolean onLongClick(View v) {
         TaskActivityItemView itemView = (TaskActivityItemView) v;
         TaskTimeSpan span = itemView.getItem().getSpan(itemView.getIndex());
-        
+
         if (span.isActive()) {
+            showCannotEditActiveTimeSpanAlert();
             return true;
         }
 
@@ -346,5 +350,17 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
 
     public void setSelectionSetChangedListener(OnSelectionSetChangedListener selectionSetChangedListener) {
         mSelectionSetChangedListener = selectionSetChangedListener;
+    }
+
+    private void showCannotEditActiveTimeSpanAlert() {
+        Snackbar bar = Snackbar.with(mActivityContext)
+                .text(R.string.error_cannot_edit_current_time_span)
+                .actionLabel(R.string.action_accept)
+                .colorResource(R.color.lightRed)
+                .duration(Snackbar.SnackbarDuration.LENGTH_LONG)
+                .type(SnackbarType.MULTI_LINE)
+                .animation(true);
+
+        SnackbarManager.show(bar);
     }
 }

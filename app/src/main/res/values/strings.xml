@@ -96,6 +96,7 @@
     <string name="error_time_span_overlaps">Временной отрезок не может пересекаться с другим отрезком.</string>
     <string name="error_time_span_belongs_to_future">Временной отрезок не может захватывать будущее.</string>
     <string name="error_time_span_bad_range">Временной отрезок неверное задан.</string>
+    <string name="error_cannot_edit_current_time_span">Текущая активность не может быть изменена</string>
 
     <!-- Dialogs -->
     <string name="dialog_cancel_task_changes_warning_title">Задача не сохранена</string>
