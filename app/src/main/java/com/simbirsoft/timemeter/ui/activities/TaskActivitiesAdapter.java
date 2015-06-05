@@ -304,6 +304,10 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
     public boolean onLongClick(View v) {
         TaskActivityItemView itemView = (TaskActivityItemView) v;
         TaskTimeSpan span = itemView.getItem().getSpan(itemView.getIndex());
+        
+        if (span.isActive()) {
+            return true;
+        }
 
         boolean isSelected = mSelectedSpans.contains(span);
         if (isSelected) {
