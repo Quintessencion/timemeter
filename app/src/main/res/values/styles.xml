@@ -38,4 +38,14 @@
         <item name="android:textSize">@dimen/chart_summary_text_size</item>
     </style>
 
+    <style name="SearchResultsText">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textStyle">italic</item>
+        <item name="android:textAppearance">@android:style/TextAppearance.Small</item>
+        <item name="android:alpha">0.7</item>
+    </style>
+
+    <style name="HelperCardText" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textColor">@drawable/help_card_btn_txt_color</item>
+    </style>
 </resources>

@@ -5,6 +5,8 @@ import android.support.annotation.IntDef;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.simbirsoft.timemeter.ui.model.TaskBundle;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 

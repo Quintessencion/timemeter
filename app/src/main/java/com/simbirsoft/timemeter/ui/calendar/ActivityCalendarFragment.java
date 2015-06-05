@@ -1,9 +1,11 @@
 package com.simbirsoft.timemeter.ui.calendar;
 
+import android.animation.Animator;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.PopupWindow;
 import android.widget.ScrollView;
 
@@ -15,6 +17,7 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.controller.HelpCardController;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
@@ -31,6 +34,9 @@ import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
 import com.simbirsoft.timemeter.ui.views.CalendarNavigationView;
 import com.simbirsoft.timemeter.ui.views.CalendarViewPager;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCard;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardPresenter;
+import com.simbirsoft.timemeter.ui.helpcards.HelpCardSource;
 import com.simbirsoft.timemeter.ui.views.WeekCalendarView;
 import com.squareup.otto.Subscribe;
 
@@ -48,7 +54,7 @@ import java.util.List;
 public class ActivityCalendarFragment extends MainPageFragment implements MainPagerAdapter.PageTitleProvider,
         JobLoader.JobLoaderCallbacks, CalendarNavigationView.OnCalendarNavigateListener,
         WeekCalendarView.OnCellClickListener, PopupWindow.OnDismissListener,
-        CalendarPopupAdapter.TaskClickListener {
+        CalendarPopupAdapter.TaskClickListener, HelpCardPresenter {
 
     private static final String CALENDAR_LOADER_TAG = "ActivityCalendarFragment_calendar_loader";
 
@@ -58,9 +64,11 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
     @ViewById(R.id.calendarViewPager)
     CalendarViewPager mCalendarViewPager;
 
-
     @ViewById(R.id.calendarNavigationView)
     CalendarNavigationView mCalendarNavigationView;
+
+    @ViewById(R.id.helpCard)
+    protected HelpCard mHelpCard;
 
     @InstanceState
     CalendarPeriod mCalendarPeriod;
@@ -69,6 +77,7 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
     private CalendarPagerAdapter mPagerAdapter;
     private CalendarPopupHelper mPopupHelper;
     private long mScrollViewMillisOffset = -1;
+    boolean mHelpCardSettedUp;
     private ITaskActivityManager mTaskActivityManager;
 
     @Override
@@ -85,7 +94,9 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
         mPopupHelper.setTaskClickListener(this);
         mPagerAdapter = new CalendarPagerAdapter(getActivity(), mCalendarViewPager, this);
         mCalendarNavigationView.setOnCalendarNavigateListener(this);
+
         requestLoad(CALENDAR_LOADER_TAG, this);
+
         getBus().register(this);
     }
 
@@ -260,5 +271,60 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
     public void onPageDeselected() {
         super.onPageDeselected();
         mPopupHelper.dismiss();
+    }
+
+    protected int getHelpCardToPresent(HelpCardController controller) {
+        if (!controller.isPresented(HelpCardController.HELP_CARD_CALENDAR)) {
+            return HelpCardController.HELP_CARD_CALENDAR;
+        }
+        return super.getHelpCardToPresent(controller);
+    }
+
+    @Override
+    protected HelpCardPresenter getHelpCardPresenter() {
+        return this;
+    }
+
+    @Override
+    public void show() {
+        if (!mHelpCardSettedUp) {
+            setupHelpCard(mHelpCard);
+            mHelpCardSettedUp = true;
+        }
+
+        mHelpCard.setVisibility(View.VISIBLE);
+        mHelpCard.setScaleX(0.0F);
+        mHelpCard.setScaleY(0.0F);
+        mHelpCard.animate().scaleX(1.0F).scaleY(1.0F).setDuration(250);
+    }
+
+    @Override
+    public void hide() {
+        mHelpCard.animate().scaleX(0.0F).scaleY(0.0F).setDuration(250).setListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mHelpCard.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        }).start();
+    }
+
+    @Override
+    public void setHelpCardSource(HelpCardSource user) {
+        // do nothing because this fragment is help card user
     }
 }

@@ -3,8 +3,12 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="chart_height">240dp</dimen>
+    <dimen name="chart_padding">4dp</dimen>
     <dimen name="chart_full_screen_height">360dp</dimen>
     <dimen name="chart_summary_text_size">12sp</dimen>
+    <dimen name="chart_legend_label_text_size">16sp</dimen>
+    <dimen name="chart_legend_labels_padding_normal">0dp</dimen>
+    <dimen name="chart_legend_labels_padding_big">5dp</dimen>
     <dimen name="chart_legend_padding">16dp</dimen>
     <dimen name="calendar_date_text_size">18sp</dimen>
     <dimen name="calendar_day_text_size">10sp</dimen>
@@ -28,6 +32,9 @@
     <dimen name="task_view_margin">12dp</dimen>
     <dimen name="task_view_title_left_margin">16dp</dimen>
     <dimen name="empty_indicator_text_size">16sp</dimen>
+    <dimen name="filter_results_view_text_padding">16dp</dimen>
+    <dimen name="filter_results_view_height">40dp</dimen>
+    <dimen name="filter_results_view_margin">-40dp</dimen>
 
     <!-- Per the design guidelines, navigation drawers should be between 240dp and 320dp:
          https://developer.android.com/design/patterns/navigation-drawer.html -->
