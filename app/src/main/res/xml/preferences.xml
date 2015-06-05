@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent">
+    <PreferenceCategory
+        android:title="@string/category_calendar"
+        android:key="pref_calendar">
+        <Preference
+            android:key="pref_startTime"
+            android:title="@string/calendar_title_start_time"
+            android:summary="@string/calendar_summary_start_time"/>
+        <Preference
+            android:key="pref_endTime"
+            android:title="@string/calendar_title_end_time"
+            android:summary="@string/calendar_summary_end_time"/>
+        <SwitchPreference
+            android:key="pref_allActivity"
+            android:title="@string/calendar_title_all_activity"
+            android:summary="@string/calendar_summary_all_activity"
+            android:defaultValue="true"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/category_statistics"
+        android:key="pref_statistics">
+        <Preference
+            android:key="pref_exportStatistics"
+            android:title="@string/statistics_title_export_statistics"
+            android:summary="@string/statistics_summary_save_to_file"/>
+        <Preference
+            android:key="pref_importStatistics"
+            android:title="@string/statistics_title_import_statistics"
+            android:summary="@string/statistics_summary_load_from_file"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/category_help"
+        android:key="pref_help">
+        <SwitchPreference
+            android:key="pref_showHelp"
+            android:title="@string/help_title_show_help"
+            android:defaultValue="true"/>
+        <Preference
+            android:key="pref_resetHelp"
+            android:title="@string/help_title_reset"
+            android:summary="@string/help_summary_show_all_tips"/>
+        <Preference
+            android:key="pref_deleteDemo"
+            android:title="@string/help_title_delete_demo"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>

@@ -111,6 +111,27 @@
     <!-- Chart legend -->
     <string name="chart_legend_totally">Всего: %s</string>
 
+    <!-- Preferences -->
+    <string name="category_calendar">Календарь</string>
+    <string name="calendar_title_start_time">Время начала</string>
+    <string name="calendar_summary_start_time">Начало шкалы времени с %s</string>
+    <string name="calendar_title_end_time">Время окончания</string>
+    <string name="calendar_summary_end_time">Конец шкалы времени в %s</string>
+    <string name="calendar_title_all_activity">Вся активность</string>
+    <string name="calendar_summary_all_activity">Показывать активность за пределами шкалы</string>
+
+    <string name="category_statistics">Статистика</string>
+    <string name="statistics_title_export_statistics">Экспортировать статистику</string>
+    <string name="statistics_summary_save_to_file">Сохранить всю набранную статистику в файл</string>
+    <string name="statistics_title_import_statistics">Импортировать статистику</string>
+    <string name="statistics_summary_load_from_file">Загрузить сохраненную ранее статистику из файла</string>
+
+    <string name="category_help">Помощь</string>
+    <string name="help_title_show_help">Показывать помощь</string>
+    <string name="help_title_reset">Сбросить помощь</string>
+    <string name="help_summary_show_all_tips">Показать все подсказки заново</string>
+    <string name="help_title_delete_demo">Удалить демонстрационную статистику</string>
+
     <string name="day">День</string>
     <string name="week">Неделя</string>
     <string name="month">Месяц</string>

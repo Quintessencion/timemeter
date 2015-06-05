@@ -2,6 +2,7 @@ package com.simbirsoft.timemeter.ui.main;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.preference.PreferenceFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
@@ -18,7 +19,7 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.calendar.ActivityCalendarFragment_;
-import com.simbirsoft.timemeter.ui.settings.SettingsFragment_;
+import com.simbirsoft.timemeter.ui.settings.SettingsFragment;
 import com.simbirsoft.timemeter.ui.stats.StatsListFragment_;
 import com.simbirsoft.timemeter.ui.tags.TagListFragment_;
 import com.simbirsoft.timemeter.ui.tasklist.TaskListFragment_;
@@ -134,7 +135,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
                 break;
 
             case SECTION_ID_SETTINGS:
-                fragmentType = SettingsFragment_.class;
+                fragmentType = SettingsFragment.class;
                 break;
 
             default:
@@ -143,29 +144,39 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
                 break;
         }
 
-        MainFragment fragment = getContentFragment();
-        if (fragment != null && fragmentType.equals(fragment.getClass())) {
-            // selected fragment is already added
-            return;
+        if (position != SECTION_ID_SETTINGS) {
+            MainFragment fragment = getContentFragment();
+            if (fragment != null && fragmentType.equals(fragment.getClass())) {
+                // selected fragment is already added
+                return;
+            }
+
+            if (fragment != null) {
+                saveSectionFragmentState(fragment);
+            }
+
+            Bundle fragmentArgs = new Bundle();
+            fragmentArgs.putInt(MainFragment.ARG_SECTION_ID, position);
+            fragment = (MainFragment) Fragment.instantiate(this, fragmentType.getName(), fragmentArgs);
+
+            Fragment.SavedState fragmentState = getSectionFragmentState(fragment);
+            if (fragmentState != null) {
+                fragment.setInitialSavedState(fragmentState);
+            }
+
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.container, fragment, TAG_CONTENT_FRAGMENT)
+                    .commit();
+        } else {
+            PreferenceFragment fragment1 = new SettingsFragment();
+
+            FragmentManager fragmentManager = getSupportFragmentManager();
+
+            fragmentManager.beginTransaction()
+                    .replace(R.id.container, fragment1, TAG_CONTENT_FRAGMENT)
+                    .commit();
         }
-
-        if (fragment != null) {
-            saveSectionFragmentState(fragment);
-        }
-
-        Bundle fragmentArgs = new Bundle();
-        fragmentArgs.putInt(MainFragment.ARG_SECTION_ID, position);
-        fragment = (MainFragment) Fragment.instantiate(this, fragmentType.getName(), fragmentArgs);
-
-        Fragment.SavedState fragmentState = getSectionFragmentState(fragment);
-        if (fragmentState != null) {
-            fragment.setInitialSavedState(fragmentState);
-        }
-
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, fragment, TAG_CONTENT_FRAGMENT)
-                .commit();
     }
 
     private MainFragment getContentFragment() {
