@@ -18,6 +18,7 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.calendar.ActivityCalendarFragment_;
+import com.simbirsoft.timemeter.ui.settings.SettingsFragment_;
 import com.simbirsoft.timemeter.ui.stats.StatsListFragment_;
 import com.simbirsoft.timemeter.ui.tags.TagListFragment_;
 import com.simbirsoft.timemeter.ui.tasklist.TaskListFragment_;
@@ -47,6 +48,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     private static final String TAG_CONTENT_FRAGMENT = "app_content_fragment_tag";
     private static final int SECTION_ID_TASKS = 0;
     private static final int SECTION_ID_TAGS = 1;
+    private static final int SECTION_ID_SETTINGS = 2;
 
     private static final String KEY_FRAGMENT_STATE_KEY = "MainActivity_content_fragment_state_key";
     private static final String KEY_FRAGMENT_STATE = "MainActivity_content_fragment_state";
@@ -131,6 +133,10 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
                 fragmentType = TagListFragment_.class;
                 break;
 
+            case SECTION_ID_SETTINGS:
+                fragmentType = SettingsFragment_.class;
+                break;
+
             default:
                 LOG.error("unknown section selected");
                 fragmentType = TaskListFragment_.class;
@@ -194,6 +200,9 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
                 break;
             case SECTION_ID_TAGS:
                 mTitle = getString(R.string.title_tags);
+                break;
+            case SECTION_ID_SETTINGS:
+                mTitle = getString(R.string.title_settings);
                 break;
             default:
                 LOG.error("unknown section title attached");
@@ -278,6 +287,9 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
                 break;
 
             case SECTION_ID_TAGS:
+                break;
+
+            case SECTION_ID_SETTINGS:
                 break;
 
             default:

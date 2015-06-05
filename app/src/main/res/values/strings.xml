@@ -4,6 +4,7 @@
     <string name="app_name">TimeMeter</string>
     <string name="title_tasks">Задачи</string>
     <string name="title_tags">Метки</string>
+    <string name="title_settings">Настройки</string>
     <string name="title_stats">Графики</string>
     <string name="title_activity_calendar">Календарь</string>
     <string name="title_begin_new_task">Начать новую задачу</string>

@@ -87,15 +87,12 @@ public class NavigationDrawerFragment extends Fragment {
     @AfterViews
     void bindViews() {
         mAdapter = new NavigationDrawerListAdapter();
-        NavigationDrawerListAdapter.NavigationItem tasks = new NavigationDrawerListAdapter.NavigationItem();
-        tasks.setDrawableId(R.drawable.ic_clock_32dp_selector);
-        tasks.setText(getString(R.string.title_tasks));
 
-        NavigationDrawerListAdapter.NavigationItem tags = new NavigationDrawerListAdapter.NavigationItem();
-        tags.setDrawableId(R.drawable.ic_tag_32dp_selector);
-        tags.setText(getString(R.string.title_tags));
+        NavigationDrawerListAdapter.NavigationItem tasks = getNavigationItem(R.drawable.ic_clock_32dp_selector, R.string.title_tasks);
+        NavigationDrawerListAdapter.NavigationItem tags = getNavigationItem(R.drawable.ic_tag_32dp_selector, R.string.title_tags);
+        NavigationDrawerListAdapter.NavigationItem settings = getNavigationItem(R.drawable.ic_settings_selector, R.string.title_settings);
 
-        mAdapter.setItems(Arrays.asList(tasks, tags));
+        mAdapter.setItems(Arrays.asList(tasks, tags, settings));
 
         mDrawerListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         mDrawerListView.setOnItemClickListener(
@@ -240,6 +237,13 @@ public class NavigationDrawerFragment extends Fragment {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private NavigationDrawerListAdapter.NavigationItem getNavigationItem(int drawableId, int titleId) {
+        NavigationDrawerListAdapter.NavigationItem navigationItem = new NavigationDrawerListAdapter.NavigationItem();
+        navigationItem.setDrawableId(drawableId);
+        navigationItem.setText(getString(titleId));
+        return navigationItem;
     }
 
     private void showGlobalContextActionBar() {
