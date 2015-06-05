@@ -2,7 +2,6 @@ package com.simbirsoft.timemeter.ui.taskedit;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -39,7 +38,6 @@ import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
-import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.injection.Injection;
@@ -74,6 +72,7 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
     public static final String EXTRA_TITLE = "extra_title";
     public static final String EXTRA_TASK_ID = "extra_task_id";
     public static final String EXTRA_TASK_BUNDLE = "extra_task_bundle";
+    public static final String EXTRA_GO_TO_EDIT_TAGS_SCENE = "extra_go_to_edit_tags_scene";
 
     private static final Logger LOG = LogFactory.getLogger(EditTaskFragment.class);
 
@@ -91,6 +90,9 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
 
     @FragmentArg(EXTRA_TASK_ID)
     Long mExtraTaskId;
+
+    @FragmentArg(EXTRA_GO_TO_EDIT_TAGS_SCENE)
+    boolean mGoToEditTagsScene;
 
     @ViewById(R.id.rootScene)
     ViewGroup mContentRoot;
@@ -153,6 +155,7 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
 
         mTaskTagsEditScene = createEditTagsScene();
         mCurrentScene = mTaskTagsEditScene.scene;
+
         bindTaskBundleToViews();
 
         // Load tags to the tag list
@@ -345,6 +348,10 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
         mTaskBundle.saveState();
 
         bindTaskBundleToViews();
+
+        if (mGoToEditTagsScene) {
+            goToEditTagsScene();
+        }
     }
 
     @OnJobFailure(LoadTaskBundleJob.class)

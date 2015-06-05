@@ -17,7 +17,9 @@ import android.widget.ListView;
 
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.Preferences;
+import com.simbirsoft.timemeter.events.ReadyToShowHelpCardEvent;
 import com.simbirsoft.timemeter.injection.Injection;
+import com.squareup.otto.Bus;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
@@ -30,19 +32,23 @@ import javax.inject.Inject;
 @EFragment(R.layout.fragment_navigation_drawer)
 public class NavigationDrawerFragment extends Fragment {
 
-    @ViewById(android.R.id.list)
-    ListView mDrawerListView;
-
     private NavigationDrawerCallbacks mCallbacks;
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
     private View mFragmentContainerView;
     private NavigationDrawerListAdapter mAdapter;
+    
+    @ViewById(android.R.id.list)
+    ListView mDrawerListView;
 
-    private int mCurrentSelectedPosition = 0;
+    @Inject
+    Bus mBus;
 
     @Inject
     Preferences mPreferences;
+
+    private int mCurrentSelectedPosition = 0;
+
 
     public NavigationDrawerFragment() {
     }
@@ -138,6 +144,7 @@ public class NavigationDrawerFragment extends Fragment {
 
                 if (!mPreferences.getUserLearnedDrawer()) {
                     mPreferences.setUserLearnedDrawer(true);
+                    mBus.post(new ReadyToShowHelpCardEvent());
                 }
 
                 getActivity().supportInvalidateOptionsMenu(); // calls onPrepareOptionsMenu()

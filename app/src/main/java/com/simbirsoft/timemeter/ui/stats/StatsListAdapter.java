@@ -3,27 +3,26 @@ package com.simbirsoft.timemeter.ui.stats;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
-import com.simbirsoft.timemeter.ui.model.TaskBundle;
+import com.simbirsoft.timemeter.ui.base.BaseAnimateViewHolder;
 
 import java.util.Collection;
 import java.util.List;
 
-public class StatsListAdapter extends RecyclerView.Adapter<StatsListAdapter.ViewHolder> {
+public class StatsListAdapter extends RecyclerView.Adapter<StatsListAdapter.StatsViewHolder> {
 
-    static interface ChartClickListener {
+    interface ChartClickListener {
         void onChartClicked(int viewType);
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    static class StatsViewHolder extends BaseAnimateViewHolder {
 
-        public ViewHolder(CardView itemView, View contentView) {
+        public StatsViewHolder(CardView itemView, View contentView) {
             super(itemView);
 
             this.itemView = itemView;
@@ -68,7 +67,24 @@ public class StatsListAdapter extends RecyclerView.Adapter<StatsListAdapter.View
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public int getItemCount() {
+        return mViewBinders.size();
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return getViewBinder(position).getViewTypeId();
+    }
+
+    @Override
+    public void onBindViewHolder(StatsViewHolder viewHolder, int position) {
+        StatisticsViewBinder binder = getViewBinder(position);
+
+        binder.bindView(viewHolder.contentView);
+    }
+
+    @Override
+    public StatsViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         StatisticsViewBinder binder = getViewBinderForViewTypeId(viewType);
 
         CardView view = (CardView) LayoutInflater.from(parent.getContext())
@@ -79,19 +95,7 @@ public class StatsListAdapter extends RecyclerView.Adapter<StatsListAdapter.View
         view.setOnClickListener(mClickListener);
         view.setTag(viewType);
 
-        return new ViewHolder(view, contentView);
-    }
-
-    @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        StatisticsViewBinder binder = getViewBinder(position);
-
-        binder.bindView(holder.contentView);
-    }
-
-    @Override
-    public int getItemCount() {
-        return mViewBinders.size();
+        return new StatsViewHolder(view, contentView);
     }
 
     public void setChartClickListener(ChartClickListener chartClickListener) {
