@@ -76,7 +76,7 @@ public class ViewTaskFragment extends BaseFragment
     TaskBundle mExtraTaskBundle;
 
     @FragmentArg(EXTRA_TASK_ID)
-    long mExtraTaskId;
+    long mExtraTaskId = -1;
 
     private final TagView.TagViewClickListener mTagViewClickListener = (tagView) -> {
         LOG.debug("Tag <" + tagView.getTag().getName() + "> clicked!");
@@ -142,10 +142,6 @@ public class ViewTaskFragment extends BaseFragment
 
     @AfterViews
     void bindViews() {
-        setActionBarTitleAndHome(mExtraTaskBundle.getTask().getDescription());
-        tagFlowView.setHintVisible(true);
-        tagFlowView.bindTagViews(mExtraTaskBundle.getTags());
-        tagFlowView.setTagViewsClickListener(mTagViewClickListener);
         View hintView = tagFlowView.getHintView();
         if (hintView != null) hintView.setOnClickListener((v) -> {
             goToEditTaskTagsScene();
@@ -169,7 +165,9 @@ public class ViewTaskFragment extends BaseFragment
         setActionBarTitleAndHome(mExtraTaskBundle.getTask().getDescription());
         tagFlowView.bindTagViews(mExtraTaskBundle.getTags());
         tagFlowView.setTagViewsClickListener(mTagViewClickListener);
-        //mAdapter.setHighlightedSpans(mExtraTaskBundle.getTaskTimeSpans());
+        if (mExtraTaskId == -1) {
+            mAdapter.setHighlightedSpans(mExtraTaskBundle.getTaskTimeSpans());
+        }
         mRecyclerView.setAdapter(mAdapter);
         mProgressLayout.setShouldDisplayEmptyIndicatorMessage(true);
         mProgressLayout.setEmptyIndicatorStyle(Typeface.ITALIC);
