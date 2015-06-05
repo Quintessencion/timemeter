@@ -15,6 +15,7 @@ import com.simbirsoft.timemeter.jobs.LoadTaskBundleJob;
 import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
 import com.simbirsoft.timemeter.jobs.LoadTaskRecentActivitiesJob;
 import com.simbirsoft.timemeter.jobs.LoadTaskTagsJob;
+import com.simbirsoft.timemeter.jobs.LoadTaskTimeSpanJob;
 import com.simbirsoft.timemeter.jobs.LoadTaskTimespansJob;
 import com.simbirsoft.timemeter.jobs.LoadTasksForTimespansJob;
 import com.simbirsoft.timemeter.jobs.RemoveTagJob;
@@ -46,6 +47,7 @@ public interface JobsComponent {
     public LoadTaskActivitiesJob loadTaskActivitiesJob();
     public LoadTasksForTimespansJob loadTasksJob();
     public LoadTaskRecentActivitiesJob loadTaskRecentActivitiesJob();
+    public LoadTaskTimeSpanJob loadTaskTimeSpanJob();
     public RemoveTaskTimeSpanJob removeTaskTimeSpanJob();
     public UpdateTaskTimeSpanJob updateTaskTimeSpanJob();
 }

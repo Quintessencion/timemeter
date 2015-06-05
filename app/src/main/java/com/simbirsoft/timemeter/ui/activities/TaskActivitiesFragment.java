@@ -88,11 +88,9 @@ public class TaskActivitiesFragment extends BaseFragment implements
 
     private static final String LOADER_TAG = "TaskActivitiesFragment_";
     private static final String REMOVE_SPAN_JOB = "remove_span_job";
-    private static final String UPDATE_SPAN_JOB = "update_span_job";
     private static final String TAG_DATE_PICKER_FRAGMENT = "activities_date_picker_fragment_tag";
     private static final String SNACKBAR_TAG = "task_activities_snackbar";
-    private static final int REQUEST_CODE_EDIT_ACTIVITY = 10005;
-    private static final int REQUEST_CODE_CREATE_NEW_ACTIVITY = 10006;
+    private static final int REQUEST_CODE_PROCESS_ACTIVITY = 10005;
 
     @ViewById(android.R.id.list)
     RecyclerView mRecyclerView;
@@ -305,17 +303,6 @@ public class TaskActivitiesFragment extends BaseFragment implements
         requestLoad(LOADER_TAG, this);
     }
 
-    @OnJobSuccess(UpdateTaskTimeSpanJob.class)
-    public void onUpdateSpanSuccess(JobEvent ev) {
-        requestLoad(LOADER_TAG, this);
-    }
-
-    @OnJobFailure(UpdateTaskTimeSpanJob.class)
-    public void onUpdateSpanFailed(JobEvent ev) {
-        String msg = getSpanEditErrorDescription(ev.getEventCode());
-        showToast(msg);
-    }
-
     @Override
     public Job onCreateJob(String s) {
         if (LOADER_TAG.equals(s)) {
@@ -334,12 +321,6 @@ public class TaskActivitiesFragment extends BaseFragment implements
         if (REMOVE_SPAN_JOB.equals(s)) {
             RemoveTaskTimeSpanJob job = Injection.sJobsComponent.removeTaskTimeSpanJob();
             job.setSpan(mAdapter.getSelectedSpanIds());
-            return job;
-        }
-        if (UPDATE_SPAN_JOB.equals(s)) {
-            UpdateTaskTimeSpanJob job = Injection.sJobsComponent.updateTaskTimeSpanJob();
-            job.setSpan(mSpanToUpdate);
-            mSpanToUpdate = null;
             return job;
         }
         throw new UnsupportedOperationException("Unknown job id");
@@ -557,69 +538,38 @@ public class TaskActivitiesFragment extends BaseFragment implements
         }
     }
 
-    public void onTaskTimeSpanEditClicked(TaskTimeSpan span) {
-        mSpanToUpdate = span;
+    private void onFloatingButtonClicked(View v) {
+        processTimeSpan(null);
+    }
+
+    private void processTimeSpan(TaskTimeSpan spanOrNull) {
+        long id = (spanOrNull != null) ? spanOrNull.getId() :  EditTaskActivityDialogFragment.CREATE_NEW_SPAN_ID;
+
         Bundle args = new Bundle();
         args.putString(EditTaskActivityDialogFragment.EXTRA_TITLE, mExtraTitle);
-        args.putLong(EditTaskActivityDialogFragment.EXTRA_SPAN_ID, span.getId());
+        args.putLong(EditTaskActivityDialogFragment.EXTRA_SPAN_ID, id);
+        args.putLong(EditTaskActivityDialogFragment.EXTRA_TASK_ID, mExtraTaskId);
+
         Intent launchIntent = DialogContainerActivity.prepareDialogLaunchIntent(
                 getActivity(), EditTaskActivityDialogFragment.class.getName(), args);
-        startActivityForResult(launchIntent, REQUEST_CODE_EDIT_ACTIVITY);
+        startActivityForResult(launchIntent, REQUEST_CODE_PROCESS_ACTIVITY);
     }
 
     private void editSelectedSpan() {
         List<TaskTimeSpan> selected = mAdapter.getSelectedSpans();
         Preconditions.checkArgument(selected.size() == 1, "there should be 1 selected span");
-        onTaskTimeSpanEditClicked(selected.get(0));
+        processTimeSpan(selected.get(0));
     }
 
     private void removeSelectedSpans() {
         requestLoad(REMOVE_SPAN_JOB, this);
     }
 
-    @InstanceState
-    TaskTimeSpan mSpanToUpdate;
-
-    @OnActivityResult(REQUEST_CODE_EDIT_ACTIVITY)
+    @OnActivityResult(REQUEST_CODE_PROCESS_ACTIVITY)
     public void onEditActivityResult(int resultCode, Intent data) {
         if (resultCode == EditTaskActivityDialogFragment.RESULT_CODE_OK) {
-            mSpanToUpdate.setStartTimeMillis(data.getLongExtra(EditTaskActivityDialogFragment.RESULT_START_MILLIS, 0));
-            mSpanToUpdate.setEndTimeMillis(data.getLongExtra(EditTaskActivityDialogFragment.RESULT_END_MILLIS, 0));
-            requestLoad(UPDATE_SPAN_JOB, this);
+            requestLoad(LOADER_TAG, this);
         }
-    }
-
-    @OnActivityResult(REQUEST_CODE_CREATE_NEW_ACTIVITY)
-    public void onCreateNewActivityResult(int resultCode, Intent data) {
-        if (resultCode == EditTaskActivityDialogFragment.RESULT_CODE_OK) {
-            mSpanToUpdate = new TaskTimeSpan();
-            mSpanToUpdate.setTaskId(mExtraTaskId);
-            mSpanToUpdate.setStartTimeMillis(data.getLongExtra(EditTaskActivityDialogFragment.RESULT_START_MILLIS, 0));
-            mSpanToUpdate.setEndTimeMillis(data.getLongExtra(EditTaskActivityDialogFragment.RESULT_END_MILLIS, 0));
-            requestLoad(UPDATE_SPAN_JOB, this);
-        }
-    }
-
-    private String getSpanEditErrorDescription(int errorCode) {
-        switch (errorCode) {
-            case UpdateTaskTimeSpanJob.ERROR_BAD_RANGE :
-                return getString(R.string.error_time_span_bad_range);
-            case UpdateTaskTimeSpanJob.ERROR_BELONGS_TO_FUTURE:
-                return getString(R.string.error_time_span_belongs_to_future);
-            case UpdateTaskTimeSpanJob.ERROR_OVERLAPS:
-                return getString(R.string.error_time_span_overlaps);
-            default:
-                return getString(R.string.error_unknown);
-        }
-    }
-
-    private void onFloatingButtonClicked(View v) {
-        Bundle args = new Bundle();
-        args.putString(EditTaskActivityDialogFragment.EXTRA_TITLE, mExtraTitle);
-        args.putLong(EditTaskActivityDialogFragment.EXTRA_SPAN_ID, EditTaskActivityDialogFragment.CREATE_NEW_SPAN_ID);
-        Intent launchIntent = DialogContainerActivity.prepareDialogLaunchIntent(
-                getActivity(), EditTaskActivityDialogFragment.class.getName(), args);
-        startActivityForResult(launchIntent, REQUEST_CODE_CREATE_NEW_ACTIVITY);
     }
 
     private boolean onFloatingActionButtonLongClicked(View v) {

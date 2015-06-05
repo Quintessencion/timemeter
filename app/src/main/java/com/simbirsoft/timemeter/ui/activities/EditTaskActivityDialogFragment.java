@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.be.android.library.worker.annotations.OnJobFailure;
@@ -21,6 +22,7 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskTimeSpanJob;
+import com.simbirsoft.timemeter.jobs.UpdateTaskTimeSpanJob;
 import com.simbirsoft.timemeter.ui.base.BaseDialogFragment;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerCallbacks;
 import com.simbirsoft.timemeter.ui.views.DateTimeView;
@@ -28,6 +30,7 @@ import com.sleepbot.datetimepicker.time.RadialPickerLayout;
 import com.sleepbot.datetimepicker.time.TimePickerDialog;
 
 import org.androidannotations.annotations.InstanceState;
+import org.w3c.dom.Text;
 
 import java.util.Calendar;
 
@@ -36,17 +39,16 @@ import javax.inject.Inject;
 public class EditTaskActivityDialogFragment extends BaseDialogFragment implements JobLoader.JobLoaderCallbacks,
                     DateTimeView.DateTimeViewListener, DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
     public static final String EXTRA_SPAN_ID = "extra_span_id";
+    public static final String EXTRA_TASK_ID = "extra_task_id";
     public static final int RESULT_CODE_OK = 10001;
     public static final int RESULT_CODE_CANCELLED = 10002;
-    public static final String RESULT_START_MILLIS = "result_start_millis";
-    public static final String RESULT_END_MILLIS = "result_end_millis";
     public static final String EXTRA_TITLE = "extra_title";
     public static final String LOAD_SPAN_JOB = "load_span_job";
+    public static final String UPDATE_SPAN_JOB = "update_span_job";
     public static final int CREATE_NEW_SPAN_ID = -1;
     private static final String TAG_DATE_PICKER_FRAGMENT = "edit_activity_date_picker_fragment_tag";
     private static final String TAG_TIME_PICKER_FRAGMENT = "edit_activity_time_picker_fragment_tag";
-    public static final String STATE_START_TIME = "state_start_time";
-    public static final String STATE_END_TIME = "state_end_time";
+    private static final String STATE_SPAN = "state_span";
 
     private MaterialDialog mDialog;
     private Long mExtraSpanId;
@@ -55,9 +57,8 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
     private DateTimeView mStartDateTimeView;
     private DateTimeView mEndDateTimeView;
     private DateTimeView mSelectedDateTimeView;
-
-    long mStartDateTimeMillis;
-    long mEndDateTimeMillis;
+    private TextView mErrorMessage;
+    private TaskTimeSpan mSpan;
 
     @Inject
     LoadTaskTimeSpanJob mLoadSpanJob;
@@ -79,23 +80,28 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
             mLoadSpanJob.setTaskTimeSpanId(mExtraSpanId);
             requestLoad(LOAD_SPAN_JOB, this);
         } else {
-            if (savedInstanceState != null) {
-                mStartDateTimeMillis = savedInstanceState.getLong(STATE_START_TIME);
-                mEndDateTimeMillis = savedInstanceState.getLong(STATE_END_TIME);
-            } else {
+            if (savedInstanceState == null) {
                 setDefaultSpan();
+            } else {
+                mSpan = savedInstanceState.getParcelable(STATE_SPAN);
             }
 
-            mStartDateTimeView.setDateTimeInMillis(mStartDateTimeMillis);
-            mEndDateTimeView.setDateTimeInMillis(mEndDateTimeMillis);
+            updateFields();
         }
     }
 
+    private void updateFields() {
+        mStartDateTimeView.setDateTimeInMillis(mSpan.getStartTimeMillis());
+        mEndDateTimeView.setDateTimeInMillis(mSpan.getEndTimeMillis());
+    }
+
     private void setDefaultSpan() {
+        mSpan = new TaskTimeSpan();
+        mSpan.setTaskId(getArguments().getLong(EXTRA_TASK_ID));
         Calendar c = Calendar.getInstance();
-        mEndDateTimeMillis = c.getTimeInMillis();
+        mSpan.setEndTimeMillis(c.getTimeInMillis());
         c.add(Calendar.HOUR, -1);
-        mStartDateTimeMillis = c.getTimeInMillis();
+        mSpan.setStartTimeMillis(c.getTimeInMillis());
     }
 
     @Override
@@ -117,8 +123,8 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
 
     @OnJobSuccess(LoadTaskTimeSpanJob.class)
     public void onSpanLoaded(LoadJobResult<TaskTimeSpan> result) {
-        mStartDateTimeView.setDateTimeInMillis(result.getData().getStartTimeMillis());
-        mEndDateTimeView.setDateTimeInMillis(result.getData().getEndTimeMillis());
+        mSpan = result.getData();
+        updateFields();
     }
 
     @OnJobFailure(LoadTaskTimeSpanJob.class)
@@ -126,11 +132,46 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
         //TODO show error alert
     }
 
+    @OnJobSuccess(UpdateTaskTimeSpanJob.class)
+    public void onUpdateSpanSuccess(JobEvent ev) {
+        mErrorMessage.setVisibility(View.GONE);
+
+        setResult(RESULT_CODE_OK, null);
+        finish();
+    }
+
+    @OnJobFailure(UpdateTaskTimeSpanJob.class)
+    public void onUpdateSpanFailed(JobEvent ev) {
+        String msg = getSpanEditErrorDescription(ev.getEventCode());
+
+        mErrorMessage.setText(msg);
+        mErrorMessage.setVisibility(View.VISIBLE);
+    }
+
+    private String getSpanEditErrorDescription(int errorCode) {
+        switch (errorCode) {
+            case UpdateTaskTimeSpanJob.ERROR_BAD_RANGE :
+                return getString(R.string.error_time_span_bad_range);
+            case UpdateTaskTimeSpanJob.ERROR_BELONGS_TO_FUTURE:
+                return getString(R.string.error_time_span_belongs_to_future);
+            case UpdateTaskTimeSpanJob.ERROR_OVERLAPS:
+                return getString(R.string.error_time_span_overlaps);
+            default:
+                return getString(R.string.error_unknown);
+        }
+    }
+
     @Override
     public Job onCreateJob(String tag) {
         switch (tag) {
             case LOAD_SPAN_JOB:
-                return mLoadSpanJob;
+                LoadTaskTimeSpanJob job = Injection.sJobsComponent.loadTaskTimeSpanJob();
+                job.setTaskTimeSpanId(mExtraSpanId);
+                return job;
+            case UPDATE_SPAN_JOB:
+                UpdateTaskTimeSpanJob updJob = Injection.sJobsComponent.updateTaskTimeSpanJob();
+                updJob.setSpan(mSpan);
+                return updJob;
             default:
                 break;
         }
@@ -145,16 +186,12 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
 
         mStartDateTimeView = (DateTimeView)root.findViewById(R.id.startDateTime);
         mEndDateTimeView = (DateTimeView)root.findViewById(R.id.endDateTime);
+        mErrorMessage = (TextView)root.findViewById(R.id.errorMessage);
 
         mStartDateTimeView.setDateTimeViewListener(this);
         mEndDateTimeView.setDateTimeViewListener(this);
 
-
-
-        if (mExtraSpanId == null) {
-            setDefaultSpan();
-        }
-
+        EditTaskActivityDialogFragment self = this;
         mDialog = new MaterialDialog.Builder(getActivity())
                 .title(mExtraTitle)
                 .positiveText(R.string.action_accept)
@@ -162,11 +199,10 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
                 .callback(new MaterialDialog.ButtonCallback() {
                     @Override
                     public void onPositive(MaterialDialog dialog) {
-                        Intent result = new Intent();
-                        result.putExtra(RESULT_START_MILLIS, mStartDateTimeView.getDateTimeInMillis());
-                        result.putExtra(RESULT_END_MILLIS, mEndDateTimeView.getDateTimeInMillis());
-                        setResult(RESULT_CODE_OK, result);
-                        finish();
+                        mSpan.setStartTimeMillis(mStartDateTimeView.getDateTimeInMillis());
+                        mSpan.setEndTimeMillis(mEndDateTimeView.getDateTimeInMillis());
+
+                        requestLoad(UPDATE_SPAN_JOB, self);
                     }
 
                     @Override
@@ -215,9 +251,9 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
             return;
         }
         Calendar calendar = Calendar.getInstance();
-        calendar.set(year, month, day, 0, 0, 0);
-        long millis = calendar.getTimeInMillis() + mSelectedDateTimeView.getTimeValueInMillis();
-        setSelectedDateTimeValue(millis);
+        calendar.setTimeInMillis(mSelectedDateTimeView.getDateTimeInMillis());
+        calendar.set(year, month, day);
+        mSelectedDateTimeView.setDateTimeInMillis(calendar.getTimeInMillis());
     }
 
     @Override
@@ -226,37 +262,16 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
             return;
         }
         Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(mSelectedDateTimeView.getDateValueInMillis());
+        calendar.setTimeInMillis(mSelectedDateTimeView.getDateTimeInMillis());
         calendar.set(Calendar.HOUR_OF_DAY, hour);
         calendar.set(Calendar.MINUTE, minute);
-        setSelectedDateTimeValue(calendar.getTimeInMillis());
-    }
-
-    private void setSelectedDateTimeValue(long millis) {
-        long start, end;
-        if (mSelectedDateTimeView == mStartDateTimeView) {
-            start = millis;
-            end = mEndDateTimeView.getDateTimeInMillis();
-        } else {
-            if (millis > System.currentTimeMillis()) {
-                //TODO show error alert
-                return;
-            }
-            start = mStartDateTimeView.getDateTimeInMillis();
-            end = millis;
-        }
-        if (end > start) {
-            mSelectedDateTimeView.setDateTimeInMillis(millis);
-        } else {
-            //TODO show error alert
-        }
+        mSelectedDateTimeView.setDateTimeInMillis(calendar.getTimeInMillis());
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putLong(STATE_START_TIME, mStartDateTimeView.getDateTimeInMillis());
-        outState.putLong(STATE_END_TIME, mEndDateTimeView.getDateTimeInMillis());
+        outState.putParcelable(STATE_SPAN, mSpan);
     }
 }
