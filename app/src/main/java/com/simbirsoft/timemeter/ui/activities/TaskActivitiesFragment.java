@@ -558,6 +558,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
     }
 
     public void onTaskTimeSpanEditClicked(TaskTimeSpan span) {
+        mSpanToUpdate = span;
         Bundle args = new Bundle();
         args.putString(EditTaskActivityDialogFragment.EXTRA_TITLE, mExtraTitle);
         args.putLong(EditTaskActivityDialogFragment.EXTRA_SPAN_ID, span.getId());
@@ -576,12 +577,12 @@ public class TaskActivitiesFragment extends BaseFragment implements
         requestLoad(REMOVE_SPAN_JOB, this);
     }
 
-    private TaskTimeSpan mSpanToUpdate;
+    @InstanceState
+    TaskTimeSpan mSpanToUpdate;
 
     @OnActivityResult(REQUEST_CODE_EDIT_ACTIVITY)
     public void onEditActivityResult(int resultCode, Intent data) {
         if (resultCode == EditTaskActivityDialogFragment.RESULT_CODE_OK) {
-            mSpanToUpdate = mAdapter.getSelectedSpans().get(0);
             mSpanToUpdate.setStartTimeMillis(data.getLongExtra(EditTaskActivityDialogFragment.RESULT_START_MILLIS, 0));
             mSpanToUpdate.setEndTimeMillis(data.getLongExtra(EditTaskActivityDialogFragment.RESULT_END_MILLIS, 0));
             requestLoad(UPDATE_SPAN_JOB, this);
