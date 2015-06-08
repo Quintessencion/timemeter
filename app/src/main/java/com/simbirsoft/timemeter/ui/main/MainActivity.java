@@ -2,6 +2,7 @@ package com.simbirsoft.timemeter.ui.main;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
@@ -88,6 +89,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         super.onCreate(savedInstanceState);
 
         mTitle = getTitle();
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
     }
 
     @AfterViews
