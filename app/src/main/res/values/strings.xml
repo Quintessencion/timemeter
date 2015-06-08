@@ -139,6 +139,8 @@
     <string name="all_time">Все время</string>
     <string name="another">Другой</string>
 
+    <string name="settings_incorrect_time">Время начала не может быть больше времени окончания</string>
+
     <string-array name="period_array">
         <item>@string/day</item>
         <item>@string/week</item>

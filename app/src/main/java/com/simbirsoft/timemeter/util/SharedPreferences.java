@@ -10,7 +10,8 @@ public interface SharedPreferences {
     @DefaultInt(8 * 60)
     int calendarStartTime();
 
-    // default start time is 9:00 pm in minutes
+    // default end time is 9:00 pm in minutes
     @DefaultInt(21 * 60)
     int calendarEndTime();
+    
 }

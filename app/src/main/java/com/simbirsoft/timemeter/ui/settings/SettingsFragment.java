@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.support.v4.preference.PreferenceFragment;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.ui.main.SectionFragment;
 import com.simbirsoft.timemeter.ui.util.TimeUtils;
@@ -97,12 +98,20 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
 
         switch (mTimePickerDialogType) {
             case START_TIME_PICKER_DIALOG:
-                startTimePreference.setSummary(getFormattedTime(mCalendarStartTimeSummary, timeInMinutes));
-                mSharedPreference.calendarStartTime().put(timeInMinutes);
+                if (isStartTimeLessThanEndTime(timeInMinutes, mSharedPreference.calendarEndTime().get())) {
+                    startTimePreference.setSummary(getFormattedTime(mCalendarStartTimeSummary, timeInMinutes));
+                    mSharedPreference.calendarStartTime().put(timeInMinutes);
+                } else {
+                    showErrorDialog();
+                }
                 break;
             case END_TIME_PICKER_DIALOG:
-                endTimePreference.setSummary(getFormattedTime(mCalendarEndTimeSummary, timeInMinutes));
-                mSharedPreference.calendarEndTime().put(timeInMinutes);
+                if (isStartTimeLessThanEndTime(mSharedPreference.calendarEndTime().get(), timeInMinutes)) {
+                    endTimePreference.setSummary(getFormattedTime(mCalendarEndTimeSummary, timeInMinutes));
+                    mSharedPreference.calendarEndTime().put(timeInMinutes);
+                } else {
+                    showErrorDialog();
+                }
                 break;
             case NONE:
                 break;
@@ -123,5 +132,17 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
 
     private String getFormattedTime(String summary, int timeInMinutes) {
         return String.format(summary, TimeUtils.formatMinutes(timeInMinutes));
+    }
+
+    private boolean isStartTimeLessThanEndTime(int calendarStartTime, int calendarEndTime) {
+        return calendarStartTime <= calendarEndTime;
+    }
+
+    private void showErrorDialog() {
+        MaterialDialog materialDialog = new MaterialDialog.Builder(getActivity())
+                .title(R.string.settings_incorrect_time)
+                .positiveText(R.string.action_accept)
+                .build();
+        materialDialog.show();
     }
 }
