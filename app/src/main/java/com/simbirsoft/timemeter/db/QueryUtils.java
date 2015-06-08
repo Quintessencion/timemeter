@@ -1,5 +1,7 @@
 package com.simbirsoft.timemeter.db;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.Nullable;
 
 import com.google.common.base.Joiner;
@@ -9,10 +11,13 @@ import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTag;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.model.Period;
-import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.squareup.phrase.Phrase;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 
 public final class QueryUtils {
 
@@ -97,5 +102,35 @@ public final class QueryUtils {
         taskIdSBuilder.append(")");
 
         return taskIdSBuilder.toString();
+    }
+
+    public static List<Tag> getTagsForTask(SQLiteDatabase db, long taskId) {
+        List<Tag> tags = Collections.emptyList();
+
+        final String query = Phrase.from(
+                "select * " +
+                        "from {table_tag} " +
+                        "where {table_tag}.{table_tag_column_tag_id} in " +
+                        "(select {table_tasktag}.{table_tasktag_column_tag_id} " +
+                        "from {table_tasktag} " +
+                        "where {table_tasktag}.{table_tasktag_column_task_id}=?)")
+                .put("table_tag", Tag.TABLE_NAME)
+                .put("table_tag_column_tag_id", Tag.COLUMN_ID)
+                .put("table_tasktag", TaskTag.TABLE_NAME)
+                .put("table_tasktag_column_tag_id", TaskTag.COLUMN_TAG_ID)
+                .put("table_tasktag_column_task_id", TaskTag.COLUMN_TASK_ID)
+                .format()
+                .toString();
+
+        String[] args = new String[]{taskId + ""};
+        Cursor c = db.rawQuery(query, args);
+
+        try {
+            tags = cupboard().withCursor(c).list(Tag.class);
+        } finally {
+            c.close();
+        }
+
+        return tags;
     }
 }
