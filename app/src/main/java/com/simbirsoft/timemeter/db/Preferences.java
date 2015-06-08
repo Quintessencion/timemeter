@@ -33,6 +33,10 @@ public final class Preferences {
     private static final int DAY_MIN_HOUR = 0;
     private static final int DAY_MAX_HOUR = 24;
 
+    private static final String PREFERENCE_SHOW_ALL_ACTIVITY = "show_all_activity";
+
+    private static final boolean SHOW_ALL_ACTIVITY_DEFAULT = true;
+
     @Inject
     public Preferences(App appContext) {
         mPrefs = PreferenceManager.getDefaultSharedPreferences(appContext);
@@ -118,6 +122,14 @@ public final class Preferences {
         int startHour = getDayStartHour();
         Preconditions.checkArgument(endHour > startHour, "day end hour should be greater than day start hour");
         mPrefs.edit().putInt(PREFERENCE_DAY_END_HOUR, endHour).apply();
+    }
+
+    public boolean getDisplayAllActivities() {
+        return mPrefs.getBoolean(PREFERENCE_SHOW_ALL_ACTIVITY, SHOW_ALL_ACTIVITY_DEFAULT);
+    }
+
+    public void setDisplayAllActivities(boolean isShowAllActivity) {
+        mPrefs.edit().putBoolean(PREFERENCE_SHOW_ALL_ACTIVITY, isShowAllActivity).apply();
     }
 
     private boolean checkHourValue(int hour) {

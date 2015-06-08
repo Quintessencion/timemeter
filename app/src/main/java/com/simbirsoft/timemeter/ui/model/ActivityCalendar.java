@@ -41,6 +41,7 @@ public class ActivityCalendar {
     private int mEndHour;
     private final List<Date> mDays;
     private final Multimap<Integer, TaskTimeSpan> mDailyActivity;
+    private boolean mIsDisplayAllActivities;
 
     public ActivityCalendar() {
         mDailyActivity = Multimaps.newListMultimap(Maps.newHashMap(), Lists::newArrayList);
@@ -171,7 +172,9 @@ public class ActivityCalendar {
             }
 
             mDailyActivity.put(dayIndex, span);
-            mStartHour = Math.min(mStartHour, spanStartHour);
+
+            mStartHour = (mIsDisplayAllActivities) ? Math.min(mStartHour, spanStartHour) : mStartHour;
+
             LOG.debug("activity added to calendar day '{}'; duration: '{}'", dayIndex, span.getDuration());
         }
     }
@@ -262,5 +265,6 @@ public class ActivityCalendar {
         Preferences prefs = Injection.sDatabaseComponent.preferences();
         mStartHour = prefs.getDayStartHour();
         mEndHour = prefs.getDayEndHour();
+        mIsDisplayAllActivities = prefs.getDisplayAllActivities();
     }
 }
