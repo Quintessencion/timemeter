@@ -21,6 +21,7 @@ import org.androidannotations.annotations.sharedpreferences.Pref;
 @EFragment
 public class SettingsFragment extends PreferenceFragment implements SectionFragment,
         TimePickerDialog.OnTimeSetListener {
+
     private static final String TIME_PICKER_DIALOG_TAG = "time_picker_dialog_tag";
 
     @Pref
@@ -34,6 +35,7 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
 
     Preference startTimePreference;
     Preference endTimePreference;
+    Preference showAllActivity;
 
     @InstanceState
     TimePickerDialogType mTimePickerDialogType;
@@ -49,9 +51,11 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
 
-        startTimePreference = getPreferenceScreen().findPreference("pref_startTime");
-        endTimePreference = getPreferenceScreen().findPreference("pref_endTime");
-        getPreferenceManager().setSharedPreferencesName("SharedPreferences");
+        startTimePreference = getPreferenceScreen().findPreference(PreferenceKeys.PREF_START_TIME_KEY);
+        endTimePreference = getPreferenceScreen().findPreference(PreferenceKeys.PREF_END_TIME_KEY);
+        showAllActivity = getPreferenceScreen().findPreference(PreferenceKeys.PREF_ALL_ACTIVITY_KEY);
+
+        getPreferenceManager().setSharedPreferencesName(PreferenceKeys.SHARED_PREFERENCES_NAME);
 
         startTimePreference.setOnPreferenceClickListener(preference -> {
             mTimePickerDialogType = TimePickerDialogType.START_TIME_PICKER_DIALOG;
@@ -64,6 +68,12 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
             showTimePickerDialog(mSharedPreference.calendarEndTime().get());
             return true;
         });
+
+        showAllActivity.setOnPreferenceChangeListener((preference, newValue) -> {
+            mSharedPreference.showAllActivity().put((Boolean) newValue);
+            return true;
+        });
+
 
         mTimePickerDialogType = TimePickerDialogType.NONE;
     }
