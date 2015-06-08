@@ -4,11 +4,7 @@ package com.simbirsoft.timemeter.ui.activities;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.support.v7.widget.RecyclerView;
-import android.view.ActionMode;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -39,10 +35,6 @@ import java.util.List;
 public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesAdapter.ViewHolder>
                                    implements TaskActivityItemsLayout.TaskActivityItemsAdapter,
                                     View.OnLongClickListener {
-
-    public interface OnSelectionSetChangedListener {
-        void onSelectionSetChanged(TaskActivitiesAdapter sender);
-    }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         public ViewHolder(View itemView) {
@@ -94,8 +86,6 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
     private final List<TaskTimeSpan> mHighlightedSpans;
     private final List<TaskTimeSpan> mSelectedSpans;
 
-    private OnSelectionSetChangedListener mSelectionSetChangedListener;
-
     public TaskActivitiesAdapter(Activity activityContext) {
         mActivityContext = activityContext;
         mItems = Lists.newArrayList();
@@ -119,6 +109,26 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
 
         mSelectedSpans.clear();
         mHighlightedSpans.clear();
+
+        notifyDataSetChanged();
+    }
+
+    public void setItems(List<TaskActivityItem> items, List<Long> selectedIds) {
+        mItems.clear();
+        mItems.addAll(items);
+
+        mSelectedSpans.clear();
+
+        for (TaskActivityItem item : items) {
+            if (item instanceof TaskActivitySpansItem) {
+                TaskActivitySpansItem si = (TaskActivitySpansItem) item;
+                for (TaskTimeSpan span : si.getList()) {
+                    if (selectedIds.contains(span.getId())) {
+                        mSelectedSpans.add(span);
+                    }
+                }
+            }
+        }
 
         notifyDataSetChanged();
     }
@@ -322,10 +332,6 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
 
         notifyDataSetChanged();
 
-        if (mSelectionSetChangedListener != null) {
-            mSelectionSetChangedListener.onSelectionSetChanged(this);
-        }
-
         return true;
     }
 
@@ -346,10 +352,6 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
             mSelectedSpans.clear();
             notifyDataSetChanged();
         }
-    }
-
-    public void setSelectionSetChangedListener(OnSelectionSetChangedListener selectionSetChangedListener) {
-        mSelectionSetChangedListener = selectionSetChangedListener;
     }
 
     private void showCannotEditActiveTimeSpanAlert() {

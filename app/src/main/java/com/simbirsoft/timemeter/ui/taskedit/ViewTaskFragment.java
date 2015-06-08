@@ -23,6 +23,8 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.google.common.primitives.Longs;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
@@ -55,6 +57,7 @@ import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -70,6 +73,8 @@ public class ViewTaskFragment extends BaseFragment
 
     private static final int REQUEST_CODE_VIEW_ACTIVITIES = 101;
     private static final int REQUEST_CODE_EDIT_ACTIVITY = 10005;
+
+    private static final String STATE_SELECTION = "asdasd";
 
     @ViewById(R.id.tagFlowView)
     protected TagFlowView tagFlowView;
@@ -93,6 +98,8 @@ public class ViewTaskFragment extends BaseFragment
     @InstanceState
     int mListPositionOffset;
 
+    List<Long> mSelectedSpans = new ArrayList<>();
+
     @Inject
     Bus mBus;
 
@@ -103,6 +110,9 @@ public class ViewTaskFragment extends BaseFragment
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         mTaskTimeSpanActions.saveState(outState);
+
+        long[] selection = Longs.toArray(mAdapter.getSelectedSpanIds());
+        outState.putLongArray(STATE_SELECTION, selection);
     }
 
     @Override
@@ -110,6 +120,11 @@ public class ViewTaskFragment extends BaseFragment
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         Injection.sUiComponent.injectViewTaskFragment(this);
+
+        if (savedInstanceState != null) {
+            mSelectedSpans = Longs.asList(savedInstanceState.getLongArray(STATE_SELECTION));
+        }
+
         mTaskTimeSpanActions = new TaskTimeSpanActions(getActivity(), savedInstanceState);
         mBus.register(this);
     }
@@ -143,6 +158,12 @@ public class ViewTaskFragment extends BaseFragment
             mListPositionOffset = (mListPosition != RecyclerView.NO_POSITION)
                                     ? layoutManager.findItemOffset(mListPosition) : 0;
         }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        mSelectedSpans = Lists.newArrayList(mAdapter.getSelectedSpanIds());
     }
 
     private void setActionBarTitleAndHome(String title) {
@@ -290,7 +311,7 @@ public class ViewTaskFragment extends BaseFragment
     @OnJobSuccess(LoadTaskRecentActivitiesJob.class)
     public void onLoadSuccess(LoadJobResult<TaskRecentActivity> result) {
         TaskRecentActivity recentActivity = result.getData();
-        mAdapter.setItems(recentActivity.getList());
+        mAdapter.setItems(recentActivity.getList(), mSelectedSpans);
         if (mListPosition >=0) {
             TaskActivitiesLayoutManager layoutManager = (TaskActivitiesLayoutManager) mRecyclerView.getLayoutManager();
             layoutManager.scrollToPositionWithOffset(mListPosition, mListPositionOffset);
