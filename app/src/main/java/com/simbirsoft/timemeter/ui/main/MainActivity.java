@@ -18,7 +18,7 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
 import com.simbirsoft.timemeter.ui.calendar.ActivityCalendarFragment_;
-import com.simbirsoft.timemeter.ui.settings.SettingsFragment;
+import com.simbirsoft.timemeter.ui.settings.SettingsFragment_;
 import com.simbirsoft.timemeter.ui.stats.StatsListFragment_;
 import com.simbirsoft.timemeter.ui.tags.TagListFragment_;
 import com.simbirsoft.timemeter.ui.tasklist.TaskListFragment_;
@@ -135,7 +135,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
                 break;
 
             case SECTION_ID_SETTINGS:
-                fragmentType = SettingsFragment.class;
+                fragmentType = SettingsFragment_.class;
                 break;
 
             default:

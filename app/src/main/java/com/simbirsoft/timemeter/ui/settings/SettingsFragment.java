@@ -3,28 +3,76 @@ package com.simbirsoft.timemeter.ui.settings;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.support.v4.preference.PreferenceFragment;
-import android.widget.Toast;
 
-import com.fourmob.datetimepicker.date.DatePickerDialog;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.ui.main.SectionFragment;
+import com.simbirsoft.timemeter.ui.util.TimeUtils;
+import com.simbirsoft.timemeter.util.SharedPreferences_;
 import com.sleepbot.datetimepicker.time.RadialPickerLayout;
 import com.sleepbot.datetimepicker.time.TimePickerDialog;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.InstanceState;
+import org.androidannotations.annotations.res.StringRes;
+import org.androidannotations.annotations.sharedpreferences.Pref;
+
+@EFragment
 public class SettingsFragment extends PreferenceFragment implements SectionFragment,
-        TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener {
+        TimePickerDialog.OnTimeSetListener {
+    private static final String TIME_PICKER_DIALOG_TAG = "time_picker_dialog_tag";
+
+    @Pref
+    SharedPreferences_ mSharedPreference;
+
+    @StringRes(R.string.calendar_summary_start_time)
+    String mCalendarStartTimeSummary;
+
+    @StringRes(R.string.calendar_summary_end_time)
+    String mCalendarEndTimeSummary;
+
+    Preference startTimePreference;
+    Preference endTimePreference;
+
+    @InstanceState
+    TimePickerDialogType mTimePickerDialogType;
+
+    public enum TimePickerDialogType {
+        START_TIME_PICKER_DIALOG,
+        END_TIME_PICKER_DIALOG,
+        NONE
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
 
-        Preference startTimePreference = getPreferenceScreen().findPreference("pref_startTime");
+        startTimePreference = getPreferenceScreen().findPreference("pref_startTime");
+        endTimePreference = getPreferenceScreen().findPreference("pref_endTime");
+        getPreferenceManager().setSharedPreferencesName("SharedPreferences");
 
         startTimePreference.setOnPreferenceClickListener(preference -> {
-            showTimePickerDialog();
+            mTimePickerDialogType = TimePickerDialogType.START_TIME_PICKER_DIALOG;
+            showTimePickerDialog(mSharedPreference.calendarStartTime().get());
             return true;
         });
+
+        endTimePreference.setOnPreferenceClickListener(preference -> {
+            mTimePickerDialogType = TimePickerDialogType.END_TIME_PICKER_DIALOG;
+            showTimePickerDialog(mSharedPreference.calendarEndTime().get());
+            return true;
+        });
+
+        mTimePickerDialogType = TimePickerDialogType.NONE;
+    }
+
+    @AfterViews
+    public void initDefaultValues() {
+        startTimePreference.setSummary(
+                getFormattedTime(mCalendarStartTimeSummary, mSharedPreference.calendarStartTime().get()));
+        endTimePreference.setSummary(
+                getFormattedTime(mCalendarEndTimeSummary, mSharedPreference.calendarEndTime().get()));
     }
 
     @Override
@@ -43,23 +91,37 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
         return "_state_" + getClass().getSimpleName();
     }
 
-    private void showTimePickerDialog() {
+    @Override
+    public void onTimeSet(RadialPickerLayout radialPickerLayout, int hours, int minutes) {
+        int timeInMinutes = TimeUtils.hoursAndMinutesToMinutes(hours, minutes);
+
+        switch (mTimePickerDialogType) {
+            case START_TIME_PICKER_DIALOG:
+                startTimePreference.setSummary(getFormattedTime(mCalendarStartTimeSummary, timeInMinutes));
+                mSharedPreference.calendarStartTime().put(timeInMinutes);
+                break;
+            case END_TIME_PICKER_DIALOG:
+                endTimePreference.setSummary(getFormattedTime(mCalendarEndTimeSummary, timeInMinutes));
+                mSharedPreference.calendarEndTime().put(timeInMinutes);
+                break;
+            case NONE:
+                break;
+        }
+
+        mTimePickerDialogType = TimePickerDialogType.NONE;
+    }
+
+    private void showTimePickerDialog(int minutes) {
         TimePickerDialog timePickerDialog = TimePickerDialog.newInstance(this,
-                8,
-                0,
+                TimeUtils.getHoursFromMinutes(minutes),
+                TimeUtils.getMinutesFromMinutes(minutes),
                 false,
                 false);
 
-        timePickerDialog.show(getChildFragmentManager(), "123");
+        timePickerDialog.show(getChildFragmentManager(), TIME_PICKER_DIALOG_TAG);
     }
 
-    @Override
-    public void onTimeSet(RadialPickerLayout radialPickerLayout, int i, int i1) {
-        Toast.makeText(getActivity(), i + ":" + i1, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onDateSet(DatePickerDialog datePickerDialog, int i, int i1, int i2) {
-        Toast.makeText(getActivity(), i + ":" + i1, Toast.LENGTH_SHORT).show();
+    private String getFormattedTime(String summary, int timeInMinutes) {
+        return String.format(summary, TimeUtils.formatMinutes(timeInMinutes));
     }
 }

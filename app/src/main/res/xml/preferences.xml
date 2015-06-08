@@ -8,11 +8,13 @@
         <Preference
             android:key="pref_startTime"
             android:title="@string/calendar_title_start_time"
-            android:summary="@string/calendar_summary_start_time"/>
+            android:summary="@string/calendar_summary_start_time"
+            android:defaultValue="480"/>
         <Preference
             android:key="pref_endTime"
             android:title="@string/calendar_title_end_time"
-            android:summary="@string/calendar_summary_end_time"/>
+            android:summary="@string/calendar_summary_end_time"
+            android:defaultValue="1280"/>
         <SwitchPreference
             android:key="pref_allActivity"
             android:title="@string/calendar_title_all_activity"
