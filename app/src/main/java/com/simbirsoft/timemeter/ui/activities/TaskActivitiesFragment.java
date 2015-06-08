@@ -88,8 +88,8 @@ public class TaskActivitiesFragment extends BaseFragment implements
     public static final String EXTRA_TITLE = "extra_title";
 
     private static final String LOADER_TAG = "TaskActivitiesFragment_";
-    private static final String REMOVE_SPAN_JOB = "remove_span_job";
-    private static final String RESTORE_SPAN_JOB = "restore_span_job";
+
+
     private static final String TAG_DATE_PICKER_FRAGMENT = "activities_date_picker_fragment_tag";
     private static final String SNACKBAR_TAG = "task_activities_snackbar";
     private static final int REQUEST_CODE_PROCESS_ACTIVITY = 10005;
@@ -143,14 +143,25 @@ public class TaskActivitiesFragment extends BaseFragment implements
     private TaskTimeSpanActions mTaskTimeSpanActions;
     private FloatingActionButton mFloatingActionButton;
 
-    Bundle mActivitiesBackup;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         Injection.sUiComponent.injectTaskActivitiesFragment(this);
+        mTaskTimeSpanActions = new TaskTimeSpanActions(getActivity(), savedInstanceState);
         mBus.register(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mTaskTimeSpanActions.dispose();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mTaskTimeSpanActions.saveState(outState);
     }
 
     @Override
@@ -227,7 +238,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
             dialog.setOnDateSetListener(this);
         }
 
-        mTaskTimeSpanActions = new TaskTimeSpanActions(getActivity(), mAdapter);
+        mTaskTimeSpanActions.bind(mAdapter, mRecyclerView);
         mTaskTimeSpanActions.setOnActivatedListener(sender -> {
             hideFilterView(true);
             updateOptionsMenu();
@@ -237,7 +248,8 @@ public class TaskActivitiesFragment extends BaseFragment implements
             mFloatingActionButton.setVisibility(View.VISIBLE);
         });
         mTaskTimeSpanActions.setOnEditListener(sender -> editSelectedSpan());
-        mTaskTimeSpanActions.setOnRemoveListener(sender -> removeSelectedSpans());
+        mTaskTimeSpanActions.setOnDidRemoveListener(sender -> requestLoad(LOADER_TAG, this));
+        mTaskTimeSpanActions.setOnDidRestoreSpansListener(sender -> requestLoad(LOADER_TAG, this));
     }
 
     void bindFloatingButton() {
@@ -302,52 +314,6 @@ public class TaskActivitiesFragment extends BaseFragment implements
         showToast(R.string.error_unable_to_load_task_activities);
     }
 
-    @OnJobSuccess(RemoveTaskTimeSpanJob.class)
-    public void onRemoveSuccess(LoadJobResult<Bundle> result) {
-        requestLoad(LOADER_TAG, this);
-        mActivitiesBackup = result.getData();
-        showUndoRemoveSnackbar();
-    }
-
-    @OnJobSuccess(RestoreTaskTimeSpansJob.class)
-    public void onRestoreSuccess(JobEvent event) {
-        requestLoad(LOADER_TAG, this);
-    }
-
-    public void showUndoRemoveSnackbar() {
-        Snackbar sb = Snackbar.with(getActivity())
-                .type(SnackbarType.MULTI_LINE)
-                .text(R.string.hint_task_time_spans_removed)
-                .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE)
-                .color(getResources().getColor(R.color.primaryDark))
-                .actionLabel(R.string.action_undo_remove)
-                .actionListener(v -> requestLoad(RESTORE_SPAN_JOB, this))
-                .eventListener(new EventListener() {
-                    @Override
-                    public void onShow(Snackbar snackbar) {
-
-                    }
-
-                    @Override
-                    public void onShown(Snackbar snackbar) {
-
-                    }
-
-                    @Override
-                    public void onDismiss(Snackbar snackbar) {
-
-                    }
-
-                    @Override
-                    public void onDismissed(Snackbar snackbar) {
-                        mActivitiesBackup = null;
-                    }
-                })
-                .animation(true)
-                .attachToRecyclerView(mRecyclerView);
-        SnackbarManager.show(sb);
-    }
-
     @Override
     public Job onCreateJob(String s) {
         if (LOADER_TAG.equals(s)) {
@@ -363,17 +329,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
             }
             return job;
         }
-        if (REMOVE_SPAN_JOB.equals(s)) {
-            RemoveTaskTimeSpanJob job = Injection.sJobsComponent.removeTaskTimeSpanJob();
-            job.setSpan(mAdapter.getSelectedSpanIds());
-            return job;
-        }
-        if (RESTORE_SPAN_JOB.equals(s)) {
-            RestoreTaskTimeSpansJob job = Injection.sJobsComponent.restoreTaskTimeSpanJob();
-            job.setBackupBundle(mActivitiesBackup);
-            mActivitiesBackup = null;
-            return job;
-        }
+
         throw new UnsupportedOperationException("Unknown job id");
     }
 
@@ -610,10 +566,6 @@ public class TaskActivitiesFragment extends BaseFragment implements
         List<TaskTimeSpan> selected = mAdapter.getSelectedSpans();
         Preconditions.checkArgument(selected.size() == 1, "there should be 1 selected span");
         processTimeSpan(selected.get(0));
-    }
-
-    private void removeSelectedSpans() {
-        requestLoad(REMOVE_SPAN_JOB, this);
     }
 
     @OnActivityResult(REQUEST_CODE_PROCESS_ACTIVITY)

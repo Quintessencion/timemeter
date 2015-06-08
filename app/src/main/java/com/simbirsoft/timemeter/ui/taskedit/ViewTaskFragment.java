@@ -100,11 +100,24 @@ public class ViewTaskFragment extends BaseFragment
     private TaskTimeSpanActions mTaskTimeSpanActions;
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mTaskTimeSpanActions.saveState(outState);
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         Injection.sUiComponent.injectViewTaskFragment(this);
+        mTaskTimeSpanActions = new TaskTimeSpanActions(getActivity(), savedInstanceState);
         mBus.register(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mTaskTimeSpanActions.dispose();
     }
 
     @Override
@@ -175,8 +188,10 @@ public class ViewTaskFragment extends BaseFragment
         requestLoad(LOADER_TAG, this);
         mProgressLayout.updateProgressView();
 
-        mTaskTimeSpanActions = new TaskTimeSpanActions(getActivity(), mAdapter);
+        mTaskTimeSpanActions.bind(mAdapter, mRecyclerView);
         mTaskTimeSpanActions.setOnEditListener(sender -> editSelectedSpan());
+        mTaskTimeSpanActions.setOnDidRemoveListener(sender -> requestLoad(LOADER_TAG, this));
+        mTaskTimeSpanActions.setOnDidRestoreSpansListener(sender -> requestLoad(LOADER_TAG, this));
     }
 
     private void goToEditTask() {
