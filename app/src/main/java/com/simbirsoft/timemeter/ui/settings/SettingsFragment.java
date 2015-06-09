@@ -44,6 +44,7 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
     Preference mDisplayAllActivities;
     Preference mDeleteDemo;
     Preference mResetHelp;
+    Preference mShowHelp;
 
     Preferences mPrefs;
 
@@ -72,6 +73,7 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
         mDisplayAllActivities = getPreferenceScreen().findPreference(PreferenceKeys.PREF_ALL_ACTIVITY_KEY);
         mDeleteDemo = getPreferenceScreen().findPreference(PreferenceKeys.PREF_DELETE_DEMO_KEY);
         mResetHelp = getPreferenceScreen().findPreference(PreferenceKeys.PREF_RESET_HELP_KEY);
+        mShowHelp = getPreferenceScreen().findPreference(PreferenceKeys.PREF_SHOW_HELP_KEY);
 
         mStartTimePreference.setOnPreferenceClickListener(preference -> {
             mTimePickerDialogType = TimePickerDialogType.START_TIME_PICKER_DIALOG;
@@ -97,6 +99,11 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
 
         mResetHelp.setOnPreferenceClickListener(preference -> {
             showResetHelpDialog();
+            return true;
+        });
+
+        mShowHelp.setOnPreferenceChangeListener((preference, newValue) -> {
+            mPrefs.setIsShowHelp((Boolean) newValue);
             return true;
         });
 

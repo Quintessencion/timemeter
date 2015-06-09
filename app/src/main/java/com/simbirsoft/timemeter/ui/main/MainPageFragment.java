@@ -133,6 +133,10 @@ public class MainPageFragment extends BaseFragment implements HelpCardSource {
     }
 
     protected void presentHelpCardIfAny() {
+        if (!mPrefs.getIsShowHelp()) {
+            return;
+        }
+
         if (getHelpCardPresenter() == null || !mPrefs.getUserLearnedDrawer())
             return;
 

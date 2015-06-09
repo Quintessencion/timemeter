@@ -39,6 +39,9 @@ public final class Preferences {
     private static final String PREFERENCE_IS_DEMO_TASKS_DELETED = "is_demo_tasks_deleted";
     private static final boolean IS_DEMO_TASKS_DELETED_DEFAULT = false;
 
+    private static final String PREFERENCE_IS_SHOW_HELP = "show_help";
+    private static final boolean IS_SHOW_HELP_DEFAULT = true;
+
     @Inject
     public Preferences(App appContext) {
         mPrefs = PreferenceManager.getDefaultSharedPreferences(appContext);
@@ -140,6 +143,14 @@ public final class Preferences {
 
     public void setIsDemoTasksDeleted(boolean isDemoTasksDeleted) {
         mPrefs.edit().putBoolean(PREFERENCE_IS_DEMO_TASKS_DELETED, isDemoTasksDeleted).apply();
+    }
+
+    public boolean getIsShowHelp() {
+        return mPrefs.getBoolean(PREFERENCE_IS_SHOW_HELP, IS_SHOW_HELP_DEFAULT);
+    }
+
+    public void setIsShowHelp(boolean isShowHelp) {
+        mPrefs.edit().putBoolean(PREFERENCE_IS_SHOW_HELP, isShowHelp).apply();
     }
 
     private boolean checkHourValue(int hour) {
