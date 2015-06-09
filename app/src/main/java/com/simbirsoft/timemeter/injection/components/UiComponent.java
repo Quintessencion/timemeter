@@ -10,6 +10,7 @@ import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerFragment;
 import com.simbirsoft.timemeter.ui.main.NavigationDrawerFragment;
 import com.simbirsoft.timemeter.ui.model.TaskRecentActivity;
+import com.simbirsoft.timemeter.ui.settings.SettingsFragment;
 import com.simbirsoft.timemeter.ui.stats.StatsDetailsFragment;
 import com.simbirsoft.timemeter.ui.stats.StatsListFragment;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment;
@@ -43,4 +44,5 @@ public interface UiComponent {
     public void injectTaskRecentActivity(TaskRecentActivity activity);
     public void injectViewTaskFragment(ViewTaskFragment fragment);
     public void injectTagListFragment(TagListFragment fragment);
+    public void injectSettingsFragment(SettingsFragment fragment);
 }

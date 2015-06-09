@@ -107,6 +107,7 @@
     <string name="dialog_cancel_tag_changes_warning_message">Завершить редактирование без сохранения?</string>
     <string name="dialog_delete_test_data_title">Предупреждение</string>
     <string name="dialog_delete_test_data">Все демонстрационный задачи будут удалены. Продолжить?</string>
+    <string name="dialog_reset_help">Показать все подсказки заново?</string>
 
     <!-- Chart legend -->
     <string name="chart_legend_totally">Всего: %s</string>

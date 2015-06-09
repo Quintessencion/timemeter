@@ -7,6 +7,7 @@ import android.support.v4.preference.PreferenceFragment;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.controller.HelpCardController;
 import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.ui.base.AppAlertDialogFragment;
@@ -22,12 +23,15 @@ import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.OnActivityResult;
 import org.androidannotations.annotations.res.StringRes;
 
+import javax.inject.Inject;
+
 @EFragment
 public class SettingsFragment extends PreferenceFragment implements SectionFragment,
         TimePickerDialog.OnTimeSetListener {
 
     private static final String TIME_PICKER_DIALOG_TAG = "time_picker_dialog_tag";
     private static final int REQUEST_CODE_DELETE_TEST_DATA = 10001;
+    private static final int REQUEST_CODE_RESET_HELP = 10002;
 
     @StringRes(R.string.calendar_summary_start_time)
     String mCalendarStartTimeSummary;
@@ -39,11 +43,15 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
     Preference mEndTimePreference;
     Preference mDisplayAllActivities;
     Preference mDeleteDemo;
+    Preference mResetHelp;
 
     Preferences mPrefs;
 
     @InstanceState
     TimePickerDialogType mTimePickerDialogType;
+
+    @Inject
+    HelpCardController mHelpCardController;
 
     public enum TimePickerDialogType {
         START_TIME_PICKER_DIALOG,
@@ -55,6 +63,7 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
+        Injection.sUiComponent.injectSettingsFragment(this);
 
         mPrefs = Injection.sDatabaseComponent.preferences();
 
@@ -62,6 +71,7 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
         mEndTimePreference = getPreferenceScreen().findPreference(PreferenceKeys.PREF_END_TIME_KEY);
         mDisplayAllActivities = getPreferenceScreen().findPreference(PreferenceKeys.PREF_ALL_ACTIVITY_KEY);
         mDeleteDemo = getPreferenceScreen().findPreference(PreferenceKeys.PREF_DELETE_DEMO_KEY);
+        mResetHelp = getPreferenceScreen().findPreference(PreferenceKeys.PREF_RESET_HELP_KEY);
 
         mStartTimePreference.setOnPreferenceClickListener(preference -> {
             mTimePickerDialogType = TimePickerDialogType.START_TIME_PICKER_DIALOG;
@@ -82,6 +92,11 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
 
         mDeleteDemo.setOnPreferenceClickListener(preference -> {
             showDeleteTestDataDialog();
+            return true;
+        });
+
+        mResetHelp.setOnPreferenceClickListener(preference -> {
+            showResetHelpDialog();
             return true;
         });
 
@@ -142,6 +157,20 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
         mTimePickerDialogType = TimePickerDialogType.NONE;
     }
 
+    @OnActivityResult(REQUEST_CODE_DELETE_TEST_DATA)
+     public void onDeleteTestDataDialogResult(int resultCode) {
+        if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
+            mPrefs.setIsDemoTasksDeleted(true);
+        }
+    }
+
+    @OnActivityResult(REQUEST_CODE_RESET_HELP)
+    public void onResetHelpDialogResult(int resultCode) {
+        if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
+            mHelpCardController.markAllUnpresented();
+        }
+    }
+
     private void showTimePickerDialog(int minutes) {
         TimePickerDialog timePickerDialog = TimePickerDialog.newInstance(this,
                 TimeUtils.getHoursFromMinutes(minutes),
@@ -178,10 +207,17 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
                 REQUEST_CODE_DELETE_TEST_DATA);
     }
 
-    @OnActivityResult(REQUEST_CODE_DELETE_TEST_DATA)
-    public void onDeleteTestDataDialogResult(int resultCode, Intent data) {
-        if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
-            mPrefs.setIsDemoTasksDeleted(true);
-        }
+    private void showResetHelpDialog() {
+        Bundle args = AppAlertDialogFragment.prepareArgs(getActivity(),
+                R.string.dialog_delete_test_data_title,
+                R.string.dialog_reset_help,
+                R.string.action_proceed,
+                R.string.action_cancel);
+        Intent launchIntent = DialogContainerActivity.prepareDialogLaunchIntent(
+                getActivity(),
+                AppAlertDialogFragment.class.getName(),
+                args);
+        getActivity().startActivityForResult(launchIntent,
+                REQUEST_CODE_RESET_HELP);
     }
 }
