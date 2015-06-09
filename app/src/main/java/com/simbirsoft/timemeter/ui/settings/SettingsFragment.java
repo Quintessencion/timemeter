@@ -1,5 +1,6 @@
 package com.simbirsoft.timemeter.ui.settings;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.support.v4.preference.PreferenceFragment;
@@ -8,6 +9,8 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.injection.Injection;
+import com.simbirsoft.timemeter.ui.base.AppAlertDialogFragment;
+import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
 import com.simbirsoft.timemeter.ui.main.SectionFragment;
 import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.sleepbot.datetimepicker.time.RadialPickerLayout;
@@ -16,6 +19,7 @@ import com.sleepbot.datetimepicker.time.TimePickerDialog;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
+import org.androidannotations.annotations.OnActivityResult;
 import org.androidannotations.annotations.res.StringRes;
 
 @EFragment
@@ -23,6 +27,7 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
         TimePickerDialog.OnTimeSetListener {
 
     private static final String TIME_PICKER_DIALOG_TAG = "time_picker_dialog_tag";
+    private static final int REQUEST_CODE_DELETE_TEST_DATA = 10001;
 
     @StringRes(R.string.calendar_summary_start_time)
     String mCalendarStartTimeSummary;
@@ -30,9 +35,10 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
     @StringRes(R.string.calendar_summary_end_time)
     String mCalendarEndTimeSummary;
 
-    Preference startTimePreference;
-    Preference endTimePreference;
-    Preference displayAllActivities;
+    Preference mStartTimePreference;
+    Preference mEndTimePreference;
+    Preference mDisplayAllActivities;
+    Preference mDeleteDemo;
 
     Preferences mPrefs;
 
@@ -52,38 +58,43 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
 
         mPrefs = Injection.sDatabaseComponent.preferences();
 
-        startTimePreference = getPreferenceScreen().findPreference(PreferenceKeys.PREF_START_TIME_KEY);
-        endTimePreference = getPreferenceScreen().findPreference(PreferenceKeys.PREF_END_TIME_KEY);
-        displayAllActivities = getPreferenceScreen().findPreference(PreferenceKeys.PREF_ALL_ACTIVITY_KEY);
+        mStartTimePreference = getPreferenceScreen().findPreference(PreferenceKeys.PREF_START_TIME_KEY);
+        mEndTimePreference = getPreferenceScreen().findPreference(PreferenceKeys.PREF_END_TIME_KEY);
+        mDisplayAllActivities = getPreferenceScreen().findPreference(PreferenceKeys.PREF_ALL_ACTIVITY_KEY);
+        mDeleteDemo = getPreferenceScreen().findPreference(PreferenceKeys.PREF_DELETE_DEMO_KEY);
 
-        startTimePreference.setOnPreferenceClickListener(preference -> {
+        mStartTimePreference.setOnPreferenceClickListener(preference -> {
             mTimePickerDialogType = TimePickerDialogType.START_TIME_PICKER_DIALOG;
             showTimePickerDialog(mPrefs.getDayStartHour());
             return true;
         });
 
-        endTimePreference.setOnPreferenceClickListener(preference -> {
+        mEndTimePreference.setOnPreferenceClickListener(preference -> {
             mTimePickerDialogType = TimePickerDialogType.END_TIME_PICKER_DIALOG;
             showTimePickerDialog(mPrefs.getDayEndHour());
             return true;
         });
 
-        displayAllActivities.setOnPreferenceChangeListener((preference, newValue) -> {
+        mDisplayAllActivities.setOnPreferenceChangeListener((preference, newValue) -> {
             mPrefs.setDisplayAllActivities((Boolean) newValue);
             return true;
         });
 
+        mDeleteDemo.setOnPreferenceClickListener(preference -> {
+            showDeleteTestDataDialog();
+            return true;
+        });
 
         mTimePickerDialogType = TimePickerDialogType.NONE;
     }
 
     @AfterViews
     public void initDefaultValues() {
-        startTimePreference.setSummary(
+        mStartTimePreference.setSummary(
                 getFormattedTime(mCalendarStartTimeSummary, mPrefs.getDayStartHour()));
-        endTimePreference.setSummary(
+        mEndTimePreference.setSummary(
                 getFormattedTime(mCalendarEndTimeSummary, mPrefs.getDayEndHour()));
-        displayAllActivities.setDefaultValue(mPrefs.getDisplayAllActivities());
+        mDisplayAllActivities.setDefaultValue(mPrefs.getDisplayAllActivities());
     }
 
     @Override
@@ -110,7 +121,7 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
         switch (mTimePickerDialogType) {
             case START_TIME_PICKER_DIALOG:
                 if (hours <= currentEndHour) {
-                    startTimePreference.setSummary(getFormattedTime(mCalendarStartTimeSummary, hours));
+                    mStartTimePreference.setSummary(getFormattedTime(mCalendarStartTimeSummary, hours));
                     mPrefs.setDayStartHour(hours);
                 } else {
                     showErrorDialog();
@@ -118,7 +129,7 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
                 break;
             case END_TIME_PICKER_DIALOG:
                 if (hours >= currentStartHour) {
-                    endTimePreference.setSummary(getFormattedTime(mCalendarEndTimeSummary, hours));
+                    mEndTimePreference.setSummary(getFormattedTime(mCalendarEndTimeSummary, hours));
                     mPrefs.setDayEndHour(hours);
                 } else {
                     showErrorDialog();
@@ -151,5 +162,26 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
                 .positiveText(R.string.action_accept)
                 .build();
         materialDialog.show();
+    }
+
+    private void showDeleteTestDataDialog() {
+        Bundle args = AppAlertDialogFragment.prepareArgs(getActivity(),
+                R.string.dialog_delete_test_data_title,
+                R.string.dialog_delete_test_data,
+                R.string.action_proceed,
+                R.string.action_cancel);
+        Intent launchIntent = DialogContainerActivity.prepareDialogLaunchIntent(
+                getActivity(),
+                AppAlertDialogFragment.class.getName(),
+                args);
+        getActivity().startActivityForResult(launchIntent,
+                REQUEST_CODE_DELETE_TEST_DATA);
+    }
+
+    @OnActivityResult(REQUEST_CODE_DELETE_TEST_DATA)
+    public void onDeleteTestDataDialogResult(int resultCode, Intent data) {
+        if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
+            mPrefs.setIsDemoTasksDeleted(true);
+        }
     }
 }

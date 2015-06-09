@@ -34,8 +34,10 @@ public final class Preferences {
     private static final int DAY_MAX_HOUR = 24;
 
     private static final String PREFERENCE_SHOW_ALL_ACTIVITY = "show_all_activity";
-
     private static final boolean SHOW_ALL_ACTIVITY_DEFAULT = true;
+
+    private static final String PREFERENCE_IS_DEMO_TASKS_DELETED = "is_demo_tasks_deleted";
+    private static final boolean IS_DEMO_TASKS_DELETED_DEFAULT = false;
 
     @Inject
     public Preferences(App appContext) {
@@ -130,6 +132,14 @@ public final class Preferences {
 
     public void setDisplayAllActivities(boolean isShowAllActivity) {
         mPrefs.edit().putBoolean(PREFERENCE_SHOW_ALL_ACTIVITY, isShowAllActivity).apply();
+    }
+
+    public boolean getIsDemoTasksDeleted() {
+        return mPrefs.getBoolean(PREFERENCE_IS_DEMO_TASKS_DELETED, IS_DEMO_TASKS_DELETED_DEFAULT);
+    }
+
+    public void setIsDemoTasksDeleted(boolean isDemoTasksDeleted) {
+        mPrefs.edit().putBoolean(PREFERENCE_IS_DEMO_TASKS_DELETED, isDemoTasksDeleted).apply();
     }
 
     private boolean checkHourValue(int hour) {

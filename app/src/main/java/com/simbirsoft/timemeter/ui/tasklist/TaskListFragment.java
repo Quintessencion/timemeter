@@ -31,6 +31,7 @@ import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.HelpCardController;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
+import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.events.ScheduledTaskUpdateTabContentEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
@@ -98,6 +99,8 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
     @Inject
     DatabaseHelper mDatabaseHelper;
+
+    Preferences mPrefs;
 
     boolean mDataIsLoaded;
 
@@ -180,8 +183,12 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         mRecyclerView.setAdapter(mHelpCardAdapter);
         mRecyclerView.setItemAnimator(new HelpCardAnimator());
 
-        requestLoad(TASK_LIST_LOADER_TAG, this);
-        applyFilterState();
+        if (mPrefs.getIsDemoTasksDeleted()) {
+            deleteTestData();
+        } else {
+            requestLoad(TASK_LIST_LOADER_TAG, this);
+            applyFilterState();
+        }
     }
 
     private void applyFilterState() {
@@ -216,6 +223,8 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         super.onCreate(savedInstanceState);
 
         Injection.sUiComponent.injectTaskListFragment(this);
+
+        mPrefs = Injection.sDatabaseComponent.preferences();
 
         mTaskActivityManager = Injection.sTaskManager.taskActivityManager();
         getBus().register(this);
@@ -536,11 +545,16 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     @OnActivityResult(REQUEST_CODE_DELETE_TEST_DATA)
     public void onDeleteTestDataDialogResult(int resultCode, Intent data) {
         if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
-            mDatabaseHelper.removeTestData();
-            reloadContent();
-            // force update for other tabs
-            getBus().post(new ScheduledTaskUpdateTabContentEvent());
+            deleteTestData();
         }
+    }
+
+    private void deleteTestData() {
+        mDatabaseHelper.removeTestData();
+        reloadContent();
+        mPrefs.setIsDemoTasksDeleted(false);
+        // force update for other tabs
+        getBus().post(new ScheduledTaskUpdateTabContentEvent());
     }
 }
 
