@@ -472,21 +472,14 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     @Override
     public void onPageSelected() {
         super.onPageSelected();
-        if (mTaskActivityManager.hasActiveTask()) {
-            Long activeTaskId = mTaskActivityManager.getActiveTaskInfo().getTask().getId();
-            int position = 0;
-            boolean found = false;
-            for (TaskBundle taskBundle : mTasksViewAdapter.getItems()) {
-                if (activeTaskId.equals(taskBundle.getTask().getId())) {
-                    found = true;
-                    break;
+        if (mTaskActivityManager != null && mTaskActivityManager.hasActiveTask()) {
+            final ActiveTaskInfo activeTaskInfo = mTaskActivityManager.getActiveTaskInfo();
+            if (activeTaskInfo != null) {
+                final int position = mTasksViewAdapter.findTaskPosition(activeTaskInfo.getTask());
+                if (position >= 0) {
+                    RecyclerView.LayoutManager layoutManager = mRecyclerView.getLayoutManager();
+                    layoutManager.scrollToPosition(position);
                 }
-                position++;
-            }
-
-            if (found) {
-                RecyclerView.LayoutManager layoutManager = (RecyclerView.LayoutManager) mRecyclerView.getLayoutManager();
-                layoutManager.scrollToPosition(position);
             }
         }
     }

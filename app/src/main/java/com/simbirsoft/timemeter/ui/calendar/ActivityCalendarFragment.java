@@ -270,7 +270,9 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
     @Override
     public void onPageDeselected() {
         super.onPageDeselected();
-        mPopupHelper.dismiss();
+        if (mPopupHelper != null) {
+            mPopupHelper.dismiss();
+        }
     }
 
     protected int getHelpCardToPresent(HelpCardController controller) {
