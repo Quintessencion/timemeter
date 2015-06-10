@@ -468,6 +468,21 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     protected Logger createLogger() {
         return LogFactory.getLogger(TaskListFragment.class);
     }
+
+    @Override
+    public void onPageSelected() {
+        super.onPageSelected();
+        if (mTaskActivityManager != null && mTaskActivityManager.hasActiveTask()) {
+            final ActiveTaskInfo activeTaskInfo = mTaskActivityManager.getActiveTaskInfo();
+            if (activeTaskInfo != null) {
+                final int position = mTasksViewAdapter.findTaskPosition(activeTaskInfo.getTask());
+                if (position >= 0) {
+                    RecyclerView.LayoutManager layoutManager = mRecyclerView.getLayoutManager();
+                    layoutManager.scrollToPosition(position);
+                }
+            }
+        }
+    }
             
     protected int getHelpCardToPresent(HelpCardController controller) {
         if (!controller.isPresented(HelpCardController.HELP_CARD_TASK_LIST)) {

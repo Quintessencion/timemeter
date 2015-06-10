@@ -122,8 +122,10 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
 
     @Override
     public void onPageSelected() {
-        if (mTaskActivityManager.hasActiveTask()) {
-            setContentInvalidated(true);
+        if (mTaskActivityManager != null) {
+            if (mTaskActivityManager.hasActiveTask()) {
+                setContentInvalidated(true);
+            }
         }
         super.onPageSelected();
     }
@@ -266,6 +268,13 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
     }
 
     @Override
+    public void onPageDeselected() {
+        super.onPageDeselected();
+        if (mPopupHelper != null) {
+            mPopupHelper.dismiss();
+        }
+    }
+
     protected int getHelpCardToPresent(HelpCardController controller) {
         if (!controller.isPresented(HelpCardController.HELP_CARD_CALENDAR)) {
             return HelpCardController.HELP_CARD_CALENDAR;
