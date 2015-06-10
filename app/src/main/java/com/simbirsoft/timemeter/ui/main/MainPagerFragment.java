@@ -167,7 +167,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewResults
         if (mFilterView != null) {
             mFilterView.updateDateView();
         }
-        restorePagePosition();
     }
 
     @Override
@@ -243,8 +242,10 @@ public class MainPagerFragment extends MainFragment implements FilterViewResults
                 onPageChanged(position);
             }
         });
-        restorePagePosition();
-        mTabs.post(() -> onPageChanged(mViewPager.getCurrentItem()));
+        mTabs.post(() -> {
+            onPageChanged(mViewPager.getCurrentItem());
+            restorePagePosition();
+        });
     }
 
     private void onAdapterSetupItem(Fragment fragment) {
@@ -473,6 +474,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewResults
 
     private void restorePagePosition() {
         if (needSwitchToSelectedPage) {
+            needSwitchToSelectedPage = false;
             mViewPager.setCurrentItem(pageId);
         } else {
             mViewPager.setCurrentItem(mPrefs.getSelectedTaskTabPosition());
