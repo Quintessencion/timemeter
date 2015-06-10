@@ -48,7 +48,8 @@
             android:summary="@string/help_summary_show_all_tips"/>
         <Preference
             android:key="pref_deleteDemo"
-            android:title="@string/help_title_delete_demo"/>
+            android:title="@string/help_title_delete_demo"
+            android:summary="@string/help_summary_delete_demo"/>
     </PreferenceCategory>
 
 </PreferenceScreen>

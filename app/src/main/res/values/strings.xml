@@ -131,7 +131,8 @@
     <string name="help_title_show_help">Показывать помощь</string>
     <string name="help_title_reset">Сбросить помощь</string>
     <string name="help_summary_show_all_tips">Показать все подсказки заново</string>
-    <string name="help_title_delete_demo">Удалить демонстрационную статистику</string>
+    <string name="help_title_delete_demo">Сбросить демо</string>
+    <string name="help_summary_delete_demo">Удалить демонстрационную статистику</string>
 
     <string name="day">День</string>
     <string name="week">Неделя</string>
