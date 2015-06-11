@@ -7,4 +7,5 @@ public class PreferenceKeys {
     public static final String PREF_DELETE_DEMO_KEY = "pref_deleteDemo";
     public static final String PREF_RESET_HELP_KEY = "pref_resetHelp";
     public static final String PREF_SHOW_HELP_KEY = "pref_showHelp";
+    public static final String PREF_CATEGORY_DELETE_DEMO_KEY = "pref_help";
 }

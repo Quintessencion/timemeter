@@ -3,6 +3,7 @@ package com.simbirsoft.timemeter.ui.settings;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.preference.PreferenceCategory;
 import android.support.v4.preference.PreferenceFragment;
 
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -92,6 +93,10 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
             return true;
         });
 
+        if (mPrefs.getIsDemoTasksDeleted()) {
+            hideDeleteDemoPreference();
+        }
+
         mDeleteDemo.setOnPreferenceClickListener(preference -> {
             showDeleteTestDataDialog();
             return true;
@@ -167,6 +172,7 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
     @OnActivityResult(REQUEST_CODE_DELETE_TEST_DATA)
      public void onDeleteTestDataDialogResult(int resultCode) {
         if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
+            hideDeleteDemoPreference();
             mPrefs.setIsDemoTasksDeleted(true);
         }
     }
@@ -226,5 +232,12 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
                 args);
         getActivity().startActivityForResult(launchIntent,
                 REQUEST_CODE_RESET_HELP);
+    }
+
+    private void hideDeleteDemoPreference() {
+        PreferenceCategory mCategory = (PreferenceCategory) findPreference(PreferenceKeys.PREF_CATEGORY_DELETE_DEMO_KEY);
+        if (mCategory != null) {
+            mCategory.removePreference(mDeleteDemo);
+        }
     }
 }
