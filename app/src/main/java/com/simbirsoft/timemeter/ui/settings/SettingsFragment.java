@@ -8,7 +8,9 @@ import android.preference.PreferenceCategory;
 import android.support.v4.preference.PreferenceFragment;
 import android.text.Html;
 
-import com.afollestad.materialdialogs.MaterialDialog;
+import com.nispok.snackbar.Snackbar;
+import com.nispok.snackbar.SnackbarManager;
+import com.nispok.snackbar.enums.SnackbarType;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.HelpCardController;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
@@ -163,7 +165,7 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
                     mStartTimePreference.setSummary(getFormattedTime(mCalendarStartTimeSummary, hours));
                     mPrefs.setDayStartHour(hours);
                 } else {
-                    showErrorDialog();
+                    showErrorSnackBarDialog();
                 }
                 break;
             case END_TIME_PICKER_DIALOG:
@@ -171,7 +173,7 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
                     mEndTimePreference.setSummary(getFormattedTime(mCalendarEndTimeSummary, hours));
                     mPrefs.setDayEndHour(hours);
                 } else {
-                    showErrorDialog();
+                    showErrorSnackBarDialog();
                 }
                 break;
             case NONE:
@@ -212,12 +214,13 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
                 TimerTextFormatter.formatHoursText(mResources, hours))).toString();
     }
 
-    private void showErrorDialog() {
-        MaterialDialog materialDialog = new MaterialDialog.Builder(getActivity())
-                .title(R.string.settings_incorrect_time)
-                .positiveText(R.string.action_accept)
-                .build();
-        materialDialog.show();
+    private void showErrorSnackBarDialog() {
+        Snackbar bar = Snackbar.with(getActivity())
+                .type(SnackbarType.MULTI_LINE)
+                .text(R.string.settings_incorrect_time)
+                .colorResource(R.color.lightRed)
+                .duration(Snackbar.SnackbarDuration.LENGTH_LONG);
+        SnackbarManager.show(bar);
     }
 
     private void showDeleteTestDataDialog() {
