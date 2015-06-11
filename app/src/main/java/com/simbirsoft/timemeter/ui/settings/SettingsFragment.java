@@ -17,7 +17,6 @@ import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.ui.base.AppAlertDialogFragment;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
 import com.simbirsoft.timemeter.ui.main.SectionFragment;
-import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
 import com.sleepbot.datetimepicker.time.RadialPickerLayout;
 import com.sleepbot.datetimepicker.time.TimePickerDialog;
@@ -121,8 +120,6 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
             mPrefs.setIsShowHelp((Boolean) newValue);
             return true;
         });
-
-        mTimePickerDialogType = TimePickerDialogType.NONE;
     }
 
     @AfterViews
@@ -132,6 +129,11 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
         mEndTimePreference.setSummary(
                 getFormattedTime(mCalendarEndTimeSummary, mPrefs.getDayEndHour()));
         mDisplayAllActivities.setDefaultValue(mPrefs.getDisplayAllActivities());
+
+        TimePickerDialog timePickerDialog = (TimePickerDialog) getChildFragmentManager().findFragmentByTag(TIME_PICKER_DIALOG_TAG);
+        if (timePickerDialog != null) {
+            timePickerDialog.setOnTimeSetListener(this);
+        }
     }
 
     @Override

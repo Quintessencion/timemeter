@@ -138,12 +138,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewResults
 
         setHasOptionsMenu(true);
 
-        DatePickerDialog dialog = (DatePickerDialog)
-                getChildFragmentManager().findFragmentByTag(TAG_DATE_PICKER_FRAGMENT);
-        if (dialog != null) {
-            dialog.setOnDateSetListener(this);
-        }
-
         mBus.register(this);
 
         if (mFilterState == null) {
@@ -235,6 +229,12 @@ public class MainPagerFragment extends MainFragment implements FilterViewResults
             }
         });
         mTabs.post(() -> onPageChanged(mViewPager.getCurrentItem()));
+
+        DatePickerDialog dialog = (DatePickerDialog)
+                getChildFragmentManager().findFragmentByTag(TAG_DATE_PICKER_FRAGMENT);
+        if (dialog != null) {
+            dialog.setOnDateSetListener(this);
+        }
     }
 
     private void onAdapterSetupItem(Fragment fragment) {
