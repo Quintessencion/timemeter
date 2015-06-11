@@ -156,6 +156,7 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
         mTagListAdapter.setItemClickListener(this);
         mHelpCardAdapter = new HelpCardAdapter(mTagListAdapter);
         mHelpCardAdapter.setHelpCardSource(this);
+        mHelpCardAdapter.setLayoutManager(mTagListLayoutManager);
         mRecyclerView.setAdapter(mHelpCardAdapter);
         mRecyclerView.setItemAnimator(new HelpCardAnimator());
 

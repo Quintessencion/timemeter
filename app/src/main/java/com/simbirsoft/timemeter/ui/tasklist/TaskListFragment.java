@@ -489,7 +489,11 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
             return HelpCardController.HELP_CARD_TASK_LIST;
         }
 
-        if (mDataIsLoaded && mTasksViewAdapter.getItemCount() == 0 && !controller.isPresented(HelpCardController.HELP_CARD_ADD_NEW_TASK)) {
+        boolean noFilterApplied = getFilterViewState() == null || getFilterViewState().isEmpty();
+        if (mDataIsLoaded &&
+                mTasksViewAdapter.getItemCount() == 0 &&
+                noFilterApplied &&
+                !controller.isPresented(HelpCardController.HELP_CARD_ADD_NEW_TASK)) {
             return HelpCardController.HELP_CARD_ADD_NEW_TASK;
         }
 
