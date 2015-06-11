@@ -4,8 +4,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.Nullable;
 
-import com.be.android.library.worker.models.JobResultStatus;
-import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.simbirsoft.timemeter.db.model.Tag;
@@ -13,8 +11,6 @@ import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTag;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.model.Period;
-import com.simbirsoft.timemeter.ui.model.TaskBundle;
-import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.squareup.phrase.Phrase;
 
 import java.util.Collection;
