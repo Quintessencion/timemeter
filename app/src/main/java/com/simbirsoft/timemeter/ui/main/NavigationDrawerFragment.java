@@ -74,6 +74,10 @@ public class NavigationDrawerFragment extends Fragment {
         super.onDestroy();
     }
 
+    public void setCurrentSelectedPosition(int currentSelectedPosition) {
+        selectItem(currentSelectedPosition, isFooterSelected());
+    }
+
     private void saveCurrentSelectedPosition() {
         mPreferences.setSelectedSectionPosition(mCurrentSelectedPosition);
     }

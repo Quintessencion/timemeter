@@ -213,4 +213,17 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.TaskVi
     public void setTagListForChecking(List<Object> tagListForChecking) {
         mTagListForChecking = tagListForChecking;
     }
+
+    public int findTaskPosition(final Task task) {
+        int position = -1;
+        if (task != null) {
+            for (TaskBundle taskBundle : getItems()) {
+                position++;
+                if (task.getId().equals(taskBundle.getTask().getId())) {
+                    return position;
+                }
+            }
+        }
+        return position;
+    }
 }

@@ -544,8 +544,11 @@ public abstract class Chart<T extends ChartData<? extends DataSet<? extends Entr
                 }
 
                 // add the legend description label
-                colors.add(-2);
-                labels.add(bds.getLabel());
+                String description = bds.getLabel();
+                if (description != null && ! "".equals(description)) {
+                    colors.add(-2);
+                    labels.add(bds.getLabel());
+                }
 
             } else if (dataSet instanceof PieDataSet) {
 
@@ -559,8 +562,11 @@ public abstract class Chart<T extends ChartData<? extends DataSet<? extends Entr
                 }
 
                 // add the legend description label
-                colors.add(-2);
-                labels.add(pds.getLabel());
+                String description = pds.getLabel();
+                if (description != null && ! "".equals(description)) {
+                    colors.add(-2);
+                    labels.add(pds.getLabel());
+                }
 
             } else { // all others
 

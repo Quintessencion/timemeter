@@ -41,6 +41,7 @@ import com.tokenautocomplete.TokenCompleteTextView;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.ColorRes;
@@ -64,6 +65,15 @@ public class MainPagerFragment extends MainFragment implements FilterViewResults
 
     private static final Logger LOG = LogFactory.getLogger(MainPagerFragment.class);
     private static final String TAG_DATE_PICKER_FRAGMENT = "main_date_picker_fragment_tag";
+
+    public static final String ARG_NEED_SWITCH_TO_SELECTED_PAGE = "arg_need_switch_to_selected_page";
+    public static final String ARG_PAGE_ID_FOR_SWITCHING = "arg_page_id_for_switching";
+
+    @FragmentArg(ARG_NEED_SWITCH_TO_SELECTED_PAGE)
+    protected boolean needSwitchToSelectedPage;
+
+    @FragmentArg(ARG_PAGE_ID_FOR_SWITCHING)
+    protected int pageId;
 
     @ViewById(R.id.pager)
     ViewPager mViewPager;
@@ -216,8 +226,6 @@ public class MainPagerFragment extends MainFragment implements FilterViewResults
         mTabs = (PagerSlidingTabStrip) mContainerHeader.findViewById(R.id.tabs);
         mTabs.setTextColor(mColorWhite);
         mTabs.setViewPager(mViewPager);
-        loadPagePosition();
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Hide custom elevation on Lollipop
             mContainerHeader.findViewById(R.id.shadowDown).setVisibility(View.GONE);
@@ -228,13 +236,17 @@ public class MainPagerFragment extends MainFragment implements FilterViewResults
                 onPageChanged(position);
             }
         });
-        mTabs.post(() -> onPageChanged(mViewPager.getCurrentItem()));
 
         DatePickerDialog dialog = (DatePickerDialog)
                 getChildFragmentManager().findFragmentByTag(TAG_DATE_PICKER_FRAGMENT);
         if (dialog != null) {
             dialog.setOnDateSetListener(this);
         }
+
+        mTabs.post(() -> {
+            onPageChanged(mViewPager.getCurrentItem());
+            restorePagePosition();
+        });
     }
 
     private void onAdapterSetupItem(Fragment fragment) {
@@ -461,14 +473,24 @@ public class MainPagerFragment extends MainFragment implements FilterViewResults
         mPrefs.setSelectedTaskTabPosition(mViewPager.getCurrentItem());
     }
 
-    private void loadPagePosition() {
-        mViewPager.setCurrentItem(mPrefs.getSelectedTaskTabPosition());
+    private void restorePagePosition() {
+        if (needSwitchToSelectedPage) {
+            needSwitchToSelectedPage = false;
+            mViewPager.setCurrentItem(pageId);
+        } else {
+            mViewPager.setCurrentItem(mPrefs.getSelectedTaskTabPosition());
+        }
     }
 
     private void onPageChanged(int position) {
         mPagerAdapter.deselectCurrentPage();
         MainPageFragment currentFragment = (MainPageFragment)mPagerAdapter.getItem(position);
         currentFragment.onPageSelected();
+    }
+
+    public void switchToSelectedPage(int pageId) {
+        mViewPager.setCurrentItem(pageId);
+        savePagePosition();
     }
 
     private void showSearchResultsPanel(boolean animate) {

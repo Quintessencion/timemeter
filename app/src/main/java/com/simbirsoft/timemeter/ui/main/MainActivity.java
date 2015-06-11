@@ -53,6 +53,8 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     private static final String KEY_FRAGMENT_STATE_KEY = "MainActivity_content_fragment_state_key";
     private static final String KEY_FRAGMENT_STATE = "MainActivity_content_fragment_state";
 
+    private static final int SELECTED_PAGE_ID = 0;
+
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
@@ -79,6 +81,9 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     @InstanceState
     ArrayList<Bundle> mSectionFragmentStates;
 
+    @InstanceState
+    boolean mIsTaskViewPending;
+
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
@@ -102,13 +107,19 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.navigation_drawer);
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer, mDrawerLayout);
+
+        if (ACTION_SHOW_ACTIVE_TASK.equals(getIntent().getAction())) {
+            mIsTaskViewPending = true;
+            mNavigationDrawerFragment.setCurrentSelectedPosition(SECTION_ID_TASKS);
+        }
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
 
-        // TODO: handle task activity intent from notification bar
+        mIsTaskViewPending = true;
+        mNavigationDrawerFragment.setCurrentSelectedPosition(SECTION_ID_TASKS);
     }
 
     @Override
@@ -121,11 +132,12 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         }
     }
 
-    @Override
-    public void onNavigationDrawerItemSelected(int position) {
+    private void setCurrentSection(int sectionId) {
+        final boolean isViewTaskPending = mIsTaskViewPending;
+        mIsTaskViewPending = false;
         Class<?> fragmentType;
 
-        switch (position) {
+        switch (sectionId) {
             case SECTION_ID_TASKS:
                 fragmentType = MainPagerFragment_.class;
                 break;
@@ -144,35 +156,43 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
                 break;
         }
 
-        if (true) {
-            Fragment fragment = getContentFragment();
-            if (fragment != null && fragmentType.equals(fragment.getClass())) {
-                // selected fragment is already added
-                return;
+        Fragment fragment = getContentFragment();
+        if (fragment != null && fragmentType.equals(fragment.getClass())) {
+            // selected fragment is already added
+            if (isViewTaskPending && MainPagerFragment_.class.equals(fragment.getClass())) {
+                ((MainPagerFragment)fragment).switchToSelectedPage(SELECTED_PAGE_ID);
             }
-
-            if (fragment != null) {
-                saveSectionFragmentState(fragment);
-            }
-
-            Bundle fragmentArgs = new Bundle();
-            fragmentArgs.putInt(MainFragment.ARG_SECTION_ID, position);
-            fragment = Fragment.instantiate(this, fragmentType.getName(), fragmentArgs);
-
-            Fragment.SavedState fragmentState = getSectionFragmentState(((SectionFragment)fragment));
-            if (fragmentState != null) {
-                fragment.setInitialSavedState(fragmentState);
-            }
-
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            fragmentManager.beginTransaction()
-                    .replace(R.id.container, fragment, TAG_CONTENT_FRAGMENT)
-                    .commit();
+            return;
         }
+
+        if (fragment != null) {
+            saveSectionFragmentState(fragment);
+        }
+
+        Bundle fragmentArgs = new Bundle();
+        fragmentArgs.putInt(MainFragment.ARG_SECTION_ID, sectionId);
+        fragmentArgs.putBoolean(MainPagerFragment.ARG_NEED_SWITCH_TO_SELECTED_PAGE, isViewTaskPending);
+        fragmentArgs.putInt(MainPagerFragment.ARG_PAGE_ID_FOR_SWITCHING, SELECTED_PAGE_ID);
+        fragment = Fragment.instantiate(this, fragmentType.getName(), fragmentArgs);
+
+        Fragment.SavedState fragmentState = getSectionFragmentState(((SectionFragment)fragment));
+        if (fragmentState != null) {
+            fragment.setInitialSavedState(fragmentState);
+        }
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.container, fragment, TAG_CONTENT_FRAGMENT)
+                .commit();
     }
 
     private Fragment getContentFragment() {
         return getSupportFragmentManager().findFragmentByTag(TAG_CONTENT_FRAGMENT);
+    }
+
+    @Override
+    public void onNavigationDrawerItemSelected(int sectionId) {
+        setCurrentSection(sectionId);
     }
 
     public void restoreActionBar() {
