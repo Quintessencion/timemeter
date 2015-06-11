@@ -101,29 +101,4 @@ public final class TimeUtils {
     public static long hoursToMillis(int hours) {
         return hours * MILLIS_IN_HOUR;
     }
-
-    public static String formatMinutes(int minutes) {
-        int hours = getHoursFromMinutes(minutes);
-        int min = getMinutesFromMinutes(minutes);
-
-        StringBuilder stringBuilder = new StringBuilder();
-
-        stringBuilder.append(String.format("%1d", hours));
-        stringBuilder.append(":");
-        stringBuilder.append(String.format("%02d", min));
-
-        return stringBuilder.toString();
-    }
-
-    public static int getHoursFromMinutes(int minutes) {
-        return minutes / MINUTES_IN_HOUR;
-    }
-
-    public static int getMinutesFromMinutes(int minutes) {
-        return minutes % MINUTES_IN_HOUR;
-    }
-
-    public static int hoursAndMinutesToMinutes(int hours, int minutes) {
-        return hours * MINUTES_IN_HOUR + minutes;
-    }
 }

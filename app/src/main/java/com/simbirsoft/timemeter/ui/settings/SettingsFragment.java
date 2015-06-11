@@ -1,10 +1,12 @@
 package com.simbirsoft.timemeter.ui.settings;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.support.v4.preference.PreferenceFragment;
+import android.text.Html;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.simbirsoft.timemeter.R;
@@ -16,6 +18,7 @@ import com.simbirsoft.timemeter.ui.base.AppAlertDialogFragment;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
 import com.simbirsoft.timemeter.ui.main.SectionFragment;
 import com.simbirsoft.timemeter.ui.util.TimeUtils;
+import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
 import com.sleepbot.datetimepicker.time.RadialPickerLayout;
 import com.sleepbot.datetimepicker.time.TimePickerDialog;
 
@@ -58,6 +61,9 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
 
     @Inject
     DatabaseHelper mDatabaseHelper;
+
+    @Inject
+    Resources mResources;
 
     public enum TimePickerDialogType {
         START_TIME_PICKER_DIALOG,
@@ -189,10 +195,10 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
         }
     }
 
-    private void showTimePickerDialog(int minutes) {
+    private void showTimePickerDialog(int hour) {
         TimePickerDialog timePickerDialog = TimePickerDialog.newInstance(this,
-                TimeUtils.getHoursFromMinutes(minutes),
-                TimeUtils.getMinutesFromMinutes(minutes),
+                hour,
+                0,
                 false,
                 false);
 
@@ -200,7 +206,8 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
     }
 
     private String getFormattedTime(String summary, int hours) {
-        return String.format(summary, hours + ":00");
+        return Html.fromHtml(String.format(summary,
+                TimerTextFormatter.formatHoursText(mResources, hours))).toString();
     }
 
     private void showErrorDialog() {
