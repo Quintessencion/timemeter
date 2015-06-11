@@ -27,7 +27,7 @@ public class DateTimeView extends RelativeLayout {
     }
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("EE, dd MMM yyyy");
-    private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("kk:mm");
+    private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm");
 
     @ViewById(R.id.dateText)
     EditText mDateText;

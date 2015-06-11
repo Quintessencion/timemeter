@@ -318,6 +318,7 @@ public class ViewTaskFragment extends BaseFragment
                 return;
 
             case REQUEST_CODE_VIEW_ACTIVITIES:
+            case REQUEST_CODE_EDIT_ACTIVITY:
                 requestLoad(LOADER_TAG, this);
                 break;
 

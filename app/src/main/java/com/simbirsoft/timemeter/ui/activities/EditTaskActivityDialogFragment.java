@@ -49,6 +49,7 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
     private static final String TAG_DATE_PICKER_FRAGMENT = "edit_activity_date_picker_fragment_tag";
     private static final String TAG_TIME_PICKER_FRAGMENT = "edit_activity_time_picker_fragment_tag";
     private static final String STATE_SPAN = "state_span";
+    private static final String STATE_AUTO_END_TIME = "state_auto_end_time";
 
     private MaterialDialog mDialog;
     private Long mExtraSpanId;
@@ -59,6 +60,7 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
     private DateTimeView mSelectedDateTimeView;
     private TextView mErrorMessage;
     private TaskTimeSpan mSpan;
+    private boolean mShouldSetEndTimeAutomatically;
 
     @Inject
     LoadTaskTimeSpanJob mLoadSpanJob;
@@ -82,8 +84,10 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
         } else {
             if (savedInstanceState == null) {
                 setDefaultSpan();
+                mShouldSetEndTimeAutomatically = true;
             } else {
                 mSpan = savedInstanceState.getParcelable(STATE_SPAN);
+                mShouldSetEndTimeAutomatically = savedInstanceState.getBoolean(STATE_AUTO_END_TIME);
             }
 
             updateFields();
@@ -100,7 +104,6 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
         mSpan.setTaskId(getArguments().getLong(EXTRA_TASK_ID));
         Calendar c = Calendar.getInstance();
         mSpan.setEndTimeMillis(c.getTimeInMillis());
-        c.add(Calendar.HOUR, -1);
         mSpan.setStartTimeMillis(c.getTimeInMillis());
     }
 
@@ -261,11 +264,28 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
         if (mSelectedDateTimeView == null) {
             return;
         }
+
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(mSelectedDateTimeView.getDateTimeInMillis());
         calendar.set(Calendar.HOUR_OF_DAY, hour);
         calendar.set(Calendar.MINUTE, minute);
         mSelectedDateTimeView.setDateTimeInMillis(calendar.getTimeInMillis());
+
+        if (mSelectedDateTimeView == mStartDateTimeView && mShouldSetEndTimeAutomatically) {
+            mShouldSetEndTimeAutomatically = false;
+            setDefaultEndTime(calendar);
+        }
+    }
+
+    private void setDefaultEndTime(Calendar startTime) {
+        Calendar endTime = Calendar.getInstance();
+        endTime.setTimeInMillis(startTime.getTimeInMillis());
+        endTime.add(Calendar.HOUR, 1);
+
+        Calendar currentTime = Calendar.getInstance();
+        endTime = endTime.before(currentTime) ? endTime : currentTime;
+
+        mEndDateTimeView.setDateTimeInMillis(endTime.getTimeInMillis());
     }
 
     @Override
@@ -273,5 +293,6 @@ public class EditTaskActivityDialogFragment extends BaseDialogFragment implement
         super.onSaveInstanceState(outState);
 
         outState.putParcelable(STATE_SPAN, mSpan);
+        outState.putBoolean(STATE_AUTO_END_TIME, mShouldSetEndTimeAutomatically);
     }
 }

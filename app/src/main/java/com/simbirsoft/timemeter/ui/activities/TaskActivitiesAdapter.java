@@ -357,7 +357,6 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
     private void showCannotEditActiveTimeSpanAlert() {
         Snackbar bar = Snackbar.with(mActivityContext)
                 .text(R.string.error_cannot_edit_current_time_span)
-                .actionLabel(R.string.action_accept)
                 .colorResource(R.color.lightRed)
                 .duration(Snackbar.SnackbarDuration.LENGTH_LONG)
                 .type(SnackbarType.MULTI_LINE)
