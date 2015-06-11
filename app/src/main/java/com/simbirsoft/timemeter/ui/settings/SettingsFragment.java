@@ -9,6 +9,7 @@ import android.support.v4.preference.PreferenceFragment;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.HelpCardController;
+import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.ui.base.AppAlertDialogFragment;
@@ -54,6 +55,9 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
 
     @Inject
     HelpCardController mHelpCardController;
+
+    @Inject
+    DatabaseHelper mDatabaseHelper;
 
     public enum TimePickerDialogType {
         START_TIME_PICKER_DIALOG,
@@ -174,6 +178,7 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
         if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
             hideDeleteDemoPreference();
             mPrefs.setIsDemoTasksDeleted(true);
+            mDatabaseHelper.removeTestData();
         }
     }
 

@@ -183,12 +183,8 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         mRecyclerView.setAdapter(mHelpCardAdapter);
         mRecyclerView.setItemAnimator(new HelpCardAnimator());
 
-        if (mPrefs.getIsDemoTasksDeleted()) {
-            deleteTestData();
-        } else {
-            requestLoad(TASK_LIST_LOADER_TAG, this);
-            applyFilterState();
-        }
+        requestLoad(TASK_LIST_LOADER_TAG, this);
+        applyFilterState();
     }
 
     private void applyFilterState() {
