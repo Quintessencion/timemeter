@@ -79,8 +79,8 @@
     <string name="hint_reset_filter">Сбросить фильтр</string>
     <string name="hint_choose_filter_period">Выбрать период</string>
     <string name="hint_choose_period">не задан</string>
-    <string name="hint_new_time_span">Добавить новый временной отрезок</string>
-    <string name="hint_task_time_spans_removed">Временные промежутки удалены.</string>
+    <string name="hint_new_time_span">Добавить новую активность</string>
+    <string name="hint_task_time_spans_removed">Активности удалены.</string>
 
     <!-- Errors -->
     <string name="error_unknown">Неизвестная ошибка.</string>
@@ -97,8 +97,8 @@
     <string name="error_tag_name_is_empty">Название метки не задано</string>
     <string name="error_unable_to_load_task_activities">Ошибка при загрузке списка активностей</string>
     <string name="error_unable_to_load_calendar_data">Ошибка при загрузке данных для календаря</string>
-    <string name="error_time_span_overlaps">Временной отрезок не может пересекаться с другим отрезком.</string>
-    <string name="error_time_span_belongs_to_future">Временной отрезок не может захватывать будущее.</string>
+    <string name="error_time_span_overlaps">Активность не может пересекаться с другой активностью.</string>
+    <string name="error_time_span_belongs_to_future">Активность не может захватывать будущее.</string>
     <string name="error_time_span_bad_range">Временной отрезок неверное задан.</string>
     <string name="error_cannot_edit_current_time_span">Текущая активность не может быть изменена</string>
 
