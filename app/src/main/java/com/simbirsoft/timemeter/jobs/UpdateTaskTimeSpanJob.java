@@ -48,17 +48,16 @@ public class UpdateTaskTimeSpanJob extends BaseJob {
 
         DatabaseCompartment db = cupboard().withDatabase(mDatabaseHelper.getWritableDatabase());
         List<TaskTimeSpan> overlaps = db.query(TaskTimeSpan.class).withSelection(getOverlapClause(mSpan)).list();
-        boolean noOverlaps = overlaps.isEmpty() || (overlaps.size() == 1 && overlaps.get(0).getId() == mSpan.getId());
+        boolean noOverlaps = overlaps.isEmpty() || (overlaps.size() == 1 && overlaps.get(0).getId().equals(mSpan.getId()));
         if (noOverlaps) {
             db.put(mSpan);
-            return new LoadJobResult<>(mSpan);
+            return new LoadJobResult<TaskTimeSpan>(mSpan);
         } else {
             return new LoadJobResult(ERROR_OVERLAPS, JobResultStatus.FAILED, null);
         }
     }
 
     private String getOverlapClause(TaskTimeSpan span) {
-        // (this.startTimeMillis <= span.endTimeMillis) && (span.startTimeMillis <= this.endTimeMillis)
         return Phrase.from("{start_time} <= {table_tts}.{table_tts_column_end_time} AND {table_tts}.{table_tts_column_start_time} <= {end_time}")
                 .put("table_tts", TaskTimeSpan.TABLE_NAME)
                 .put("table_tts_column_start_time", TaskTimeSpan.COLUMN_START_TIME)
