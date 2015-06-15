@@ -17,7 +17,9 @@ import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
+import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.calendar.ActivityCalendarFragment_;
+import com.simbirsoft.timemeter.ui.settings.SettingsActivity;
 import com.simbirsoft.timemeter.ui.settings.SettingsFragment_;
 import com.simbirsoft.timemeter.ui.stats.StatsListFragment_;
 import com.simbirsoft.timemeter.ui.tags.TagListFragment_;
@@ -180,10 +182,16 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
             fragment.setInitialSavedState(fragmentState);
         }
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, fragment, TAG_CONTENT_FRAGMENT)
-                .commit();
+        if (fragmentType.equals(SettingsFragment_.class)) {
+            Intent launchIntent = SettingsActivity.prepareLaunchIntent(
+                    this, SettingsFragment_.class.getName(), fragmentArgs);
+            startActivityForResult(launchIntent, SettingsActivity.REQUEST_CODE_PREFERENCE_SCREEN);
+        } else {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.container, fragment, TAG_CONTENT_FRAGMENT)
+                    .commit();
+        }
     }
 
     private Fragment getContentFragment() {
@@ -239,6 +247,12 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         Fragment fragment = getContentFragment();
         if (fragment != null) {
             fragment.onActivityResult(requestCode, resultCode, data);
+            int sectionId = ((SectionFragment) fragment).getSectionId();
+            mNavigationDrawerFragment.setCurrentSelectedPosition(sectionId);
+        }
+
+        if (requestCode == SettingsActivity.REQUEST_CODE_PREFERENCE_SCREEN) {
+
         }
 
         super.onActivityResult(requestCode, resultCode, data);

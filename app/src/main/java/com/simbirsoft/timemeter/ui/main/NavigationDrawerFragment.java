@@ -33,7 +33,7 @@ import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_navigation_drawer)
 public class NavigationDrawerFragment extends Fragment {
-    private static final int MENU_ITEMS_COUNT = 3;
+    public static final int MENU_ITEMS_COUNT = 3;
 
     private NavigationDrawerCallbacks mCallbacks;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -75,7 +75,7 @@ public class NavigationDrawerFragment extends Fragment {
     }
 
     public void setCurrentSelectedPosition(int currentSelectedPosition) {
-        selectItem(currentSelectedPosition, isFooterSelected());
+        selectItem(currentSelectedPosition, isFooterSelected(currentSelectedPosition));
     }
 
     private void saveCurrentSelectedPosition() {
@@ -84,7 +84,7 @@ public class NavigationDrawerFragment extends Fragment {
 
     private void loadCurrentSelectedPosition() {
         mCurrentSelectedPosition = mPreferences.getSelectedSectionPosition();
-        selectItem(mCurrentSelectedPosition, isFooterSelected());
+        selectItem(mCurrentSelectedPosition, isFooterSelected(mCurrentSelectedPosition));
     }
 
     @Override
@@ -293,15 +293,15 @@ public class NavigationDrawerFragment extends Fragment {
     }
 
     private void setCheckedItem() {
-        if (isFooterSelected()) {
+        if (isFooterSelected(mCurrentSelectedPosition)) {
             checkListViewItem(mFooterListView, 0);
         } else {
             checkListViewItem(mDrawerListView, mCurrentSelectedPosition);
         }
     }
 
-    private boolean isFooterSelected() {
-        return mCurrentSelectedPosition >= MENU_ITEMS_COUNT - 1;
+    private boolean isFooterSelected(int position) {
+        return position >= MENU_ITEMS_COUNT - 1;
     }
 
     private ActionBar getActionBar() {

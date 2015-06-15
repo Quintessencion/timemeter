@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.support.v4.preference.PreferenceFragment;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 
 import com.nispok.snackbar.Snackbar;
@@ -136,6 +138,19 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
         if (timePickerDialog != null) {
             timePickerDialog.setOnTimeSetListener(this);
         }
+
+        setActionBarTitleAndHome(mResources.getString(R.string.title_settings));
+    }
+
+    private void setActionBarTitleAndHome(String title) {
+        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        if (actionBar == null) {
+            return;
+        }
+        if (title != null) {
+            actionBar.setTitle(title);
+        }
+        actionBar.setDisplayHomeAsUpEnabled(true);
     }
 
     @Override
@@ -189,6 +204,7 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
             hideDeleteDemoPreference();
             mPrefs.setIsDemoTasksDeleted(true);
             mDatabaseHelper.removeTestData();
+            setPreferencesModified();
         }
     }
 
@@ -256,5 +272,9 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
         if (mCategory != null) {
             mCategory.removePreference(mDeleteDemo);
         }
+    }
+
+    private void setPreferencesModified() {
+        getActivity().setResult(SettingsActivity.RESULT_CODE_PREFERENCES_MODIFIED);
     }
 }

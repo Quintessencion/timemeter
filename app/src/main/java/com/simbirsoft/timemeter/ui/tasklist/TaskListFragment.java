@@ -49,6 +49,7 @@ import com.simbirsoft.timemeter.ui.main.ContentFragmentCallbacks;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
+import com.simbirsoft.timemeter.ui.settings.SettingsActivity;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
@@ -558,6 +559,14 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
             deleteTestData();
         }
+    }
+
+    @OnActivityResult(SettingsActivity.REQUEST_CODE_PREFERENCE_SCREEN)
+    public void onPreferenceScreenClosed(int resultCode, Intent data) {
+        if (resultCode == SettingsActivity.RESULT_CODE_PREFERENCES_MODIFIED) {
+            reloadContent();
+        }
+
     }
 
     private void deleteTestData() {
