@@ -19,6 +19,7 @@ import com.simbirsoft.timemeter.ui.base.FragmentContainerCallbacks;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.Extra;
+import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 
 @EActivity(R.layout.activity_fragment_container)
@@ -44,6 +45,9 @@ public class SettingsActivity extends BaseActivity implements FragmentContainerC
     @ViewById(R.id.toolbar)
     Toolbar mToolbar;
 
+    @InstanceState
+    int mActivityResult;
+
     public static Intent prepareLaunchIntent(Context packageContext, String fragmentName, Bundle fragmentArgs) {
         Intent intent = new Intent(packageContext, SettingsActivity_.class);
         intent.putExtra(SettingsActivity.EXTRA_FRAGMENT_NAME, fragmentName);
@@ -61,6 +65,9 @@ public class SettingsActivity extends BaseActivity implements FragmentContainerC
         Fragment fragment = getContentFragment();
         if (fragment == null) {
             initContentView(fragmentName, fragmentArgs);
+        }
+        if (mActivityResult != 0) {
+            setSettingsModified();
         }
     }
 
@@ -91,6 +98,11 @@ public class SettingsActivity extends BaseActivity implements FragmentContainerC
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void setSettingsModified() {
+        mActivityResult = RESULT_CODE_PREFERENCES_MODIFIED;
+        setResult(mActivityResult);
     }
 
     @Override

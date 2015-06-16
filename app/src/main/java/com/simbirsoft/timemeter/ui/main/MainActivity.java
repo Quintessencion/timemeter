@@ -17,7 +17,6 @@ import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
-import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.calendar.ActivityCalendarFragment_;
 import com.simbirsoft.timemeter.ui.settings.SettingsActivity;
 import com.simbirsoft.timemeter.ui.settings.SettingsFragment_;
@@ -248,11 +247,9 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         if (fragment != null) {
             fragment.onActivityResult(requestCode, resultCode, data);
             int sectionId = ((SectionFragment) fragment).getSectionId();
-            mNavigationDrawerFragment.setCurrentSelectedPosition(sectionId);
-        }
-
-        if (requestCode == SettingsActivity.REQUEST_CODE_PREFERENCE_SCREEN) {
-
+            if (requestCode == SettingsActivity.REQUEST_CODE_PREFERENCE_SCREEN) {
+                mNavigationDrawerFragment.setCurrentSelectedPosition(sectionId);
+            }
         }
 
         super.onActivityResult(requestCode, resultCode, data);

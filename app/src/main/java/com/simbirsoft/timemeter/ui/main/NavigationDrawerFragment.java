@@ -34,6 +34,7 @@ import javax.inject.Inject;
 @EFragment(R.layout.fragment_navigation_drawer)
 public class NavigationDrawerFragment extends Fragment {
     public static final int MENU_ITEMS_COUNT = 3;
+    private static final int SETTINGS_ITEM_ID = 2;
 
     private NavigationDrawerCallbacks mCallbacks;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -79,7 +80,9 @@ public class NavigationDrawerFragment extends Fragment {
     }
 
     private void saveCurrentSelectedPosition() {
-        mPreferences.setSelectedSectionPosition(mCurrentSelectedPosition);
+        if (mCurrentSelectedPosition != SETTINGS_ITEM_ID) {
+            mPreferences.setSelectedSectionPosition(mCurrentSelectedPosition);
+        }
     }
 
     private void loadCurrentSelectedPosition() {

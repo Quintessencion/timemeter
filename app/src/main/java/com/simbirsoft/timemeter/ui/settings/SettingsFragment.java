@@ -275,6 +275,6 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
     }
 
     private void setPreferencesModified() {
-        getActivity().setResult(SettingsActivity.RESULT_CODE_PREFERENCES_MODIFIED);
+        ((SettingsActivity)getActivity()).setSettingsModified();
     }
 }
