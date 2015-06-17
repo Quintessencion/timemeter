@@ -15,33 +15,43 @@ import android.transitions.everywhere.Fade;
 import android.transitions.everywhere.TransitionManager;
 import android.transitions.everywhere.TransitionSet;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
+import com.be.android.library.worker.base.JobEvent;
 import com.be.android.library.worker.controllers.JobLoader;
 import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.fourmob.datetimepicker.date.DatePickerDialog;
+import com.google.common.base.Preconditions;
+import com.melnykov.fab.FloatingActionButton;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.enums.SnackbarType;
+import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.ApplicationModule;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskActivitiesJob;
+import com.simbirsoft.timemeter.jobs.RemoveTaskTimeSpanJob;
+import com.simbirsoft.timemeter.jobs.RestoreTaskTimeSpansJob;
 import com.simbirsoft.timemeter.model.TaskLoadFilter;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
+import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
 import com.simbirsoft.timemeter.ui.stats.StatisticsViewBinder;
@@ -58,6 +68,7 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.InstanceState;
+import org.androidannotations.annotations.OnActivityResult;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
 
@@ -77,8 +88,11 @@ public class TaskActivitiesFragment extends BaseFragment implements
     public static final String EXTRA_TITLE = "extra_title";
 
     private static final String LOADER_TAG = "TaskActivitiesFragment_";
+
+
     private static final String TAG_DATE_PICKER_FRAGMENT = "activities_date_picker_fragment_tag";
     private static final String SNACKBAR_TAG = "task_activities_snackbar";
+    private static final int REQUEST_CODE_PROCESS_ACTIVITY = 10005;
 
     @ViewById(android.R.id.list)
     RecyclerView mRecyclerView;
@@ -126,13 +140,28 @@ public class TaskActivitiesFragment extends BaseFragment implements
     private ActionBar mActionBar;
     private TaskActivitiesAdapter mAdapter;
     private Menu mOptionsMenu;
+    private TaskTimeSpanActions mTaskTimeSpanActions;
+    private FloatingActionButton mFloatingActionButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         Injection.sUiComponent.injectTaskActivitiesFragment(this);
+        mTaskTimeSpanActions = new TaskTimeSpanActions(getActivity(), savedInstanceState);
         mBus.register(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mTaskTimeSpanActions.dispose();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mTaskTimeSpanActions.saveState(outState);
     }
 
     @Override
@@ -164,6 +193,8 @@ public class TaskActivitiesFragment extends BaseFragment implements
 
     @AfterViews
     void bindViews() {
+        bindFloatingButton();
+
         mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         mActionBar.setDisplayHomeAsUpEnabled(true);
         if (mExtraTitle != null) {
@@ -206,6 +237,34 @@ public class TaskActivitiesFragment extends BaseFragment implements
         if (dialog != null) {
             dialog.setOnDateSetListener(this);
         }
+
+        mTaskTimeSpanActions.bind(mAdapter, mRecyclerView);
+        mTaskTimeSpanActions.setOnActivatedListener(sender -> {
+            hideFilterView(true);
+            updateOptionsMenu();
+            mFloatingActionButton.setVisibility(View.INVISIBLE);
+        });
+        mTaskTimeSpanActions.setOnDeactivatedListener(sender -> {
+            mFloatingActionButton.setVisibility(View.VISIBLE);
+        });
+        mTaskTimeSpanActions.setOnEditListener(sender -> editSelectedSpan());
+        mTaskTimeSpanActions.setOnDidRemoveListener(sender -> requestLoad(LOADER_TAG, this));
+        mTaskTimeSpanActions.setOnDidRestoreSpansListener(sender -> requestLoad(LOADER_TAG, this));
+    }
+
+    void bindFloatingButton() {
+        final ViewGroup floatingButtonContainer = (ViewGroup) LayoutInflater.from(getActivity())
+                .inflate(R.layout.view_floating_action_button, mContentRootView, false);
+        mFloatingActionButton = (FloatingActionButton) floatingButtonContainer.findViewById(R.id.floatingButton);
+        final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        mContentRootView.addView(floatingButtonContainer, params);
+        mFloatingActionButton.attachToRecyclerView(mRecyclerView);
+        mFloatingActionButton.setOnClickListener(this::onFloatingButtonClicked);
+        mFloatingActionButton.setOnLongClickListener(this::onFloatingActionButtonLongClicked);
     }
 
     @Override
@@ -246,7 +305,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
         }
         if (mAdapter.getItemCount() == 0) {
             mProgressLayout.setEmptyIndicatorMessage(mFilterView.getFilterState().isEmpty()
-                                                     ? mNoActivityMessage : mNoFilteredActivityMessage);
+                    ? mNoActivityMessage : mNoFilteredActivityMessage);
         }
     }
 
@@ -257,17 +316,21 @@ public class TaskActivitiesFragment extends BaseFragment implements
 
     @Override
     public Job onCreateJob(String s) {
-        LoadTaskActivitiesJob job = Injection.sJobsComponent.loadTaskActivitiesJob();
-        job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
-        job.setTaskId(mExtraTaskId);
-        job.addTag(LOADER_TAG);
-        TaskActivitiesFilterView.FilterState filterState = mFilterView.getFilterState();
-        if (filterState != null) {
-            job.getFilter().startDateMillis(filterState.startDateMillis)
-                    .endDateMillis(filterState.endDateMillis)
-                    .period(filterState.period);
+        if (LOADER_TAG.equals(s)) {
+            LoadTaskActivitiesJob job = Injection.sJobsComponent.loadTaskActivitiesJob();
+            job.setGroupId(JobManager.JOB_GROUP_UNIQUE);
+            job.setTaskId(mExtraTaskId);
+            job.addTag(LOADER_TAG);
+            TaskActivitiesFilterView.FilterState filterState = mFilterView.getFilterState();
+            if (filterState != null) {
+                job.getFilter().startDateMillis(filterState.startDateMillis)
+                        .endDateMillis(filterState.endDateMillis)
+                        .period(filterState.period);
+            }
+            return job;
         }
-        return job;
+
+        throw new UnsupportedOperationException("Unknown job id");
     }
 
     @Subscribe
@@ -480,5 +543,40 @@ public class TaskActivitiesFragment extends BaseFragment implements
         if (snackbar != null && snackbar.isShowing()) {
             snackbar.dismiss();
         }
+    }
+
+    private void onFloatingButtonClicked(View v) {
+        processTimeSpan(null);
+    }
+
+    private void processTimeSpan(TaskTimeSpan spanOrNull) {
+        long id = (spanOrNull != null) ? spanOrNull.getId() :  EditTaskActivityDialogFragment.CREATE_NEW_SPAN_ID;
+
+        Bundle args = new Bundle();
+        args.putString(EditTaskActivityDialogFragment.EXTRA_TITLE, mExtraTitle);
+        args.putLong(EditTaskActivityDialogFragment.EXTRA_SPAN_ID, id);
+        args.putLong(EditTaskActivityDialogFragment.EXTRA_TASK_ID, mExtraTaskId);
+
+        Intent launchIntent = DialogContainerActivity.prepareDialogLaunchIntent(
+                getActivity(), EditTaskActivityDialogFragment.class.getName(), args);
+        startActivityForResult(launchIntent, REQUEST_CODE_PROCESS_ACTIVITY);
+    }
+
+    private void editSelectedSpan() {
+        List<TaskTimeSpan> selected = mAdapter.getSelectedSpans();
+        Preconditions.checkArgument(selected.size() == 1, "there should be 1 selected span");
+        processTimeSpan(selected.get(0));
+    }
+
+    @OnActivityResult(REQUEST_CODE_PROCESS_ACTIVITY)
+    public void onEditActivityResult(int resultCode, Intent data) {
+        if (resultCode == EditTaskActivityDialogFragment.RESULT_CODE_OK) {
+            requestLoad(LOADER_TAG, this);
+        }
+    }
+
+    private boolean onFloatingActionButtonLongClicked(View v) {
+        showToast(R.string.hint_new_time_span);
+        return true;
     }
 }

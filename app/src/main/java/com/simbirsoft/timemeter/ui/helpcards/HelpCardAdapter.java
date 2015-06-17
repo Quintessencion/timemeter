@@ -22,7 +22,7 @@ public class HelpCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private HelpCardSource mHelpCardSource;
     private boolean mNeedToPresentHelpCard;
     private RecyclerView.Adapter mInnerAdapter;
-    private StaggeredGridLayoutManager mLayoutManager;
+    private RecyclerView.LayoutManager mLayoutManager;
 
     public HelpCardAdapter(RecyclerView.Adapter adapter) {
         mInnerAdapter = adapter;
@@ -98,7 +98,7 @@ public class HelpCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         mHelpCardSource = source;
     }
 
-    public void setLayoutManager(StaggeredGridLayoutManager lm) {
+    public void setLayoutManager(RecyclerView.LayoutManager lm) {
         mLayoutManager = lm;
     }
 

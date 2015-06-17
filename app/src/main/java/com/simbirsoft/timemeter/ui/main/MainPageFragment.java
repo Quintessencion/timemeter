@@ -376,6 +376,7 @@ public class MainPageFragment extends BaseFragment implements HelpCardSource {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_CODE_PROCESS_TASK) {
+            invalidateContent();
             sendTaskChangedEvent(resultCode, data);
         }
         super.onActivityResult(requestCode, resultCode, data);

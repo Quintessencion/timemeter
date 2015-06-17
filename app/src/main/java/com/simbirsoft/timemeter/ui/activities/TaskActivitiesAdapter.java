@@ -1,7 +1,7 @@
 package com.simbirsoft.timemeter.ui.activities;
 
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.res.Resources;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,10 +10,12 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.nispok.snackbar.Snackbar;
+import com.nispok.snackbar.SnackbarManager;
+import com.nispok.snackbar.enums.SnackbarType;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.ui.model.TaskActivityDateItem;
@@ -21,14 +23,19 @@ import com.simbirsoft.timemeter.ui.model.TaskActivityEmptyItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
 import com.simbirsoft.timemeter.ui.model.TaskActivitySpansItem;
 import com.simbirsoft.timemeter.ui.util.TimeUtils;
+import com.simbirsoft.timemeter.ui.views.TaskActivityItemView;
 import com.simbirsoft.timemeter.ui.views.TaskActivityItemsLayout;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
 public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesAdapter.ViewHolder>
-                                   implements TaskActivityItemsLayout.TaskActivityItemsAdapter {
+                                   implements TaskActivityItemsLayout.TaskActivityItemsAdapter,
+                                    View.OnLongClickListener {
+
     static class ViewHolder extends RecyclerView.ViewHolder {
         public ViewHolder(View itemView) {
             super(itemView);
@@ -67,7 +74,7 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
 
     private final List<TaskActivityItem> mItems;
     private final HashSet<View> mActivityItemViews;
-    private Context mContext;
+    private Activity mActivityContext;
     private int mMiddleItemPaddingTop;
     private int mMiddleItemPaddingBottom;
     private int mFirstItemPaddingTop;
@@ -77,12 +84,13 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
     private int mHolidayDateColor;
     private final Calendar mCalendar;
     private final List<TaskTimeSpan> mHighlightedSpans;
+    private final List<TaskTimeSpan> mSelectedSpans;
 
-    public TaskActivitiesAdapter(Context context) {
-        mContext = context;
+    public TaskActivitiesAdapter(Activity activityContext) {
+        mActivityContext = activityContext;
         mItems = Lists.newArrayList();
         mActivityItemViews = Sets.newHashSet();
-        final Resources res = context.getResources();
+        final Resources res = activityContext.getResources();
         mMiddleItemPaddingTop = 0;
         mMiddleItemPaddingBottom = res.getDimensionPixelSize(R.dimen.task_activity_middle_item_padding_bottom);
         mFirstItemPaddingTop = res.getDimensionPixelSize(R.dimen.task_activity_first_item_padding_top);
@@ -92,11 +100,36 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         mHolidayDateColor = res.getColor(R.color.accentPrimary);
         mCalendar = Calendar.getInstance();
         mHighlightedSpans = Lists.newArrayList();
+        mSelectedSpans = Lists.newArrayList();
     }
 
     public void setItems(List<TaskActivityItem> items) {
         mItems.clear();
         mItems.addAll(items);
+
+        mSelectedSpans.clear();
+        mHighlightedSpans.clear();
+
+        notifyDataSetChanged();
+    }
+
+    public void setItems(List<TaskActivityItem> items, List<Long> selectedIds) {
+        mItems.clear();
+        mItems.addAll(items);
+
+        mSelectedSpans.clear();
+
+        for (TaskActivityItem item : items) {
+            if (item instanceof TaskActivitySpansItem) {
+                TaskActivitySpansItem si = (TaskActivitySpansItem) item;
+                for (TaskTimeSpan span : si.getList()) {
+                    if (selectedIds.contains(span.getId())) {
+                        mSelectedSpans.add(span);
+                    }
+                }
+            }
+        }
+
         notifyDataSetChanged();
     }
 
@@ -149,21 +182,21 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
 
 
     private ViewHolder createDateItemViewHolder(ViewGroup viewGroup) {
-        View view = LayoutInflater.from(mContext)
+        View view = LayoutInflater.from(mActivityContext)
                 .inflate(R.layout.view_task_activity_date_item, viewGroup, false);
 
         return new DateItemViewHolder(view);
     }
 
     private ViewHolder createSpansItemViewHolder(ViewGroup viewGroup) {
-        View view = LayoutInflater.from(mContext)
+        View view = LayoutInflater.from(mActivityContext)
                 .inflate(R.layout.view_task_activity_spans_item, viewGroup, false);
 
         return new SpansItemViewHolder(view, this);
     }
 
     private ViewHolder createEmptyItemViewHolder(ViewGroup viewGroup) {
-        View view = LayoutInflater.from(mContext)
+        View view = LayoutInflater.from(mActivityContext)
                 .inflate(R.layout.view_task_activity_empty_item, viewGroup, false);
 
         return new EmptyItemViewHolder(view);
@@ -215,9 +248,10 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
             view = mActivityItemViews.iterator().next();
             mActivityItemViews.remove(view);
         } else {
-            view = LayoutInflater.from(mContext)
+            view = LayoutInflater.from(mActivityContext)
                     .inflate(R.layout.view_task_activity_item, layout, false);
             view.setTag(view.findViewById(R.id.taskActivityItemView));
+            view.setOnLongClickListener(this);
         }
         return view;
     }
@@ -230,6 +264,11 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
     @Override
     public boolean isActivityItemViewHighlighted(TaskActivitySpansItem item, int index) {
         return mHighlightedSpans.contains(item.getSpan(index));
+    }
+
+    @Override
+    public boolean isActivityItemViewSelected(TaskActivitySpansItem item, int index) {
+        return mSelectedSpans.contains(item.getSpan(index));
     }
 
     public void updateCurrentActivityTime(long taskId) {
@@ -272,5 +311,57 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         TaskActivityItem item = mItems.get(position);
         Preconditions.checkArgument(item.getItemType() == TaskActivityItem.SPANS_ITEM_TYPE, "illegal item type");
         return ((TaskActivitySpansItem)item).getSpansCount();
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        TaskActivityItemView itemView = (TaskActivityItemView) v;
+        TaskTimeSpan span = itemView.getItem().getSpan(itemView.getIndex());
+
+        if (span.isActive()) {
+            showCannotEditActiveTimeSpanAlert();
+            return true;
+        }
+
+        boolean isSelected = mSelectedSpans.contains(span);
+        if (isSelected) {
+            mSelectedSpans.remove(span);
+        } else {
+            mSelectedSpans.add(span);
+        }
+
+        notifyDataSetChanged();
+
+        return true;
+    }
+
+    public List<TaskTimeSpan> getSelectedSpans() {
+        return Collections.unmodifiableList(mSelectedSpans);
+    }
+
+    public List<Long> getSelectedSpanIds() {
+        List<Long> result = new ArrayList<>();
+        for (TaskTimeSpan span : mSelectedSpans) {
+            result.add(span.getId());
+        }
+        return result;
+    }
+
+    public void clearSelection() {
+        if (!mSelectedSpans.isEmpty()) {
+            mSelectedSpans.clear();
+            notifyDataSetChanged();
+        }
+    }
+
+    private void showCannotEditActiveTimeSpanAlert() {
+        Snackbar bar = Snackbar.with(mActivityContext)
+                .text(R.string.error_cannot_edit_current_time_span)
+                .colorResource(R.color.lightRed)
+                .duration(Snackbar.SnackbarDuration.LENGTH_LONG)
+                .type(SnackbarType.MULTI_LINE)
+                .animation(true);
+
+        SnackbarManager.show(bar);
     }
 }

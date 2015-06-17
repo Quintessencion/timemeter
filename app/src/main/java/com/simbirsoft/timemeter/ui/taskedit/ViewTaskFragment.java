@@ -22,20 +22,27 @@ import com.be.android.library.worker.controllers.JobManager;
 import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.google.common.primitives.Longs;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
 import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskBundleJob;
 import com.simbirsoft.timemeter.jobs.LoadTaskRecentActivitiesJob;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.activities.EditTaskActivityDialogFragment;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesAdapter;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesFragment_;
 import com.simbirsoft.timemeter.ui.activities.TaskActivitiesLayoutManager;
+import com.simbirsoft.timemeter.ui.activities.TaskTimeSpanActions;
 import com.simbirsoft.timemeter.ui.base.BaseFragment;
+import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
 import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
@@ -54,11 +61,14 @@ import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_view_task)
 public class ViewTaskFragment extends BaseFragment
-        implements JobLoader.JobLoaderCallbacks{
+        implements JobLoader.JobLoaderCallbacks {
     public static final String EXTRA_TASK_BUNDLE = "extra_task_bundle";
     public static final String EXTRA_TASK_ID = "extra_task_id";
 
@@ -68,6 +78,9 @@ public class ViewTaskFragment extends BaseFragment
     private static final Logger LOG = LogFactory.getLogger(ViewTaskFragment.class);
 
     private static final int REQUEST_CODE_VIEW_ACTIVITIES = 101;
+    private static final int REQUEST_CODE_EDIT_ACTIVITY = 10005;
+
+    private static final String STATE_SELECTION = "asdasd";
 
     @ViewById(R.id.tagFlowView)
     protected TagFlowView tagFlowView;
@@ -94,17 +107,41 @@ public class ViewTaskFragment extends BaseFragment
     @InstanceState
     int mListPositionOffset;
 
+    List<Long> mSelectedSpans = new ArrayList<>();
+
     @Inject
     Bus mBus;
 
     private TaskActivitiesAdapter mAdapter;
+    private TaskTimeSpanActions mTaskTimeSpanActions;
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mTaskTimeSpanActions.saveState(outState);
+
+        long[] selection = Longs.toArray(mAdapter.getSelectedSpanIds());
+        outState.putLongArray(STATE_SELECTION, selection);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         Injection.sUiComponent.injectViewTaskFragment(this);
+
+        if (savedInstanceState != null) {
+            mSelectedSpans = Longs.asList(savedInstanceState.getLongArray(STATE_SELECTION));
+        }
+
+        mTaskTimeSpanActions = new TaskTimeSpanActions(getActivity(), savedInstanceState);
         mBus.register(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mTaskTimeSpanActions.dispose();
     }
 
     @Override
@@ -130,6 +167,12 @@ public class ViewTaskFragment extends BaseFragment
             mListPositionOffset = (mListPosition != RecyclerView.NO_POSITION)
                                     ? layoutManager.findItemOffset(mListPosition) : 0;
         }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        mSelectedSpans = Lists.newArrayList(mAdapter.getSelectedSpanIds());
     }
 
     private void setActionBarTitleAndHome(String title) {
@@ -184,6 +227,11 @@ public class ViewTaskFragment extends BaseFragment
                 });
         requestLoad(LOADER_TAG, this);
         mProgressLayout.updateProgressView();
+
+        mTaskTimeSpanActions.bind(mAdapter, mRecyclerView);
+        mTaskTimeSpanActions.setOnEditListener(sender -> editSelectedSpan());
+        mTaskTimeSpanActions.setOnDidRemoveListener(sender -> requestLoad(LOADER_TAG, this));
+        mTaskTimeSpanActions.setOnDidRestoreSpansListener(sender -> requestLoad(LOADER_TAG, this));
     }
 
     private void goToEditTask() {
@@ -269,6 +317,11 @@ public class ViewTaskFragment extends BaseFragment
                 }
                 return;
 
+            case REQUEST_CODE_VIEW_ACTIVITIES:
+            case REQUEST_CODE_EDIT_ACTIVITY:
+                requestLoad(LOADER_TAG, this);
+                break;
+
             default:
                 break;
         }
@@ -278,7 +331,7 @@ public class ViewTaskFragment extends BaseFragment
     @OnJobSuccess(LoadTaskRecentActivitiesJob.class)
     public void onLoadSuccess(LoadJobResult<TaskRecentActivity> result) {
         TaskRecentActivity recentActivity = result.getData();
-        mAdapter.setItems(recentActivity.getList());
+        mAdapter.setItems(recentActivity.getList(), mSelectedSpans);
         if (mListPosition >=0) {
             TaskActivitiesLayoutManager layoutManager = (TaskActivitiesLayoutManager) mRecyclerView.getLayoutManager();
             layoutManager.scrollToPositionWithOffset(mListPosition, mListPositionOffset);
@@ -382,5 +435,20 @@ public class ViewTaskFragment extends BaseFragment
             TaskActivitiesLayoutManager layoutManager = (TaskActivitiesLayoutManager) mRecyclerView.getLayoutManager();
             layoutManager.scrollToSpan(position[0], position[1]);
         }
+    }
+
+    private void editSelectedSpan() {
+        List<TaskTimeSpan> selected = mAdapter.getSelectedSpans();
+        Preconditions.checkArgument(selected.size() == 1, "there should be 1 selected span");
+        onTaskTimeSpanEditClicked(selected.get(0));
+    }
+
+    public void onTaskTimeSpanEditClicked(TaskTimeSpan span) {
+        Bundle args = new Bundle();
+        args.putString(EditTaskActivityDialogFragment.EXTRA_TITLE, mExtraTaskBundle.getTask().getDescription());
+        args.putLong(EditTaskActivityDialogFragment.EXTRA_SPAN_ID, span.getId());
+        Intent launchIntent = DialogContainerActivity.prepareDialogLaunchIntent(
+                getActivity(), EditTaskActivityDialogFragment.class.getName(), args);
+        startActivityForResult(launchIntent, REQUEST_CODE_EDIT_ACTIVITY);
     }
 }
