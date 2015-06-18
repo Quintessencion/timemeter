@@ -174,6 +174,10 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
         int currentStartHour = mPrefs.getDayStartHour();
         int currentEndHour = mPrefs.getDayEndHour();
 
+        if (hours == 0) {
+            hours = 24;
+        }
+
         switch (mTimePickerDialogType) {
             case START_TIME_PICKER_DIALOG:
                 if (hours <= currentEndHour) {
