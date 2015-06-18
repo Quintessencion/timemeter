@@ -139,12 +139,12 @@ public class SettingsActivity extends BaseActivity implements FragmentContainerC
         mToolbar.setVisibility(View.VISIBLE);
     }
 
-    public void loadTasks() {
+    /*public void loadTasks() {
         LoadTasksFragment loadTasksFragment = new LoadTasksFragment();
 
         getSupportFragmentManager()
                 .beginTransaction()
                 .add(loadTasksFragment, "123")
                 .commit();
-    }
+    } */
 }

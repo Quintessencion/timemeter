@@ -20,6 +20,12 @@ public class XmlTag {
     @Attribute(required = false)
     private String color;
 
+    public XmlTag(Tag tag) {
+        id = tag.getId();
+        name = tag.getName();
+        color = "#" + Integer.valueOf(String.valueOf(tag.getColor()), 16);
+    }
+
     public long getId() {
         return id;
     }

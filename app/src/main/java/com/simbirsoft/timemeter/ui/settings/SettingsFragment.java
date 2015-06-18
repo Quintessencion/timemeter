@@ -308,7 +308,12 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
     }
 
     private void saveBackup() {
-        ((SettingsActivity)getActivity()).loadTasks();
+        LoadTasksFragment loadTasksFragment = new LoadTasksFragment();
+
+        getChildFragmentManager()
+                .beginTransaction()
+                .add(loadTasksFragment, "123")
+                .commit();
 
         /*getChildFragmentManager()
                 .beginTransaction()
