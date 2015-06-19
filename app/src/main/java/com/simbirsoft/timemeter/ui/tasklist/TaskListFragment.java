@@ -566,7 +566,16 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         if (resultCode == SettingsActivity.RESULT_CODE_PREFERENCES_MODIFIED) {
             reloadContent();
         }
+    }
 
+    @Override
+    public void setMenuVisibility(final boolean visible) {
+        super.setMenuVisibility(visible);
+        if (visible && mPrefs != null && mPrefs.getShouldReloadTasks()) {
+            reloadContent();
+            getBus().post(new ScheduledTaskUpdateTabContentEvent());
+            mPrefs.setShouldReloadTasks(false);
+        }
     }
 
     private void deleteTestData() {

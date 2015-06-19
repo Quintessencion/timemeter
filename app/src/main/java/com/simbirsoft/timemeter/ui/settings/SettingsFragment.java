@@ -207,6 +207,7 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
         if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
             hideDeleteDemoPreference();
             mPrefs.setIsDemoTasksDeleted(true);
+            mPrefs.setShouldReloadContent(true);
             mDatabaseHelper.removeTestData();
             setPreferencesModified();
         }

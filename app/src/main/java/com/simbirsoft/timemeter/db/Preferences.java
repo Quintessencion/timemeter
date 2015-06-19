@@ -42,6 +42,16 @@ public final class Preferences {
     private static final String PREFERENCE_IS_SHOW_HELP = "show_help";
     private static final boolean IS_SHOW_HELP_DEFAULT = true;
 
+
+    private static final String PREFERENCE_SHOULD_RELOAD_TASKS = "should_reload_tasks";
+    private static final boolean SHOULD_RELOAD_TASKS_DEFAULT = false;
+
+    private static final String PREFERENCE_SHOULD_RELOAD_STATISTICS = "should_reload_statistics";
+    private static final boolean SHOULD_RELOAD_STATISTICS_DEFAULT = false;
+
+    private static final String PREFERENCE_SHOULD_RELOAD_CALENDAR = "should_reload_calendar";
+    private static final boolean SHOULD_RELOAD_CALENDAR_DEFAULT = false;
+
     @Inject
     public Preferences(App appContext) {
         mPrefs = PreferenceManager.getDefaultSharedPreferences(appContext);
@@ -151,6 +161,37 @@ public final class Preferences {
 
     public void setIsShowHelp(boolean isShowHelp) {
         mPrefs.edit().putBoolean(PREFERENCE_IS_SHOW_HELP, isShowHelp).apply();
+    }
+
+
+    public boolean getShouldReloadTasks() {
+        return mPrefs.getBoolean(PREFERENCE_SHOULD_RELOAD_TASKS, SHOULD_RELOAD_TASKS_DEFAULT);
+    }
+
+    public void setShouldReloadTasks(boolean shouldReloadTasks) {
+        mPrefs.edit().putBoolean(PREFERENCE_SHOULD_RELOAD_TASKS, shouldReloadTasks).apply();
+    }
+
+    public boolean getShouldReloadStatistics() {
+        return mPrefs.getBoolean(PREFERENCE_SHOULD_RELOAD_STATISTICS, SHOULD_RELOAD_STATISTICS_DEFAULT);
+    }
+
+    public void setShouldReloadStatistics(boolean shouldReloadStatistics) {
+        mPrefs.edit().putBoolean(PREFERENCE_SHOULD_RELOAD_STATISTICS, shouldReloadStatistics).apply();
+    }
+
+    public boolean getShouldReloadCalendar() {
+        return mPrefs.getBoolean(PREFERENCE_SHOULD_RELOAD_CALENDAR, SHOULD_RELOAD_CALENDAR_DEFAULT);
+    }
+
+    public void setShouldReloadCalendar(boolean shouldReloadCalendar) {
+        mPrefs.edit().putBoolean(PREFERENCE_SHOULD_RELOAD_CALENDAR, shouldReloadCalendar).apply();
+    }
+
+    public void setShouldReloadContent(boolean shouldReloadContent) {
+        setShouldReloadTasks(shouldReloadContent);
+        setShouldReloadStatistics(shouldReloadContent);
+        setShouldReloadCalendar(shouldReloadContent);
     }
 
     private boolean checkHourValue(int hour) {
