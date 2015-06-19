@@ -16,6 +16,13 @@
         android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/section_label"/>
+        android:layout_below="@+id/section_label"
+        android:layout_above="@+id/footerList"/>
+
+    <ListView
+        android:id="@+id/footerList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"/>
 
 </RelativeLayout>

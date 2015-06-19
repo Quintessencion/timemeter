@@ -17,6 +17,8 @@ import com.be.android.library.worker.models.LoadJobResult;
 import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.HelpCardController;
+import com.simbirsoft.timemeter.db.Preferences;
+import com.simbirsoft.timemeter.events.ScheduledTaskUpdateTabContentEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadStatisticsViewBinders;
 import com.simbirsoft.timemeter.log.LogFactory;
@@ -25,11 +27,13 @@ import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.helpcards.HelpCardAdapter;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
+import com.simbirsoft.timemeter.ui.settings.SettingsActivity;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.helpcards.HelpCardPresenter;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.OnActivityResult;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
@@ -51,6 +55,8 @@ public class StatsListFragment extends MainPageFragment implements
     @ViewById(android.R.id.empty)
     TextView mEmptyStatusMessageView;
 
+    Preferences mPrefs;
+
     private StatsListAdapter mStatsListAdapter;
     private HelpCardAdapter mHelpCardAdapter;
 
@@ -59,6 +65,8 @@ public class StatsListFragment extends MainPageFragment implements
         super.onCreate(savedInstanceState);
 
         Injection.sUiComponent.injectStatsListFragment(this);
+
+        mPrefs = Injection.sDatabaseComponent.preferences();
 
         mStatsListAdapter = new StatsListAdapter();
         mStatsListAdapter.setChartClickListener(this);
@@ -143,6 +151,23 @@ public class StatsListFragment extends MainPageFragment implements
     protected void reloadContent() {
         super.reloadContent();
         requestReload(STATISTICS_BINDER_LOADER_TAG, this);
+    }
+
+    @Override
+    public void setMenuVisibility(final boolean visible) {
+        super.setMenuVisibility(visible);
+        if (visible && mPrefs != null && mPrefs.getShouldReloadStatistics()) {
+            reloadContent();
+            getBus().post(new ScheduledTaskUpdateTabContentEvent());
+            mPrefs.setShouldReloadStatistics(false);
+        }
+    }
+
+    @OnActivityResult(SettingsActivity.REQUEST_CODE_PREFERENCE_SCREEN)
+    public void onPreferenceScreenClosed(int resultCode, Intent data) {
+        if (resultCode == SettingsActivity.RESULT_CODE_PREFERENCES_MODIFIED) {
+            reloadContent();
+        }
     }
 
     @Override

@@ -31,6 +31,7 @@ import com.nispok.snackbar.enums.SnackbarType;
 import com.simbirsoft.timemeter.Consts;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.HelpCardController;
+import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.BackupTagJob;
@@ -92,6 +93,9 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
 
     @InstanceState
     Integer mTagListPosition;
+
+    @Inject
+    Preferences mPrefs;
 
     private TagListAdapter mTagListAdapter;
     private HelpCardAdapter mHelpCardAdapter;
@@ -205,6 +209,10 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
     @Override
     public void onStart() {
         super.onStart();
+
+        if (!mPrefs.getIsShowHelp()) {
+            return;
+        }
 
         if (!mHelpCardController.isPresented(HelpCardController.HELP_CARD_TAGS)) {
             Handler handler = new Handler();

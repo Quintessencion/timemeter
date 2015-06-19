@@ -5,6 +5,7 @@ import java.util.Date;
 
 public final class TimeUtils {
     public static final long MILLIS_IN_HOUR = 3600000;
+    public static final int MINUTES_IN_HOUR = 60;
 
     public static long getDayStartMillis(Calendar calendar) {
         calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -40,7 +41,7 @@ public final class TimeUtils {
     public static long getWeekFirstDayStartMillis(Calendar calendar) {
         calendar.setTimeInMillis(getDayStartMillis(calendar));
         int days = calendar.get(Calendar.DAY_OF_WEEK) - Calendar.MONDAY;
-        calendar.add(Calendar.DAY_OF_YEAR, (days >=0) ? -days : (-days - 7));
+        calendar.add(Calendar.DAY_OF_YEAR, (days >= 0) ? -days : (-days - 7));
         return calendar.getTimeInMillis();
     }
 
@@ -53,7 +54,7 @@ public final class TimeUtils {
     public static long getWeekLastDayStartMillis(Calendar calendar) {
         calendar.setTimeInMillis(getDayStartMillis(calendar));
         int days = Calendar.SUNDAY - calendar.get(Calendar.DAY_OF_WEEK);
-        calendar.add(Calendar.DAY_OF_YEAR, (days >=0) ? days : (7 + days));
+        calendar.add(Calendar.DAY_OF_YEAR, (days >= 0) ? days : (7 + days));
         return calendar.getTimeInMillis();
     }
 

@@ -13,7 +13,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.Preferences;
@@ -31,15 +33,20 @@ import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_navigation_drawer)
 public class NavigationDrawerFragment extends Fragment {
+    public static final int MENU_ITEMS_COUNT = 3;
+    private static final int SETTINGS_ITEM_ID = 2;
 
     private NavigationDrawerCallbacks mCallbacks;
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
     private View mFragmentContainerView;
     private NavigationDrawerListAdapter mAdapter;
-    
+
     @ViewById(android.R.id.list)
     ListView mDrawerListView;
+
+    @ViewById(R.id.footerList)
+    ListView mFooterListView;
 
     @Inject
     Bus mBus;
@@ -69,16 +76,18 @@ public class NavigationDrawerFragment extends Fragment {
     }
 
     public void setCurrentSelectedPosition(int currentSelectedPosition) {
-        selectItem(currentSelectedPosition);
+        selectItem(currentSelectedPosition, isFooterSelected(currentSelectedPosition));
     }
 
     private void saveCurrentSelectedPosition() {
-        mPreferences.setSelectedSectionPosition(mCurrentSelectedPosition);
+        if (mCurrentSelectedPosition != SETTINGS_ITEM_ID) {
+            mPreferences.setSelectedSectionPosition(mCurrentSelectedPosition);
+        }
     }
 
     private void loadCurrentSelectedPosition() {
         mCurrentSelectedPosition = mPreferences.getSelectedSectionPosition();
-        selectItem(mCurrentSelectedPosition);
+        selectItem(mCurrentSelectedPosition, isFooterSelected(mCurrentSelectedPosition));
     }
 
     @Override
@@ -91,22 +100,20 @@ public class NavigationDrawerFragment extends Fragment {
     @AfterViews
     void bindViews() {
         mAdapter = new NavigationDrawerListAdapter();
-        NavigationDrawerListAdapter.NavigationItem tasks = new NavigationDrawerListAdapter.NavigationItem();
-        tasks.setDrawableId(R.drawable.ic_clock_32dp_selector);
-        tasks.setText(getString(R.string.title_tasks));
 
-        NavigationDrawerListAdapter.NavigationItem tags = new NavigationDrawerListAdapter.NavigationItem();
-        tags.setDrawableId(R.drawable.ic_tag_32dp_selector);
-        tags.setText(getString(R.string.title_tags));
+        NavigationDrawerListAdapter.NavigationItem tasks = getNavigationItem(R.drawable.ic_clock_32dp_selector, R.string.title_tasks);
+        NavigationDrawerListAdapter.NavigationItem tags = getNavigationItem(R.drawable.ic_tag_32dp_selector, R.string.title_tags);
+        NavigationDrawerListAdapter.NavigationItem settings = getNavigationItem(R.drawable.ic_settings_selector, R.string.title_settings);
 
         mAdapter.setItems(Arrays.asList(tasks, tags));
 
         mDrawerListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         mDrawerListView.setOnItemClickListener(
-                (parent, view, position, id) -> selectItem(position));
+                (parent, view, position, id) -> selectItem(position, false));
 
         mDrawerListView.setAdapter(mAdapter);
-        mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
+        configureFooter(settings);
+        setCheckedItem();
     }
 
     public boolean isDrawerOpen() {
@@ -169,21 +176,25 @@ public class NavigationDrawerFragment extends Fragment {
             mDrawerLayout.openDrawer(mFragmentContainerView);
         }
 
-        mDrawerLayout.post(new Runnable() {
-            @Override
-            public void run() {
-                mDrawerToggle.syncState();
-            }
-        });
+        mDrawerLayout.post(() -> mDrawerToggle.syncState());
 
         mDrawerLayout.setDrawerListener(mDrawerToggle);
     }
 
-    private void selectItem(int position) {
-        mCurrentSelectedPosition = position;
-        if (mDrawerListView != null) {
-            mDrawerListView.setItemChecked(position, true);
+    private void selectItem(int position, boolean isFooterView) {
+        if (isFooterView) {
+            position = MENU_ITEMS_COUNT - 1;
         }
+        mCurrentSelectedPosition = position;
+
+        if (isFooterView) {
+            checkListViewItem(mFooterListView, 0);
+            clearListViewSelection(mDrawerListView);
+        } else {
+            checkListViewItem(mDrawerListView, position);
+            clearListViewSelection(mFooterListView);
+        }
+
         if (mDrawerLayout != null) {
             mDrawerLayout.closeDrawer(mFragmentContainerView);
         }
@@ -246,11 +257,54 @@ public class NavigationDrawerFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
+    private NavigationDrawerListAdapter.NavigationItem getNavigationItem(int drawableId, int titleId) {
+        NavigationDrawerListAdapter.NavigationItem navigationItem = new NavigationDrawerListAdapter.NavigationItem();
+        navigationItem.setDrawableId(drawableId);
+        navigationItem.setText(getString(titleId));
+        return navigationItem;
+    }
+
+    private void configureFooter(NavigationDrawerListAdapter.NavigationItem footerItem) {
+        NavigationDrawerListAdapter footerAdapter = new NavigationDrawerListAdapter();
+
+        footerAdapter.setItems(Arrays.asList(footerItem));
+
+        mFooterListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        mFooterListView.setOnItemClickListener(
+                (parent, view, position, id) -> selectItem(position, true));
+
+        mFooterListView.setAdapter(footerAdapter);
+    }
+
     private void showGlobalContextActionBar() {
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
         actionBar.setTitle(R.string.app_name);
+    }
+
+    private void checkListViewItem(ListView listView, int position) {
+        if (listView != null) {
+            listView.setItemChecked(position, true);
+        }
+    }
+
+    private void clearListViewSelection(ListView listView) {
+        if (listView != null) {
+            listView.clearChoices();
+        }
+    }
+
+    private void setCheckedItem() {
+        if (isFooterSelected(mCurrentSelectedPosition)) {
+            checkListViewItem(mFooterListView, 0);
+        } else {
+            checkListViewItem(mDrawerListView, mCurrentSelectedPosition);
+        }
+    }
+
+    private boolean isFooterSelected(int position) {
+        return position >= MENU_ITEMS_COUNT - 1;
     }
 
     private ActionBar getActionBar() {

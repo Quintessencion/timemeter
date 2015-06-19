@@ -97,6 +97,18 @@ public final class TimerTextFormatter {
         return sb.toString();
     }
 
+    public static String formatHoursText(Resources res, int hours) {
+        StringBuilder sb = new StringBuilder();
+        if (hours > 0) {
+            sb.append(hours)
+                    .append("<small>")
+                    .append(res.getString(R.string.hours_mark))
+                    .append("&nbsp;</small>");
+        }
+
+        return sb.toString();
+    }
+
     private static SplitTime fetchSplitTime(long timeMillis) {
         SplitTime t = new SplitTime();
 

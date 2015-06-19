@@ -19,7 +19,9 @@ import com.be.android.library.worker.util.JobSelector;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.HelpCardController;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
+import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
+import com.simbirsoft.timemeter.events.ScheduledTaskUpdateTabContentEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadActivityCalendarJob;
@@ -29,6 +31,7 @@ import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
 import com.simbirsoft.timemeter.ui.model.CalendarData;
 import com.simbirsoft.timemeter.ui.model.CalendarPeriod;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
+import com.simbirsoft.timemeter.ui.settings.SettingsActivity;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment_;
@@ -43,6 +46,7 @@ import com.squareup.otto.Subscribe;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
+import org.androidannotations.annotations.OnActivityResult;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +77,7 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
     @InstanceState
     CalendarPeriod mCalendarPeriod;
 
+    Preferences mPrefs;
 
     private CalendarPagerAdapter mPagerAdapter;
     private CalendarPopupHelper mPopupHelper;
@@ -84,6 +89,7 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Injection.sUiComponent.injectActivityCalendarFragment(this);
+        mPrefs = Injection.sDatabaseComponent.preferences();
         mTaskActivityManager = Injection.sTaskManager.taskActivityManager();
     }
 
@@ -229,6 +235,23 @@ public class ActivityCalendarFragment extends MainPageFragment implements MainPa
         Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
                 getActivity(), ViewTaskFragment_.class.getName(), args);
         getActivity().startActivityForResult(launchIntent, REQUEST_CODE_PROCESS_TASK);
+    }
+
+    @Override
+    public void setMenuVisibility(final boolean visible) {
+        super.setMenuVisibility(visible);
+        if (visible && mPrefs != null && mPrefs.getShouldReloadCalendar()) {
+            reloadContent();
+            getBus().post(new ScheduledTaskUpdateTabContentEvent());
+            mPrefs.setShouldReloadCalendar(false);
+        }
+    }
+
+    @OnActivityResult(SettingsActivity.REQUEST_CODE_PREFERENCE_SCREEN)
+    public void onPreferenceScreenClosed(int resultCode, Intent data) {
+        if (resultCode == SettingsActivity.RESULT_CODE_PREFERENCES_MODIFIED) {
+            reloadContent();
+        }
     }
 
     @Override

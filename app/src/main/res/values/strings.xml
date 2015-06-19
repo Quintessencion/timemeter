@@ -4,6 +4,7 @@
     <string name="app_name">TimeMeter</string>
     <string name="title_tasks">Задачи</string>
     <string name="title_tags">Метки</string>
+    <string name="title_settings">Настройки</string>
     <string name="title_stats">Графики</string>
     <string name="title_activity_calendar">Календарь</string>
     <string name="title_begin_new_task">Начать новую задачу</string>
@@ -113,9 +114,32 @@
     <string name="dialog_cancel_tag_changes_warning_message">Завершить редактирование без сохранения?</string>
     <string name="dialog_delete_test_data_title">Предупреждение</string>
     <string name="dialog_delete_test_data">Все демонстрационный задачи будут удалены. Продолжить?</string>
+    <string name="dialog_reset_help">Показать все подсказки заново?</string>
 
     <!-- Chart legend -->
     <string name="chart_legend_totally">Всего: %s</string>
+
+    <!-- Preferences -->
+    <string name="category_calendar">Календарь</string>
+    <string name="calendar_title_start_time">Время начала</string>
+    <string name="calendar_summary_start_time">Начало шкалы времени с %s</string>
+    <string name="calendar_title_end_time">Время окончания</string>
+    <string name="calendar_summary_end_time">Конец шкалы времени в %s</string>
+    <string name="calendar_title_all_activity">Вся активность</string>
+    <string name="calendar_summary_all_activity">Показывать активность за пределами шкалы</string>
+
+    <string name="category_statistics">Статистика</string>
+    <string name="statistics_title_export_statistics">Экспортировать статистику</string>
+    <string name="statistics_summary_save_to_file">Сохранить всю набранную статистику в файл</string>
+    <string name="statistics_title_import_statistics">Импортировать статистику</string>
+    <string name="statistics_summary_load_from_file">Загрузить сохраненную ранее статистику из файла</string>
+
+    <string name="category_help">Помощь</string>
+    <string name="help_title_show_help">Показывать помощь</string>
+    <string name="help_title_reset">Сбросить помощь</string>
+    <string name="help_summary_show_all_tips">Показать все подсказки заново</string>
+    <string name="help_title_delete_demo">Сбросить демо</string>
+    <string name="help_summary_delete_demo">Удалить демонстрационную статистику</string>
 
     <string name="day">День</string>
     <string name="week">Неделя</string>
@@ -123,6 +147,8 @@
     <string name="year">Год</string>
     <string name="all_time">Все время</string>
     <string name="another">Другой</string>
+
+    <string name="settings_incorrect_time">Время начала не может быть больше времени окончания</string>
 
     <string-array name="period_array">
         <item>@string/day</item>

@@ -2,6 +2,7 @@ package com.simbirsoft.timemeter.ui.main;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
@@ -16,8 +17,9 @@ import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
-import com.simbirsoft.timemeter.ui.base.BaseFragment;
 import com.simbirsoft.timemeter.ui.calendar.ActivityCalendarFragment_;
+import com.simbirsoft.timemeter.ui.settings.SettingsActivity;
+import com.simbirsoft.timemeter.ui.settings.SettingsFragment_;
 import com.simbirsoft.timemeter.ui.stats.StatsListFragment_;
 import com.simbirsoft.timemeter.ui.tags.TagListFragment_;
 import com.simbirsoft.timemeter.ui.tasklist.TaskListFragment_;
@@ -47,6 +49,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     private static final String TAG_CONTENT_FRAGMENT = "app_content_fragment_tag";
     private static final int SECTION_ID_TASKS = 0;
     private static final int SECTION_ID_TAGS = 1;
+    private static final int SECTION_ID_SETTINGS = 2;
 
     private static final String KEY_FRAGMENT_STATE_KEY = "MainActivity_content_fragment_state_key";
     private static final String KEY_FRAGMENT_STATE = "MainActivity_content_fragment_state";
@@ -92,6 +95,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         super.onCreate(savedInstanceState);
 
         mTitle = getTitle();
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
     }
 
     @AfterViews
@@ -123,7 +127,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        MainFragment fragment = getContentFragment();
+        Fragment fragment = getContentFragment();
         if (fragment != null) {
             saveSectionFragmentState(fragment);
         }
@@ -143,13 +147,17 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
                 fragmentType = TagListFragment_.class;
                 break;
 
+            case SECTION_ID_SETTINGS:
+                fragmentType = SettingsFragment_.class;
+                break;
+
             default:
                 LOG.error("unknown section selected");
                 fragmentType = TaskListFragment_.class;
                 break;
         }
 
-        MainFragment fragment = getContentFragment();
+        Fragment fragment = getContentFragment();
         if (fragment != null && fragmentType.equals(fragment.getClass())) {
             // selected fragment is already added
             if (isViewTaskPending && MainPagerFragment_.class.equals(fragment.getClass())) {
@@ -166,26 +174,32 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         fragmentArgs.putInt(MainFragment.ARG_SECTION_ID, sectionId);
         fragmentArgs.putBoolean(MainPagerFragment.ARG_NEED_SWITCH_TO_SELECTED_PAGE, isViewTaskPending);
         fragmentArgs.putInt(MainPagerFragment.ARG_PAGE_ID_FOR_SWITCHING, SELECTED_PAGE_ID);
-        fragment = (MainFragment) Fragment.instantiate(this, fragmentType.getName(), fragmentArgs);
+        fragment = Fragment.instantiate(this, fragmentType.getName(), fragmentArgs);
 
-        Fragment.SavedState fragmentState = getSectionFragmentState(fragment);
+        Fragment.SavedState fragmentState = getSectionFragmentState(((SectionFragment)fragment));
         if (fragmentState != null) {
             fragment.setInitialSavedState(fragmentState);
         }
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, fragment, TAG_CONTENT_FRAGMENT)
-                .commit();
+        if (fragmentType.equals(SettingsFragment_.class)) {
+            Intent launchIntent = SettingsActivity.prepareLaunchIntent(
+                    this, SettingsFragment_.class.getName(), fragmentArgs);
+            startActivityForResult(launchIntent, SettingsActivity.REQUEST_CODE_PREFERENCE_SCREEN);
+        } else {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.container, fragment, TAG_CONTENT_FRAGMENT)
+                    .commit();
+        }
+    }
+
+    private Fragment getContentFragment() {
+        return getSupportFragmentManager().findFragmentByTag(TAG_CONTENT_FRAGMENT);
     }
 
     @Override
     public void onNavigationDrawerItemSelected(int sectionId) {
         setCurrentSection(sectionId);
-    }
-
-    private MainFragment getContentFragment() {
-        return (MainFragment) getSupportFragmentManager().findFragmentByTag(TAG_CONTENT_FRAGMENT);
     }
 
     public void restoreActionBar() {
@@ -217,6 +231,9 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
             case SECTION_ID_TAGS:
                 mTitle = getString(R.string.title_tags);
                 break;
+            case SECTION_ID_SETTINGS:
+                mTitle = getString(R.string.title_settings);
+                break;
             default:
                 LOG.error("unknown section title attached");
                 mTitle = getString(R.string.title_tasks);
@@ -226,9 +243,13 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        BaseFragment fragment = getContentFragment();
+        Fragment fragment = getContentFragment();
         if (fragment != null) {
             fragment.onActivityResult(requestCode, resultCode, data);
+            int sectionId = ((SectionFragment) fragment).getSectionId();
+            if (requestCode == SettingsActivity.REQUEST_CODE_PREFERENCE_SCREEN) {
+                mNavigationDrawerFragment.setCurrentSelectedPosition(sectionId);
+            }
         }
 
         super.onActivityResult(requestCode, resultCode, data);
@@ -271,8 +292,11 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
             return;
         }
 
-        MainFragment sectionFragment = getContentFragment();
-        if (sectionFragment != null && sectionFragment.handleBackPress()) {
+        Fragment sectionFragment = getContentFragment();
+        boolean isHandleBackPress = (sectionFragment instanceof MainFragment) ?
+                ((MainFragment) sectionFragment).handleBackPress() :
+                false;
+        if (sectionFragment != null && isHandleBackPress) {
             return;
         }
 
@@ -302,6 +326,9 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
             case SECTION_ID_TAGS:
                 break;
 
+            case SECTION_ID_SETTINGS:
+                break;
+
             default:
                 LOG.error("unknown section pages requested: {}", sectionId);
                 break;
@@ -310,16 +337,16 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         return pages;
     }
 
-    private Fragment.SavedState getSectionFragmentState(MainFragment fragment) {
+    private Fragment.SavedState getSectionFragmentState(SectionFragment fragment) {
         return popFragmentState(fragment.getFragmentStateKey());
     }
 
-    private void saveSectionFragmentState(MainFragment fragment) {
+    private void saveSectionFragmentState(Fragment fragment) {
         Fragment.SavedState state = getSupportFragmentManager().saveFragmentInstanceState(fragment);
         Bundle stateBundle = new Bundle();
 
         stateBundle.putParcelable(KEY_FRAGMENT_STATE, state);
-        stateBundle.putString(KEY_FRAGMENT_STATE_KEY, fragment.getFragmentStateKey());
+        stateBundle.putString(KEY_FRAGMENT_STATE_KEY, ((SectionFragment)fragment).getFragmentStateKey());
         pushFragmentState(stateBundle);
     }
 

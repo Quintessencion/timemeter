@@ -33,6 +33,25 @@ public final class Preferences {
     private static final int DAY_MIN_HOUR = 0;
     private static final int DAY_MAX_HOUR = 24;
 
+    private static final String PREFERENCE_SHOW_ALL_ACTIVITY = "show_all_activity";
+    private static final boolean SHOW_ALL_ACTIVITY_DEFAULT = true;
+
+    private static final String PREFERENCE_IS_DEMO_TASKS_DELETED = "is_demo_tasks_deleted";
+    private static final boolean IS_DEMO_TASKS_DELETED_DEFAULT = false;
+
+    private static final String PREFERENCE_IS_SHOW_HELP = "show_help";
+    private static final boolean IS_SHOW_HELP_DEFAULT = true;
+
+
+    private static final String PREFERENCE_SHOULD_RELOAD_TASKS = "should_reload_tasks";
+    private static final boolean SHOULD_RELOAD_TASKS_DEFAULT = false;
+
+    private static final String PREFERENCE_SHOULD_RELOAD_STATISTICS = "should_reload_statistics";
+    private static final boolean SHOULD_RELOAD_STATISTICS_DEFAULT = false;
+
+    private static final String PREFERENCE_SHOULD_RELOAD_CALENDAR = "should_reload_calendar";
+    private static final boolean SHOULD_RELOAD_CALENDAR_DEFAULT = false;
+
     @Inject
     public Preferences(App appContext) {
         mPrefs = PreferenceManager.getDefaultSharedPreferences(appContext);
@@ -118,6 +137,61 @@ public final class Preferences {
         int startHour = getDayStartHour();
         Preconditions.checkArgument(endHour > startHour, "day end hour should be greater than day start hour");
         mPrefs.edit().putInt(PREFERENCE_DAY_END_HOUR, endHour).apply();
+    }
+
+    public boolean getDisplayAllActivities() {
+        return mPrefs.getBoolean(PREFERENCE_SHOW_ALL_ACTIVITY, SHOW_ALL_ACTIVITY_DEFAULT);
+    }
+
+    public void setDisplayAllActivities(boolean isShowAllActivity) {
+        mPrefs.edit().putBoolean(PREFERENCE_SHOW_ALL_ACTIVITY, isShowAllActivity).apply();
+    }
+
+    public boolean getIsDemoTasksDeleted() {
+        return mPrefs.getBoolean(PREFERENCE_IS_DEMO_TASKS_DELETED, IS_DEMO_TASKS_DELETED_DEFAULT);
+    }
+
+    public void setIsDemoTasksDeleted(boolean isDemoTasksDeleted) {
+        mPrefs.edit().putBoolean(PREFERENCE_IS_DEMO_TASKS_DELETED, isDemoTasksDeleted).apply();
+    }
+
+    public boolean getIsShowHelp() {
+        return mPrefs.getBoolean(PREFERENCE_IS_SHOW_HELP, IS_SHOW_HELP_DEFAULT);
+    }
+
+    public void setIsShowHelp(boolean isShowHelp) {
+        mPrefs.edit().putBoolean(PREFERENCE_IS_SHOW_HELP, isShowHelp).apply();
+    }
+
+
+    public boolean getShouldReloadTasks() {
+        return mPrefs.getBoolean(PREFERENCE_SHOULD_RELOAD_TASKS, SHOULD_RELOAD_TASKS_DEFAULT);
+    }
+
+    public void setShouldReloadTasks(boolean shouldReloadTasks) {
+        mPrefs.edit().putBoolean(PREFERENCE_SHOULD_RELOAD_TASKS, shouldReloadTasks).apply();
+    }
+
+    public boolean getShouldReloadStatistics() {
+        return mPrefs.getBoolean(PREFERENCE_SHOULD_RELOAD_STATISTICS, SHOULD_RELOAD_STATISTICS_DEFAULT);
+    }
+
+    public void setShouldReloadStatistics(boolean shouldReloadStatistics) {
+        mPrefs.edit().putBoolean(PREFERENCE_SHOULD_RELOAD_STATISTICS, shouldReloadStatistics).apply();
+    }
+
+    public boolean getShouldReloadCalendar() {
+        return mPrefs.getBoolean(PREFERENCE_SHOULD_RELOAD_CALENDAR, SHOULD_RELOAD_CALENDAR_DEFAULT);
+    }
+
+    public void setShouldReloadCalendar(boolean shouldReloadCalendar) {
+        mPrefs.edit().putBoolean(PREFERENCE_SHOULD_RELOAD_CALENDAR, shouldReloadCalendar).apply();
+    }
+
+    public void setShouldReloadContent(boolean shouldReloadContent) {
+        setShouldReloadTasks(shouldReloadContent);
+        setShouldReloadStatistics(shouldReloadContent);
+        setShouldReloadCalendar(shouldReloadContent);
     }
 
     private boolean checkHourValue(int hour) {

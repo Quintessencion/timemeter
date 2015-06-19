@@ -31,6 +31,7 @@ import com.simbirsoft.timemeter.controller.ActiveTaskInfo;
 import com.simbirsoft.timemeter.controller.HelpCardController;
 import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
+import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.events.ScheduledTaskUpdateTabContentEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
@@ -48,6 +49,7 @@ import com.simbirsoft.timemeter.ui.main.ContentFragmentCallbacks;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.main.MainPagerAdapter;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
+import com.simbirsoft.timemeter.ui.settings.SettingsActivity;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment;
 import com.simbirsoft.timemeter.ui.taskedit.EditTaskFragment_;
 import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
@@ -98,6 +100,8 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
 
     @Inject
     DatabaseHelper mDatabaseHelper;
+
+    Preferences mPrefs;
 
     boolean mDataIsLoaded;
 
@@ -216,6 +220,8 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         super.onCreate(savedInstanceState);
 
         Injection.sUiComponent.injectTaskListFragment(this);
+
+        mPrefs = Injection.sDatabaseComponent.preferences();
 
         mTaskActivityManager = Injection.sTaskManager.taskActivityManager();
         getBus().register(this);
@@ -555,11 +561,33 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
     @OnActivityResult(REQUEST_CODE_DELETE_TEST_DATA)
     public void onDeleteTestDataDialogResult(int resultCode, Intent data) {
         if (resultCode == AppAlertDialogFragment.RESULT_CODE_ACCEPTED) {
-            mDatabaseHelper.removeTestData();
-            reloadContent();
-            // force update for other tabs
-            getBus().post(new ScheduledTaskUpdateTabContentEvent());
+            deleteTestData();
         }
+    }
+
+    @OnActivityResult(SettingsActivity.REQUEST_CODE_PREFERENCE_SCREEN)
+    public void onPreferenceScreenClosed(int resultCode, Intent data) {
+        if (resultCode == SettingsActivity.RESULT_CODE_PREFERENCES_MODIFIED) {
+            reloadContent();
+        }
+    }
+
+    @Override
+    public void setMenuVisibility(final boolean visible) {
+        super.setMenuVisibility(visible);
+        if (visible && mPrefs != null && mPrefs.getShouldReloadTasks()) {
+            reloadContent();
+            getBus().post(new ScheduledTaskUpdateTabContentEvent());
+            mPrefs.setShouldReloadTasks(false);
+        }
+    }
+
+    private void deleteTestData() {
+        mDatabaseHelper.removeTestData();
+        reloadContent();
+        mPrefs.setIsDemoTasksDeleted(false);
+        // force update for other tabs
+        getBus().post(new ScheduledTaskUpdateTabContentEvent());
     }
 }
 
