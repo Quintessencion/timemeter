@@ -202,7 +202,7 @@ void startFinalizer(java.lang.Class,java.lang.Object);
 }
 
 # cupboard (keep models' field names)
--keep class com.simbirsoft.timemeter.db.model.** {*;}
+-keep class com.simbirsoft.timeactivity.db.model.** {*;}
 
 # Simple XML
 -keep public class org.simpleframework.**{ *; }
@@ -211,6 +211,6 @@ void startFinalizer(java.lang.Class,java.lang.Object);
 -keep class org.simpleframework.xml.util.**{ *; }
 -dontwarn org.simpleframework.xml.stream.**
 -keepattributes Signature
--keep public class  com.simbirsoft.timemeter.persist.* {
+-keep public class  com.simbirsoft.timeactivity.persist.* {
   public protected private *;
 }

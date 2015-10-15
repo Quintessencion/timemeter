@@ -1,0 +1,386 @@
+package com.simbirsoft.timeactivity.ui.taskedit;
+
+import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.Typeface;
+import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.animation.AlphaAnimation;
+
+import com.be.android.library.worker.annotations.OnJobFailure;
+import com.be.android.library.worker.annotations.OnJobSuccess;
+import com.be.android.library.worker.controllers.JobLoader;
+import com.be.android.library.worker.controllers.JobManager;
+import com.be.android.library.worker.interfaces.Job;
+import com.be.android.library.worker.models.LoadJobResult;
+import com.be.android.library.worker.util.JobSelector;
+import com.nispok.snackbar.Snackbar;
+import com.nispok.snackbar.SnackbarManager;
+import com.nispok.snackbar.listeners.EventListener;
+import com.simbirsoft.timeactivity.R;
+import com.simbirsoft.timeactivity.events.TaskActivityUpdateEvent;
+import com.simbirsoft.timeactivity.injection.Injection;
+import com.simbirsoft.timeactivity.jobs.LoadTaskBundleJob;
+import com.simbirsoft.timeactivity.jobs.LoadTaskRecentActivitiesJob;
+import com.simbirsoft.timeactivity.log.LogFactory;
+import com.simbirsoft.timeactivity.ui.activities.TaskActivitiesAdapter;
+import com.simbirsoft.timeactivity.ui.activities.TaskActivitiesFragment;
+import com.simbirsoft.timeactivity.ui.activities.TaskActivitiesFragment_;
+import com.simbirsoft.timeactivity.ui.activities.TaskActivitiesLayoutManager;
+import com.simbirsoft.timeactivity.ui.base.BaseFragment;
+import com.simbirsoft.timeactivity.ui.base.FragmentContainerActivity;
+import com.simbirsoft.timeactivity.ui.main.MainPageFragment;
+import com.simbirsoft.timeactivity.ui.model.TaskBundle;
+import com.simbirsoft.timeactivity.ui.model.TaskRecentActivity;
+import com.simbirsoft.timeactivity.ui.views.ProgressLayout;
+import com.simbirsoft.timeactivity.ui.views.TagFlowView;
+import com.simbirsoft.timeactivity.ui.views.TagView;
+import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
+
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.Click;
+import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.FragmentArg;
+import org.androidannotations.annotations.InstanceState;
+import org.androidannotations.annotations.ViewById;
+import org.slf4j.Logger;
+
+import javax.inject.Inject;
+
+@EFragment(R.layout.fragment_view_task)
+public class ViewTaskFragment extends BaseFragment
+        implements JobLoader.JobLoaderCallbacks{
+    public static final String EXTRA_TASK_BUNDLE = "extra_task_bundle";
+    public static final String EXTRA_TASK_ID = "extra_task_id";
+
+    private static final String LOADER_TAG = "ViewTaskFragment_load_content";
+    private static final String LOAD_TASK_BUNDLE_TAG = "ViewTaskFragment_load_task_bundle";
+
+    private static final Logger LOG = LogFactory.getLogger(ViewTaskFragment.class);
+
+    private static final int REQUEST_CODE_VIEW_ACTIVITIES = 101;
+
+    @ViewById(R.id.tagFlowView)
+    protected TagFlowView tagFlowView;
+
+    @FragmentArg(EXTRA_TASK_BUNDLE)
+    TaskBundle mExtraTaskBundle;
+
+    @FragmentArg(EXTRA_TASK_ID)
+    long mExtraTaskId = -1;
+
+    private final TagView.TagViewClickListener mTagViewClickListener = (tagView) -> {
+        LOG.debug("Tag <" + tagView.getTag().getName() + "> clicked!");
+    };
+
+    @ViewById(android.R.id.list)
+    RecyclerView mRecyclerView;
+
+    @ViewById(R.id.progressLayout)
+    ProgressLayout mProgressLayout;
+
+    @InstanceState
+    int mListPosition = -1;
+
+    @InstanceState
+    int mListPositionOffset;
+
+    @Inject
+    Bus mBus;
+
+    private TaskActivitiesAdapter mAdapter;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+        Injection.sUiComponent.injectViewTaskFragment(this);
+        mBus.register(this);
+    }
+
+    @Override
+    public void onDestroyView() {
+        mBus.unregister(this);
+        super.onDestroyView();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+
+        inflater.inflate(R.menu.fragment_view_task, menu);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if (mAdapter.getItemCount() > 0) {
+            TaskActivitiesLayoutManager layoutManager = (TaskActivitiesLayoutManager) mRecyclerView.getLayoutManager();
+            mListPosition = layoutManager.findFirstVisibleItemPosition();
+            mListPositionOffset = (mListPosition != RecyclerView.NO_POSITION)
+                                    ? layoutManager.findItemOffset(mListPosition) : 0;
+        }
+    }
+
+    private void setActionBarTitleAndHome(String title) {
+        ActionBar mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        if (title != null) {
+            mActionBar.setTitle(title);
+        }
+        mActionBar.setDisplayHomeAsUpEnabled(true);
+    }
+
+    @AfterViews
+    void bindViews() {
+        View hintView = tagFlowView.getHintView();
+        if (hintView != null) hintView.setOnClickListener((v) -> {
+            goToEditTaskTagsScene();
+        });
+
+        mRecyclerView.setHasFixedSize(false);
+        final TaskActivitiesLayoutManager layoutManager = new TaskActivitiesLayoutManager(getActivity());
+        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        mRecyclerView.setLayoutManager(layoutManager);
+
+        mAdapter = new TaskActivitiesAdapter(getActivity());
+
+        if (mExtraTaskBundle == null) {
+            requestLoad(LOAD_TASK_BUNDLE_TAG, this);
+        } else {
+            configureFragment();
+        }
+    }
+
+    private void configureFragment() {
+        setActionBarTitleAndHome(mExtraTaskBundle.getTask().getDescription());
+        tagFlowView.bindTagViews(mExtraTaskBundle.getTags());
+        tagFlowView.setTagViewsClickListener(mTagViewClickListener);
+        if (mExtraTaskId == -1) {
+            mAdapter.setHighlightedSpans(mExtraTaskBundle.getTaskTimeSpans());
+        }
+        mRecyclerView.setAdapter(mAdapter);
+        mProgressLayout.setShouldDisplayEmptyIndicatorMessage(true);
+        mProgressLayout.setEmptyIndicatorStyle(Typeface.ITALIC);
+        final Resources res = getResources();
+        mProgressLayout.setEmptyIndicatorTextSize(TypedValue.COMPLEX_UNIT_PX, res.getDimension(R.dimen.empty_indicator_text_size));
+        mProgressLayout.setEmptyIndicatorTextColor(res.getColor(R.color.empty_indicator));
+        mProgressLayout.setProgressLayoutCallbacks(
+                new ProgressLayout.JobProgressLayoutCallbacks(JobSelector.forJobTags(LOADER_TAG)) {
+                    @Override
+                    public boolean hasContent() {
+                        return mAdapter.getItemCount() > 0;
+                    }
+
+                });
+        requestLoad(LOADER_TAG, this);
+        mProgressLayout.updateProgressView();
+    }
+
+    private void goToEditTask() {
+        Bundle args = new Bundle();
+        args.putString(EditTaskFragment.EXTRA_TITLE, getString(R.string.title_edit_task));
+        args.putLong(EditTaskFragment.EXTRA_TASK_ID, mExtraTaskBundle.getTask().getId());
+        args.putBoolean(EditTaskFragment.EXTRA_GO_TO_EDIT_TAGS_SCENE, false);
+
+        Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
+                getActivity(), EditTaskFragment_.class.getName(), args);
+        getActivity().startActivityForResult(launchIntent, MainPageFragment.REQUEST_CODE_PROCESS_TASK);
+    }
+
+    private void goToEditTaskTagsScene() {
+        Bundle args = new Bundle();
+        args.putString(EditTaskFragment.EXTRA_TITLE, getString(R.string.title_edit_task));
+        args.putLong(EditTaskFragment.EXTRA_TASK_ID, mExtraTaskBundle.getTask().getId());
+        args.putBoolean(EditTaskFragment.EXTRA_GO_TO_EDIT_TAGS_SCENE, true);
+
+        Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
+                getActivity(), EditTaskFragment_.class.getName(), args);
+        getActivity().startActivityForResult(launchIntent, MainPageFragment.REQUEST_CODE_PROCESS_TASK);
+    }
+
+    private void goToActivities() {
+        Bundle args = new Bundle();
+        String title = mExtraTaskBundle.getTask().getDescription();
+        if(title != null) {
+            args.putString(TaskActivitiesFragment.EXTRA_TITLE, title);
+        }
+        args.putLong(TaskActivitiesFragment.EXTRA_TASK_ID, mExtraTaskBundle.getTask().getId());
+
+        Intent launchIntent = FragmentContainerActivity.prepareLaunchIntent(
+                getActivity(), TaskActivitiesFragment_.class.getName(), args);
+        getActivity().startActivityForResult(launchIntent, REQUEST_CODE_VIEW_ACTIVITIES);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.edit:
+                LOG.debug("task edit clicked");
+                goToEditTask();
+                return true;
+
+            case R.id.activities:
+                LOG.debug("task view activities clicked");
+                goToActivities();
+                return true;
+
+            case android.R.id.home:
+                LOG.debug("task view home clicked");
+                getActivity().finish();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        getActivity().setResult(resultCode, data);
+        switch (requestCode) {
+            case MainPageFragment.REQUEST_CODE_PROCESS_TASK:
+                if (resultCode == EditTaskFragment.RESULT_CODE_CANCELLED) {
+                    LOG.debug("result: task edit cancelled");
+                    return;
+                }
+                final TaskBundle bundle = data.getParcelableExtra(
+                        EditTaskFragment.EXTRA_TASK_BUNDLE);
+
+                switch (resultCode) {
+                    case EditTaskFragment.RESULT_CODE_TASK_REMOVED:
+                        LOG.debug("result: task removed");
+                        getActivity().finish();
+                        break;
+
+                    case EditTaskFragment.RESULT_CODE_TASK_UPDATED:
+                        LOG.debug("result: task updated");
+                        tagFlowView.bindTagViews(bundle.getTags());
+                        setActionBarTitleAndHome(bundle.getTask().getDescription());
+                        break;
+                }
+                return;
+
+            default:
+                break;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @OnJobSuccess(LoadTaskRecentActivitiesJob.class)
+    public void onLoadSuccess(LoadJobResult<TaskRecentActivity> result) {
+        TaskRecentActivity recentActivity = result.getData();
+        mAdapter.setItems(recentActivity.getList());
+        if (mListPosition >=0) {
+            TaskActivitiesLayoutManager layoutManager = (TaskActivitiesLayoutManager) mRecyclerView.getLayoutManager();
+            layoutManager.scrollToPositionWithOffset(mListPosition, mListPositionOffset);
+            mListPosition = -1;
+            mListPositionOffset = 0;
+        } else {
+            scrollToSelectedSpan();
+        }
+        mProgressLayout.updateProgressView();
+        if (mAdapter.getItemCount() == 0) {
+            mProgressLayout.setEmptyIndicatorMessage(recentActivity.getEmptyIndicatorMessage(getResources()));
+        } else {
+            AlphaAnimation animation = new AlphaAnimation(0, 1);
+            animation.setDuration(140);
+            mRecyclerView.setAnimation(animation);
+        }
+    }
+
+    @OnJobFailure(LoadTaskRecentActivitiesJob.class)
+    public void onLoadFailed() {
+        showToast(R.string.error_unable_to_load_task_activities);
+    }
+
+    @OnJobSuccess(LoadTaskBundleJob.class)
+    public void onTaskBundleLoaded(LoadJobResult<TaskBundle> taskBundle) {
+        mExtraTaskBundle = taskBundle.getData();
+
+        configureFragment();
+    }
+
+    @OnJobFailure(LoadTaskBundleJob.class)
+    public void onTaskBundleLoadFailure() {
+        SnackbarManager.show(Snackbar.with(getActivity())
+                .text(R.string.error_loading_data)
+                .colorResource(R.color.lightRed)
+                .duration(Snackbar.SnackbarDuration.LENGTH_SHORT)
+                .eventListener(new EventListener() {
+                    @Override
+                    public void onShow(Snackbar snackbar) {
+                    }
+
+                    @Override
+                    public void onShown(Snackbar snackbar) {
+                    }
+
+                    @Override
+                    public void onDismiss(Snackbar snackbar) {
+                    }
+
+                    @Override
+                    public void onDismissed(Snackbar snackbar) {
+                        if (isAdded()) {
+                            getActivity().finish();
+                        }
+                    }
+                }));
+    }
+
+    @Override
+    public Job onCreateJob(String s) {
+        switch (s) {
+            case LOADER_TAG:
+                LoadTaskRecentActivitiesJob loadTaskRecentActivitiesJob = Injection.sJobsComponent.loadTaskRecentActivitiesJob();
+                loadTaskRecentActivitiesJob.setGroupId(JobManager.JOB_GROUP_UNIQUE);
+                loadTaskRecentActivitiesJob.setTaskId(mExtraTaskBundle.getTask().getId());
+                loadTaskRecentActivitiesJob.setTaskTimeSpans(mExtraTaskBundle.getTaskTimeSpans());
+                loadTaskRecentActivitiesJob.addTag(LOADER_TAG);
+                return loadTaskRecentActivitiesJob;
+            case LOAD_TASK_BUNDLE_TAG:
+                LoadTaskBundleJob loadTaskBundleJob = Injection.sJobsComponent.loadTaskBundleJob();
+                loadTaskBundleJob.setTaskId(mExtraTaskId);
+                loadTaskBundleJob.setGroupId(JobManager.JOB_GROUP_UNIQUE);
+                return loadTaskBundleJob;
+            default:
+                throw new IllegalArgumentException();
+        }
+    }
+
+    @Click(R.id.activitiesTitleContainer)
+    void activitiesTitleClicked() {
+        goToActivities();
+    }
+
+    @Subscribe
+    public void onTaskActivityUpdated(TaskActivityUpdateEvent event) {
+        if (mExtraTaskBundle == null) {
+            return;
+        }
+
+        final long taskId = event.getActiveTaskInfo().getTask().getId();
+        if (mExtraTaskBundle.getTask().getId() != taskId) {
+            return;
+        }
+
+        mAdapter.updateCurrentActivityTime(taskId);
+    }
+
+    private void scrollToSelectedSpan() {
+        int[] position = new int[2];
+        if (mAdapter.getEarliestHighlightedSpanPosition(position)) {
+            TaskActivitiesLayoutManager layoutManager = (TaskActivitiesLayoutManager) mRecyclerView.getLayoutManager();
+            layoutManager.scrollToSpan(position[0], position[1]);
+        }
+    }
+}

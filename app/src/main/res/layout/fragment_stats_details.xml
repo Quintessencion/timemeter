@@ -2,7 +2,7 @@
              xmlns:tools="http://schemas.android.com/tools"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
-             tools:context="com.simbirsoft.timemeter.ui.stats.StatsDetailsFragment">
+             tools:context="com.simbirsoft.timeactivity.ui.stats.StatsDetailsFragment">
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -14,7 +14,7 @@
             android:padding="@dimen/stats_details_padding">
         </FrameLayout>
     </ScrollView>
-    <com.simbirsoft.timemeter.ui.views.ProgressLayout_
+    <com.simbirsoft.timeactivity.ui.views.ProgressLayout_
         android:id="@+id/progressLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

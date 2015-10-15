@@ -41,7 +41,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.simbirsoft.timemeter"
+        applicationId "com.simbirsoft.timeactivity"
         minSdkVersion 15
         targetSdkVersion 21
         versionCode 1

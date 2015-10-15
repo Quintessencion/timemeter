@@ -6,7 +6,7 @@
 
     <include layout="@layout/view_help_card_block"/>
 
-    <com.simbirsoft.timemeter.ui.views.CalendarNavigationView_
+    <com.simbirsoft.timeactivity.ui.views.CalendarNavigationView_
         android:id="@+id/calendarNavigationView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/calendarNavigationView">
 
-        <com.simbirsoft.timemeter.ui.views.CalendarViewPager
+        <com.simbirsoft.timeactivity.ui.views.CalendarViewPager
             android:id="@+id/calendarViewPager"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>

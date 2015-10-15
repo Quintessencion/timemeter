@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">TimeMeter</string>
+    <string name="app_name">TimeActivity</string>
     <string name="title_tasks">Задачи</string>
     <string name="title_tags">Метки</string>
     <string name="title_stats">Графики</string>

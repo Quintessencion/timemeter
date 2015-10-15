@@ -7,13 +7,13 @@
               android:paddingTop="6dp"
               android:paddingBottom="6dp">
 
-    <com.simbirsoft.timemeter.ui.views.DatePanelView_
+    <com.simbirsoft.timeactivity.ui.views.DatePanelView_
         android:id="@+id/periodStartPanel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/tag_rounded_background"/>
 
-    <com.simbirsoft.timemeter.ui.views.DatePanelView_
+    <com.simbirsoft.timeactivity.ui.views.DatePanelView_
         android:id="@+id/periodEndPanel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

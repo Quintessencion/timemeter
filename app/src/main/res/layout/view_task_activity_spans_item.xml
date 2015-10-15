@@ -6,7 +6,7 @@
 
     <include layout="@layout/view_task_activity_spans_item_date"/>
 
-    <com.simbirsoft.timemeter.ui.views.TaskActivityItemsLayout
+    <com.simbirsoft.timeactivity.ui.views.TaskActivityItemsLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
