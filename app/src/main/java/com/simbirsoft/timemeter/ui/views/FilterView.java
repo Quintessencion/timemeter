@@ -142,10 +142,20 @@ public class FilterView extends FrameLayout implements
         }
 
         public boolean isEmpty() {
+            return hasEmptyTagsAndDate()
+                    && TextUtils.isEmpty(searchText);
+        }
+
+        public boolean isFilteredBySearchText() {
+            return hasEmptyTagsAndDate()
+                    && !TextUtils.isEmpty(searchText);
+        }
+
+        private boolean hasEmptyTagsAndDate()
+        {
             return (tags == null || tags.isEmpty())
                     && dateMillis == 0
-                    && period == null
-                    && TextUtils.isEmpty(searchText);
+                    && period == null;
         }
 
         private FilterState(Parcel source) {
