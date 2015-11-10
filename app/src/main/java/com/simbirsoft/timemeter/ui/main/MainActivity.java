@@ -10,6 +10,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Menu;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
@@ -335,6 +336,11 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
         }
 
         return pages;
+    }
+
+    @Override
+    protected View mainView() {
+        return mDrawerLayout;
     }
 
     private Fragment.SavedState getSectionFragmentState(SectionFragment fragment) {

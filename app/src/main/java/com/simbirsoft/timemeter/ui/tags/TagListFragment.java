@@ -19,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.RelativeLayout;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
@@ -81,6 +82,9 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
 
     @ViewById(android.R.id.list)
     RecyclerView mRecyclerView;
+
+    @ViewById(R.id.tagListMainView)
+    public RelativeLayout tagListMainView;
 
     @Inject
     HelpCardController mHelpCardController;

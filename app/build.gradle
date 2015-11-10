@@ -9,7 +9,7 @@ repositories {
 }
 
 retrolambda {
-    jdk System.getenv("JAVA_HOME")
+    //jdk System.getenv("JAVA_HOME")
 }
 
 apt {
