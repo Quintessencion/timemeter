@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.Html;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,8 @@ import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.interfaces.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.Legend;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.QueryUtils;
@@ -36,6 +39,8 @@ import com.simbirsoft.timemeter.ui.views.VerticalLegend;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -59,7 +64,7 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder,
     private BarChart mChart;
     private TextView mTitleView;
     private TextView mSummaryActivityView;
-    private final List<DailyTaskActivityDuration> mActivityTimeline;
+    private List<DailyTaskActivityDuration> mActivityTimeline = Lists.newArrayList();
     private VerticalLegend mVerticalLegend;
     private Legend mLegend;
     private boolean mIsDataBound;
@@ -69,9 +74,19 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder,
     private LegendClickListener mLegendClickListener;
 
     public ActivityStackedTimelineBinder(List<DailyTaskActivityDuration> activityTimeline) {
-        mActivityTimeline = activityTimeline;
 
         Injection.sUiComponent.injectActivityStackedTimelineBinder(this);
+
+        Calendar calendar = Calendar.getInstance();
+        int currentDay = calendar.get(Calendar.DAY_OF_WEEK);
+        calendar.add(Calendar.DAY_OF_YEAR, -(currentDay - 1)); // 1 - календарь в Android считает первым днем недели воскресенье
+        long actualDate = calendar.getTimeInMillis();
+
+        for (DailyTaskActivityDuration item: activityTimeline) {
+            if (item.date.getTime() >= actualDate) {
+                mActivityTimeline.add(item);
+            }
+        }
     }
 
     @Override
@@ -115,7 +130,6 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder,
                 taskColors[i] = ColorSets.getTaskColor(tasks[i].getId());
             }
         } else {
-            stackCount = 0;
             taskLabels = new String[0];
             taskColors = new int[0];
         }
@@ -218,7 +232,7 @@ public class ActivityStackedTimelineBinder implements StatisticsViewBinder,
         }
 
         int preferredHeight = (mIsFullScreenMode) ? (int) res.getDimension(R.dimen.chart_full_screen_height) :
-                                                    (int) res.getDimension(R.dimen.chart_height);
+                (int) res.getDimension(R.dimen.chart_height);
         int minHeight = Math.min(preferredHeight, size);
 
         int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(minHeight, View.MeasureSpec.AT_MOST);

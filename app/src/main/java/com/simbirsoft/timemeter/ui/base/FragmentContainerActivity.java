@@ -127,6 +127,11 @@ public class FragmentContainerActivity extends BaseActivity implements FragmentC
     }
 
     @Override
+    protected View mainView() {
+        return mFragmentContainer;
+    }
+
+    @Override
     public void hideToolbar() {
         TransitionManager.beginDelayedTransition(mFragmentContainer, new Fade(Fade.OUT));
         mToolbar.setVisibility(View.GONE);

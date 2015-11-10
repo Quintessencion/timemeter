@@ -7,6 +7,9 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.be.android.library.worker.controllers.JobLoader;
@@ -19,16 +22,32 @@ import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.enums.SnackbarType;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.ui.util.HideKeyboard;
 import com.simbirsoft.timemeter.ui.util.ToastUtils;
+
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.SystemService;
 
 import java.util.LinkedList;
 
+@EFragment
 public class BaseFragment extends Fragment {
 
     private JobEventDispatcher mEventDispatcher;
     private boolean mShouldSubscribeForJobEvents = true;
     private boolean mIsSubscribedForJobEvents;
     private LinkedList<Bundle> mPendingAlerts;
+
+    @SystemService
+    public InputMethodManager inputMethodManager;
+
+    @AfterViews
+    public void hideKeyboard() {
+        HideKeyboard hideKeyboard = new HideKeyboard(getActivity());
+        View view = mainView();
+        hideKeyboard.hide(view);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -204,4 +223,7 @@ public class BaseFragment extends Fragment {
         SnackbarManager.show(bar);
     }
 
+    protected View mainView() {
+        return null;
+    }
 }

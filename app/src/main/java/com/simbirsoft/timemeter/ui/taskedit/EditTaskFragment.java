@@ -225,6 +225,10 @@ public class EditTaskFragment extends BaseFragment implements JobLoader.JobLoade
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (getActivity().getCurrentFocus() != null) {
+            inputMethodManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
+        }
+
         if (mTaskBundle == null) {
             return super.onOptionsItemSelected(item);
         }

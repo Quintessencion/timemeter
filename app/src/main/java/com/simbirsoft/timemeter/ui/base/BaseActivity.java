@@ -4,20 +4,36 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.be.android.library.worker.controllers.JobLoader;
 import com.be.android.library.worker.controllers.JobLoaderManager;
 import com.be.android.library.worker.handlers.JobEventDispatcher;
 import com.be.android.library.worker.interfaces.Job;
-import com.google.common.base.Preconditions;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.ui.util.HideKeyboard;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.SystemService;
+
+@EActivity
 public class BaseActivity extends AppCompatActivity {
 
     private JobEventDispatcher mJobEventDispatcher;
     private boolean isStarted;
     private Toolbar mToolbar;
+
+    @AfterViews
+    public void hideKeyboard() {
+        HideKeyboard hideKeyboard = new HideKeyboard(this);
+        View view = mainView();
+        hideKeyboard.hide(view);
+    }
 
     public @Nullable Toolbar getToolbar() {
         if (mToolbar == null) {
@@ -95,4 +111,7 @@ public class BaseActivity extends AppCompatActivity {
         return loader.requestLoad();
     }
 
+    protected View mainView() {
+        return null;
+    }
 }

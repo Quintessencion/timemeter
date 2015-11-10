@@ -13,6 +13,7 @@ import android.transitions.everywhere.TransitionManager;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.widget.LinearLayout;
 
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
@@ -20,6 +21,7 @@ import com.simbirsoft.timemeter.log.LogFactory;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.Extra;
+import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
 @EActivity(R.layout.activity_fragment_container)
@@ -37,6 +39,9 @@ public class DialogContainerActivity extends BaseActivity implements FragmentCon
 
     @Extra(EXTRA_FRAGMENT_ARGS)
     Bundle fragmentArgs;
+
+    @ViewById(R.id.fragmentContainer)
+    public LinearLayout fragmentContainer;
 
     public static Intent prepareDialogLaunchIntent(
             Context packageContext, String fragmentName, Bundle fragmentArgs) {
@@ -96,6 +101,11 @@ public class DialogContainerActivity extends BaseActivity implements FragmentCon
 
     protected BaseDialogFragment getContentFragment() {
         return (BaseDialogFragment) getSupportFragmentManager().findFragmentByTag(TAG_CONTENT_FRAGMENT);
+    }
+
+    @Override
+    protected View mainView() {
+        return fragmentContainer;
     }
 
     @Override
