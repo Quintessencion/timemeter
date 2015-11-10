@@ -218,7 +218,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewResults
         mPagerAdapter.setOnSetupItemListener(this::onAdapterSetupItem);
         if (mPageNames != null) {
             mPagerAdapter.setPages(Lists.transform(mPageNames, PageItem::create));
-        mViewPager.setOffscreenPageLimit(2);
+            mViewPager.setOffscreenPageLimit(2);
         }
 
         mViewPager.setAdapter(mPagerAdapter);
@@ -406,7 +406,7 @@ public class MainPagerFragment extends MainFragment implements FilterViewResults
         if (isFilterPanelVisible()) {
             item.setIcon(R.drawable.ic_filter_remove_white_24dp);
             item.setTitle(R.string.action_toggle_filter_off);
-        } else if (mFilterState.isEmpty() || mFilterState.isFilteredBySearchText()) {
+        } else if (mFilterState != null && (mFilterState.isEmpty() || mFilterState.isFilteredBySearchText())) {
             item.setIcon(R.drawable.ic_filter_white_24dp);
             item.setTitle(R.string.action_toggle_filter_on);
         } else {
