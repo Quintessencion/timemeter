@@ -110,7 +110,7 @@ public class TaskActivityManager implements ITaskActivityManager {
         Preconditions.checkArgument(task != null, "task may not be null");
 
         if (hasActiveTask()) {
-            if (!mActiveTaskInfo.getTask().equals(task)) {
+            if (!mActiveTaskInfo.getTask().getId().equals(task.getId())) {
                 stopTaskActivity();
             } else {
                 LOG.warn("startTask(): specified task is already started");
@@ -131,7 +131,7 @@ public class TaskActivityManager implements ITaskActivityManager {
             return;
         }
 
-        if (!mActiveTaskInfo.getTask().equals(task)) {
+        if (!mActiveTaskInfo.getTask().getId().equals(task.getId())) {
             LOG.warn("specified task is not active");
             return;
         }
@@ -141,7 +141,7 @@ public class TaskActivityManager implements ITaskActivityManager {
 
     @Override
     public boolean isTaskActive(Task task) {
-        return hasActiveTask() && Objects.equal(mActiveTaskInfo.getTask(), task);
+        return hasActiveTask() && mActiveTaskInfo.getTask().getId().equals(task.getId()); //Objects.equal(mActiveTaskInfo.getTask(), task);
     }
 
     @Override
@@ -252,7 +252,7 @@ public class TaskActivityManager implements ITaskActivityManager {
         currentSpan.setEndTimeMillis(currentTime);
 
         cupboard().withDatabase(mDatabaseHelper.getWritableDatabase())
-                  .put(currentSpan);
+                .put(currentSpan);
         mLastSaveActivityTimeMillis = currentTime;
         LOG.debug("task activity updated");
     }
