@@ -29,6 +29,7 @@ import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerSwatch;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
+import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.Logger;
 
@@ -69,7 +70,8 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
     @ViewById(R.id.color_picker)
     ColorPickerPalette mPalette;
 
-    private int mSelectedColor;
+    @InstanceState
+    public int mSelectedColor = -1;
 
     @AfterViews
     void bindViews() {
@@ -79,7 +81,9 @@ public class CreateTagFragment extends BaseFragment implements ColorPickerSwatch
         }
         mPalette.init(mSize, mColumns, this);
         if (mColors != null) {
-            mSelectedColor = mColors[0];
+            if (mSelectedColor == -1) {
+                mSelectedColor = mColors[0];
+            }
             showPaletteView();
         }
         mActionBar.setHomeAsUpIndicator(R.drawable.ic_action_accept);
