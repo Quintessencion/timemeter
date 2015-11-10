@@ -22,6 +22,7 @@ import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.enums.SnackbarType;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.ui.util.HideKeyboard;
 import com.simbirsoft.timemeter.ui.util.ToastUtils;
 
 import org.androidannotations.annotations.AfterViews;
@@ -43,8 +44,9 @@ public class BaseFragment extends Fragment {
 
     @AfterViews
     public void hideKeyboard() {
+        HideKeyboard hideKeyboard = new HideKeyboard(getActivity());
         View view = mainView();
-        hideKeyboard(view);
+        hideKeyboard.hide(view);
     }
 
     @Override
@@ -223,27 +225,5 @@ public class BaseFragment extends Fragment {
 
     protected View mainView() {
         return null;
-    }
-
-    private void hideKeyboard(View view) {
-        if (view == null) {
-            return;
-        }
-
-        if(!(view instanceof EditText)) {
-            view.setOnTouchListener((v, event) -> {
-                if (getActivity().getCurrentFocus() != null) {
-                    inputMethodManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
-                }
-                return false;
-            });
-        }
-
-        if (view instanceof ViewGroup) {
-            for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
-                View innerView = ((ViewGroup) view).getChildAt(i);
-                hideKeyboard(innerView);
-            }
-        }
     }
 }

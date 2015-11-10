@@ -15,6 +15,7 @@ import com.be.android.library.worker.controllers.JobLoaderManager;
 import com.be.android.library.worker.handlers.JobEventDispatcher;
 import com.be.android.library.worker.interfaces.Job;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.ui.util.HideKeyboard;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
@@ -23,17 +24,15 @@ import org.androidannotations.annotations.SystemService;
 @EActivity
 public class BaseActivity extends AppCompatActivity {
 
-    @SystemService
-    public InputMethodManager inputMethodManager;
-
     private JobEventDispatcher mJobEventDispatcher;
     private boolean isStarted;
     private Toolbar mToolbar;
 
     @AfterViews
     public void hideKeyboard() {
+        HideKeyboard hideKeyboard = new HideKeyboard(this);
         View view = mainView();
-        hideKeyboard(view);
+        hideKeyboard.hide(view);
     }
 
     public @Nullable Toolbar getToolbar() {
@@ -114,27 +113,5 @@ public class BaseActivity extends AppCompatActivity {
 
     protected View mainView() {
         return null;
-    }
-
-    private void hideKeyboard(View view) {
-        if (view == null) {
-            return;
-        }
-
-        if(!(view instanceof EditText)) {
-            view.setOnTouchListener((v, event) -> {
-                if (BaseActivity.this.getCurrentFocus() != null) {
-                    inputMethodManager.hideSoftInputFromWindow(BaseActivity.this.getCurrentFocus().getWindowToken(), 0);
-                }
-                return false;
-            });
-        }
-
-        if (view instanceof ViewGroup) {
-            for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
-                View innerView = ((ViewGroup) view).getChildAt(i);
-                hideKeyboard(innerView);
-            }
-        }
     }
 }
