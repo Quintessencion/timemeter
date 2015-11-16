@@ -1,5 +1,7 @@
 package com.simbirsoft.timemeter.persist;
 
+import com.simbirsoft.timemeter.db.model.Tag;
+
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Root;
 
@@ -8,6 +10,10 @@ public class XmlTagRef {
 
     @Attribute(name = "ref", required = true)
     private long tagId;
+
+    public XmlTagRef(Tag tag) {
+        tagId = tag.getId();
+    }
 
     public long getTagId() {
         return tagId;

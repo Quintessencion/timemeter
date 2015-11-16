@@ -9,7 +9,13 @@ import android.support.v4.preference.PreferenceFragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
+import android.view.View;
 
+import com.be.android.library.worker.annotations.OnJobFailure;
+import com.be.android.library.worker.annotations.OnJobSuccess;
+import com.be.android.library.worker.controllers.JobLoader;
+import com.be.android.library.worker.interfaces.Job;
+import com.be.android.library.worker.models.LoadJobResult;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.enums.SnackbarType;
@@ -17,10 +23,13 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.HelpCardController;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.Preferences;
+import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.injection.Injection;
+import com.simbirsoft.timemeter.jobs.LoadTaskListJob;
 import com.simbirsoft.timemeter.ui.base.AppAlertDialogFragment;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
 import com.simbirsoft.timemeter.ui.main.SectionFragment;
+import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
 import com.sleepbot.datetimepicker.time.RadialPickerLayout;
 import com.sleepbot.datetimepicker.time.TimePickerDialog;
@@ -30,6 +39,8 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.OnActivityResult;
 import org.androidannotations.annotations.res.StringRes;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -50,6 +61,10 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
     Preference mStartTimePreference;
     Preference mEndTimePreference;
     Preference mDisplayAllActivities;
+
+    Preference mExportStatistics;
+    Preference mImportStatistics;
+
     Preference mDeleteDemo;
     Preference mResetHelp;
     Preference mShowHelp;
@@ -85,6 +100,10 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
         mStartTimePreference = getPreferenceScreen().findPreference(PreferenceKeys.PREF_START_TIME_KEY);
         mEndTimePreference = getPreferenceScreen().findPreference(PreferenceKeys.PREF_END_TIME_KEY);
         mDisplayAllActivities = getPreferenceScreen().findPreference(PreferenceKeys.PREF_ALL_ACTIVITY_KEY);
+
+        mExportStatistics = getPreferenceScreen().findPreference(PreferenceKeys.PREF_EXPORT_STATISTICS);
+        mImportStatistics = getPreferenceScreen().findPreference(PreferenceKeys.PREF_IMPORT_STATISTICS);
+
         mDeleteDemo = getPreferenceScreen().findPreference(PreferenceKeys.PREF_DELETE_DEMO_KEY);
         mResetHelp = getPreferenceScreen().findPreference(PreferenceKeys.PREF_RESET_HELP_KEY);
         mShowHelp = getPreferenceScreen().findPreference(PreferenceKeys.PREF_SHOW_HELP_KEY);
@@ -103,6 +122,16 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
 
         mDisplayAllActivities.setOnPreferenceChangeListener((preference, newValue) -> {
             mPrefs.setDisplayAllActivities((Boolean) newValue);
+            return true;
+        });
+
+        mExportStatistics.setOnPreferenceClickListener(preference -> {
+            saveBackup();
+            return true;
+        });
+
+        mImportStatistics.setOnPreferenceClickListener(preference -> {
+            // TODO: impl export last backup
             return true;
         });
 
@@ -281,5 +310,21 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
 
     private void setPreferencesModified() {
         ((SettingsActivity)getActivity()).setSettingsModified();
+    }
+
+    private void saveBackup() {
+        LoadTasksFragment loadTasksFragment = new LoadTasksFragment();
+
+        getChildFragmentManager()
+                .beginTransaction()
+                .add(loadTasksFragment, "123")
+                .commit();
+
+        /*getChildFragmentManager()
+                .beginTransaction()
+                .attach(loadTasksFragment)
+                .commit(); */
+
+        //loadTasksFragment.loadTasks();
     }
 }
