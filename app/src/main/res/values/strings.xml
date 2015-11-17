@@ -33,6 +33,10 @@
     <string name="caption_progress">Загрузка&#8230;</string>
     <string name="label_color">Цвет</string>
     <string name="search_by_name">Поиск по названию&#8230;</string>
+    <string name="backup_export_error_task_load">Ошибка при загрузке задач</string>
+    <string name="backup_export_error_tag_load">Ошибка при загрузке тэгов</string>
+    <string name="backup_export_error_write">Не удалось сохранить статистику</string>
+    <string name="backup_export_success">Сохранение статистики завершено</string>
 
     <!-- Actions -->
     <string name="action_search">Поиск</string>

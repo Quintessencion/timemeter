@@ -25,6 +25,7 @@ import com.simbirsoft.timemeter.jobs.RestoreTaskTimeSpansJob;
 import com.simbirsoft.timemeter.jobs.SaveTagJob;
 import com.simbirsoft.timemeter.jobs.SaveTaskBundleJob;
 import com.simbirsoft.timemeter.jobs.UpdateTaskTimeSpanJob;
+import com.simbirsoft.timemeter.jobs.ExportStatsJob;
 
 public interface JobsComponent {
     public App app();
@@ -52,4 +53,5 @@ public interface JobsComponent {
     public RemoveTaskTimeSpanJob removeTaskTimeSpanJob();
     public UpdateTaskTimeSpanJob updateTaskTimeSpanJob();
     public RestoreTaskTimeSpansJob restoreTaskTimeSpanJob();
+    public ExportStatsJob exportStatsJob();
 }
