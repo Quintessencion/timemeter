@@ -23,12 +23,15 @@ public class LoadTagListJob extends LoadJob {
 
     @Override
     protected LoadJobResult<?> performLoad() {
-        List<Tag> tags = cupboard()
+        List<Tag> tags = getTagList();
+        return new LoadJobResult<>(JobResultStatus.OK, tags);
+    }
+
+    public List<Tag> getTagList() {
+        return cupboard()
                 .withDatabase(mDatabaseHelper.getWritableDatabase())
                 .query(Tag.class)
                 .orderBy(Tag.COLUMN_NAME)
                 .list();
-
-        return new LoadJobResult<>(JobResultStatus.OK, tags);
     }
 }

@@ -10,11 +10,20 @@ import com.be.android.library.worker.models.LoadJobResult;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.ImportStatsJob;
+import com.simbirsoft.timemeter.jobs.SaveBackupTagsJob;
+import com.simbirsoft.timemeter.persist.XmlTag;
+import com.simbirsoft.timemeter.persist.XmlTask;
 import com.simbirsoft.timemeter.persist.XmlTaskList;
+
+import java.util.List;
 
 public class ImportStatsDialog extends BackupProgressDialog implements JobLoader.JobLoaderCallbacks{
 
-    private final String IMPORT_BACKUP_TAG = "IMPORT_BACKUP_TAG";
+    private final static String IMPORT_BACKUP_TAG = "IMPORT_BACKUP_TAG";
+    private final static String SAVE_TAGS_TAG = "SAVE_TAGS_TAG";
+
+    private List<XmlTag> tags;
+    private List<XmlTask> tasks;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -24,22 +33,41 @@ public class ImportStatsDialog extends BackupProgressDialog implements JobLoader
 
     @Override
     public Job onCreateJob(String s) {
-        if (s.equals(IMPORT_BACKUP_TAG)) {
-            return Injection.sJobsComponent.importStatsJob();
-        }
+        switch (s) {
+            case IMPORT_BACKUP_TAG:
+                return Injection.sJobsComponent.importStatsJob();
 
-        throw new IllegalArgumentException();
+            case SAVE_TAGS_TAG:
+                SaveBackupTagsJob saveBackupTagsJob = Injection.sJobsComponent.saveBackupTagsJob();
+                saveBackupTagsJob.setTags(tags);
+                return saveBackupTagsJob;
+
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     @OnJobSuccess(ImportStatsJob.class)
     public void onImportSuccess(LoadJobResult<XmlTaskList> backup) {
-        showToast(R.string.backup_import_success);
-        this.dismiss();
+        this.tags = backup.getData().getTagList();
+        this.tasks = backup.getData().getTaskList();
+        requestLoad(SAVE_TAGS_TAG, this);
     }
 
     @OnJobFailure(ImportStatsJob.class)
     public void onImportFail() {
         showToast(R.string.backup_import_error);
+        this.dismiss();
+    }
+
+    @OnJobSuccess(SaveBackupTagsJob.class)
+    public void onSaveTagsSuccess() {
+
+    }
+
+    @OnJobFailure
+    public void onSaveTagsFail() {
+        showToast(R.string.backup_import_error_tags);
         this.dismiss();
     }
 
