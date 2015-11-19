@@ -120,7 +120,7 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
         });
 
         mImportStatistics.setOnPreferenceClickListener(preference -> {
-            // TODO: impl export last backup
+            importBackup();
             return true;
         });
 
@@ -304,5 +304,10 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
     private void saveBackup() {
         ExportStatsDialog exportStatsDialog = new ExportStatsDialog();
         exportStatsDialog.show(getActivity().getSupportFragmentManager(), null);
+    }
+
+    private void importBackup() {
+        ImportStatsDialog importStatsDialog = new ImportStatsDialog();
+        importStatsDialog.show(getActivity().getSupportFragmentManager(), null);
     }
 }

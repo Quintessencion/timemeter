@@ -2,6 +2,7 @@ package com.simbirsoft.timemeter.injection.components;
 
 import com.simbirsoft.timemeter.App;
 import com.simbirsoft.timemeter.jobs.BackupTagJob;
+import com.simbirsoft.timemeter.jobs.ImportStatsJob;
 import com.simbirsoft.timemeter.jobs.LoadActivityCalendarJob;
 import com.simbirsoft.timemeter.jobs.LoadOverallTaskActivityTimeJob;
 import com.simbirsoft.timemeter.jobs.LoadPeriodActivitySplitTimeSumJob;
@@ -54,4 +55,5 @@ public interface JobsComponent {
     public UpdateTaskTimeSpanJob updateTaskTimeSpanJob();
     public RestoreTaskTimeSpansJob restoreTaskTimeSpanJob();
     public ExportStatsJob exportStatsJob();
+    public ImportStatsJob importStatsJob();
 }

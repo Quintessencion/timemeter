@@ -30,6 +30,8 @@ public class XmlTask {
     @ElementList(name = "activity", required = false)
     private List<XmlTaskTimeSpan> timeSpanList;
 
+    public XmlTask() {}
+
     public XmlTask(Task task) {
         id = task.getId();
         description = task.getDescription();

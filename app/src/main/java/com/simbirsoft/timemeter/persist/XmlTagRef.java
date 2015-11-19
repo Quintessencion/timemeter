@@ -11,6 +11,8 @@ public class XmlTagRef {
     @Attribute(name = "ref", required = true)
     private long tagId;
 
+    public XmlTagRef() {}
+
     public XmlTagRef(Tag tag) {
         tagId = tag.getId();
     }

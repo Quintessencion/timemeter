@@ -39,6 +39,9 @@
     <string name="backup_export_success">Сохранение статистики завершено</string>
     <string name="backup_dialog_message">Пожалуйста, подождите</string>
     <string name="backup_dialog_export_title">Экспорт статистики</string>
+    <string name="backup_dialog_import_title">Импорт статистики</string>
+    <string name="backup_import_error">Не удалось импортировать данные</string>
+    <string name="backup_import_success">Статистика успешно импортирована</string>
 
     <!-- Actions -->
     <string name="action_search">Поиск</string>

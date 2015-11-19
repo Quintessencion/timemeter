@@ -19,6 +19,8 @@ import javax.inject.Inject;
 
 public class ExportStatsJob extends LoadJob{
 
+    public final static String STATS_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + "stats.xml";
+
     private List<TaskBundle> tasks;
     private List<Tag> tags;
 
@@ -32,9 +34,7 @@ public class ExportStatsJob extends LoadJob{
 
         Serializer serializer = new Persister();
 
-        String sdPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + "stats.xml";
-
-        File file = new File(sdPath);
+        File file = new File(STATS_PATH);
 
         try {
             serializer.write(xmlTaskList, file);
