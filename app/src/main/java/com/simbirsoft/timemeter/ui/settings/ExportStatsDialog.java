@@ -1,8 +1,6 @@
 package com.simbirsoft.timemeter.ui.settings;
 
-import android.content.res.Resources;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
+import android.os.Bundle;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
@@ -20,23 +18,21 @@ import com.simbirsoft.timemeter.ui.model.TaskBundle;
 
 import java.util.List;
 
-public class ExportStats implements JobLoader.JobLoaderCallbacks{
+public class ExportStatsDialog extends BackupProgressDialog implements JobLoader.JobLoaderCallbacks {
 
-    public static final String TASK_LIST_LOADER_TAG = "SettingsFragment_taskLoaderTag";
-    public static final String TAGS_LIST_LOADER_TAG = "SettingsFragment_tagsLoaderTag";
-    public static final String BACKUP_SAVE_TAG = "SettingsFragment_backupSaveTag";
+    private static final String TASK_LIST_LOADER_TAG = "SettingsFragment_taskLoaderTag";
+    private static final String TAGS_LIST_LOADER_TAG = "SettingsFragment_tagsLoaderTag";
+    private static final String BACKUP_SAVE_TAG = "SettingsFragment_backupSaveTag";
 
     private static final int LOAD_TASK_JOB_ID = 2970017;
 
     private List<TaskBundle> tasks = Lists.newArrayList();
     private List<Tag> tags = Lists.newArrayList();
 
-    private final Resources resources;
-    private final ExportStatsCallback exportStatsCallback;
-
-    public ExportStats(@NonNull final ExportStatsCallback exportStatsCallback) {
-        this.exportStatsCallback = exportStatsCallback;
-        this.resources = ((Fragment) exportStatsCallback).getActivity().getResources();
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        requestLoad(TASK_LIST_LOADER_TAG, this);
     }
 
     @Override
@@ -65,37 +61,39 @@ public class ExportStats implements JobLoader.JobLoaderCallbacks{
     @OnJobSuccess(LoadTaskListJob.class)
     public void onTaskListLoaded(LoadJobResult<List<TaskBundle>> event) {
         tasks = event.getData();
-        exportStatsCallback.onTaskLoaded();
+        requestLoad(TAGS_LIST_LOADER_TAG, this);
     }
 
     @OnJobFailure(LoadTaskListJob.class)
     public void onTaskListLoadFailed() {
-        sendError(R.string.backup_export_error_task_load);
+        showToast(R.string.backup_export_error_task_load);
     }
 
     @OnJobSuccess(LoadTagListJob.class)
     public void onTagListLoaded(LoadJobResult<List<Tag>> event) {
         tags = event.getData();
-        exportStatsCallback.onTagLoaded();
+        requestLoad(BACKUP_SAVE_TAG, this);
     }
 
     @OnJobFailure(LoadTagListJob.class)
     public void onTagListLoadFailed() {
-        sendError(R.string.backup_export_error_tag_load);
+        showToast(R.string.backup_export_error_tag_load);
     }
 
     @OnJobSuccess(ExportStatsJob.class)
-    public void onBackupSuccess() {
-        exportStatsCallback.onSuccess();
+    public void onBackupSuccess(LoadJobResult<Boolean> event) {
+        showToast(R.string.backup_export_success);
+        this.dismiss();
     }
 
     @OnJobFailure(ExportStatsJob.class)
     public void onBackupFail() {
-        sendError(R.string.backup_export_error_write);
+        showToast(R.string.backup_export_error_write);
+        this.dismiss();
     }
 
-    private void sendError(int resId) {
-        final String error = resources.getString(resId);
-        exportStatsCallback.onError(error);
+    @Override
+    public int getTitleResId() {
+        return R.string.backup_dialog_export_title;
     }
 }
