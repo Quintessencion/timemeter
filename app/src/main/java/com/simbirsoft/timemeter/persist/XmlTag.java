@@ -60,9 +60,18 @@ public class XmlTag {
         tag.setName(name);
 
         if (color != null) {
-            tag.setColor(Color.parseColor(color));
+            tag.setColor(parseColor());
         }
 
         return tag;
+    }
+
+    private int parseColor() {
+        try {
+            return Color.parseColor(color);
+        }
+        catch (IllegalArgumentException | NullPointerException e) {
+            return Tag.DEFAULT_COLOR;
+        }
     }
 }

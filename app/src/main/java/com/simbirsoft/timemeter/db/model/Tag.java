@@ -16,6 +16,8 @@ public class Tag implements Parcelable, Serializable {
     public static final String COLUMN_NAME = "name";
     public static final String COLUMN_COLOR = "color";
 
+    public static final int DEFAULT_COLOR = -10453621; /* blue grey #607D8B */
+
     public static final Parcelable.Creator<Tag> CREATOR =
             new Parcelable.Creator<Tag>() {
                 @Override
@@ -36,7 +38,7 @@ public class Tag implements Parcelable, Serializable {
     private String name;
 
     @Column(COLUMN_COLOR)
-    private int color = -10453621; /* blue grey #607D8B */
+    private int color = DEFAULT_COLOR;
 
     public Tag() {
     }
