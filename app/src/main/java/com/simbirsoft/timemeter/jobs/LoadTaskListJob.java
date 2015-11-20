@@ -166,6 +166,7 @@ public class LoadTaskListJob extends LoadJob implements FilterableJob {
             final List<Task> tasks = cupboard().withCursor(cursor).list(Task.class);
             final List<TaskBundle> result = Lists.newArrayListWithCapacity(tasks.size());
             final LoadTaskTagsJob loadJob = Injection.sJobsComponent.loadTaskTagsJob();
+            final LoadTaskTimespansJob spansJob = Injection.sJobsComponent.loadTaskTimespansJob();
 
             for (Task task : tasks) {
                 if (isCancelled()) {
@@ -176,7 +177,10 @@ public class LoadTaskListJob extends LoadJob implements FilterableJob {
                 loadJob.setTaskId(task.getId());
                 List<Tag> taskTags = ((LoadJobResult<List<Tag>>) forkJob(loadJob).join()).getData();
 
-                result.add(TaskBundle.create(task, taskTags));
+                spansJob.setTaskId(task.getId());
+                List<TaskTimeSpan> spans = spansJob.loadSpans();
+
+                result.add(TaskBundle.create(task, taskTags, spans));
                 loadJob.reset();
             }
 

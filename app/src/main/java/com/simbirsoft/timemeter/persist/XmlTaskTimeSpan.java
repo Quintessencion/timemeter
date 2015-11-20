@@ -23,6 +23,8 @@ public class XmlTaskTimeSpan {
     @Attribute(required = true)
     private Date endDate;
 
+    public XmlTaskTimeSpan() {}
+
     public XmlTaskTimeSpan(TaskTimeSpan taskTimeSpan) {
         id = taskTimeSpan.getId();
         description = taskTimeSpan.getDescription();
