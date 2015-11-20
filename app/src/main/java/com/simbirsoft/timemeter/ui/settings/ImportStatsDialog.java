@@ -11,6 +11,7 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.ImportStatsJob;
 import com.simbirsoft.timemeter.jobs.SaveBackupTagsJob;
+import com.simbirsoft.timemeter.jobs.SaveBackupTasksJob;
 import com.simbirsoft.timemeter.persist.XmlTag;
 import com.simbirsoft.timemeter.persist.XmlTask;
 import com.simbirsoft.timemeter.persist.XmlTaskList;
@@ -21,6 +22,7 @@ public class ImportStatsDialog extends BackupProgressDialog implements JobLoader
 
     private final static String IMPORT_BACKUP_TAG = "IMPORT_BACKUP_TAG";
     private final static String SAVE_TAGS_TAG = "SAVE_TAGS_TAG";
+    private final static String SAVE_TASKS_TAG = "SAVE_TASKS_TAG";
 
     private List<XmlTag> tags;
     private List<XmlTask> tasks;
@@ -42,6 +44,11 @@ public class ImportStatsDialog extends BackupProgressDialog implements JobLoader
                 saveBackupTagsJob.setTags(tags);
                 return saveBackupTagsJob;
 
+            case SAVE_TASKS_TAG:
+                SaveBackupTasksJob saveBackupTasksJob = Injection.sJobsComponent.saveBackupTasksJob();
+                saveBackupTasksJob.setTasks(tasks);
+                return saveBackupTasksJob;
+
             default:
                 throw new IllegalArgumentException();
         }
@@ -56,19 +63,27 @@ public class ImportStatsDialog extends BackupProgressDialog implements JobLoader
 
     @OnJobFailure(ImportStatsJob.class)
     public void onImportFail() {
-        showToast(R.string.backup_import_error);
-        this.dismiss();
+        sendMessage(R.string.backup_import_error);
     }
 
     @OnJobSuccess(SaveBackupTagsJob.class)
     public void onSaveTagsSuccess() {
-
+        requestLoad(SAVE_TASKS_TAG, this);
     }
 
     @OnJobFailure
     public void onSaveTagsFail() {
-        showToast(R.string.backup_import_error_tags);
-        this.dismiss();
+        sendMessage(R.string.backup_import_error_tags);
+    }
+
+    @OnJobSuccess(SaveBackupTasksJob.class)
+    public void onSaveTasksSuccess() {
+        sendMessage(R.string.backup_import_success);
+    }
+
+    @OnJobFailure(SaveBackupTasksJob.class)
+    public void onSaveTasksFail() {
+        sendMessage(R.string.backup_import_error_tasks);
     }
 
     @Override

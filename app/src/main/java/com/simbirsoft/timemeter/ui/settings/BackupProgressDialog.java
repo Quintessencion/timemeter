@@ -21,5 +21,10 @@ public abstract class BackupProgressDialog extends BaseDialogFragment {
         return backupDialog;
     }
 
+    protected void sendMessage(int resId) {
+        showToast(resId);
+        this.dismiss();
+    }
+
     public abstract int getTitleResId();
 }

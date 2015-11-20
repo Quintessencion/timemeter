@@ -65,8 +65,23 @@ public class SaveTaskBundleJob extends BaseJob {
 
     @Override
     protected JobEvent executeImpl() throws Exception {
-        final Long taskId = mTaskBundle.getTask().getId();
-        final Task task = mTaskBundle.getTask();
+        long id = saveTaskBundle(mTaskBundle);
+        return new SaveTaskResult(id);
+    }
+
+    public TaskBundle getTaskBundle() {
+        return mTaskBundle;
+    }
+
+    public void setTaskBundle(TaskBundle taskBundle) {
+        Preconditions.checkArgument(mTaskBundle == null);
+
+        mTaskBundle = taskBundle;
+    }
+
+    public long saveTaskBundle(TaskBundle taskBundle) {
+        final Long taskId = taskBundle.getTask().getId();
+        final Task task = taskBundle.getTask();
 
         if (!task.hasId()) {
             task.setCreateDate(new Date(System.currentTimeMillis()));
@@ -100,7 +115,7 @@ public class SaveTaskBundleJob extends BaseJob {
             cupboard.put(task);
             LOG.trace("task '{}' added", task);
 
-            List<Tag> tags = mTaskBundle.getTags();
+            List<Tag> tags = taskBundle.getTags();
             if (tags == null) {
                 tags = Lists.newArrayList();
             }
@@ -112,7 +127,7 @@ public class SaveTaskBundleJob extends BaseJob {
             cupboard.put(taskTags);
             LOG.trace("{} task tags added for task '{}'", taskTags.size(), task.getDescription());
 
-            List<TaskTimeSpan> spans = mTaskBundle.getTaskTimeSpans();
+            List<TaskTimeSpan> spans = taskBundle.getTaskTimeSpans();
             if (!spans.isEmpty()) {
                 cupboard.put(spans);
                 LOG.trace("{} task spans added for task '{}'", spans.size(), task.getDescription());
@@ -125,16 +140,6 @@ public class SaveTaskBundleJob extends BaseJob {
         }
         LOG.trace("saved task {}", task);
 
-        return new SaveTaskResult(task.getId());
-    }
-
-    public TaskBundle getTaskBundle() {
-        return mTaskBundle;
-    }
-
-    public void setTaskBundle(TaskBundle taskBundle) {
-        Preconditions.checkArgument(mTaskBundle == null);
-
-        mTaskBundle = taskBundle;
+        return task.getId();
     }
 }

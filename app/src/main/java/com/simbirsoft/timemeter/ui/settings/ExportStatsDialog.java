@@ -94,9 +94,4 @@ public class ExportStatsDialog extends BackupProgressDialog implements JobLoader
     public int getTitleResId() {
         return R.string.backup_dialog_export_title;
     }
-
-    private void sendMessage(int resId) {
-        showToast(resId);
-        this.dismiss();
-    }
 }
