@@ -66,7 +66,7 @@ public class ExportStatsDialog extends BackupProgressDialog implements JobLoader
 
     @OnJobFailure(LoadTaskListJob.class)
     public void onTaskListLoadFailed() {
-        showToast(R.string.backup_export_error_task_load);
+        sendMessage(R.string.backup_export_error_task_load);
     }
 
     @OnJobSuccess(LoadTagListJob.class)
@@ -77,23 +77,26 @@ public class ExportStatsDialog extends BackupProgressDialog implements JobLoader
 
     @OnJobFailure(LoadTagListJob.class)
     public void onTagListLoadFailed() {
-        showToast(R.string.backup_export_error_tag_load);
+        sendMessage(R.string.backup_export_error_tag_load);
     }
 
     @OnJobSuccess(ExportStatsJob.class)
     public void onBackupSuccess(LoadJobResult<Boolean> event) {
-        showToast(R.string.backup_export_success);
-        this.dismiss();
+        sendMessage(R.string.backup_export_success);
     }
 
     @OnJobFailure(ExportStatsJob.class)
     public void onBackupFail() {
-        showToast(R.string.backup_export_error_write);
-        this.dismiss();
+        sendMessage(R.string.backup_export_error_write);
     }
 
     @Override
     public int getTitleResId() {
         return R.string.backup_dialog_export_title;
+    }
+
+    private void sendMessage(int resId) {
+        showToast(resId);
+        this.dismiss();
     }
 }
