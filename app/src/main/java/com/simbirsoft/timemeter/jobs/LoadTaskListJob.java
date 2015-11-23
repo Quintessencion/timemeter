@@ -174,6 +174,8 @@ public class LoadTaskListJob extends LoadJob implements FilterableJob {
                     return LoadJobResult.loadOk();
                 }
 
+                final long taskId = task.getId();
+
                 loadJob.setTaskId(task.getId());
                 List<Tag> taskTags = ((LoadJobResult<List<Tag>>) forkJob(loadJob).join()).getData();
 
@@ -181,6 +183,8 @@ public class LoadTaskListJob extends LoadJob implements FilterableJob {
                 List<TaskTimeSpan> spans = spansJob.loadSpans();
 
                 result.add(TaskBundle.create(task, taskTags, spans));
+
+                spansJob.reset();
                 loadJob.reset();
             }
 
