@@ -4,11 +4,11 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.be.android.library.worker.jobs.LoadJob;
 import com.be.android.library.worker.models.LoadJobResult;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.injection.Injection;
-import com.simbirsoft.timemeter.persist.XmlTag;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 
 public class SaveBackupTagsJob extends LoadJob{
 
-    private List<XmlTag> tags;
+    private List<Tag> tags;
     private DatabaseHelper databaseHelper;
 
     @Inject
@@ -31,14 +31,7 @@ public class SaveBackupTagsJob extends LoadJob{
     @Override
     protected LoadJobResult<?> performLoad() throws Exception {
         List<Tag> dbTags = Injection.sJobsComponent.loadTagListJob().getTagList();
-        List<Tag> actualTags = Lists.newArrayList();
-
-        for (XmlTag xmlTag: tags) {
-            Tag tag = xmlTag.getTag();
-            if (!checkForExist(dbTags, tag)) {
-                actualTags.add(tag);
-            }
-        }
+        List<Tag> actualTags = Lists.newArrayList(Collections2.filter(tags, input -> !checkForExist(dbTags, input)));
 
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
         DatabaseCompartment cupboard = cupboard().withDatabase(db);
@@ -55,7 +48,7 @@ public class SaveBackupTagsJob extends LoadJob{
         }
     }
 
-    public void setTags(List<XmlTag> tags) {
+    public void setTags(List<Tag> tags) {
         this.tags = tags;
     }
 

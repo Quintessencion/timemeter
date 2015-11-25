@@ -8,13 +8,12 @@ import com.be.android.library.worker.controllers.JobLoader;
 import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.db.model.Tag;
+import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.ImportStatsJob;
 import com.simbirsoft.timemeter.jobs.SaveBackupTagsJob;
 import com.simbirsoft.timemeter.jobs.SaveBackupTasksJob;
-import com.simbirsoft.timemeter.persist.XmlTag;
-import com.simbirsoft.timemeter.persist.XmlTask;
-import com.simbirsoft.timemeter.persist.XmlTaskList;
 
 import java.util.List;
 
@@ -24,8 +23,8 @@ public class ImportStatsDialog extends BackupProgressDialog implements JobLoader
     private final static String SAVE_TAGS_TAG = "SAVE_TAGS_TAG";
     private final static String SAVE_TASKS_TAG = "SAVE_TASKS_TAG";
 
-    private List<XmlTag> tags;
-    private List<XmlTask> tasks;
+    private List<Tag> tags;
+    private List<Task> tasks;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -55,9 +54,9 @@ public class ImportStatsDialog extends BackupProgressDialog implements JobLoader
     }
 
     @OnJobSuccess(ImportStatsJob.class)
-    public void onImportSuccess(LoadJobResult<XmlTaskList> backup) {
-        this.tags = backup.getData().getTagList();
-        this.tasks = backup.getData().getTaskList();
+    public void onImportSuccess(LoadJobResult<ImportStatsJob.ImportStatsJobResult> backup) {
+        this.tags = backup.getData().getTags();
+        this.tasks = backup.getData().getTasks();
         requestLoad(SAVE_TAGS_TAG, this);
     }
 
@@ -71,7 +70,7 @@ public class ImportStatsDialog extends BackupProgressDialog implements JobLoader
         requestLoad(SAVE_TASKS_TAG, this);
     }
 
-    @OnJobFailure
+    @OnJobFailure(SaveBackupTagsJob.class)
     public void onSaveTagsFail() {
         displayMessage(R.string.backup_import_error_tags);
     }
