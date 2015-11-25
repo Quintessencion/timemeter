@@ -1,8 +1,7 @@
 package com.simbirsoft.timemeter.persist;
 
-import android.graphics.Color;
-
 import com.simbirsoft.timemeter.db.model.Tag;
+import com.simbirsoft.timemeter.ui.util.ColorParseUtils;
 
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
@@ -25,7 +24,7 @@ public class XmlTag {
     public XmlTag(Tag tag) {
         id = tag.getId();
         name = tag.getName();
-        color = "#" + Integer.valueOf(String.valueOf(tag.getColor()), 16);
+        color = ColorParseUtils.parseColor(tag.getColor());
     }
 
     public long getId() {
@@ -60,18 +59,9 @@ public class XmlTag {
         tag.setName(name);
 
         if (color != null) {
-            tag.setColor(parseColor());
+            tag.setColor(ColorParseUtils.parseColor(color));
         }
 
         return tag;
-    }
-
-    private int parseColor() {
-        try {
-            return Color.parseColor(color);
-        }
-        catch (IllegalArgumentException | NullPointerException e) {
-            return Tag.DEFAULT_COLOR;
-        }
     }
 }

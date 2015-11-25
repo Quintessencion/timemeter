@@ -25,7 +25,7 @@ public class SaveBackupTasksJob extends LoadJob{
         LoadTagListJob loadTagListJob = Injection.sJobsComponent.loadTagListJob();
 
         for (XmlTask xmlTask: backupTasks) {
-            final List<Long> ids = XmlTagListConverter.asList(xmlTask.getTagList());
+            final List<Long> ids = XmlTagListConverter.toIdsList(xmlTask.getTagList());
             final List<Tag> tags = loadTagListJob.getTagListWereIds(ids);
 
             TaskBundle taskBundle = new TaskBundle();

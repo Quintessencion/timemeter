@@ -6,7 +6,7 @@ import java.util.List;
 
 public class XmlTagListConverter {
 
-    public static List<Long> asList(List<XmlTagRef> xmlTagRefList) {
+    public static List<Long> toIdsList(List<XmlTagRef> xmlTagRefList) {
         List<Long> coll = Lists.newArrayListWithCapacity(xmlTagRefList.size());
         for (XmlTagRef xmlTagRef: xmlTagRefList) {
             coll.add(xmlTagRef.getTagId());

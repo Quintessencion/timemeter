@@ -63,7 +63,7 @@ public class ImportStatsDialog extends BackupProgressDialog implements JobLoader
 
     @OnJobFailure(ImportStatsJob.class)
     public void onImportFail() {
-        sendMessage(R.string.backup_import_error);
+        displayMessage(R.string.backup_import_error);
     }
 
     @OnJobSuccess(SaveBackupTagsJob.class)
@@ -73,17 +73,17 @@ public class ImportStatsDialog extends BackupProgressDialog implements JobLoader
 
     @OnJobFailure
     public void onSaveTagsFail() {
-        sendMessage(R.string.backup_import_error_tags);
+        displayMessage(R.string.backup_import_error_tags);
     }
 
     @OnJobSuccess(SaveBackupTasksJob.class)
     public void onSaveTasksSuccess() {
-        sendMessage(R.string.backup_import_success);
+        displayMessage(R.string.backup_import_success);
     }
 
     @OnJobFailure(SaveBackupTasksJob.class)
     public void onSaveTasksFail() {
-        sendMessage(R.string.backup_import_error_tasks);
+        displayMessage(R.string.backup_import_error_tasks);
     }
 
     @Override

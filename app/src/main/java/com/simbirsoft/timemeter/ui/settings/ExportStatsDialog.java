@@ -24,8 +24,6 @@ public class ExportStatsDialog extends BackupProgressDialog implements JobLoader
     private static final String TAGS_LIST_LOADER_TAG = "SettingsFragment_tagsLoaderTag";
     private static final String BACKUP_SAVE_TAG = "SettingsFragment_backupSaveTag";
 
-    private static final int LOAD_TASK_JOB_ID = 2970017;
-
     private List<TaskBundle> tasks = Lists.newArrayList();
     private List<Tag> tags = Lists.newArrayList();
 
@@ -42,10 +40,7 @@ public class ExportStatsDialog extends BackupProgressDialog implements JobLoader
                 return Injection.sJobsComponent.loadTagListJob();
 
             case TASK_LIST_LOADER_TAG:
-                LoadTaskListJob job = Injection.sJobsComponent.loadTaskListJob();
-                job.setGroupId(LOAD_TASK_JOB_ID);
-                job.addTag(s);
-                return job;
+                return Injection.sJobsComponent.loadTaskListJob();
 
             case BACKUP_SAVE_TAG:
                 ExportStatsJob exportStatsJob = Injection.sJobsComponent.exportStatsJob();
@@ -66,7 +61,7 @@ public class ExportStatsDialog extends BackupProgressDialog implements JobLoader
 
     @OnJobFailure(LoadTaskListJob.class)
     public void onTaskListLoadFailed() {
-        sendMessage(R.string.backup_export_error_task_load);
+        displayMessage(R.string.backup_export_error_task_load);
     }
 
     @OnJobSuccess(LoadTagListJob.class)
@@ -77,17 +72,17 @@ public class ExportStatsDialog extends BackupProgressDialog implements JobLoader
 
     @OnJobFailure(LoadTagListJob.class)
     public void onTagListLoadFailed() {
-        sendMessage(R.string.backup_export_error_tag_load);
+        displayMessage(R.string.backup_export_error_tag_load);
     }
 
     @OnJobSuccess(ExportStatsJob.class)
     public void onBackupSuccess(LoadJobResult<Boolean> event) {
-        sendMessage(R.string.backup_export_success);
+        displayMessage(R.string.backup_export_success);
     }
 
     @OnJobFailure(ExportStatsJob.class)
     public void onBackupFail() {
-        sendMessage(R.string.backup_export_error_write);
+        displayMessage(R.string.backup_export_error_write);
     }
 
     @Override
