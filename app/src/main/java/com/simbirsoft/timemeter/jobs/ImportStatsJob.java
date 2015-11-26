@@ -5,11 +5,11 @@ import com.be.android.library.worker.models.LoadJobResult;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.db.model.Tag;
-import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.persist.XmlTag;
-import com.simbirsoft.timemeter.persist.XmlTask;
+import com.simbirsoft.timemeter.persist.XmlTagRef;
 import com.simbirsoft.timemeter.persist.XmlTaskList;
 import com.simbirsoft.timemeter.persist.XmlTaskListReader;
+import com.simbirsoft.timemeter.persist.XmlTaskWrapper;
 
 import java.io.File;
 import java.util.List;
@@ -32,7 +32,7 @@ public class ImportStatsJob extends LoadJob{
             final XmlTaskList xmlTaskList = XmlTaskListReader.readXml(file);
 
             final List<Tag> tags = Lists.newArrayList(Collections2.transform(xmlTaskList.getTagList(), XmlTag::getTag));
-            final List<Task> tasks = Lists.newArrayList(Collections2.transform(xmlTaskList.getTaskList(), XmlTask::getTask));
+            final List<XmlTaskWrapper> tasks = Lists.newArrayList(Collections2.transform(xmlTaskList.getTaskList(), input -> new XmlTaskWrapper(input.getTask(), transformToTagsId(input.getTagList()), input.getTaskActivity())));
 
             final ImportStatsJobResult result = new ImportStatsJobResult(tags, tasks);
 
@@ -45,9 +45,9 @@ public class ImportStatsJob extends LoadJob{
 
     public static class ImportStatsJobResult {
         private List<Tag> tags = Lists.newArrayList();
-        private List<Task> tasks = Lists.newArrayList();
+        private List<XmlTaskWrapper> tasks = Lists.newArrayList();
 
-        public ImportStatsJobResult(List<Tag> tags, List<Task> tasks) {
+        public ImportStatsJobResult(List<Tag> tags, List<XmlTaskWrapper> tasks) {
             this.tags = tags;
             this.tasks = tasks;
         }
@@ -56,8 +56,12 @@ public class ImportStatsJob extends LoadJob{
             return tags;
         }
 
-        public List<Task> getTasks() {
+        public List<XmlTaskWrapper> getTasks() {
             return tasks;
         }
+    }
+
+    private List<Long> transformToTagsId(List<XmlTagRef> ids) {
+        return Lists.newArrayList(Collections2.transform(ids, XmlTagRef::getTagId));
     }
 }

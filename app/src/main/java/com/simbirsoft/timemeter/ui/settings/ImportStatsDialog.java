@@ -9,11 +9,11 @@ import com.be.android.library.worker.interfaces.Job;
 import com.be.android.library.worker.models.LoadJobResult;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
-import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.ImportStatsJob;
 import com.simbirsoft.timemeter.jobs.SaveBackupTagsJob;
 import com.simbirsoft.timemeter.jobs.SaveBackupTasksJob;
+import com.simbirsoft.timemeter.persist.XmlTaskWrapper;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ public class ImportStatsDialog extends BackupProgressDialog implements JobLoader
     private final static String SAVE_TASKS_TAG = "SAVE_TASKS_TAG";
 
     private List<Tag> tags;
-    private List<Task> tasks;
+    private List<XmlTaskWrapper> tasks;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
