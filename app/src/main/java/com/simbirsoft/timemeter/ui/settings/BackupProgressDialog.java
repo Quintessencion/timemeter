@@ -22,7 +22,7 @@ public abstract class BackupProgressDialog extends BaseDialogFragment {
     }
 
     protected void displayMessage(int resId) {
-        showToast(resId);
+        showToast(resId, false);
         this.dismiss();
     }
 

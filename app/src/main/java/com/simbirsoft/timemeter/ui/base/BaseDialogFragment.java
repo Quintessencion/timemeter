@@ -144,7 +144,18 @@ public class BaseDialogFragment extends DialogFragment implements FragmentContai
         mIsSubscribedForJobEvents = isSubscribedForJobEvents;
     }
     protected void showToast(int stringId) {
+        if (!isVisible()) return;
+
         showToast(stringId, Toast.LENGTH_SHORT);
+    }
+
+    protected void showToast(int resId, boolean ifIsVisible) {
+        if (ifIsVisible) {
+            showToast(resId);
+        }
+        else {
+            Toast.makeText(getActivity(), resId, Toast.LENGTH_SHORT).show();;
+        }
     }
 
     protected void showToast(String text) {
@@ -154,6 +165,8 @@ public class BaseDialogFragment extends DialogFragment implements FragmentContai
     }
 
     protected void showToast(int stringId, int toastLength) {
+        if (!isVisible()) return;
+
         Toast.makeText(getActivity(), stringId, toastLength).show();
     }
 
