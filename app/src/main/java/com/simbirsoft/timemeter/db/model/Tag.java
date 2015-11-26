@@ -3,6 +3,8 @@ package com.simbirsoft.timemeter.db.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.simbirsoft.timemeter.ui.util.ColorParseUtils;
+
 import java.io.Serializable;
 
 import nl.qbusict.cupboard.annotation.Column;
@@ -16,7 +18,7 @@ public class Tag implements Parcelable, Serializable {
     public static final String COLUMN_NAME = "name";
     public static final String COLUMN_COLOR = "color";
 
-    public static final int DEFAULT_COLOR = -10453621; /* blue grey #607D8B */
+
 
     public static final Parcelable.Creator<Tag> CREATOR =
             new Parcelable.Creator<Tag>() {
@@ -38,7 +40,7 @@ public class Tag implements Parcelable, Serializable {
     private String name;
 
     @Column(COLUMN_COLOR)
-    private int color = DEFAULT_COLOR;
+    private int color = ColorParseUtils.DEFAULT_COLOR;
 
     public Tag() {
     }
