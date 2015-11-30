@@ -47,7 +47,7 @@ public final class DatabaseUtils {
                 cupboard.put(task);
                 cupboard.put(new DemoTask(task));
                 xmlTask.setId(task.getId());
-                List<TaskTimeSpan> spans = xmlTask.getTaskActivity();
+                List<TaskTimeSpan> spans = actualizeTaskActivities(xmlTask.getTaskActivity());
                 cupboard.put(spans);
 
                 for (XmlTagRef tagRef : xmlTask.getTagList()) {
