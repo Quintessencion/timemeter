@@ -29,7 +29,10 @@ import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.controller.ITaskActivityManager;
+import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
+import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
 import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskBundleJob;
@@ -91,6 +94,10 @@ public class ViewTaskFragment extends BaseFragment
     @FragmentArg(EXTRA_TASK_ID)
     long mExtraTaskId = -1;
 
+    private ITaskActivityManager taskActivityManager;
+
+    private Menu menu;
+
     private final TagView.TagViewClickListener mTagViewClickListener = (tagView) -> {
         LOG.debug("Tag <" + tagView.getTag().getName() + "> clicked!");
     };
@@ -130,6 +137,8 @@ public class ViewTaskFragment extends BaseFragment
         setHasOptionsMenu(true);
         Injection.sUiComponent.injectViewTaskFragment(this);
 
+        taskActivityManager = Injection.sTaskManager.taskActivityManager();
+
         if (savedInstanceState != null) {
             mSelectedSpans = Longs.asList(savedInstanceState.getLongArray(STATE_SELECTION));
         }
@@ -155,6 +164,10 @@ public class ViewTaskFragment extends BaseFragment
         super.onCreateOptionsMenu(menu, inflater);
 
         inflater.inflate(R.menu.fragment_view_task, menu);
+
+        this.menu = menu;
+
+        setTaskActiveStatusToolbarUI();
     }
 
     @Override
@@ -167,6 +180,8 @@ public class ViewTaskFragment extends BaseFragment
             mListPositionOffset = (mListPosition != RecyclerView.NO_POSITION)
                                     ? layoutManager.findItemOffset(mListPosition) : 0;
         }
+
+        taskActivityManager.saveTaskActivity();
     }
 
     @Override
@@ -285,6 +300,12 @@ public class ViewTaskFragment extends BaseFragment
             case android.R.id.home:
                 LOG.debug("task view home clicked");
                 getActivity().finish();
+                return true;
+
+            case R.id.status:
+                LOG.debug("task view status clicked");
+                doTaskActive();
+                setTaskActiveStatusToolbarUI();
                 return true;
         }
 
@@ -450,5 +471,53 @@ public class ViewTaskFragment extends BaseFragment
         Intent launchIntent = DialogContainerActivity.prepareDialogLaunchIntent(
                 getActivity(), EditTaskActivityDialogFragment.class.getName(), args);
         startActivityForResult(launchIntent, REQUEST_CODE_EDIT_ACTIVITY);
+    }
+
+    @Subscribe
+    public void onTaskActivityStopped(TaskActivityStoppedEvent event) {
+        taskActivityManager.stopTask(event.task);
+        setTaskActiveStatusToolbarUI();
+    }
+
+    private void doTaskActive() {
+        final Task task = mExtraTaskBundle.getTask();
+
+        if (taskActivityManager.isTaskActive(task)) {
+            taskActivityManager.stopTask(task);
+        }
+        else {
+            taskActivityManager.startTask(task);
+        }
+    }
+
+    private void setTaskActiveStatusToolbarUI() {
+        if (menu == null) {
+            return;
+        }
+
+        final MenuItem item = menu.findItem(R.id.status);
+
+        if (item == null || mExtraTaskBundle == null || mExtraTaskBundle.getTask() == null) {
+            return;
+        }
+
+        final Task task = mExtraTaskBundle.getTask();
+
+        if (taskActivityManager.isTaskActive(task)) {
+            setStopToolbarUI(item);
+        }
+        else {
+            setStartToolbarUI(item);
+        }
+    }
+
+    private void setStartToolbarUI(MenuItem item) {
+        item.setIcon(R.drawable.ic_start_task);
+        item.setTitle(R.string.action_start_task);
+    }
+
+    private void setStopToolbarUI(MenuItem item) {
+        item.setIcon(R.drawable.ic_stop_task);
+        item.setTitle(R.string.action_stop_task);
     }
 }

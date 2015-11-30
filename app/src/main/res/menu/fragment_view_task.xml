@@ -15,4 +15,10 @@
     android:icon="@drawable/ic_edit_white_24dp"
     android:title="@string/action_edit"/>
 
+<item
+    android:id="@+id/status"
+    app:showAsAction="always"
+    android:icon="@drawable/ic_start_task"
+    android:title="@string/action_start_task"/>
+
 </menu>

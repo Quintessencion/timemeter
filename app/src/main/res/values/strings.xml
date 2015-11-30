@@ -63,6 +63,7 @@
     <string name="ime_action_filter">Показать</string>
     <string name="ime_action_next">Далее</string>
     <string name="action_edit">Редактировать</string>
+    <string name="action_start_task">Начать задачу</string>
     <string name="action_create_tag">Создать метку</string>
     <string name="action_view_activities">Показать активности</string>
     <string name="action_show_task_activities">Показать в виде графика</string>
