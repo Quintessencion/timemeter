@@ -11,11 +11,13 @@ import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.events.ImportTagsEvent;
+import com.simbirsoft.timemeter.events.ImportTasksEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.ImportStatsJob;
 import com.simbirsoft.timemeter.jobs.SaveBackupTagsJob;
 import com.simbirsoft.timemeter.jobs.SaveBackupTasksJob;
 import com.simbirsoft.timemeter.persist.XmlTaskWrapper;
+import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.squareup.otto.Bus;
 
 import java.util.List;
@@ -30,7 +32,9 @@ public class ImportStatsDialog extends BackupProgressDialog implements JobLoader
 
     private List<Tag> tags = Lists.newArrayList();
     private List<Tag> actualTags = Lists.newArrayList();
+
     private List<XmlTaskWrapper> tasks = Lists.newArrayList();
+    private List<TaskBundle> resultTasks = Lists.newArrayList();
 
     @Inject
     public Bus bus;
@@ -89,7 +93,8 @@ public class ImportStatsDialog extends BackupProgressDialog implements JobLoader
     }
 
     @OnJobSuccess(SaveBackupTasksJob.class)
-    public void onSaveTasksSuccess() {
+    public void onSaveTasksSuccess(LoadJobResult<List<TaskBundle>> result) {
+        this.resultTasks = result.getData();
         sendEvent();
         displayMessage(R.string.backup_import_success);
     }
@@ -107,5 +112,8 @@ public class ImportStatsDialog extends BackupProgressDialog implements JobLoader
     private void sendEvent() {
         final ImportTagsEvent tagsEvent = new ImportTagsEvent(actualTags);
         bus.post(tagsEvent);
+
+        final ImportTasksEvent tasksEvent = new ImportTasksEvent(resultTasks);
+        bus.post(tasksEvent);
     }
 }

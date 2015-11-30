@@ -33,6 +33,7 @@ import com.simbirsoft.timemeter.controller.ITaskActivityManager;
 import com.simbirsoft.timemeter.db.DatabaseHelper;
 import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.db.model.Task;
+import com.simbirsoft.timemeter.events.ImportTasksEvent;
 import com.simbirsoft.timemeter.events.ScheduledTaskUpdateTabContentEvent;
 import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
 import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
@@ -58,6 +59,7 @@ import com.simbirsoft.timemeter.ui.util.TaskFilterPredicate;
 import com.simbirsoft.timemeter.ui.helpcards.HelpCardPresenter;
 import com.simbirsoft.timemeter.ui.views.FilterView;
 import com.simbirsoft.timemeter.ui.views.TagView;
+import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
 import org.androidannotations.annotations.AfterViews;
@@ -588,6 +590,13 @@ public class TaskListFragment extends MainPageFragment implements JobLoader.JobL
         mPrefs.setIsDemoTasksDeleted(false);
         // force update for other tabs
         getBus().post(new ScheduledTaskUpdateTabContentEvent());
+    }
+
+    @Subscribe
+    public void onImportTasks(ImportTasksEvent event) {
+        for (TaskBundle taskBundle: event.tasks) {
+            addTaskToList(taskBundle);
+        }
     }
 }
 

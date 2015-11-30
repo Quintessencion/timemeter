@@ -2,6 +2,7 @@ package com.simbirsoft.timemeter.jobs;
 
 import com.be.android.library.worker.jobs.LoadJob;
 import com.be.android.library.worker.models.LoadJobResult;
+import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.db.model.Tag;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.persist.XmlTaskWrapper;
@@ -23,6 +24,8 @@ public class SaveBackupTasksJob extends LoadJob{
         SaveTaskBundleJob saveTaskBundleJob = Injection.sJobsComponent.saveTaskBundleJob();
         LoadTagListJob loadTagListJob = Injection.sJobsComponent.loadTagListJob();
 
+        List<TaskBundle> result = Lists.newArrayList();
+
         for (XmlTaskWrapper xmlTaskWrapper: backupTasks) {
             final List<Tag> tags = loadTagListJob.getTagListWereIds(xmlTaskWrapper.getTags());
 
@@ -31,10 +34,12 @@ public class SaveBackupTasksJob extends LoadJob{
             taskBundle.setTags(tags);
             taskBundle.setTaskTimeSpans(xmlTaskWrapper.getSpans());
 
+            result.add(taskBundle);
+
             saveTaskBundleJob.saveTaskBundle(taskBundle);
         }
 
-        return LoadJobResult.loadOk();
+        return new LoadJobResult<>(result);
     }
 
     public void setTasks(List<XmlTaskWrapper> backupTasks) {
