@@ -362,8 +362,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
     public void onFilterChanged(TaskActivitiesFilterView.FilterState filterState) {
         dismissSnackbar();
         JobManager.getInstance().cancelAll(JobSelector.forJobTags(LOADER_TAG));
-        String loaderTag = LOADER_TAG + "filter:" + filterState.hashCode();
-        requestLoad(loaderTag, this);
+        requestLoad(LOADER_TAG, this);
     }
 
     @Override
