@@ -279,6 +279,22 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     private void addItemImpl(Tag item) {
         mItems.add(item);
         mItemsOriginal.add(item);
+        notifyDataAfterSort();
+    }
+
+    public void addItems(List<Tag> items) {
+        synchronized (mItemsOriginal) {
+            addItemsImpl(items);
+        }
+    }
+
+    private void addItemsImpl(List<Tag> items) {
+        mItems.addAll(items);
+        mItemsOriginal.addAll(items);
+        notifyDataAfterSort();
+    }
+
+    private void notifyDataAfterSort() {
         Collections.sort(mItems, tagComparator);
         Collections.sort(mItemsOriginal, tagComparator);
         notifyDataSetChanged();

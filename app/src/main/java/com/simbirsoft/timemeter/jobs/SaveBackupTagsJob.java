@@ -41,7 +41,7 @@ public class SaveBackupTagsJob extends LoadJob{
 
             cupboard.put(actualTags);
             db.setTransactionSuccessful();
-            return LoadJobResult.loadOk();
+            return new LoadJobResult<>(actualTags);
         }
         finally {
             db.endTransaction();
