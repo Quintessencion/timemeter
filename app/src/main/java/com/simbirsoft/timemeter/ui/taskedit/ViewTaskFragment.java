@@ -14,6 +14,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
+import android.widget.TextView;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
@@ -50,6 +51,8 @@ import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.model.TaskRecentActivity;
+import com.simbirsoft.timemeter.ui.util.TaskActivitiesSumTime;
+import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.simbirsoft.timemeter.ui.views.ProgressLayout;
 import com.simbirsoft.timemeter.ui.views.TagFlowView;
 import com.simbirsoft.timemeter.ui.views.TagView;
@@ -88,6 +91,9 @@ public class ViewTaskFragment extends BaseFragment
     @ViewById(R.id.tagFlowView)
     protected TagFlowView tagFlowView;
 
+    @ViewById(R.id.sumActivitiesTime)
+    protected TextView sumActivitiesTime;
+
     @FragmentArg(EXTRA_TASK_BUNDLE)
     TaskBundle mExtraTaskBundle;
 
@@ -97,6 +103,9 @@ public class ViewTaskFragment extends BaseFragment
     private ITaskActivityManager taskActivityManager;
 
     private Menu menu;
+
+    @InstanceState
+    public long taskActivitiesSumTime = 0;
 
     private final TagView.TagViewClickListener mTagViewClickListener = (tagView) -> {
         LOG.debug("Tag <" + tagView.getTag().getName() + "> clicked!");
@@ -119,6 +128,8 @@ public class ViewTaskFragment extends BaseFragment
     @Inject
     Bus mBus;
 
+    private Bundle savedInstanceState;
+
     private TaskActivitiesAdapter mAdapter;
     private TaskTimeSpanActions mTaskTimeSpanActions;
 
@@ -134,6 +145,7 @@ public class ViewTaskFragment extends BaseFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.savedInstanceState = savedInstanceState;
         setHasOptionsMenu(true);
         Injection.sUiComponent.injectViewTaskFragment(this);
 
@@ -142,6 +154,8 @@ public class ViewTaskFragment extends BaseFragment
         if (savedInstanceState != null) {
             mSelectedSpans = Longs.asList(savedInstanceState.getLongArray(STATE_SELECTION));
         }
+
+        calculateTaskActivitiesSumTime();
 
         mTaskTimeSpanActions = new TaskTimeSpanActions(getActivity(), savedInstanceState);
         mBus.register(this);
@@ -167,7 +181,7 @@ public class ViewTaskFragment extends BaseFragment
 
         this.menu = menu;
 
-        setTaskActiveStatusToolbarUI();
+        updateUIAfterChangeTaskStatus();
     }
 
     @Override
@@ -305,7 +319,7 @@ public class ViewTaskFragment extends BaseFragment
             case R.id.status:
                 LOG.debug("task view status clicked");
                 doTaskActive();
-                setTaskActiveStatusToolbarUI();
+                updateUIAfterChangeTaskStatus();
                 return true;
         }
 
@@ -381,6 +395,7 @@ public class ViewTaskFragment extends BaseFragment
         mExtraTaskBundle = taskBundle.getData();
 
         configureFragment();
+        calculateTaskActivitiesSumTime();
     }
 
     @OnJobFailure(LoadTaskBundleJob.class)
@@ -448,6 +463,7 @@ public class ViewTaskFragment extends BaseFragment
         }
 
         mAdapter.updateCurrentActivityTime(taskId);
+        updateTaskActivitiesSumTime();
     }
 
     private void scrollToSelectedSpan() {
@@ -476,7 +492,7 @@ public class ViewTaskFragment extends BaseFragment
     @Subscribe
     public void onTaskActivityStopped(TaskActivityStoppedEvent event) {
         taskActivityManager.stopTask(event.task);
-        setTaskActiveStatusToolbarUI();
+        updateUIAfterChangeTaskStatus();
     }
 
     private void doTaskActive() {
@@ -490,7 +506,7 @@ public class ViewTaskFragment extends BaseFragment
         }
     }
 
-    private void setTaskActiveStatusToolbarUI() {
+    private void updateUIAfterChangeTaskStatus() {
         if (menu == null) {
             return;
         }
@@ -505,9 +521,11 @@ public class ViewTaskFragment extends BaseFragment
 
         if (taskActivityManager.isTaskActive(task)) {
             setStopToolbarUI(item);
+            setTaskActivitiesSumTime(TaskActivitiesSumTime.getSumHoursMinuteSecond(taskActivitiesSumTime));
         }
         else {
             setStartToolbarUI(item);
+            setTaskActivitiesSumTime(TaskActivitiesSumTime.getSumHoursMinute(taskActivitiesSumTime));
         }
     }
 
@@ -519,5 +537,24 @@ public class ViewTaskFragment extends BaseFragment
     private void setStopToolbarUI(MenuItem item) {
         item.setIcon(R.drawable.ic_stop_task);
         item.setTitle(R.string.action_stop_task);
+    }
+
+    private void calculateTaskActivitiesSumTime() {
+        if (savedInstanceState != null || mExtraTaskBundle == null || mExtraTaskBundle.getTaskTimeSpans() == null) {
+            return;
+        }
+
+        final List<TaskTimeSpan> spans = mExtraTaskBundle.getTaskTimeSpans();
+        taskActivitiesSumTime = TaskActivitiesSumTime.getSumTimeImMillis(spans);
+    }
+
+    private void setTaskActivitiesSumTime(String sum) {
+        final String text = getResources().getString(R.string.task_activities_sum_time) + sum;
+        sumActivitiesTime.setText(text);
+    }
+
+    private void updateTaskActivitiesSumTime() {
+        taskActivitiesSumTime += TimeUtils.MILLIS_IN_SECOND;
+        setTaskActivitiesSumTime(TaskActivitiesSumTime.getSumHoursMinuteSecond(taskActivitiesSumTime));
     }
 }

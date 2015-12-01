@@ -44,6 +44,7 @@
     <string name="backup_import_success">Статистика успешно импортирована</string>
     <string name="backup_import_error_tags">Не удалось сохранить список меток</string>
     <string name="backup_import_error_tasks">Не удалось сохранить список задач</string>
+    <string name="task_activities_sum_time">Общее время: </string>
 
     <!-- Actions -->
     <string name="action_search">Поиск</string>
