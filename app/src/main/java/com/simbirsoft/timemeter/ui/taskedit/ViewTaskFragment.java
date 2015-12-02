@@ -567,6 +567,8 @@ public class ViewTaskFragment extends BaseFragment
         }
 
         final long spanId = data.getLongExtra(TaskTimeSpan.class.getName(), -1);
-
+        final int[] position = mAdapter.getPosition(spanId);
+        final TaskActivitiesLayoutManager layoutManager = (TaskActivitiesLayoutManager) mRecyclerView.getLayoutManager();
+        layoutManager.scrollToSpan(position[0], position[1]);
     }
 }

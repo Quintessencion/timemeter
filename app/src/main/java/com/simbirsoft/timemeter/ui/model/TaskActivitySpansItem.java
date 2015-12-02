@@ -89,6 +89,21 @@ public class TaskActivitySpansItem extends TaskActivityEmptyItem {
         return (mList != null) ? mList.indexOf(span) : -1;
     }
 
+    public int indexOfSpan(long spanId) {
+        if (mList == null) {
+            return -1;
+        }
+
+        for (int i = 0; i < mList.size(); i++) {
+            final TaskTimeSpan span = mList.get(i);
+            if (span.getId().equals(spanId)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     private String getHourLabel(long millis) {
         mCalendar.setTimeInMillis(millis);
         return String.format("%02d:%02d", mCalendar.get(Calendar.HOUR_OF_DAY), mCalendar.get(Calendar.MINUTE));

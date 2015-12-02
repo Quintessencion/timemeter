@@ -386,4 +386,19 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
             onSelectActiveListener.onSelectActive(span.getId());
         }
     }
+
+    public int[] getPosition(long spanId) {
+        final int[] position = new int[2];
+        for(int i = mItems.size() - 1; i >=0; i--) {
+            TaskActivityItem item = mItems.get(i);
+            if (item.getItemType() != TaskActivityItem.SPANS_ITEM_TYPE) continue;
+            int spanIndex = ((TaskActivitySpansItem)item).indexOfSpan(spanId);
+            if (spanIndex >=0) {
+                position[0] = i;
+                position[1] = spanIndex;
+                return position;
+            }
+        }
+        return position;
+    }
 }
