@@ -83,7 +83,7 @@ public class ViewTaskFragment extends BaseFragment
 
     private static final Logger LOG = LogFactory.getLogger(ViewTaskFragment.class);
 
-    private static final int REQUEST_CODE_VIEW_ACTIVITIES = 101;
+    public static final int REQUEST_CODE_VIEW_ACTIVITIES = 101;
     private static final int REQUEST_CODE_EDIT_ACTIVITY = 10005;
 
     private static final String STATE_SELECTION = "asdasd";
@@ -353,6 +353,9 @@ public class ViewTaskFragment extends BaseFragment
                 return;
 
             case REQUEST_CODE_VIEW_ACTIVITIES:
+                hasBeenSelectedActive(data);
+                break;
+
             case REQUEST_CODE_EDIT_ACTIVITY:
                 requestLoad(LOADER_TAG, this);
                 break;
@@ -556,5 +559,14 @@ public class ViewTaskFragment extends BaseFragment
     private void updateTaskActivitiesSumTime() {
         taskActivitiesSumTime += TimeUtils.MILLIS_IN_SECOND;
         setTaskActivitiesSumTime(TaskActivitiesSumTime.getSumHoursMinuteSecond(taskActivitiesSumTime));
+    }
+
+    private void hasBeenSelectedActive(Intent data) {
+        if (data == null) {
+            return;
+        }
+
+        final long spanId = data.getLongExtra(TaskTimeSpan.class.getName(), -1);
+
     }
 }

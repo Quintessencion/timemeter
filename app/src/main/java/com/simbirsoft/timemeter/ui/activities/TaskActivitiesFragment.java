@@ -57,6 +57,7 @@ import com.simbirsoft.timemeter.ui.model.TaskActivityItem;
 import com.simbirsoft.timemeter.ui.stats.StatisticsViewBinder;
 import com.simbirsoft.timemeter.ui.stats.StatsDetailsFragment;
 import com.simbirsoft.timemeter.ui.stats.StatsDetailsFragment_;
+import com.simbirsoft.timemeter.ui.taskedit.ViewTaskFragment;
 import com.simbirsoft.timemeter.ui.util.DeviceUtils;
 import com.simbirsoft.timemeter.ui.views.DatePeriodView;
 import com.simbirsoft.timemeter.ui.views.ProgressLayout;
@@ -83,7 +84,7 @@ import javax.inject.Named;
 public class TaskActivitiesFragment extends BaseFragment implements
         JobLoader.JobLoaderCallbacks,
         TaskActivitiesFilterView.OnTaskActivitiesFilterListener,
-        DatePickerDialog.OnDateSetListener {
+        DatePickerDialog.OnDateSetListener, TaskActivitiesAdapter.OnSelectActiveListener {
     public static final String EXTRA_TASK_ID = "extra_task_id";
     public static final String EXTRA_TITLE = "extra_title";
 
@@ -207,6 +208,7 @@ public class TaskActivitiesFragment extends BaseFragment implements
         mRecyclerView.setLayoutManager(layoutManager);
 
         mAdapter = new TaskActivitiesAdapter(getActivity());
+        mAdapter.setOnSelectActiveListener(this);
         mRecyclerView.setAdapter(mAdapter);
 
         mFilterView.setVisibility(View.INVISIBLE);
@@ -580,5 +582,13 @@ public class TaskActivitiesFragment extends BaseFragment implements
     private boolean onFloatingActionButtonLongClicked(View v) {
         showToast(R.string.hint_new_time_span);
         return true;
+    }
+
+    @Override
+    public void onSelectActive(long id) {
+        final Intent intent = new Intent();
+        intent.putExtra(TaskTimeSpan.class.getName(), id);
+        getActivity().setResult(ViewTaskFragment.REQUEST_CODE_VIEW_ACTIVITIES, intent);
+        getActivity().finish();
     }
 }
