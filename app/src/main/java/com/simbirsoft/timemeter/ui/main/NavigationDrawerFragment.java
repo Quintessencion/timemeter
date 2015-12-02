@@ -31,8 +31,8 @@ import javax.inject.Inject;
 
 @EFragment(R.layout.fragment_navigation_drawer)
 public class NavigationDrawerFragment extends Fragment {
-    public static final int MENU_ITEMS_COUNT = 3;
-    private static final int SETTINGS_ITEM_ID = 2;
+    public static final int MENU_ITEMS_COUNT = 4;
+    private static final int SETTINGS_ITEM_ID = 3;
 
     private NavigationDrawerCallbacks mCallbacks;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -101,9 +101,10 @@ public class NavigationDrawerFragment extends Fragment {
 
         NavigationDrawerListAdapter.NavigationItem tasks = getNavigationItem(R.drawable.ic_clock_32dp_selector, R.string.title_tasks);
         NavigationDrawerListAdapter.NavigationItem tags = getNavigationItem(R.drawable.ic_tag_32dp_selector, R.string.title_tags);
+        NavigationDrawerListAdapter.NavigationItem aboutUs = getNavigationItem(R.drawable.ic_about_us_selector, R.string.title_about_us);
         NavigationDrawerListAdapter.NavigationItem settings = getNavigationItem(R.drawable.ic_settings_selector, R.string.title_settings);
 
-        mAdapter.setItems(Arrays.asList(tasks, tags));
+        mAdapter.setItems(Arrays.asList(tasks, tags, aboutUs));
 
         mDrawerListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         mDrawerListView.setOnItemClickListener(
