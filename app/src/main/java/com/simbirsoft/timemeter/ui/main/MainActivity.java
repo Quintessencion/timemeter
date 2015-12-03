@@ -17,6 +17,7 @@ import android.widget.RelativeLayout;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.aboutus.AboutUsFragment_;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
 import com.simbirsoft.timemeter.ui.calendar.ActivityCalendarFragment_;
 import com.simbirsoft.timemeter.ui.settings.SettingsActivity;
@@ -150,7 +151,7 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
                 break;
 
             case SECTION_ID_ABOUT_US:
-                fragmentType = null;
+                fragmentType = AboutUsFragment_.class;
                 break;
 
             case SECTION_ID_SETTINGS:
