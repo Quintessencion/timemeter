@@ -45,7 +45,6 @@
     <string name="backup_import_error_tags">Не удалось сохранить список меток</string>
     <string name="backup_import_error_tasks">Не удалось сохранить список задач</string>
     <string name="task_activities_sum_time">Общее время: </string>
-    <string name="title_about_us">О нас</string>
 
     <!-- Actions -->
     <string name="action_search">Поиск</string>
@@ -218,4 +217,12 @@
     <string name="help_card_btn_back">Назад</string>
     <string name="help_card_btn_hide">Скрыть</string>
     <string name="help_card_btn_delete">Удалить</string>
+
+    <string name="title_about_us">О нас</string>
+    <string name="company_name">ООО СимбирСофт</string>
+    <string name="company_url">www.simbirsoft.com</string>
+    <string name="all_question">По общим вопросам: \ninfo@simbirsoft.com</string>
+    <string name="work_question">По вопросам сотрудничества: \nrequest@simbirsoft.com</string>
+    <string name="company_telephon">Телефон для справок: \n+7 (8422) 44 66 91</string>
+
 </resources>
