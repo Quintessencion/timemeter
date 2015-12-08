@@ -225,4 +225,8 @@
     <string name="work_question">По вопросам сотрудничества: \nrequest@simbirsoft.com</string>
     <string name="company_telephon">Телефон для справок: \n+7 (8422) 44 66 91</string>
 
+    <string name="permission_dialog_title">Предупреждение</string>
+    <string name="permission_dialog_ok_button">Повторить</string>
+    <string name="permission_dialog_cancel_button">Отмена</string>
+
 </resources>
