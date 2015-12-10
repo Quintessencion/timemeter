@@ -228,5 +228,8 @@
     <string name="permission_dialog_title">Предупреждение</string>
     <string name="permission_dialog_ok_button">Повторить</string>
     <string name="permission_dialog_cancel_button">Отмена</string>
+    <string name="permission_dialog_message_error_export">В этом случае, сохранение статистики на карту памяти будет невозможно. Повторить?</string>
+    <string name="permission_dialog_message_error_import">В этом случае, не удастся импортировать статистику. Повторить?</string>
+    <string name="permission_dialog_cancel_repeat">Отмена действий</string>
 
 </resources>
