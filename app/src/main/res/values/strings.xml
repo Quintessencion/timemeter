@@ -33,6 +33,18 @@
     <string name="caption_progress">Загрузка&#8230;</string>
     <string name="label_color">Цвет</string>
     <string name="search_by_name">Поиск по названию&#8230;</string>
+    <string name="backup_export_error_task_load">Ошибка при загрузке задач</string>
+    <string name="backup_export_error_tag_load">Ошибка при загрузке меток</string>
+    <string name="backup_export_error_write">Не удалось сохранить статистику</string>
+    <string name="backup_export_success">Сохранение статистики завершено</string>
+    <string name="backup_dialog_message">Пожалуйста, подождите</string>
+    <string name="backup_dialog_export_title">Экспорт статистики</string>
+    <string name="backup_dialog_import_title">Импорт статистики</string>
+    <string name="backup_import_error">Не удалось импортировать данные</string>
+    <string name="backup_import_success">Статистика успешно импортирована</string>
+    <string name="backup_import_error_tags">Не удалось сохранить список меток</string>
+    <string name="backup_import_error_tasks">Не удалось сохранить список задач</string>
+    <string name="task_activities_sum_time">Общее время: </string>
 
     <!-- Actions -->
     <string name="action_search">Поиск</string>
@@ -52,6 +64,7 @@
     <string name="ime_action_filter">Показать</string>
     <string name="ime_action_next">Далее</string>
     <string name="action_edit">Редактировать</string>
+    <string name="action_start_task">Начать задачу</string>
     <string name="action_create_tag">Создать метку</string>
     <string name="action_view_activities">Показать активности</string>
     <string name="action_show_task_activities">Показать в виде графика</string>
@@ -204,4 +217,19 @@
     <string name="help_card_btn_back">Назад</string>
     <string name="help_card_btn_hide">Скрыть</string>
     <string name="help_card_btn_delete">Удалить</string>
+
+    <string name="title_about_us">Разработчики</string>
+    <string name="company_name">ООО СимбирСофт</string>
+    <string name="company_url">www.simbirsoft.com</string>
+    <string name="all_question">По общим вопросам: \ninfo@simbirsoft.com</string>
+    <string name="work_question">По вопросам сотрудничества: \nrequest@simbirsoft.com</string>
+    <string name="company_telephon">Телефон для справок: \n+7 (8422) 44 66 91</string>
+
+    <string name="permission_dialog_title">Предупреждение</string>
+    <string name="permission_dialog_ok_button">Повторить</string>
+    <string name="permission_dialog_cancel_button">Отмена</string>
+    <string name="permission_dialog_message_error_export">В этом случае, сохранение статистики на карту памяти будет невозможно. Повторить?</string>
+    <string name="permission_dialog_message_error_import">В этом случае, не удастся импортировать статистику. Повторить?</string>
+    <string name="permission_dialog_cancel_repeat">Отмена действий</string>
+
 </resources>

@@ -17,6 +17,7 @@ import android.widget.RelativeLayout;
 import com.google.common.collect.Lists;
 import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.log.LogFactory;
+import com.simbirsoft.timemeter.ui.aboutus.AboutUsFragment_;
 import com.simbirsoft.timemeter.ui.base.BaseActivity;
 import com.simbirsoft.timemeter.ui.calendar.ActivityCalendarFragment_;
 import com.simbirsoft.timemeter.ui.settings.SettingsActivity;
@@ -50,7 +51,8 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
     private static final String TAG_CONTENT_FRAGMENT = "app_content_fragment_tag";
     private static final int SECTION_ID_TASKS = 0;
     private static final int SECTION_ID_TAGS = 1;
-    private static final int SECTION_ID_SETTINGS = 2;
+    private static final int SECTION_ID_ABOUT_US = 2;
+    private static final int SECTION_ID_SETTINGS = 3;
 
     private static final String KEY_FRAGMENT_STATE_KEY = "MainActivity_content_fragment_state_key";
     private static final String KEY_FRAGMENT_STATE = "MainActivity_content_fragment_state";
@@ -148,6 +150,10 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
                 fragmentType = TagListFragment_.class;
                 break;
 
+            case SECTION_ID_ABOUT_US:
+                fragmentType = AboutUsFragment_.class;
+                break;
+
             case SECTION_ID_SETTINGS:
                 fragmentType = SettingsFragment_.class;
                 break;
@@ -231,6 +237,9 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
                 break;
             case SECTION_ID_TAGS:
                 mTitle = getString(R.string.title_tags);
+                break;
+            case SECTION_ID_ABOUT_US:
+                mTitle = getString(R.string.title_about_us);
                 break;
             case SECTION_ID_SETTINGS:
                 mTitle = getString(R.string.title_settings);
@@ -325,6 +334,9 @@ public class MainActivity extends BaseActivity implements NavigationDrawerFragme
                 break;
 
             case SECTION_ID_TAGS:
+                break;
+
+            case SECTION_ID_ABOUT_US:
                 break;
 
             case SECTION_ID_SETTINGS:

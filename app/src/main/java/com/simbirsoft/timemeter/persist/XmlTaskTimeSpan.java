@@ -1,5 +1,7 @@
 package com.simbirsoft.timemeter.persist;
 
+import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
+
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
@@ -20,6 +22,15 @@ public class XmlTaskTimeSpan {
 
     @Attribute(required = true)
     private Date endDate;
+
+    public XmlTaskTimeSpan() {}
+
+    public XmlTaskTimeSpan(TaskTimeSpan taskTimeSpan) {
+        id = taskTimeSpan.getId();
+        description = taskTimeSpan.getDescription();
+        startDate = new Date(taskTimeSpan.getStartTimeMillis());
+        endDate = new Date(taskTimeSpan.getEndTimeMillis());
+    }
 
     public long getId() {
         return id;

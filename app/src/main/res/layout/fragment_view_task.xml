@@ -7,6 +7,15 @@
     android:paddingTop="12dp">
 
     <TextView
+        android:id="@+id/sumActivitiesTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="@dimen/task_view_sum_activities_margin_right"
+        android:layout_marginTop="@dimen/task_view_sum_activities_margin_top"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_alignParentRight="true"/>
+
+    <TextView
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,7 +23,8 @@
         android:layout_marginRight="@dimen/task_view_margin"
         android:layout_marginTop="4dp"
         android:text="@string/hint_task_tags"
-        android:textAppearance="?android:attr/textAppearanceMedium"/>
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_below="@id/sumActivitiesTime"/>
 
     <View
         android:id="@+id/separatorLine"

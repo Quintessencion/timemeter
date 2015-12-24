@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -464,11 +465,10 @@ public class FilterView extends FrameLayout implements
         mTagsView.setImeOptions(EditorInfo.IME_ACTION_DONE);
         mTagsView.setTokenClickStyle(TokenCompleteTextView.TokenClickStyle.Delete);
         mTagsView.setTokenListener(this);
-        mTagsView.setOnClickListener((v) -> {
-            // re-filter tag list adapter manually as it
-            // isn't done automatically from this point
+        mTagsView.setOnTouchListener((v, event) -> {
             mAdapter.getFilter().filter(mTagsView.getCurrentCompletionText());
             mTagsView.showDropDown();
+            return false;
         });
         mJobEventDispatcher.submitJob(Injection.sJobsComponent.loadTagListJob());
     }

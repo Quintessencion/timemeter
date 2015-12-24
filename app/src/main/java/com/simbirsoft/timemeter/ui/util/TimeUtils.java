@@ -5,7 +5,7 @@ import java.util.Date;
 
 public final class TimeUtils {
     public static final long MILLIS_IN_HOUR = 3600000;
-    public static final int MINUTES_IN_HOUR = 60;
+    public static final long MILLIS_IN_SECOND = 1000;
 
     public static long getDayStartMillis(Calendar calendar) {
         calendar.set(Calendar.HOUR_OF_DAY, 0);

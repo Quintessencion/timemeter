@@ -54,7 +54,12 @@ public class LoadTaskTimespansJob extends LoadJob {
 
     @Override
     protected LoadJobResult<?> performLoad() {
-        List<TaskTimeSpan> result = cupboard().withDatabase(mDatabaseHelper.getReadableDatabase())
+        List<TaskTimeSpan> result = loadSpans();
+        return new LoadJobResult<>(JobResultStatus.OK, result);
+    }
+
+    public List<TaskTimeSpan> loadSpans() {
+        return cupboard().withDatabase(mDatabaseHelper.getReadableDatabase())
                 .query(TaskTimeSpan.class)
                 .withSelection(Phrase.from("{table_tts}.{table_tts_column_task_id} = ? {filter}")
                         .put("table_tts", TaskTimeSpan.TABLE_NAME)
@@ -63,8 +68,6 @@ public class LoadTaskTimespansJob extends LoadJob {
                         .format()
                         .toString(), String.valueOf(mTaskId))
                 .list();
-
-        return new LoadJobResult<>(JobResultStatus.OK, result);
     }
 
     private String getFilterConditions() {

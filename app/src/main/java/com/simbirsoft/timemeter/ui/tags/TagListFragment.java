@@ -20,6 +20,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
@@ -34,6 +35,7 @@ import com.simbirsoft.timemeter.R;
 import com.simbirsoft.timemeter.controller.HelpCardController;
 import com.simbirsoft.timemeter.db.Preferences;
 import com.simbirsoft.timemeter.db.model.Tag;
+import com.simbirsoft.timemeter.events.ImportTagsEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.BackupTagJob;
 import com.simbirsoft.timemeter.jobs.LoadTagListJob;
@@ -52,6 +54,8 @@ import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerDialog;
 import com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerSwatch;
 import com.simbirsoft.timemeter.ui.helpcards.HelpCard;
 import com.simbirsoft.timemeter.ui.helpcards.HelpCardSource;
+import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import org.androidannotations.annotations.AfterViews;
@@ -100,6 +104,9 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
 
     @Inject
     Preferences mPrefs;
+
+    @Inject
+    Bus bus;
 
     private TagListAdapter mTagListAdapter;
     private HelpCardAdapter mHelpCardAdapter;
@@ -189,6 +196,8 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
         super.onCreate(savedInstanceState);
         Injection.sUiComponent.injectTagListFragment(this);
 
+        bus.register(this);
+
         setHasOptionsMenu(true);
     }
 
@@ -206,6 +215,8 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
         if (sb != null && sb.isShowing() && SNACKBAR_TAG.equals(sb.getTag())) {
             sb.dismiss();
         }
+
+        bus.unregister(this);
 
         super.onDestroy();
     }
@@ -508,5 +519,10 @@ public class TagListFragment extends MainFragment implements JobLoader.JobLoader
     @Override
     public int getHelpCardId() {
         return HelpCardController.HELP_CARD_TAGS;
+    }
+
+    @Subscribe
+    public void onImportTags(ImportTagsEvent event) {
+        mTagListAdapter.addItems(event.tags);
     }
 }

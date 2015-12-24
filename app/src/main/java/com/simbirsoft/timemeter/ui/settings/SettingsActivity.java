@@ -144,3 +144,4 @@ public class SettingsActivity extends BaseActivity implements FragmentContainerC
         mToolbar.setVisibility(View.VISIBLE);
     }
 }
+

@@ -31,6 +31,8 @@
     <dimen name="calendar_popup_middle_item_padding">5dp</dimen>
     <dimen name="task_view_margin">12dp</dimen>
     <dimen name="task_view_title_left_margin">16dp</dimen>
+    <dimen name="task_view_sum_activities_margin_right">10dp</dimen>
+    <dimen name="task_view_sum_activities_margin_top">4dp</dimen>
     <dimen name="empty_indicator_text_size">16sp</dimen>
     <dimen name="filter_results_view_text_padding">16dp</dimen>
     <dimen name="filter_results_view_height">40dp</dimen>

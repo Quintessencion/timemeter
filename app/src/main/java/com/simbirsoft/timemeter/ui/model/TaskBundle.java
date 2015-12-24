@@ -34,12 +34,17 @@ public class TaskBundle implements Parcelable {
     private int mSavedState;
     private byte[] mOriginalState;
 
-    public static TaskBundle create(Task task, List<Tag> tags) {
+    public static TaskBundle create(Task task, List<Tag> tags, List<TaskTimeSpan> spans) {
         TaskBundle bundle = new TaskBundle();
         bundle.setTags(tags);
         bundle.setTask(task);
+        bundle.setTaskTimeSpans(spans);
 
         return bundle;
+    }
+
+    public static TaskBundle create(Task task, List<Tag> tags) {
+        return create(task, tags, null);
     }
 
     public static TaskBundle create() {

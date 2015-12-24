@@ -1,114 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- merged with FrameLayout (FilterView.java) -->
-    <LinearLayout
+
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/primaryDark"
-        android:orientation="vertical"
-        android:paddingLeft="16dp"
-        android:elevation="6dp">
+        android:layout_height="wrap_content">
 
         <RelativeLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content">
-            <TextView
-                style="?android:attr/textAppearanceSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:text="@string/title_view_params"
-                android:textColor="@android:color/white"/>
 
-            <FrameLayout
-                android:id="@+id/resetFilterView"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?android:attr/selectableItemBackground"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:paddingRight="16dp"
+                android:background="@color/primaryDark"
+                android:orientation="vertical"
                 android:paddingLeft="16dp"
-                android:paddingTop="12dp"
-                android:paddingBottom="12dp">
-                <TextView
-                    style="?android:attr/textAppearanceSmall"
-                    android:layout_width="wrap_content"
+                android:elevation="6dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        style="?android:attr/textAppearanceSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:text="@string/title_view_params"
+                        android:textColor="@android:color/white"/>
+
+                    <FrameLayout
+                        android:id="@+id/resetFilterView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="?android:attr/selectableItemBackground"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:paddingRight="16dp"
+                        android:paddingLeft="16dp"
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+                        <TextView
+                            style="?android:attr/textAppearanceSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/action_reset_filter"
+                            android:textColor="@android:color/white"/>
+                    </FrameLayout>
+
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:id="@+id/datePanel"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/action_reset_filter"
-                    android:textColor="@android:color/white"/>
-            </FrameLayout>
+                    android:paddingRight="16dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    <TextView
+                        style="?android:attr/textAppearanceSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/title_view_date"
+                        android:textColor="@android:color/white"
+                        android:layout_marginRight="18dp" />
+                    <FrameLayout
+                        android:id="@+id/chooseDateView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        android:paddingRight="8dp"
+                        android:background="?android:attr/selectableItemBackground">
+                        <TextView
+                            style="?android:attr/textAppearanceSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/hint_choose_date"
+                            android:textColor="@color/secondary_text_default_material_dark"/>
+                    </FrameLayout>
+                </LinearLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingRight="16dp"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="10dp"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/titleTags"
+                        style="?android:attr/textAppearanceSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="6dp"
+                        android:text="@string/title_view_tags"
+                        android:textColor="@android:color/white"/>
+
+                    <com.simbirsoft.timemeter.ui.views.TagFilterTextView
+                        android:id="@+id/tagsView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_toRightOf="@+id/titleTags"
+                        android:layout_alignBaseline="@+id/titleTags"
+                        android:textColor="@android:color/white" />
+                </RelativeLayout>
+            </LinearLayout>
+
+            <View
+                android:id="@+id/shadowUp"
+                android:layout_width="match_parent"
+                android:layout_height="5dp"
+                android:background="@drawable/shadow_y"/>
+
+            <View
+                android:id="@+id/shadowDown"
+                android:layout_width="match_parent"
+                android:layout_height="5dp"
+                android:layout_gravity="bottom"
+                android:background="@drawable/shadow_y_inverse"/>
 
         </RelativeLayout>
 
-        <LinearLayout
-            android:id="@+id/datePanel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingRight="16dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-            <TextView
-                style="?android:attr/textAppearanceSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/title_view_date"
-                android:textColor="@android:color/white"
-                android:layout_marginRight="18dp" />
-            <FrameLayout
-                android:id="@+id/chooseDateView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"
-                android:paddingRight="8dp"
-                android:background="?android:attr/selectableItemBackground">
-                <TextView
-                    style="?android:attr/textAppearanceSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/hint_choose_date"
-                    android:textColor="@color/secondary_text_default_material_dark"/>
-            </FrameLayout>
-        </LinearLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingRight="16dp"
-            android:orientation="horizontal"
-            android:layout_marginTop="10dp"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/titleTags"
-                style="?android:attr/textAppearanceSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="6dp"
-                android:text="@string/title_view_tags"
-                android:textColor="@android:color/white"/>
-
-            <com.simbirsoft.timemeter.ui.views.TagFilterTextView
-                android:id="@+id/tagsView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_toRightOf="@+id/titleTags"
-                android:layout_alignBaseline="@+id/titleTags"
-                android:textColor="@android:color/white" />
-        </RelativeLayout>
-    </LinearLayout>
-
-    <View
-        android:id="@+id/shadowUp"
-        android:layout_width="match_parent"
-        android:layout_height="5dp"
-        android:background="@drawable/shadow_y"/>
-
-    <View
-        android:id="@+id/shadowDown"
-        android:layout_width="match_parent"
-        android:layout_height="5dp"
-        android:layout_gravity="bottom"
-        android:background="@drawable/shadow_y_inverse"/>
+    </ScrollView>
 </merge>

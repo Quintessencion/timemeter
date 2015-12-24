@@ -14,6 +14,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
+import android.widget.TextView;
 
 import com.be.android.library.worker.annotations.OnJobFailure;
 import com.be.android.library.worker.annotations.OnJobSuccess;
@@ -29,7 +30,10 @@ import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.EventListener;
 import com.simbirsoft.timemeter.R;
+import com.simbirsoft.timemeter.controller.ITaskActivityManager;
+import com.simbirsoft.timemeter.db.model.Task;
 import com.simbirsoft.timemeter.db.model.TaskTimeSpan;
+import com.simbirsoft.timemeter.events.TaskActivityStoppedEvent;
 import com.simbirsoft.timemeter.events.TaskActivityUpdateEvent;
 import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.jobs.LoadTaskBundleJob;
@@ -47,6 +51,8 @@ import com.simbirsoft.timemeter.ui.base.FragmentContainerActivity;
 import com.simbirsoft.timemeter.ui.main.MainPageFragment;
 import com.simbirsoft.timemeter.ui.model.TaskBundle;
 import com.simbirsoft.timemeter.ui.model.TaskRecentActivity;
+import com.simbirsoft.timemeter.ui.util.TaskActivitiesSumTime;
+import com.simbirsoft.timemeter.ui.util.TimeUtils;
 import com.simbirsoft.timemeter.ui.views.ProgressLayout;
 import com.simbirsoft.timemeter.ui.views.TagFlowView;
 import com.simbirsoft.timemeter.ui.views.TagView;
@@ -77,7 +83,7 @@ public class ViewTaskFragment extends BaseFragment
 
     private static final Logger LOG = LogFactory.getLogger(ViewTaskFragment.class);
 
-    private static final int REQUEST_CODE_VIEW_ACTIVITIES = 101;
+    public static final int REQUEST_CODE_VIEW_ACTIVITIES = 101;
     private static final int REQUEST_CODE_EDIT_ACTIVITY = 10005;
 
     private static final String STATE_SELECTION = "asdasd";
@@ -85,11 +91,21 @@ public class ViewTaskFragment extends BaseFragment
     @ViewById(R.id.tagFlowView)
     protected TagFlowView tagFlowView;
 
+    @ViewById(R.id.sumActivitiesTime)
+    protected TextView sumActivitiesTime;
+
     @FragmentArg(EXTRA_TASK_BUNDLE)
     TaskBundle mExtraTaskBundle;
 
     @FragmentArg(EXTRA_TASK_ID)
     long mExtraTaskId = -1;
+
+    private ITaskActivityManager taskActivityManager;
+
+    private Menu menu;
+
+    @InstanceState
+    public long taskActivitiesSumTime = 0;
 
     private final TagView.TagViewClickListener mTagViewClickListener = (tagView) -> {
         LOG.debug("Tag <" + tagView.getTag().getName() + "> clicked!");
@@ -112,6 +128,8 @@ public class ViewTaskFragment extends BaseFragment
     @Inject
     Bus mBus;
 
+    private Bundle savedInstanceState;
+
     private TaskActivitiesAdapter mAdapter;
     private TaskTimeSpanActions mTaskTimeSpanActions;
 
@@ -127,12 +145,17 @@ public class ViewTaskFragment extends BaseFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.savedInstanceState = savedInstanceState;
         setHasOptionsMenu(true);
         Injection.sUiComponent.injectViewTaskFragment(this);
+
+        taskActivityManager = Injection.sTaskManager.taskActivityManager();
 
         if (savedInstanceState != null) {
             mSelectedSpans = Longs.asList(savedInstanceState.getLongArray(STATE_SELECTION));
         }
+
+        calculateTaskActivitiesSumTime();
 
         mTaskTimeSpanActions = new TaskTimeSpanActions(getActivity(), savedInstanceState);
         mBus.register(this);
@@ -155,6 +178,10 @@ public class ViewTaskFragment extends BaseFragment
         super.onCreateOptionsMenu(menu, inflater);
 
         inflater.inflate(R.menu.fragment_view_task, menu);
+
+        this.menu = menu;
+
+        updateUIAfterChangeTaskStatus();
     }
 
     @Override
@@ -167,6 +194,8 @@ public class ViewTaskFragment extends BaseFragment
             mListPositionOffset = (mListPosition != RecyclerView.NO_POSITION)
                                     ? layoutManager.findItemOffset(mListPosition) : 0;
         }
+
+        taskActivityManager.saveTaskActivity();
     }
 
     @Override
@@ -286,6 +315,12 @@ public class ViewTaskFragment extends BaseFragment
                 LOG.debug("task view home clicked");
                 getActivity().finish();
                 return true;
+
+            case R.id.status:
+                LOG.debug("task view status clicked");
+                doTaskActive();
+                updateUIAfterChangeTaskStatus();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -318,6 +353,9 @@ public class ViewTaskFragment extends BaseFragment
                 return;
 
             case REQUEST_CODE_VIEW_ACTIVITIES:
+                hasBeenSelectedActive(data);
+                break;
+
             case REQUEST_CODE_EDIT_ACTIVITY:
                 requestLoad(LOADER_TAG, this);
                 break;
@@ -360,6 +398,7 @@ public class ViewTaskFragment extends BaseFragment
         mExtraTaskBundle = taskBundle.getData();
 
         configureFragment();
+        calculateTaskActivitiesSumTime();
     }
 
     @OnJobFailure(LoadTaskBundleJob.class)
@@ -427,6 +466,7 @@ public class ViewTaskFragment extends BaseFragment
         }
 
         mAdapter.updateCurrentActivityTime(taskId);
+        updateTaskActivitiesSumTime();
     }
 
     private void scrollToSelectedSpan() {
@@ -450,5 +490,85 @@ public class ViewTaskFragment extends BaseFragment
         Intent launchIntent = DialogContainerActivity.prepareDialogLaunchIntent(
                 getActivity(), EditTaskActivityDialogFragment.class.getName(), args);
         startActivityForResult(launchIntent, REQUEST_CODE_EDIT_ACTIVITY);
+    }
+
+    @Subscribe
+    public void onTaskActivityStopped(TaskActivityStoppedEvent event) {
+        taskActivityManager.stopTask(event.task);
+        updateUIAfterChangeTaskStatus();
+    }
+
+    private void doTaskActive() {
+        final Task task = mExtraTaskBundle.getTask();
+
+        if (taskActivityManager.isTaskActive(task)) {
+            taskActivityManager.stopTask(task);
+        }
+        else {
+            taskActivityManager.startTask(task);
+        }
+    }
+
+    private void updateUIAfterChangeTaskStatus() {
+        if (menu == null) {
+            return;
+        }
+
+        final MenuItem item = menu.findItem(R.id.status);
+
+        if (item == null || mExtraTaskBundle == null || mExtraTaskBundle.getTask() == null) {
+            return;
+        }
+
+        final Task task = mExtraTaskBundle.getTask();
+
+        if (taskActivityManager.isTaskActive(task)) {
+            setStopToolbarUI(item);
+            setTaskActivitiesSumTime(TaskActivitiesSumTime.getSumHoursMinuteSecond(taskActivitiesSumTime));
+        }
+        else {
+            setStartToolbarUI(item);
+            setTaskActivitiesSumTime(TaskActivitiesSumTime.getSumHoursMinute(taskActivitiesSumTime));
+        }
+    }
+
+    private void setStartToolbarUI(MenuItem item) {
+        item.setIcon(R.drawable.ic_start_task);
+        item.setTitle(R.string.action_start_task);
+    }
+
+    private void setStopToolbarUI(MenuItem item) {
+        item.setIcon(R.drawable.ic_stop_task);
+        item.setTitle(R.string.action_stop_task);
+    }
+
+    private void calculateTaskActivitiesSumTime() {
+        if (savedInstanceState != null || mExtraTaskBundle == null || mExtraTaskBundle.getTaskTimeSpans() == null) {
+            return;
+        }
+
+        final List<TaskTimeSpan> spans = mExtraTaskBundle.getTaskTimeSpans();
+        taskActivitiesSumTime = TaskActivitiesSumTime.getSumTimeImMillis(spans);
+    }
+
+    private void setTaskActivitiesSumTime(String sum) {
+        final String text = getResources().getString(R.string.task_activities_sum_time) + sum;
+        sumActivitiesTime.setText(text);
+    }
+
+    private void updateTaskActivitiesSumTime() {
+        taskActivitiesSumTime += TimeUtils.MILLIS_IN_SECOND;
+        setTaskActivitiesSumTime(TaskActivitiesSumTime.getSumHoursMinuteSecond(taskActivitiesSumTime));
+    }
+
+    private void hasBeenSelectedActive(Intent data) {
+        if (data == null) {
+            return;
+        }
+
+        final long spanId = data.getLongExtra(TaskTimeSpan.class.getName(), -1);
+        final int[] position = mAdapter.getPosition(spanId);
+        final TaskActivitiesLayoutManager layoutManager = (TaskActivitiesLayoutManager) mRecyclerView.getLayoutManager();
+        layoutManager.scrollToSpan(position[0], position[1]);
     }
 }

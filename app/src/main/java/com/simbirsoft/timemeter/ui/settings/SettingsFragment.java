@@ -1,14 +1,17 @@
 package com.simbirsoft.timemeter.ui.settings;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
+import android.support.annotation.NonNull;
 import android.support.v4.preference.PreferenceFragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
+import android.widget.Toast;
 
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
@@ -21,7 +24,10 @@ import com.simbirsoft.timemeter.injection.Injection;
 import com.simbirsoft.timemeter.ui.base.AppAlertDialogFragment;
 import com.simbirsoft.timemeter.ui.base.DialogContainerActivity;
 import com.simbirsoft.timemeter.ui.main.SectionFragment;
+import com.simbirsoft.timemeter.ui.permission.WarningDenyPermissionDialog;
+import com.simbirsoft.timemeter.ui.permission.WarningDenyPermissionDialog_;
 import com.simbirsoft.timemeter.ui.util.TimerTextFormatter;
+import com.simbirsoft.timemeter.util.PermissionUtils;
 import com.sleepbot.datetimepicker.time.RadialPickerLayout;
 import com.sleepbot.datetimepicker.time.TimePickerDialog;
 
@@ -35,7 +41,7 @@ import javax.inject.Inject;
 
 @EFragment
 public class SettingsFragment extends PreferenceFragment implements SectionFragment,
-        TimePickerDialog.OnTimeSetListener {
+        TimePickerDialog.OnTimeSetListener, PermissionUtils.OnPermissionResultListener, WarningDenyPermissionDialog.OnSelectedActionListener {
 
     private static final String TIME_PICKER_DIALOG_TAG = "time_picker_dialog_tag";
     private static final int REQUEST_CODE_DELETE_TEST_DATA = 10001;
@@ -50,6 +56,10 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
     Preference mStartTimePreference;
     Preference mEndTimePreference;
     Preference mDisplayAllActivities;
+
+    Preference mExportStatistics;
+    Preference mImportStatistics;
+
     Preference mDeleteDemo;
     Preference mResetHelp;
     Preference mShowHelp;
@@ -68,6 +78,8 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
     @Inject
     Resources mResources;
 
+    private PermissionUtils permissionUtils;
+
     public enum TimePickerDialogType {
         START_TIME_PICKER_DIALOG,
         END_TIME_PICKER_DIALOG,
@@ -80,11 +92,17 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
         addPreferencesFromResource(R.xml.preferences);
         Injection.sUiComponent.injectSettingsFragment(this);
 
+        permissionUtils = new PermissionUtils(this);
+
         mPrefs = Injection.sDatabaseComponent.preferences();
 
         mStartTimePreference = getPreferenceScreen().findPreference(PreferenceKeys.PREF_START_TIME_KEY);
         mEndTimePreference = getPreferenceScreen().findPreference(PreferenceKeys.PREF_END_TIME_KEY);
         mDisplayAllActivities = getPreferenceScreen().findPreference(PreferenceKeys.PREF_ALL_ACTIVITY_KEY);
+
+        mExportStatistics = getPreferenceScreen().findPreference(PreferenceKeys.PREF_EXPORT_STATISTICS);
+        mImportStatistics = getPreferenceScreen().findPreference(PreferenceKeys.PREF_IMPORT_STATISTICS);
+
         mDeleteDemo = getPreferenceScreen().findPreference(PreferenceKeys.PREF_DELETE_DEMO_KEY);
         mResetHelp = getPreferenceScreen().findPreference(PreferenceKeys.PREF_RESET_HELP_KEY);
         mShowHelp = getPreferenceScreen().findPreference(PreferenceKeys.PREF_SHOW_HELP_KEY);
@@ -103,6 +121,16 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
 
         mDisplayAllActivities.setOnPreferenceChangeListener((preference, newValue) -> {
             mPrefs.setDisplayAllActivities((Boolean) newValue);
+            return true;
+        });
+
+        mExportStatistics.setOnPreferenceClickListener(preference -> {
+            permissionUtils.execute(PermissionUtils.PERMISSION.WRITE_EXTERNAL_STORAGE);
+            return true;
+        });
+
+        mImportStatistics.setOnPreferenceClickListener(preference -> {
+            permissionUtils.execute(PermissionUtils.PERMISSION.READ_EXTERNAL_STORAGE);
             return true;
         });
 
@@ -281,5 +309,78 @@ public class SettingsFragment extends PreferenceFragment implements SectionFragm
 
     private void setPreferencesModified() {
         ((SettingsActivity)getActivity()).setSettingsModified();
+    }
+
+    private void saveBackup() {
+        ExportStatsDialog exportStatsDialog = new ExportStatsDialog();
+        getActivity().getSupportFragmentManager().beginTransaction().add(exportStatsDialog, null).commitAllowingStateLoss();
+    }
+
+    private void importBackup() {
+        ImportStatsDialog importStatsDialog = new ImportStatsDialog();
+        getActivity().getSupportFragmentManager().beginTransaction().add(importStatsDialog, null).commitAllowingStateLoss();
+    }
+
+    @Override
+    public void onAlreadyAccess(PermissionUtils.PERMISSION type) {
+        backup(type);
+    }
+
+    @Override
+    public void onAllowAccess(PermissionUtils.PERMISSION type) {
+        backup(type);
+    }
+
+    @Override
+    public void onDenyAccess(PermissionUtils.PERMISSION type) {
+        final String message = getWarningMessage(type);
+        final WarningDenyPermissionDialog dialog = WarningDenyPermissionDialog_.builder().message(message).build();
+        dialog.setOnSelectedAction(this);
+        dialog.setType(type);
+        getActivity().getSupportFragmentManager().beginTransaction().add(dialog, null).commitAllowingStateLoss();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        permissionUtils.result(requestCode, permissions, grantResults);
+    }
+
+    private void backup(PermissionUtils.PERMISSION type) {
+        switch (type) {
+            case WRITE_EXTERNAL_STORAGE:
+                saveBackup();
+                break;
+
+            case READ_EXTERNAL_STORAGE:
+                importBackup();
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    private String getWarningMessage(PermissionUtils.PERMISSION type) {
+        switch (type) {
+            case WRITE_EXTERNAL_STORAGE:
+                return getResources().getString(R.string.permission_dialog_message_error_export);
+
+            case READ_EXTERNAL_STORAGE:
+                return getResources().getString(R.string.permission_dialog_message_error_import);
+
+            default:
+                return "";
+        }
+    }
+
+    @Override
+    public void onCancelRepeatAccessPermission() {
+        final String text = getResources().getString(R.string.permission_dialog_cancel_repeat);
+        Toast.makeText(getActivity(), text, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onRepeatAccessPermission(PermissionUtils.PERMISSION type) {
+        permissionUtils.execute(type);
     }
 }

@@ -34,7 +34,11 @@ import java.util.List;
 
 public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesAdapter.ViewHolder>
                                    implements TaskActivityItemsLayout.TaskActivityItemsAdapter,
-                                    View.OnLongClickListener {
+                                    View.OnLongClickListener, View.OnClickListener {
+
+    public interface OnSelectActiveListener {
+        void onSelectActive(long id);
+    }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         public ViewHolder(View itemView) {
@@ -72,6 +76,7 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         }
     }
 
+    private OnSelectActiveListener onSelectActiveListener;
     private final List<TaskActivityItem> mItems;
     private final HashSet<View> mActivityItemViews;
     private Activity mActivityContext;
@@ -252,6 +257,7 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
                     .inflate(R.layout.view_task_activity_item, layout, false);
             view.setTag(view.findViewById(R.id.taskActivityItemView));
             view.setOnLongClickListener(this);
+            view.setOnClickListener(this);
         }
         return view;
     }
@@ -315,8 +321,7 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
 
     @Override
     public boolean onLongClick(View v) {
-        TaskActivityItemView itemView = (TaskActivityItemView) v;
-        TaskTimeSpan span = itemView.getItem().getSpan(itemView.getIndex());
+        TaskTimeSpan span = getTaskTimeSpan(v);
 
         if (span.isActive()) {
             showCannotEditActiveTimeSpanAlert();
@@ -333,6 +338,11 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
         notifyDataSetChanged();
 
         return true;
+    }
+
+    private TaskTimeSpan getTaskTimeSpan(View v) {
+        TaskActivityItemView itemView = (TaskActivityItemView) v;
+        return itemView.getItem().getSpan(itemView.getIndex());
     }
 
     public List<TaskTimeSpan> getSelectedSpans() {
@@ -363,5 +373,32 @@ public class TaskActivitiesAdapter extends  RecyclerView.Adapter<TaskActivitiesA
                 .animation(true);
 
         SnackbarManager.show(bar);
+    }
+
+    public void setOnSelectActiveListener(OnSelectActiveListener onSelectActiveListener) {
+        this.onSelectActiveListener = onSelectActiveListener;
+    }
+
+    @Override
+    public void onClick(View v) {
+        final TaskTimeSpan span = getTaskTimeSpan(v);
+        if (onSelectActiveListener != null) {
+            onSelectActiveListener.onSelectActive(span.getId());
+        }
+    }
+
+    public int[] getPosition(long spanId) {
+        final int[] position = new int[2];
+        for(int i = mItems.size() - 1; i >=0; i--) {
+            TaskActivityItem item = mItems.get(i);
+            if (item.getItemType() != TaskActivityItem.SPANS_ITEM_TYPE) continue;
+            int spanIndex = ((TaskActivitySpansItem)item).indexOfSpan(spanId);
+            if (spanIndex >=0) {
+                position[0] = i;
+                position[1] = spanIndex;
+                return position;
+            }
+        }
+        return position;
     }
 }
