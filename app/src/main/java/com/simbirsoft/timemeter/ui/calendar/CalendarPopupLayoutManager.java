@@ -6,6 +6,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.List;
+
 public class CalendarPopupLayoutManager extends LinearLayoutManager {
     private int[] mMeasuredDimension = new int[2];
     private int mMaxWidth;
@@ -84,6 +86,9 @@ public class CalendarPopupLayoutManager extends LinearLayoutManager {
 
     private void measureScrapChild(RecyclerView.Recycler recycler, int position, int widthSpec,
                                    int heightSpec, int[] measuredDimension) {
+        if (position < 0 || position >= recycler.getScrapList().size()) {
+            return;
+        }
         View view = recycler.getViewForPosition(position);
         recycler.bindViewToPosition(view, position);
         if (view != null) {

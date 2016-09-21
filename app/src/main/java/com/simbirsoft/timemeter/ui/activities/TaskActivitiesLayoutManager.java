@@ -34,6 +34,9 @@ public class TaskActivitiesLayoutManager extends LinearLayoutManager {
     @Override
     public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
         if (mItemIndex >= 0) {
+            if (mItemIndex >= recycler.getScrapList().size()) {
+                return;
+            }
             View view = recycler.getViewForPosition(mItemIndex);
             recycler.bindViewToPosition(view, mItemIndex);
             RecyclerView.LayoutParams p = (RecyclerView.LayoutParams) view.getLayoutParams();
