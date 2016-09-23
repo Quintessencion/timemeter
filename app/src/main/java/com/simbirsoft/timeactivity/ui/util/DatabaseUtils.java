@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import nl.qbusict.cupboard.DatabaseCompartment;
@@ -69,35 +70,38 @@ public final class DatabaseUtils {
         }
     }
 
+    private static Calendar getDay(long timeInMillis, int prevDay) {
+        Calendar spanCalendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+        spanCalendar.setTimeInMillis(timeInMillis);
+
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH),
+                spanCalendar.get(Calendar.HOUR_OF_DAY), spanCalendar.get(Calendar.MINUTE), spanCalendar.get(Calendar.SECOND));
+        calendar.add(Calendar.DAY_OF_YEAR, prevDay);
+
+        return calendar;
+    }
+
     public static List<TaskTimeSpan> actualizeTaskActivities(List<TaskTimeSpan> spans) {
         long startTimeMillis = 0;
         long endTimeMillis = 0;
 
+        int index = 1;
+
         for (TaskTimeSpan span : spans) {
+            int day = (-spans.size()) + index;
+            index++;
+
+            Calendar calendar = getDay(span.getStartTimeMillis(), day);
+            span.setStartTimeMillis(calendar.getTimeInMillis());
+
+            calendar = getDay(span.getEndTimeMillis(), day);
+            span.setEndTimeMillis(calendar.getTimeInMillis());
+
             if (startTimeMillis == 0 || span.getStartTimeMillis() < startTimeMillis)
                 startTimeMillis = span.getStartTimeMillis();
             if (span.getEndTimeMillis() > endTimeMillis)
                 endTimeMillis = span.getEndTimeMillis();
-        }
-
-        long duration = endTimeMillis - startTimeMillis;
-        int weeks = 1 + ((int) TimeUnit.MILLISECONDS.toDays(duration) / 7);
-        int firstActivityStartHour = (int) TimeUnit.MILLISECONDS.toHours(startTimeMillis) % 24;
-        int firstActivityStartMinute = (int) TimeUnit.MILLISECONDS.toMinutes(startTimeMillis) % 60;
-        int firstActivityStartSecond = (int) TimeUnit.MILLISECONDS.toSeconds(startTimeMillis) % 60;
-
-        Calendar c = Calendar.getInstance();
-        c.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-        c.set(Calendar.HOUR_OF_DAY, firstActivityStartHour);
-        c.set(Calendar.MINUTE, firstActivityStartMinute);
-        c.set(Calendar.SECOND, firstActivityStartSecond);
-        c.add(Calendar.WEEK_OF_YEAR, -weeks);
-
-        long shift = c.getTimeInMillis() - startTimeMillis;
-
-        for (TaskTimeSpan span : spans) {
-            span.setStartTimeMillis(span.getStartTimeMillis() + shift);
-            span.setEndTimeMillis(span.getEndTimeMillis() + shift);
         }
 
         return spans;
