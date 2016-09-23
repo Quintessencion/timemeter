@@ -13,7 +13,7 @@
         android:hint="@string/hint_task_description"
         android:maxLength="250"/>
 
-    <com.simbirsoft.timemeter.ui.views.TagAutoCompleteTextView
+    <com.simbirsoft.timeactivity.ui.views.TagAutoCompleteTextView
         android:id="@+id/tagSearchView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

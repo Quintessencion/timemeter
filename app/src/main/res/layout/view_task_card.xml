@@ -65,7 +65,7 @@
 
         </LinearLayout>
 
-        <com.simbirsoft.timemeter.ui.views.TagFlowView_
+        <com.simbirsoft.timeactivity.ui.views.TagFlowView_
             android:id="@+id/tagFlowView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -8,7 +8,7 @@
     android:padding="4dp"
     android:animateLayoutChanges="true">
 
-    <com.simbirsoft.timemeter.ui.helpcards.HelpCard_
+    <com.simbirsoft.timeactivity.ui.helpcards.HelpCard_
         android:id="@+id/helpCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

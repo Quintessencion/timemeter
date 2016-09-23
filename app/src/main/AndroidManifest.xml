@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
-    package="com.simbirsoft.timemeter"
+    package="com.simbirsoft.timeactivity"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- For Android 6.0: Относится к normal permission, поэтому система разрешает доступ автоматически (запрашивать разрешение от пользователя не нужно) -->
@@ -10,13 +10,13 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
-        android:name=".App"
+        android:name="com.simbirsoft.timeactivity.App"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".ui.main.MainActivity_"
+            android:name="com.simbirsoft.timeactivity.ui.main.MainActivity_"
             android:label="@string/app_name"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
@@ -27,11 +27,11 @@
         </activity>
 
         <activity
-            android:name=".ui.base.FragmentContainerActivity_"
+            android:name="com.simbirsoft.timeactivity.ui.base.FragmentContainerActivity_"
             android:exported="false"/>
 
         <activity
-            android:name=".ui.base.DialogContainerActivity_"
+            android:name="com.simbirsoft.timeactivity.ui.base.DialogContainerActivity_"
             android:exported="false"
             android:theme="@style/AppTheme.Transparent"
             android:windowSoftInputMode="stateHidden"/>
@@ -41,21 +41,21 @@
             android:exported="false"/>
 
         <service
-            android:name=".service.TimeWorkerService"
+            android:name="com.simbirsoft.timeactivity.service.TimeWorkerService"
             android:label="@string/label_service_worker"
             android:exported="false"/>
 
         <service
-            android:name=".service.ScreenLockWatcherService"
+            android:name="com.simbirsoft.timeactivity.service.ScreenLockWatcherService"
             android:label="@string/label_service_screen_lock_watcher"
             android:exported="false"/>
 
         <receiver
-            android:name=".receiver.NotificationUpdateReceiver"
+            android:name="com.simbirsoft.timeactivity.receiver.NotificationUpdateReceiver"
             android:label="@string/label_receiver_notification_update"
             android:exported="false"/>
 
-        <receiver android:name=".receiver.StopTaskActivityReceiver"
+        <receiver android:name="com.simbirsoft.timeactivity.receiver.StopTaskActivityReceiver"
             android:exported="false"/>
 
         <receiver android:enabled="true" android:name=".receiver.BootUpReceiver"

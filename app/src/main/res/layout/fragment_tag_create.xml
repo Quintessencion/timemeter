@@ -33,7 +33,7 @@
                 android:layout_marginLeft="4dp"
                 android:text="@string/label_color"/>
 
-            <com.simbirsoft.timemeter.ui.util.colorpicker.ColorPickerPalette
+            <com.simbirsoft.timeactivity.ui.util.colorpicker.ColorPickerPalette
                 android:id="@+id/color_picker"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

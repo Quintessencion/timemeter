@@ -10,7 +10,7 @@
     app:mrl_rippleInAdapter="false"
     app:mrl_rippleColor="@color/white"
     app:mrl_rippleAlpha="1">
-    <com.simbirsoft.timemeter.ui.views.TaskActivityItemView
+    <com.simbirsoft.timeactivity.ui.views.TaskActivityItemView
         android:id="@+id/taskActivityItemView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>

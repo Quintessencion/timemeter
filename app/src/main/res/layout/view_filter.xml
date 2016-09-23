@@ -98,7 +98,7 @@
                         android:text="@string/title_view_tags"
                         android:textColor="@android:color/white"/>
 
-                    <com.simbirsoft.timemeter.ui.views.TagFilterTextView
+                    <com.simbirsoft.timeactivity.ui.views.TagFilterTextView
                         android:id="@+id/tagsView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

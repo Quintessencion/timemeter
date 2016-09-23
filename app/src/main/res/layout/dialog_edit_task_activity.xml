@@ -8,13 +8,13 @@
     android:paddingRight="20dp"
     android:paddingEnd="20dp">
 
-    <com.simbirsoft.timemeter.ui.views.DateTimeView_
+    <com.simbirsoft.timeactivity.ui.views.DateTimeView_
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/startDateTime"
         android:layout_marginBottom="10dp" />
 
-    <com.simbirsoft.timemeter.ui.views.DateTimeView_
+    <com.simbirsoft.timeactivity.ui.views.DateTimeView_
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/endDateTime" />

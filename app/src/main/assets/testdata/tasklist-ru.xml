@@ -60,14 +60,6 @@
                 <activityEntry
                     startDate="2015-02-26 14:09:00 GMT"
                     endDate="2015-02-26 17:49:00 GMT"/>
-
-                <!--
-                <activityEntry
-                    startDate="2015-02-27 10:30:00 GMT"
-                    endDate="2015-02-27 12:34:00 GMT"/>
-                <activityEntry
-                    startDate="2015-02-27 17:20:45 GMT"
-                    endDate="2015-02-27 20:31:00 GMT"/>-->
             </activity>
         </task>
         <task createDate="2015-02-15 00:00:00 GMT">
@@ -94,10 +86,6 @@
                 <activityEntry
                     startDate="2015-02-26 13:20:00 GMT"
                     endDate="2015-02-26 13:58:00 GMT"/>
-                <!--
-                <activityEntry
-                    startDate="2015-02-27 13:01:00 GMT"
-                    endDate="2015-02-27 13:29:00 GMT"/>-->
             </activity>
         </task>
         <task createDate="2015-02-15 00:00:00 GMT">
@@ -115,10 +103,6 @@
                 <activityEntry
                     startDate="2015-02-25 13:35:00 GMT"
                     endDate="2015-02-25 15:40:00 GMT"/>
-                <!--
-                <activityEntry
-                    startDate="2015-02-27 13:40:00 GMT"
-                    endDate="2015-02-27 15:49:00 GMT"/>-->3
             </activity>
         </task>
         <task createDate="2015-02-15 00:00:00 GMT">
