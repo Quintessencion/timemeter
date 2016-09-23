@@ -26,5 +26,10 @@ public abstract class BackupProgressDialog extends BaseDialogFragment {
         this.dismiss();
     }
 
+    protected void displayMessage(String message) {
+        showToast(message, false);
+        this.dismiss();
+    }
+
     public abstract int getTitleResId();
 }

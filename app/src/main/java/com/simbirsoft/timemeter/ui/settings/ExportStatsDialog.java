@@ -77,7 +77,7 @@ public class ExportStatsDialog extends BackupProgressDialog implements JobLoader
 
     @OnJobSuccess(ExportStatsJob.class)
     public void onBackupSuccess(LoadJobResult<Boolean> event) {
-        displayMessage(R.string.backup_export_success);
+        displayMessage(String.format(getString(R.string.backup_export_success), ExportStatsJob.STATS_PATH));
     }
 
     @OnJobFailure(ExportStatsJob.class)

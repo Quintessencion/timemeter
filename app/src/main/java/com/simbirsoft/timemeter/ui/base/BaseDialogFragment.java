@@ -154,7 +154,16 @@ public class BaseDialogFragment extends DialogFragment implements FragmentContai
             showToast(resId);
         }
         else {
-            Toast.makeText(getActivity(), resId, Toast.LENGTH_SHORT).show();;
+            Toast.makeText(getActivity(), resId, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    protected void showToast(String text, boolean ifIsVisible) {
+        if (ifIsVisible) {
+            showToast(text);
+        }
+        else {
+            Toast.makeText(getActivity(), text, Toast.LENGTH_SHORT).show();
         }
     }
 
